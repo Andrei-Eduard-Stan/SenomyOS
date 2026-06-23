@@ -1,0 +1,15 @@
+[Unit]
+Description=Eww workspaces listener (Hyprland -> Eww)
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+Environment=EWW_CFG=%h/.config/eww
+Environment=PATH=/usr/bin:/bin:/usr/local/bin
+ExecStart=%h/.config/eww/scripts/workspaces.sh
+Restart=always
+RestartSec=0.20
+
+[Install]
+WantedBy=default.target

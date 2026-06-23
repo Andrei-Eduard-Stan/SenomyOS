@@ -1,0 +1,73 @@
+;; Include windows --
+
+(include "windows/clock_panel.yuck")
+(include "windows/actioncentre_panel.yuck")
+(include "windows/mainbar.yuck")
+
+;; Include windgets --
+
+(include "widgets/workspace-ndicator.yuck")
+(include "widgets/volume-button.yuck")
+(include "widgets/wifi-button.yuck")
+(include "widgets/battery-button.yuck")
+(include "widgets/clock-button.yuck")
+
+;;Variables ---
+(defpoll time :interval "60s" "date +%H:%M")
+(defpoll date :interval "60s" "date +%a, %d %b")
+(defvar workspaces "")
+
+(defwidget workspace-indicator []
+  (label :class "workspace-box" :text {workspaces}))
+  
+(defwidget volume-button []
+  (button
+    :class "icon-button"
+    :onclick "eww open volume-popup"
+    "")) ;; FontAwesome icon
+
+(defwidget wifi-button []
+  (button
+    :class "icon-button"
+    :onclick "eww open wifi-popup"
+    ""))
+
+(defwidget battery-button []
+  (button
+    :class "icon-button"
+    :onclick "eww open battery-popup"
+    ""))
+
+(defwidget clock-button []
+  (button
+    :class "icon-button"
+    :onclick "eww open clock-popup"
+    (label :text {time})))
+
+(defwindow top-bar
+  :geometry (geometry :x "0" :y "1040" :width "100%" :height "40px")
+  :stacking "fg"
+  :monitor 0
+  :exclusive true
+  :anchor "top center"
+  :visible true
+  (box
+    :orientation "h"
+    :space-evenly false
+    :hexpand true
+    :class "bar"
+    ;; LEFT section (workspaces)
+    (box
+      :orientation "h"
+      :halign "start"
+      :hexpand true
+      (workspace-indicator))
+
+    ;; RIGHT section (everything else)
+    (box
+      :orientation "h"
+      :halign "end"
+      (clock-button)
+      (volume-button)
+      (wifi-button)
+      (battery-button))))

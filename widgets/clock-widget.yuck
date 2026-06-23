@@ -1,0 +1,4 @@
+(defwidget clock-button []
+  (button
+  :class "icon-button"
+  (label :text {time})))

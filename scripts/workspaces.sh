@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Stable 1..N workspaces with [active] pushed to Eww
+# - Single-sample per cycle (less race)
+# - Debounce shrink (avoid flicker)
+# - Only push on change
+
+EW="/usr/bin/eww"
+HY="/usr/bin/hyprctl"
+JQ="/usr/bin/jq"
+AWK="/usr/bin/awk"
+EWW_CFG="$HOME/.config/eww"
+
+last_out=""
+last_max=1
+shrink_streak=0            # how many consecutive polls suggest shrinking N
+SHRINK_THRESHOLD=3         # require 3 consecutive polls before shrinking
+
+build_once() {
+  # Sample both endpoints once per cycle
+  ws_json="$("$HY" -j workspaces 2>/dev/null)" || ws_json=""
+  act_json="$("$HY" -j activeworkspace 2>/dev/null)" || act_json=""
+
+  # Parse IDs; tolerate transient empties
+  ids="$(printf '%s' "$ws_json" | "$JQ" -r '.[].id' 2>/dev/null)" || ids=""
+  active="$(printf '%s' "$act_json" | "$JQ" -r '.id // 1' 2>/dev/null)" || active=1
+
+  # If we got absolutely nothing, keep last good
+  if [ -z "$ids$active" ]; then
+    printf '%s\n' "$last_out"
+    return
+  fi
+
+  # Compute proposed max from current sample
+  max="$active"
+  if [ -n "$ids" ]; then
+    ids_max="$(printf '%s\n' $ids | "$AWK" 'max<$1{max=$1} END{print (max==""?0:max)}')"
+    [ -n "$ids_max" ] && [ "$ids_max" -gt "$max" ] && max="$ids_max"
+  fi
+  case "$max" in (*[!0-9]*) max="$last_max";; esac
+
+  # Debounce shrink: only allow lowering max after SHRINK_THRESHOLD consistent polls
+  if [ "$max" -lt "$last_max" ]; then
+    shrink_streak=$((shrink_streak+1))
+    # hold previous view until shrink is stable
+    if [ "$shrink_streak" -lt "$SHRINK_THRESHOLD" ]; then
+      printf '%s\n' "$last_out"
+      return
+    fi
+  else
+    shrink_streak=0
+  fi
+
+  # Build "1 2 [3] 4 ..."
+  out=""
+  i=1
+  while [ "$i" -le "$max" ]; do
+    if [ "$i" -eq "$active" ]; then out="$out [$i]"; else out="$out $i"; fi
+    i=$((i+1))
+  done
+  out="${out# }"
+
+  last_max="$max"
+  printf '%s\n' "$out"
+}
+
+push() {
+  new_out="$(build_once)"
+  [ -z "$new_out" ] && new_out="$last_out"
+  if [ "$new_out" != "$last_out" ]; then
+    "$EW" -c "$EWW_CFG" update workspaces="$new_out" >/dev/null 2>&1 || true
+    last_out="$new_out"
+  fi
+}
+
+# main loop
+while true; do
+  push
+  sleep 1
+done

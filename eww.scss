@@ -1,0 +1,49 @@
+/* Reset all GTK styling so ours applies clean */
+* {
+  all: unset;
+  font-family:"Symbols Nerd Font Mono", monospace;
+  color: white;
+}
+
+
+/* Bar container */
+.bar {
+  /* START with visible background for testing: */
+  background-color: rgba(0,0,0,0);
+  border: 1px solid white;
+  padding: 0 10px;
+
+  /* Once confirmed working, switch to transparency: */
+  /* background-color: rgba(0, 0, 0, 0.0); */
+  /* border-bottom: 1px solid white; */
+}
+
+
+/* Generic icon button style */
+.battery {
+  background-color: transparent;
+  padding: 0 10px;
+  font-size: 16px;
+  font-family: "Symbols Nerd Font", "JetBrainsMono Nerd Font", monospace;
+}
+
+/* Workspace display */
+.workspace-box {
+  padding: 0 8px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+/* Popups (will be used later) */
+.popup {
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid white;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.icon-button {
+
+  padding:0 5px;
+
+}

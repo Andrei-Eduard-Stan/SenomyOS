@@ -1,0 +1,24 @@
+;;Include windgets --
+
+(include "widgets/workspace-widget.yuck")
+(include "widgets/volume-widget.yuck")
+(include "widgets/wifi-widget.yuck")
+(include "widgets/battery-widget.yuck")
+(include "widgets/clock-widget.yuck")
+
+; Include windows --
+
+(include "windows/clock-panel.yuck")
+(include "windows/actioncenter-panel.yuck")
+(include "windows/main-bar.yuck")
+
+; Variables --
+(defpoll time :interval "60s" "date +%H:%M")
+(defpoll date :interval "60s" "date +%a, %d %b")
+(defpoll batt_json :interval "10s" "~/.config/eww/scripts/battery.sh")
+(defvar workspaces "")
+(defvar ac_open false)
+(defvar clock_open false)
+(defvar ac_page "main") ; main|audio|network|battery|toggles
+(defvar panel "none") ; none | action
+(defvar chibi_state "idle")

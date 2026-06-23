@@ -1,0 +1,5 @@
+(defwidget volume-button []
+  (button
+  :class "icon-button"
+  :onclick "eww open volume-popup"
+  "")) ;; FontAwesome icon

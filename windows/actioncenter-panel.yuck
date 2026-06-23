@@ -1,0 +1,36 @@
+(defwindow actioncenter
+  :monitor 0
+  :geometry (geometry
+              :x "calc(100% - 360px - 12px)"
+              :y "48px"
+              :width "360px"
+              :height "520px")
+  :stacking "fg"
+  :anchor "top right"
+  :focusable true
+  :exclusive false
+  :visible { panel == "action" }
+  (box :class "ac-panel" :orientation "v" :spacing 8 :padding 12
+    ;; tabs / header
+    (box :class "ac-tabs" :spacing 8
+      (button :class { ac_page == "main"    ? "ac-tab active" : "ac-tab" }
+              :onclick "eww update ac_page=main" "Overview")
+      (button :class { ac_page == "audio"   ? "ac-tab active" : "ac-tab" }
+              :onclick "eww update ac_page=audio" "Audio")
+      (button :class { ac_page == "network" ? "ac-tab active" : "ac-tab" }
+              :onclick "eww update ac_page=network" "Network")
+      (button :class { ac_page == "battery" ? "ac-tab active" : "ac-tab" }
+              :onclick "eww update ac_page=battery" "Battery")
+      (box :hexpand true)
+      (button :class "ac-close" :onclick "eww update panel=none" "")
+    )
+
+    ;; content panes
+    (box :class "ac-body" :vexpand true
+      (box :visible { ac_page == "main" }    (actioncenter-main))
+      (box :visible { ac_page == "audio" }   (volume-panel))
+      (box :visible { ac_page == "network" } (wifi-panel))
+      (box :visible { ac_page == "battery" } (battery-panel))
+    )
+  )
+)

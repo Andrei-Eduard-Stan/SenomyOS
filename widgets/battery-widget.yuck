@@ -1,0 +1,8 @@
+(defwidget battery-button []
+  (box :class "battery" :orientation "h" :space-evenly false
+    ;; total battery
+    (label :text "${batt_json.total_icon} ${batt_json.percent_total}% ")
+    ;; dual section
+    (box :class "dual" :visible {batt_json.dual}
+      (label :text "${batt_json.bat0_icon}[0]${batt_json.bat0_percent}% ")
+      (label :text "${batt_json.bat1_icon}[1]${batt_json.bat1_percent}% "))))
