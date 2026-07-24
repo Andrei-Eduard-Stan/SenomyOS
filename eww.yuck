@@ -16,6 +16,7 @@
 (defpoll time :interval "60s" "date +%H:%M")
 (defpoll date :interval "60s" "date +%a, %d %b")
 (defpoll batt_json :interval "10s" "~/.config/eww/scripts/battery.sh")
+(defpoll system_status :interval "2s" "$HOME/.config/eww/scripts/system-status.sh")
 (defvar workspaces "")
 (defvar ac_open false)
 (defvar clock_open false)
