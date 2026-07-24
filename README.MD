@@ -1,32 +1,77 @@
-The safest reconstructed file map is this:
+# SenomyOS
 
-~/.config/eww/
-├── eww.yuck                         # Main Eww config / imports / variables / polls
-├── scss/
-│   └── style.scss                   # Main styling for bar, popups, buttons, panels
-├── windows/
-│   ├── main-bar.yuck                # Main Eww bar window
-│   ├── actioncenter-panel.yuck      # Main Action Center window
-│   ├── clock-panel.yuck             # Clock/date popup
-│   ├── battery-panel.yuck           # Battery detail popup/page
-│   └── volume-popup.yuck            # Volume popup, if not merged into Action Center
-├── widgets/
-│   ├── workspace.yuck               # Hyprland workspace display
-│   ├── clock.yuck                   # Clock button/widget
-│   ├── volume.yuck                  # Volume button/widget
-│   ├── wifi.yuck                    # Wi-Fi button/widget
-│   ├── battery.yuck                 # Battery button/widget
-│   └── actioncenter-main.yuck       # Main Action Center content, if split out
-├── scripts/
-│   ├── battery.sh                   # Battery JSON script using upower/jq
-│   ├── workspaces.sh                # Hyprland workspace updater
-│   ├── volume.sh                    # Volume helper using pamixer
-│   ├── wifi.sh                      # Wi-Fi/network helper
-│   ├── toggle-action-center.sh      # Opens/closes Action Center
-│   └── toggle-volume.sh             # Opens/closes volume popup
-└── systemd/
-    └── workspaces.service           # Optional user service for workspace updater
+SenomyOS is a custom Arch Linux desktop shell built around Hyprland and Eww.
+It is currently a live desktop configuration, not yet a complete operating
+system distribution.
 
-And outside Eww:
+The project is being revived around four coordinated surfaces:
 
-~/.config/hypr/hyprland.conf         # Starts Eww and reserves space for bar
+1. A compact bottom system bar.
+2. A unified contextual Control Centre.
+3. A separate full Performance Dashboard.
+4. A separate Senomy Insights system briefing.
+
+The approved everyday direction is the compact **Obsidian Rail** design. The
+expanded **Cathedral Deck** direction is reserved for the Performance
+Dashboard, opened by clicking the CPU/MEM/UP telemetry area.
+
+## Repository location
+
+This repository is also the live Eww configuration:
+
+```text
+/home/Duku/.config/eww
+```
+
+The actual live Hyprland configuration is separate:
+
+```text
+/home/Duku/.config/hypr/hyprland.conf
+```
+
+The repository contains a tracked mirror at `hyprland.conf`. The two files must
+be compared and synchronized deliberately.
+
+## Current structure
+
+```text
+.
+├── eww.yuck                 Eww entry point, includes, polls, and state
+├── eww.scss                 Current global styling
+├── windows/                 Eww window definitions
+├── widgets/                 Reusable bar widgets
+├── scripts/                 Data collectors and workspace updater
+├── systemd/                 Workspace-listener user service source
+├── hyprland.conf            Tracked mirror of the live Hyprland config
+├── AGENTS.md                Repository rules for coding agents
+└── docs/                    Product, architecture, design, and workflow docs
+```
+
+The workspace listener and dual-battery collector are the strongest existing
+parts. The current Action Centre is incomplete, and the legacy update loop is
+known to deadlock.
+
+## Documentation
+
+- [Product specification](docs/PRODUCT_SPEC.md)
+- [Architecture and state model](docs/ARCHITECTURE.md)
+- [Design system](docs/DESIGN_SYSTEM.md)
+- [Data sources and command policy](docs/DATA_SOURCES.md)
+- [Development and validation workflow](docs/DEVELOPMENT.md)
+- [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
+- [Decision log](docs/DECISIONS.md)
+- [Runtime inventory](docs/RUNTIME_INVENTORY.md)
+
+Anyone changing the live shell should read `AGENTS.md` first.
+
+## Development status
+
+Revival work belongs on the `revival/live` branch. Before every commit:
+
+1. inspect the complete diff;
+2. validate changed shell and JSON output;
+3. check Eww or Hyprland errors as applicable;
+4. warn before any live reload or service restart;
+5. keep the commit limited to one recoverable stage.
+
+Do not push directly to `main`.
