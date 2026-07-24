@@ -1,36 +1,105 @@
+(defwidget control-placeholder [title detail]
+  (box
+    :class "control-placeholder"
+    :orientation "v"
+    :spacing 8
+    (label
+      :class "control-placeholder-title"
+      :xalign 0
+      :text title)
+    (label
+      :class "control-placeholder-detail"
+      :xalign 0
+      :wrap true
+      :text detail)))
+
 (defwindow actioncenter
   :monitor 0
   :geometry (geometry
-              :x "calc(100% - 360px - 12px)"
-              :y "48px"
-              :width "360px"
-              :height "520px")
-  :stacking "fg"
-  :anchor "top right"
-  :focusable true
+    :x "-12px"
+    :y "-52px"
+    :width "520px"
+    :height "360px"
+    :anchor "bottom right")
+  :stacking "overlay"
+  :focusable false
   :exclusive false
-  :visible { panel == "action" }
-  (box :class "ac-panel" :orientation "v" :spacing 8 :padding 12
-    ;; tabs / header
-    (box :class "ac-tabs" :spacing 8
-      (button :class { ac_page == "main"    ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=main" "Overview")
-      (button :class { ac_page == "audio"   ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=audio" "Audio")
-      (button :class { ac_page == "network" ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=network" "Network")
-      (button :class { ac_page == "battery" ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=battery" "Battery")
-      (box :hexpand true)
-      (button :class "ac-close" :onclick "eww update panel=none" "")
-    )
+  :visible {active_surface == "control"}
 
-    ;; content panes
-    (box :class "ac-body" :vexpand true
-      (box :visible { ac_page == "main" }    (actioncenter-main))
-      (box :visible { ac_page == "audio" }   (volume-panel))
-      (box :visible { ac_page == "network" } (wifi-panel))
-      (box :visible { ac_page == "battery" } (battery-panel))
-    )
-  )
-)
+  (box
+    :class "control-centre"
+    :orientation "v"
+    :spacing 12
+
+    (box
+      :class "control-header"
+      :spacing 8
+      (label
+        :class "control-title"
+        :xalign 0
+        :text "SENOMY CONTROL CENTRE")
+      (box :hexpand true)
+      (button
+        :class "control-close"
+        :onclick "eww update active_surface=none"
+        ""))
+
+    (box
+      :class "control-tabs"
+      :spacing 8
+
+      (button
+        :class {control_section == "overview"
+          ? "control-tab active"
+          : "control-tab"}
+        :onclick "eww update control_section=overview"
+        "Overview")
+
+      (button
+        :class {control_section == "audio"
+          ? "control-tab active"
+          : "control-tab"}
+        :onclick "eww update control_section=audio"
+        "Audio")
+
+      (button
+        :class {control_section == "network"
+          ? "control-tab active"
+          : "control-tab"}
+        :onclick "eww update control_section=network"
+        "Network")
+
+      (button
+        :class {control_section == "devices"
+          ? "control-tab active"
+          : "control-tab"}
+        :onclick "eww update control_section=devices"
+        "Devices"))
+
+    (box
+      :class "control-body"
+      :vexpand true
+
+      (box
+        :visible {control_section == "overview"}
+        (control-placeholder
+          :title "Overview"
+          :detail "System controls and concise status will live here."))
+
+      (box
+        :visible {control_section == "audio"}
+        (control-placeholder
+          :title "Audio"
+          :detail "Outputs, inputs, volume and routing are coming next."))
+
+      (box
+        :visible {control_section == "network"}
+        (control-placeholder
+          :title "Network"
+          :detail "Connectivity, interfaces and Wi-Fi controls are coming next."))
+
+      (box
+        :visible {control_section == "devices"}
+        (control-placeholder
+          :title "Device Management"
+          :detail "Displays, audio endpoints, inputs and connected hardware will appear here.")))))

@@ -47,3 +47,52 @@
   padding:0 5px;
 
 }
+
+.control-centre {
+  background-color: rgba(0, 0, 0, 0.88);
+  border: 1px solid white;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.control-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  padding-bottom: 10px;
+}
+
+.control-title {
+  font-size: 14px;
+}
+
+.control-close {
+  border: 1px solid white;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+.control-tab {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 7px 10px;
+}
+
+.control-tab:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.control-tab.active {
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: white;
+}
+
+.control-body {
+  padding: 12px;
+}
+
+.control-placeholder-title {
+  font-size: 18px;
+}
+
+.control-placeholder-detail {
+  color: rgba(255, 255, 255, 0.72);
+}

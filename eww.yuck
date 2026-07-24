@@ -19,8 +19,6 @@
 (defpoll batt_json :interval "10s" "~/.config/eww/scripts/battery.sh")
 (defpoll system_status :interval "2s" "$HOME/.config/eww/scripts/system-status.sh")
 (defvar workspaces "")
-(defvar ac_open false)
-(defvar clock_open false)
-(defvar ac_page "main") ; main|audio|network|battery|toggles
-(defvar panel "none") ; none | action
+(defvar active_surface "none") ; none|control|performance|insights
+(defvar control_section "overview") ; overview|audio|network|devices
 (defvar chibi_state "idle")
