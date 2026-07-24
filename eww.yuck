@@ -1,6 +1,7 @@
 ;;Include windgets --
 
 (include "widgets/workspace-widget.yuck")
+(include "widgets/system-widget.yuck")
 (include "widgets/volume-widget.yuck")
 (include "widgets/wifi-widget.yuck")
 (include "widgets/battery-widget.yuck")

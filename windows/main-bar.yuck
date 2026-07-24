@@ -5,16 +5,26 @@
   :exclusive true
   :anchor "top center"
   :visible true
-  (box :class "bar" :orientation "h" :space-evenly false
-    ;; left
-    (workspace-indicator)
 
-    ;; spacer so right group sticks to the end
-    (box :hexpand true)
+  (centerbox :class "bar" :orientation "h"
+    ;; left
+    (box
+      :class "mainbar-left"
+      :halign "start"
+      :space-evenly false
+      (workspace-indicator))
+
+    ;; center
+    (system-summary)
 
     ;; right
-    (box :class "mainbar-right" :spacing 10 :halign "end" :hexpand false :space-evenly false
+    (box
+      :class "mainbar-right"
+      :spacing 10
+      :halign "end"
+      :space-evenly false
       (clock-button)
       (volume-button)
       (wifi-button)
-    (battery-button))))
+      (battery-button))))
+        
