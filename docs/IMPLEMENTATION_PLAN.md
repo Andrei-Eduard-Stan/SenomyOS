@@ -68,6 +68,12 @@ Preserve:
 
 No visual redesign should depend on unvalidated collector output.
 
+Progress:
+
+- `scripts/system-status.sh` now provides validated procfs CPU, memory, uptime,
+  and load JSON;
+- Eww does not consume it yet.
+
 ## Stage 3 — Obsidian Rail main bar
 
 Goals:

@@ -137,17 +137,17 @@ components should not contain long command pipelines.
 
 Planned collectors:
 
-- `system-status.sh`
 - `audio-status.sh`
 - `network-status.sh`
 - `device-status.sh`
 - `processes.sh`
 - `insights-status.sh`
 
-Existing stable collectors:
+Implemented collectors:
 
 - `battery.sh`
 - `workspaces.sh`
+- `system-status.sh` (validated, not yet connected to Eww)
 
 Collectors must degrade independently. A network error cannot break the clock,
 bar, or battery display.

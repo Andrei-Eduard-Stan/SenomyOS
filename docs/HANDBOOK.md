@@ -158,6 +158,8 @@ revival/live
 - Senomy Insights was confirmed as a first-class surface.
 - Project documentation was established on `revival/live`.
 - Deployable-system, portability, and touch goals were added.
+- The first portable `system-status.sh` collector was added and validated
+  without connecting it to the live bar.
 
 ## Stage 1 tutorial: preserve and stabilize Hyprland
 

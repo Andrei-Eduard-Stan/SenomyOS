@@ -106,6 +106,25 @@ Verified on 2026-07-24:
 
 `checkupdates` and `yay` were not installed.
 
+## System status collector
+
+`scripts/system-status.sh` is the first normalized SenomyOS system collector.
+It reads Linux procfs and emits schema version 1 JSON containing:
+
+- sampled CPU utilization;
+- total, used, and available memory;
+- memory utilization;
+- uptime in seconds and human-readable form;
+- one-, five-, and fifteen-minute load averages.
+
+It does not inspect a model name, monitor, user, home path, battery, or network
+interface. `SENOMY_PROC_ROOT` and `SENOMY_CPU_SAMPLE_DELAY` are test overrides;
+production uses `/proc` and a short sample delay.
+
+The script returns structured error envelopes for missing procfs data, invalid
+configuration, malformed sources, failed sampling, and a missing `jq`
+dependency.
+
 ## Polling budget
 
 Persistent bar:

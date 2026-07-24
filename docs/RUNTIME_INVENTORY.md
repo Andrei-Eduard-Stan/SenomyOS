@@ -131,6 +131,18 @@ generated valid compact JSON.
 - `nmcli` returned the active Wi-Fi connection.
 - Eww time polling worked.
 
+### Portable system summary
+
+`scripts/system-status.sh` was added after the initial inspection. It passed:
+
+- `bash -n`;
+- successful JSON schema/type assertions;
+- missing-procfs error validation;
+- invalid-sample-delay error validation;
+- missing-`jq` error validation.
+
+It is not yet connected to Eww and has no live polling cost.
+
 ## Confirmed problems
 
 ### Deadlocked update loop
