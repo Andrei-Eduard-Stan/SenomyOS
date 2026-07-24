@@ -2,7 +2,7 @@
 # Stable 1..N workspaces with [active] pushed to Eww
 # - Single-sample per cycle (less race)
 # - Debounce shrink (avoid flicker)
-# - Only push on change
+# - Push on change with periodic Eww resync
 
 EW="/usr/bin/eww"
 HY="/usr/bin/hyprctl"
@@ -14,8 +14,13 @@ last_out=""
 last_max=1
 shrink_streak=0            # how many consecutive polls suggest shrinking N
 SHRINK_THRESHOLD=3         # require 3 consecutive polls before shrinking
+SYNC_INTERVAL=10           # republish every 10 seconds
+next_out=""
+sync_age=0
 
 build_once() {
+  next_out="$last_out"
+
   # Sample both endpoints once per cycle
   ws_json="$("$HY" -j workspaces 2>/dev/null)" || ws_json=""
   act_json="$("$HY" -j activeworkspace 2>/dev/null)" || act_json=""
@@ -26,7 +31,6 @@ build_once() {
 
   # If we got absolutely nothing, keep last good
   if [ -z "$ids$active" ]; then
-    printf '%s\n' "$last_out"
     return
   fi
 
@@ -43,7 +47,6 @@ build_once() {
     shrink_streak=$((shrink_streak+1))
     # hold previous view until shrink is stable
     if [ "$shrink_streak" -lt "$SHRINK_THRESHOLD" ]; then
-      printf '%s\n' "$last_out"
       return
     fi
   else
@@ -60,15 +63,21 @@ build_once() {
   out="${out# }"
 
   last_max="$max"
-  printf '%s\n' "$out"
+  next_out="$out"
 }
 
 push() {
-  new_out="$(build_once)"
-  [ -z "$new_out" ] && new_out="$last_out"
-  if [ "$new_out" != "$last_out" ]; then
-    "$EW" -c "$EWW_CFG" update workspaces="$new_out" >/dev/null 2>&1 || true
-    last_out="$new_out"
+  build_once
+  new_out="$next_out"
+  [ -z "$new_out" ] && return
+
+  sync_age=$((sync_age + 1))
+
+  if [ "$new_out" != "$last_out" ] || [ "$sync_age" -ge "$SYNC_INTERVAL" ]; then
+    if "$EW" -c "$EWW_CFG" update workspaces="$new_out" >/dev/null 2>&1; then
+      last_out="$new_out"
+      sync_age=0
+    fi
   fi
 }
 
