@@ -160,6 +160,8 @@ revival/live
 - Deployable-system, portability, and touch goals were added.
 - The first portable `system-status.sh` collector was added and validated
   without connecting it to the live bar.
+- The read-only `audio-status.sh` collector was added and validated against
+  PipeWire without changing volume or routes.
 
 ## Stage 1 tutorial: preserve and stabilize Hyprland
 

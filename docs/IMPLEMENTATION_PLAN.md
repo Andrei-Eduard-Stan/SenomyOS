@@ -72,6 +72,8 @@ Progress:
 
 - `scripts/system-status.sh` now provides validated procfs CPU, memory, uptime,
   and load JSON;
+- `scripts/audio-status.sh` now provides validated output/input, volume, mute,
+  route, and endpoint JSON;
 - Eww does not consume it yet.
 
 ## Stage 3 — Obsidian Rail main bar

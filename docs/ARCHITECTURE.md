@@ -137,7 +137,6 @@ components should not contain long command pipelines.
 
 Planned collectors:
 
-- `audio-status.sh`
 - `network-status.sh`
 - `device-status.sh`
 - `processes.sh`
@@ -148,6 +147,7 @@ Implemented collectors:
 - `battery.sh`
 - `workspaces.sh`
 - `system-status.sh` (validated, not yet connected to Eww)
+- `audio-status.sh` (validated, not yet connected to Eww)
 
 Collectors must degrade independently. A network error cannot break the clock,
 bar, or battery display.

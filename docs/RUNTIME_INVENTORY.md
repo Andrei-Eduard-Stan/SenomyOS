@@ -143,6 +143,19 @@ generated valid compact JSON.
 
 It is not yet connected to Eww and has no live polling cost.
 
+### Portable audio summary
+
+`scripts/audio-status.sh` was added after the initial inspection. It passed:
+
+- `bash -n`;
+- successful JSON schema/type assertions against the live PipeWire server;
+- default output/input normalization;
+- monitor-source exclusion;
+- unavailable-audio-server error validation;
+- missing-dependency error validation.
+
+It is read-only, is not connected to Eww, and changed no audio setting.
+
 ## Confirmed problems
 
 ### Deadlocked update loop

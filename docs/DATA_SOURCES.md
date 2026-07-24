@@ -125,6 +125,23 @@ The script returns structured error envelopes for missing procfs data, invalid
 configuration, malformed sources, failed sampling, and a missing `jq`
 dependency.
 
+## Audio status collector
+
+`scripts/audio-status.sh` reads PipeWire/PulseAudio compatibility data through
+`pactl` and emits schema version 1 JSON containing:
+
+- the default output and input;
+- normalized display names and stable source IDs;
+- volume, mute, state, and active port;
+- all available non-monitor outputs and inputs;
+- endpoint counts and overall output availability.
+
+The collector is read-only. It never changes volume, mute state, or routing.
+PulseAudio monitor sources are excluded from the user-facing input list.
+
+The script returns structured errors for missing dependencies, unavailable
+audio services, and malformed JSON.
+
 ## Polling budget
 
 Persistent bar:
