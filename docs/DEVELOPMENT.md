@@ -66,6 +66,28 @@ Prefer stages that can be reverted or diagnosed independently:
 Avoid mixing structural Yuck changes, a large SCSS redesign, data collectors,
 and Hyprland startup changes in one commit.
 
+## Portability gate
+
+Before accepting a new path, monitor, device, or geometry assumption, ask:
+
+1. Can it be discovered safely?
+2. Can it be expressed relative to the current work area?
+3. Is it a portable default or a hardware-profile override?
+4. What happens when the device is absent?
+5. Does the feature remain usable by keyboard, pointer, and touch?
+6. Does it work in narrow or portrait geometry?
+
+Machine-specific behavior needs a documented profile and fallback. The current
+T480 configuration is reference data, not a reason to embed T480 identifiers in
+shared code.
+
+Changes that add a dependency must also update:
+
+- `DATA_SOURCES.md`;
+- the eventual package manifest;
+- missing-dependency UI;
+- installation and validation documentation.
+
 ## Shell validation
 
 For every changed shell script:

@@ -4,7 +4,8 @@
 
 This repository is the live development tree for SenomyOS, a custom Arch Linux
 desktop shell built with Hyprland and Eww. SenomyOS is not yet a full operating
-system distribution.
+system distribution, but becoming a reproducibly deployable operating-system
+product is the long-term goal.
 
 The design target is a dark, precise, terminal-inspired desktop shell with:
 
@@ -13,18 +14,23 @@ The design target is a dark, precise, terminal-inspired desktop shell with:
 - a separate full Performance Dashboard;
 - a separate Senomy Insights briefing surface;
 - dual-battery support;
-- safe system controls and truthful diagnostic information.
+- safe system controls and truthful diagnostic information;
+- adaptive pointer, keyboard, and touchscreen operation;
+- portable deployment across supported laptops, desktops, mini PCs, tablets,
+  and phone-sized Linux devices with minimal manual configuration.
 
 Read the documents in `docs/` before making structural changes. Start with:
 
-1. `docs/PRODUCT_SPEC.md`
-2. `docs/ARCHITECTURE.md`
-3. `docs/DESIGN_SYSTEM.md`
-4. `docs/DATA_SOURCES.md`
-5. `docs/DEVELOPMENT.md`
-6. `docs/IMPLEMENTATION_PLAN.md`
-7. `docs/DECISIONS.md`
-8. `docs/RUNTIME_INVENTORY.md`
+1. `docs/HANDBOOK.md`
+2. `docs/PRODUCT_SPEC.md`
+3. `docs/PLATFORM_STRATEGY.md`
+4. `docs/ARCHITECTURE.md`
+5. `docs/DESIGN_SYSTEM.md`
+6. `docs/DATA_SOURCES.md`
+7. `docs/DEVELOPMENT.md`
+8. `docs/IMPLEMENTATION_PLAN.md`
+9. `docs/DECISIONS.md`
+10. `docs/RUNTIME_INVENTORY.md`
 
 ## Workspace and live-state boundaries
 
@@ -88,6 +94,29 @@ Device Management replaces Performance in the Control Centre. It covers
 connected monitors, audio endpoints, input devices, batteries, network
 interfaces, and optional Bluetooth devices when a safe data source exists.
 
+## Deployment and portability are product requirements
+
+Every feature should move SenomyOS toward a deployable system rather than a
+single-machine dotfile collection.
+
+- Treat the current T480 as reference hardware, not the permanent target.
+- Separate portable defaults from machine-specific hardware profiles.
+- Prefer capability detection over model-name checks.
+- Keep user identity, home paths, monitor names, battery counts, interface
+  names, resolutions, and device IDs out of portable defaults.
+- Design for mouse, keyboard, and touch from the beginning.
+- Preserve usable layouts in landscape, portrait, narrow, and wide work areas.
+- Use larger touch targets and adequate spacing when a touch-oriented profile
+  is active.
+- Do not claim universal hardware support. Record unsupported hardware and
+  platform limitations honestly.
+- Keep packaging, installation, first-boot configuration, updates, rollback,
+  and recovery in the architecture even while the project is still a live
+  configuration.
+
+Read `docs/PLATFORM_STRATEGY.md` before introducing a machine-specific
+assumption or deployment mechanism.
+
 ## Existing functionality to preserve
 
 - `scripts/workspaces.sh` and `workspaces.service` are the stable workspace
@@ -110,10 +139,14 @@ commit.
 - Keep presentation separate from data collection and system actions.
 - Do not hard-code `/home/Duku`, monitor `0`, or a 1920x1080 coordinate when a
   relative, anchored, `$HOME`, or runtime-discovered alternative exists.
+- Route necessary hardware-specific values through documented profiles rather
+  than embedding them in shared components.
 - Keep the bar usable when one script, command, or hardware source fails.
 - Provide hover, active, disabled, loading, empty, warning, and error states.
 - Icon-only controls need tooltips or accessible labels and useful click
   targets.
+- Make primary controls usable by pointer, keyboard, and touch. Gesture-only
+  behavior must have a visible alternative.
 
 ### Shell and data
 

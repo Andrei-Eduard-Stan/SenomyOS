@@ -10,6 +10,44 @@ desktop has capabilities or knowledge that are not implemented.
 The first target is the user's 1920x1080 ThinkPad display, but layout decisions
 must adapt to narrower widths and other monitor configurations.
 
+## Product destination
+
+SenomyOS should ultimately be deployable as an Arch-based system, not only
+copied as personal configuration files.
+
+The product includes:
+
+- the base operating-system package selection;
+- Hyprland, Eww, services, fonts, and supporting commands;
+- SenomyOS configuration and assets;
+- hardware and form-factor detection or profiles;
+- installation and first-boot setup;
+- update, rollback, diagnostics, and recovery guidance;
+- a bootable installation or recovery path.
+
+The deployment experience should minimize machine-specific editing. Unsupported
+hardware must be reported plainly rather than hidden behind broken UI.
+
+## Supported interaction and form factors
+
+SenomyOS is designed for:
+
+- keyboard and mouse;
+- touchpads and pointing sticks;
+- touchscreen laptops and convertibles;
+- mini PCs and desktop monitors;
+- landscape and portrait work areas;
+- experimental tablets and phone-sized devices where mainline Linux,
+  Hyprland, Eww, and device drivers are viable.
+
+Phone-sized support is not a promise that every Android phone can run SenomyOS.
+Bootloader, kernel, modem, GPU, power-management, sensor, and input support vary
+by device. Compatibility must be expressed in tested tiers.
+
+All primary actions need a visible click/touch path and a keyboard path where
+GTK permits. Gestures may enhance an action but cannot be the only way to
+perform it.
+
 ## Primary surfaces
 
 ### 1. Main bar
@@ -178,9 +216,13 @@ surface.
 ## Accessibility
 
 - Keep visible text comfortably readable at laptop viewing distance.
-- Use at least 36x36 logical click targets for compact icon controls.
+- Use at least 36x36 logical click targets in pointer-dense mode and at least
+  44x44 in touch-oriented mode.
 - Give icon-only controls tooltips or accessible labels.
 - Do not rely on colour alone for active, warning, or disabled state.
 - Maintain visible keyboard focus where GTK provides it.
 - Keep semantic status language calm and direct.
 - Avoid motion that does not explain a state transition.
+- Keep controls reachable and panels inside safe work areas in portrait and
+  landscape orientations.
+- Do not depend on hover for essential information on touchscreen devices.

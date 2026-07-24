@@ -28,6 +28,31 @@ continuous workspace listener inside command substitution and waits forever.
 
 ## Target layers
 
+### Portable system layers
+
+SenomyOS should evolve into layers that can be deployed and tested
+independently:
+
+```text
+SenomyOS release
+├── Arch base and package manifest
+├── system services and policies
+├── compositor/session defaults
+├── SenomyOS Eww shell
+├── portable data and action scripts
+├── hardware capability detection
+├── hardware/form-factor profiles
+├── user preferences
+└── installer, update, rollback, and recovery tooling
+```
+
+Portable defaults must not contain the current username, home directory,
+monitor name, network interface, battery count, wallpaper path, or a single
+resolution.
+
+Machine-specific values belong in a generated or selected profile. Profiles
+should override the smallest possible set of defaults.
+
 ### Presentation layer
 
 ```text
@@ -93,6 +118,17 @@ settings
 
 Opening a surface is a single state transition, not a sequence of unrelated
 window flags. Visual active state is derived from this shared state.
+
+Adaptive state may include:
+
+```text
+layout_density = "compact" | "comfortable" | "touch"
+orientation = "landscape" | "portrait"
+form_factor = "desktop" | "laptop" | "tablet" | "phone"
+```
+
+These values should come from capability/profile data and work-area geometry,
+not from a hard-coded model name.
 
 ### Data layer
 
@@ -214,3 +250,25 @@ Use priority-based reduction:
 6. keep all panels inside the current monitor work area.
 
 The implementation should not assume the bar always has 1920 pixels.
+
+## Deployment architecture
+
+The current repository is the live development source. It should eventually
+produce installable artifacts rather than being copied directly into a fixed
+home directory.
+
+Target artifact classes:
+
+- package/service manifests;
+- versioned SenomyOS configuration packages;
+- default and hardware-profile packages;
+- installer or bootstrap tooling;
+- bootable installation/recovery images;
+- release metadata and migrations.
+
+The shell should follow XDG paths and resolve the active configuration at
+runtime. User-owned preferences must remain separate from packaged defaults so
+updates do not overwrite personal state.
+
+See `PLATFORM_STRATEGY.md` for the staged delivery model and compatibility
+tiers.

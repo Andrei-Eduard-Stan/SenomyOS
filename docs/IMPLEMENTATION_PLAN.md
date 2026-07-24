@@ -3,6 +3,9 @@
 Every stage should remain independently reviewable and recoverable. A stage is
 not complete until its diff and validation have been reported.
 
+Portability is evaluated during every stage, not postponed until packaging.
+The current T480 is the first validation machine.
+
 ## Stage 0 — Documentation baseline
 
 Goals:
@@ -172,6 +175,49 @@ Goals:
 - inspect idle resource consumption;
 - verify Eww logs and Hyprland errors;
 - update documentation and runtime inventory.
+
+## Stage 11 — Hardware and form-factor profiles
+
+Goals:
+
+- replace remaining monitor, path, interface, and battery assumptions;
+- generate normalized capability data;
+- define portable defaults and minimal overrides;
+- add desktop, laptop, touch, portrait, and narrow layout profiles;
+- test hot-plugged devices and missing hardware.
+
+## Stage 12 — Touch and convertible support
+
+Goals:
+
+- add touch-oriented density and targets;
+- ensure no essential action depends on hover;
+- support portrait and landscape transitions where the stack permits;
+- handle on-screen keyboard space;
+- evaluate optional gestures with visible alternatives;
+- document tested touchscreen hardware.
+
+## Stage 13 — Reproducible system deployment
+
+Goals:
+
+- define the Arch package and service manifests;
+- package SenomyOS configuration separately from user preferences;
+- create repeatable installation/bootstrap tooling;
+- create first-boot hardware/profile selection;
+- define configuration migrations and rollback;
+- verify deployment in a clean virtual machine before new hardware.
+
+## Stage 14 — Bootable release and compatibility tiers
+
+Goals:
+
+- produce a bootable installation/recovery image;
+- document installation, updates, recovery, and known limitations;
+- test representative laptop, desktop/mini-PC, and touch hardware;
+- define experimental ARM/tablet/phone work separately from supported x86_64
+  releases;
+- publish a compatibility matrix based on real tests.
 
 ## Commit strategy
 

@@ -62,8 +62,27 @@ secrets.
 | Packages | `paru -Qu` | manual or 30–60min | Never install automatically |
 | User services | `systemctl --user` | panel open / manual | Allowlist restart targets |
 | Logs | `journalctl --user` | manual | Limit lines and redact sensitive data |
+| Display geometry | `hyprctl -j monitors` | events / surface open | Drives responsive work area |
+| Input capabilities | `hyprctl -j devices`, optional libinput/udev data | login / device events | Prefer capabilities over model names |
+| Orientation | compositor/profile source | events when available | Fall back to configured profile |
 
 Optional commands must be checked with `command -v`.
+
+Hardware detection should produce normalized capabilities rather than branching
+the UI on a laptop model. Example capabilities include:
+
+```text
+has_touchscreen
+has_pointer
+has_keyboard
+has_battery
+battery_count
+has_bluetooth
+has_internal_display
+orientation_supported
+```
+
+Detection must tolerate devices appearing and disappearing at runtime.
 
 ## Existing verified commands
 
@@ -130,6 +149,10 @@ Device Management should normalize:
 
 Each device record should include a stable ID, display name, class, connection
 state, source, and supported safe actions.
+
+Portable code must not assume device identifiers such as `eDP-1`, `wlp3s0`,
+`BAT0`, or monitor `0`. Collectors translate discovered devices into normalized
+records, while hardware profiles may provide carefully scoped overrides.
 
 ## Process and service actions
 

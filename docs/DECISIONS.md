@@ -118,3 +118,40 @@ Windows remain inside the current monitor work area.
 
 Repository instructions, product decisions, data policy, and staged recovery
 workflow are documented before the live bar redesign begins.
+
+## D015 — Make SenomyOS a deployable operating-system product
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+The live Eww repository is the development starting point. The long-term output
+includes reproducible packages, services, profiles, installation, first boot,
+updates, rollback, and bootable recovery/installation artifacts.
+
+## D016 — Treat cross-device adaptability as a core requirement
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+The T480 is reference hardware rather than the permanent target. Portable
+defaults use capability detection and work-area geometry. Machine-specific
+values are isolated in small profiles.
+
+## D017 — Support touch as a first-class input mode
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+Primary actions must work by pointer, keyboard, and touch where the underlying
+stack permits. Touch layouts use larger targets, avoid hover dependencies, and
+adapt to portrait, narrow, and on-screen-keyboard constraints.
+
+## D018 — Express hardware support in tested tiers
+
+**Date:** 2026-07-24
+**Status:** Accepted
+
+Desktop and laptop support are the first stable targets. Touch and convertible
+support follow. Tablet, ARM, and phone-sized devices remain explicit
+compatibility tiers because kernels, bootloaders, GPUs, modems, sensors, and
+power management vary by device.

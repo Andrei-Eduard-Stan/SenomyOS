@@ -4,6 +4,9 @@ Last read-only verification: 2026-07-24.
 
 Runtime facts can change. Recheck them before relying on them for a mutation.
 
+The current T480 is the reference development machine, not the target hardware
+specification for SenomyOS.
+
 ## Paths
 
 ```text

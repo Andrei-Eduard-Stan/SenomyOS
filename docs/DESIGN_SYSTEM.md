@@ -100,7 +100,9 @@ Base spacing scale:
 Initial targets:
 
 - bar height: approximately 44px;
-- compact control click target: at least 36x36px;
+- compact pointer control target: at least 36x36px;
+- touch-oriented control target: at least 44x44px, preferably 48x48px for
+  frequently used actions;
 - bar outer padding: 8–12px;
 - Control Centre width: approximately 520–560px where space permits;
 - Control Centre gap above bar: 12–16px;
@@ -126,6 +128,9 @@ Do not wrap every control in a visible box. Active state may combine:
 - a subtle surface tint.
 
 Hover should not move surrounding content.
+
+Hover is supplementary. Active state, tooltips, and essential explanations
+must remain available on devices that do not provide hover.
 
 ## Control Centre
 
@@ -184,3 +189,36 @@ Use motion only to explain:
 
 Keep transitions subtle and short. Avoid glow pulses, constant animation, and
 decorative movement.
+
+## Adaptive and touch layouts
+
+SenomyOS uses one visual identity across input modes, but density may change.
+
+Pointer-dense mode:
+
+- compact bar;
+- smaller gaps;
+- tooltips on hover;
+- precise scroll and click behavior.
+
+Touch-oriented mode:
+
+- 44–48px primary targets;
+- more space between destructive and safe controls;
+- visible labels for ambiguous icons;
+- no hover-only content;
+- scrollable sections with comfortable edge padding;
+- drag and swipe only as optional shortcuts;
+- on-screen keyboard awareness;
+- panels constrained above system gesture or keyboard areas where known.
+
+Narrow portrait mode should prioritize:
+
+1. time, power, network, and navigation;
+2. Senomy status;
+3. abbreviated telemetry;
+4. overflow access to secondary controls.
+
+The Performance Dashboard may change from three columns to stacked sections on
+narrow or portrait displays. It must not merely shrink desktop typography until
+it becomes unreadable.

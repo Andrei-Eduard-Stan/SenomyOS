@@ -1,8 +1,13 @@
 # SenomyOS
 
 SenomyOS is a custom Arch Linux desktop shell built around Hyprland and Eww.
-It is currently a live desktop configuration, not yet a complete operating
-system distribution.
+It is currently a live desktop configuration, but the long-term target is a
+reproducibly deployable Arch-based operating-system experience.
+
+The intended product should install on supported laptops, desktops, mini PCs,
+touch devices, and eventually compatible phone-sized Linux hardware with as
+little manual configuration as practical. The current T480 is reference
+hardware, not the final hardware specification.
 
 The project is being revived around four coordinated surfaces:
 
@@ -54,6 +59,8 @@ known to deadlock.
 ## Documentation
 
 - [Product specification](docs/PRODUCT_SPEC.md)
+- [Project handbook](docs/HANDBOOK.md)
+- [Deployment and platform strategy](docs/PLATFORM_STRATEGY.md)
 - [Architecture and state model](docs/ARCHITECTURE.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Data sources and command policy](docs/DATA_SOURCES.md)
@@ -63,6 +70,21 @@ known to deadlock.
 - [Runtime inventory](docs/RUNTIME_INVENTORY.md)
 
 Anyone changing the live shell should read `AGENTS.md` first.
+
+## Long-term deliverables
+
+The project should grow in layers:
+
+1. a reliable portable shell configuration;
+2. declarative package and service manifests;
+3. hardware and form-factor profiles;
+4. an automated installer or reproducible system deployment;
+5. a bootable installation/recovery image;
+6. documented updates, rollback, diagnostics, and recovery.
+
+Pointer, keyboard, and touch interaction are product requirements. Phone-class
+support remains hardware-dependent and should be treated as an explicit
+compatibility tier rather than assumed to work everywhere.
 
 ## Development status
 
