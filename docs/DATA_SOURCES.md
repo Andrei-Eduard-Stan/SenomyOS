@@ -142,6 +142,24 @@ PulseAudio monitor sources are excluded from the user-facing input list.
 The script returns structured errors for missing dependencies, unavailable
 audio services, and malformed JSON.
 
+## Network status collector
+
+`scripts/network-status.sh` reads NetworkManager state through `nmcli` and
+emits schema version 1 JSON containing:
+
+- global state and connectivity;
+- networking and Wi-Fi radio state;
+- the primary non-loopback connection;
+- connected Wi-Fi and Ethernet summaries;
+- normalized device type, state, connection, IPv4 addresses, and gateway;
+- the complete interface inventory for Device Management.
+
+The collector is read-only. It never scans for networks, connects,
+disconnects, changes radios, or reads saved credentials.
+
+The script returns structured errors for missing dependencies and an
+unavailable NetworkManager service.
+
 ## Polling budget
 
 Persistent bar:

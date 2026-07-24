@@ -74,6 +74,8 @@ Progress:
   and load JSON;
 - `scripts/audio-status.sh` now provides validated output/input, volume, mute,
   route, and endpoint JSON;
+- `scripts/network-status.sh` now provides validated connectivity, primary
+  connection, Wi-Fi/Ethernet, address, and interface JSON;
 - Eww does not consume it yet.
 
 ## Stage 3 — Obsidian Rail main bar

@@ -162,6 +162,8 @@ revival/live
   without connecting it to the live bar.
 - The read-only `audio-status.sh` collector was added and validated against
   PipeWire without changing volume or routes.
+- The read-only `network-status.sh` collector was added and validated without
+  scanning, reconnecting, or reading saved credentials.
 
 ## Stage 1 tutorial: preserve and stabilize Hyprland
 
