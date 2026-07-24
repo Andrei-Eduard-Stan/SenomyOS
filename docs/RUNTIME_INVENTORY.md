@@ -53,17 +53,18 @@ The tracked and live Hyprland configs matched byte-for-byte at inspection.
 SHA-256:
 
 ```text
-e5fb0b065d36c29ae0621b14fa220ece28ebda593f52fd7882e630265f67c8e4
+00de8d34ad7084efcf83accade0a5be7217ea16e2f4eb77efefb902526c828e1
 ```
 
-The uncommitted compatibility changes:
+The compatibility changes were committed as `f9e1402`:
 
 - remove obsolete `dwindle:pseudotile`;
 - route Mod+J layout splitting through the new dispatcher;
 - use `suppress_event` window-rule syntax;
 - use `no_focus on` and `match:*` window-rule syntax.
 
-There is also an unrelated-looking added space before an early comment.
+The legacy update-loop autostart was removed as `547bab3`. The tracked and live
+files matched and Hyprland reported no errors after both commits.
 
 ## Verified tools
 
@@ -172,16 +173,20 @@ connected to Eww, and changed no network setting.
 
 ## Confirmed problems
 
-### Deadlocked update loop
+### Legacy update-loop process
 
-Hyprland starts `update-loop.sh`. That script runs the endless
-`workspaces.sh` inside command substitution and never completes its first loop.
+Hyprland no longer starts `update-loop.sh` in future sessions. The script runs
+the endless `workspaces.sh` inside command substitution and never completes its
+first loop.
 
 Inspection showed:
 
 - the correct systemd-managed workspace listener;
-- `update-loop.sh`;
+- an old current-session `update-loop.sh`;
 - a second `workspaces.sh` child blocked under the update loop.
+
+The old tree is intentionally left until logout/reboot. The systemd-managed
+workspace listener remains the correct path.
 
 ### Incomplete UI definitions
 

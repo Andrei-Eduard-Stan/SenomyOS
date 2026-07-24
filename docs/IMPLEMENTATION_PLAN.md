@@ -44,6 +44,13 @@ Runtime warning: changing the autostart line is safe for the current bar, but
 stopping the already-running stuck process is a separate action requiring
 notice.
 
+Progress:
+
+- completed in `f9e1402` and `547bab3`;
+- tracked and live Hyprland configs match and report no errors;
+- the old current-session process remains until logout/reboot by deliberate
+  safety choice.
+
 ## Stage 2 — Shared state and data foundation
 
 Goals:

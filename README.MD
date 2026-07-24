@@ -52,9 +52,10 @@ be compared and synchronized deliberately.
 └── docs/                    Product, architecture, design, and workflow docs
 ```
 
-The workspace listener and dual-battery collector are the strongest existing
-parts. The current Action Centre is incomplete, and the legacy update loop is
-known to deadlock.
+The workspace listener and dual-battery collector are the strongest original
+parts. The current Action Centre is incomplete. The legacy deadlocking update
+loop has been removed from future-session autostart; an old process may remain
+until the development session is logged out or rebooted.
 
 ## Documentation
 

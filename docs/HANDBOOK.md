@@ -152,6 +152,9 @@ revival/live
 - The Action Centre's undefined widgets and empty panels were confirmed.
 - The volume and Wi-Fi helper permission problem was confirmed.
 - The duplicate, deadlocked update loop was confirmed in the process tree.
+- Hyprland 0.55 compatibility was committed as `f9e1402`.
+- The deadlocked update-loop autostart was removed in `547bab3`; the old
+  current-session process is intentionally left for logout/reboot.
 - Obsidian Rail was selected for the main shell.
 - Cathedral Deck was reassigned to a separate Performance Dashboard.
 - Device Management replaced Performance in the Control Centre.
