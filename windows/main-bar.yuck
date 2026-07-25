@@ -1,9 +1,8 @@
 (defwindow main-bar
-  :geometry (geometry :x "0" :y "1040" :width "100%" :height "40px")
+  :geometry (geometry :x "0" :y "0" :width "100%" :height "44px" :anchor "bottom center")
   :stacking "fg"
   :monitor 0
   :exclusive true
-  :anchor "top center"
   :visible true
 
   (centerbox :class "bar" :orientation "h"
@@ -27,4 +26,3 @@
       (volume-button)
       (wifi-button)
       (battery-button))))
-         

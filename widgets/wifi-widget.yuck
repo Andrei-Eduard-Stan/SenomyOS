@@ -2,5 +2,10 @@
   (button
     :class "icon-button mainbar-wifi-button"
     :tooltip "Network controls"
-    :onclick "if [ \"$(eww get active_surface)\" = control ] && [ \"$(eww get control_section)\" = network ]; then eww update active_surface=none; else eww update active_surface=control control_section=network; eww open actioncenter >/dev/null 2>&1 || true; fi"
+    :timeout "2s"
+    :onclick {active_surface == "control"
+      ? (control_section == "network"
+        ? "eww update active_surface=none; eww close actioncenter"
+        : "eww update control_section=network")
+      : "eww update active_surface=control control_section=network; eww open actioncenter"}
     ""))

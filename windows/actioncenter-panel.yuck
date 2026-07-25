@@ -17,14 +17,13 @@
   :monitor 0
   :geometry (geometry
     :x "-12px"
-    :y "-52px"
-    :width "520px"
-    :height "360px"
+    :y "-60px"
+    :width "540px"
+    :height "380px"
     :anchor "bottom right")
   :stacking "overlay"
   :focusable false
   :exclusive false
-  :visible {active_surface == "control"}
 
   (box
     :class "control-centre"
@@ -41,65 +40,72 @@
       (box :hexpand true)
       (button
         :class "control-close"
-        :onclick "eww update active_surface=none"
+        :tooltip "Close Control Centre"
+        :onclick "eww update active_surface=none; eww close actioncenter"
         ""))
 
     (box
-      :class "control-tabs"
-      :spacing 8
-
-      (button
-        :class {control_section == "overview"
-          ? "control-tab active"
-          : "control-tab"}
-        :onclick "eww update control_section=overview"
-        "Overview")
-
-      (button
-        :class {control_section == "audio"
-          ? "control-tab active"
-          : "control-tab"}
-        :onclick "eww update control_section=audio"
-        "Audio")
-
-      (button
-        :class {control_section == "network"
-          ? "control-tab active"
-          : "control-tab"}
-        :onclick "eww update control_section=network"
-        "Network")
-
-      (button
-        :class {control_section == "devices"
-          ? "control-tab active"
-          : "control-tab"}
-        :onclick "eww update control_section=devices"
-        "Devices"))
-
-    (box
-      :class "control-body"
+      :class "control-content"
       :vexpand true
 
       (box
-        :visible {control_section == "overview"}
-        (control-placeholder
-          :title "Overview"
-          :detail "System controls and concise status will live here."))
+        :class "control-tabs"
+        :orientation "v"
+        :spacing 4
+
+        (button
+          :class {control_section == "overview"
+            ? "control-tab active"
+            : "control-tab"}
+          :onclick "eww update control_section=overview"
+          "  Overview")
+
+        (button
+          :class {control_section == "network"
+            ? "control-tab active"
+            : "control-tab"}
+          :onclick "eww update control_section=network"
+          "  Network")
+
+        (button
+          :class {control_section == "audio"
+            ? "control-tab active"
+            : "control-tab"}
+          :onclick "eww update control_section=audio"
+          "  Audio")
+
+        (button
+          :class {control_section == "devices"
+            ? "control-tab active"
+            : "control-tab"}
+          :onclick "eww update control_section=devices"
+          "  Devices"))
 
       (box
-        :visible {control_section == "audio"}
-        (control-placeholder
-          :title "Audio"
-          :detail "Outputs, inputs, volume and routing are coming next."))
+        :class "control-body"
+        :vexpand true
+        :hexpand true
 
-      (box
-        :visible {control_section == "network"}
-        (control-placeholder
-          :title "Network"
-          :detail "Connectivity, interfaces and Wi-Fi controls are coming next."))
+        (box
+          :visible {control_section == "overview"}
+          (control-placeholder
+            :title "Overview"
+            :detail "System controls and concise status will live here."))
 
-      (box
-        :visible {control_section == "devices"}
-        (control-placeholder
-          :title "Device Management"
-          :detail "Displays, audio endpoints, inputs and connected hardware will appear here.")))))
+        (box
+          :visible {control_section == "audio"}
+          (control-placeholder
+            :title "Audio"
+            :detail "Outputs, inputs, volume and routing are coming next."))
+
+        (box
+          :visible {control_section == "network"}
+          (control-placeholder
+            :title "Network"
+            :detail "Connectivity, interfaces and Wi-Fi controls are coming next."))
+
+        (box
+          :visible {control_section == "devices"}
+          (control-placeholder
+            :title "Device Management"
+            :detail "Displays, audio endpoints, inputs and connected hardware will appear here."))))))

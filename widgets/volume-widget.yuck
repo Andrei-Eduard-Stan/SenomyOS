@@ -2,5 +2,10 @@
   (button
     :class "icon-button"
     :tooltip "Audio controls"
-    :onclick "if [ \"$(eww get active_surface)\" = control ] && [ \"$(eww get control_section)\" = audio ]; then eww update active_surface=none; else eww update active_surface=control control_section=audio; eww open actioncenter >/dev/null 2>&1 || true; fi"
+    :timeout "2s"
+    :onclick {active_surface == "control"
+      ? (control_section == "audio"
+        ? "eww update active_surface=none; eww close actioncenter"
+        : "eww update control_section=audio")
+      : "eww update active_surface=control control_section=audio; eww open actioncenter"}
     ""))
