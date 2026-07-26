@@ -277,13 +277,27 @@ Open both Hyprland files again and remove this exact line:
 exec-once = sleep 1 && bash ~/.config/eww/update-loop.sh &
 ```
 
-Do not remove:
+Preserve the workspace service, but start it only after importing the current
+Hyprland session environment:
 
 ```text
-exec-once = systemctl --user start workspaces.service
+exec-once = systemctl --user import-environment XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE WAYLAND_DISPLAY DISPLAY && systemctl --user restart workspaces.service
 ```
 
-That service is the correct workspace path.
+The ordered restart matters because the enabled user service may already be
+running from `default.target`; a plain `start` would leave it with a stale or
+missing Hyprland instance signature.
+
+Eww startup must also wait for the daemon IPC socket:
+
+```text
+exec-once = ~/.config/eww/scripts/start-eww.sh
+```
+
+`scripts/start-eww.sh` starts one daemon, waits until `eww ping` succeeds, and
+only then opens `main-bar`. Do not replace it with a backgrounded `eww daemon`
+followed immediately by `eww open`; that can leave the visible bar disconnected
+from the daemon receiving updates.
 
 Removing an `exec-once` line does not stop an already-running process. It only
 prevents the legacy loop from starting in a future session.

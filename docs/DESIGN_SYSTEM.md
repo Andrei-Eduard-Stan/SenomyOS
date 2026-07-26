@@ -121,6 +121,10 @@ The bar has three visual groups:
 2. telemetry;
 3. controls and clock.
 
+The clock is a compact two-row control with time above the short date. Battery
+text and symbols use the same primary control scale as adjacent audio and
+network controls; secondary clock date text may use the metadata scale.
+
 Do not wrap every control in a visible box. Active state may combine:
 
 - accent icon/text;

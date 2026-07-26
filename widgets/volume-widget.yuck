@@ -5,7 +5,7 @@
     :timeout "2s"
     :onclick {active_surface == "control"
       ? (control_section == "audio"
-        ? "eww update active_surface=none; eww close actioncenter"
-        : "eww update control_section=audio")
-      : "eww update active_surface=control control_section=audio; eww open actioncenter"}
+        ? "${EWW_CMD} update active_surface=none; ${EWW_CMD} close actioncenter"
+        : "${EWW_CMD} update control_section=audio")
+      : "${EWW_CMD} update active_surface=control control_section=audio; ${EWW_CMD} open actioncenter"}
     ""))

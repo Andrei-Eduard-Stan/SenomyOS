@@ -15,10 +15,13 @@
 
 ; Variables --
 (defpoll time :interval "60s" "date +%H:%M")
-(defpoll date :interval "60s" "date +%a, %d %b")
-(defpoll batt_json :interval "10s" "~/.config/eww/scripts/battery.sh")
-(defpoll system_status :interval "2s" "$HOME/.config/eww/scripts/system-status.sh")
+(defpoll date :interval "60s" "date '+%a, %d %b'")
+(defpoll batt_json
+  :interval "10s"
+  :initial "{\"dual\":false,\"bat0_percent\":0,\"bat0_icon\":\"\",\"bat1_percent\":0,\"bat1_icon\":\"\",\"percent_total\":0,\"total_icon\":\"\",\"state\":\"loading\"}"
+  "~/.config/eww/scripts/battery.sh")
+(defpoll system_status :interval "2s" :initial "{}" "$HOME/.config/eww/scripts/system-status.sh")
 (defvar workspaces "")
 (defvar active_surface "none") ; none|control|performance|insights
-(defvar control_section "overview") ; overview|audio|network|devices
+(defvar control_section "overview") ; overview|network|audio|power|calendar|input|devices|apps|settings
 (defvar chibi_state "idle")

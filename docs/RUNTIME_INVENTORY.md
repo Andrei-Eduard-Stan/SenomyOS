@@ -1,6 +1,6 @@
 # SenomyOS Runtime Inventory
 
-Last read-only verification: 2026-07-24.
+Last read-only verification: 2026-07-25.
 
 Runtime facts can change. Recheck them before relying on them for a mutation.
 
@@ -32,8 +32,9 @@ The branch was created while carrying one pre-existing uncommitted change:
 ## Versions and live state
 
 ```text
-Eww:        0.5.0
-Hyprland:   0.55.2
+Eww package: 0.6.0-1
+Eww binary:  0.5.0 (d87c2fdbfdc012e76d229e4e9ea3325bc0f23e89)
+Hyprland:    0.56.0
 Monitor:    eDP-1, 1920x1080, approximately 60Hz, scale 1
 Eww window: main-bar
 ```
@@ -42,9 +43,16 @@ At inspection:
 
 - `hyprctl configerrors` returned no errors;
 - `workspaces.service` was active;
-- workspace state was `1 2 [3]`;
+- workspace state was `1 [2] 3`;
 - the dual-battery JSON updated successfully;
-- the Eww log file was empty.
+- the tracked and live Hyprland configs matched;
+- one Eww daemon owned the 44px `main-bar`;
+- Hyprland reported the bar at `y=1036` on the 1080px display with exactly
+  44px reserved at the bottom.
+
+The installed Eww package metadata and binary self-reported version disagree.
+The current AUR package builds the displayed binary commit, so SenomyOS treats
+the binary behavior as the compatibility target until packaging is corrected.
 
 ## Hyprland compatibility baseline
 
@@ -53,7 +61,7 @@ The tracked and live Hyprland configs matched byte-for-byte at inspection.
 SHA-256:
 
 ```text
-00de8d34ad7084efcf83accade0a5be7217ea16e2f4eb77efefb902526c828e1
+f7f802835432375c9afe8dc7e6e33cd4426cda3c8c97549c76e5a8077b86f7c1
 ```
 
 The compatibility changes were committed as `f9e1402`:
@@ -65,6 +73,14 @@ The compatibility changes were committed as `f9e1402`:
 
 The legacy update-loop autostart was removed as `547bab3`. The tracked and live
 files matched and Hyprland reported no errors after both commits.
+
+The 2026-07-25 runtime repair also:
+
+- removed the obsolete manual 40px bottom reservation;
+- imports the Hyprland session environment before restarting
+  `workspaces.service`;
+- starts Eww through `scripts/start-eww.sh`, which waits for the daemon IPC
+  socket before opening `main-bar`.
 
 ## Verified tools
 
@@ -89,19 +105,19 @@ ps
 free
 uptime
 fc-match
+rg
+less
 ```
 
 Missing at inspection:
 
 ```text
 gh
-rg
-less
 checkupdates
 yay
 ```
 
-Use `git --no-pager`. Use `grep`/`find` when `rg` remains unavailable.
+Use `git --no-pager`. Prefer `rg` for repository searches.
 
 Installed relevant fonts:
 
@@ -118,8 +134,9 @@ Installed relevant fonts:
 /home/Duku/.config/eww/scripts/workspaces.sh
 ```
 
-It builds a stable `1 2 [3]` style string and only updates Eww when the value
-changes.
+It builds a stable `1 2 [3]` style string, updates Eww when the value changes,
+and periodically republishes the current value so it recovers after an Eww
+reload.
 
 ### Dual-battery collector
 
@@ -142,7 +159,8 @@ generated valid compact JSON.
 - invalid-sample-delay error validation;
 - missing-`jq` error validation.
 
-It is not yet connected to Eww and has no live polling cost.
+It is connected to Eww as `system_status` and currently polls every two seconds
+for the bar telemetry.
 
 ### Portable audio summary
 
@@ -173,34 +191,35 @@ connected to Eww, and changed no network setting.
 
 ## Confirmed problems
 
-### Legacy update-loop process
+### Resolved startup races
 
-Hyprland no longer starts `update-loop.sh` in future sessions. The script runs
-the endless `workspaces.sh` inside command substitution and never completes its
-first loop.
+The legacy `update-loop.sh` is no longer running. Only the systemd-managed
+`scripts/workspaces.sh` process remains.
 
-Inspection showed:
+The workspace service previously started before Hyprland and missed
+`HYPRLAND_INSTANCE_SIGNATURE`. The Hyprland startup command now imports the
+session environment and restarts the already-enabled service in one ordered
+command.
 
-- the correct systemd-managed workspace listener;
-- an old current-session `update-loop.sh`;
-- a second `workspaces.sh` child blocked under the update loop.
+Eww previously started `daemon` in the background immediately before `open`,
+which could split the daemon and visible bar into disconnected processes.
+`scripts/start-eww.sh` now waits for `eww ping` before opening the bar.
 
-The old tree is intentionally left until logout/reboot. The systemd-managed
-workspace listener remains the correct path.
+### Planned UI content
 
-### Incomplete UI definitions
-
-- `windows/battery-panel.yuck` is empty.
-- `windows/clock-panel.yuck` is empty.
-- `windows/actioncenter-panel.yuck` references undefined
-  `actioncenter-main`, `volume-panel`, `wifi-panel`, and `battery-panel`
-  widgets.
-- the volume button opens an undefined `volume-popup`.
+- The Control Centre shell exposes all nine approved sections, but their bodies
+  remain honest planned placeholders.
+- The battery control opens Power; the two-row clock opens Calendar.
+- `windows/battery-panel.yuck` and `windows/clock-panel.yuck` remain empty
+  legacy files and are not used by the current Control Centre.
+- The CPU/MEM/UP group does not yet open the separate Performance Dashboard.
+- Senomy Insights does not yet have its dedicated trigger or surface.
 
 ### Helper file modes
 
 ```text
 scripts/battery.sh     755
+scripts/start-eww.sh   755
 scripts/workspaces.sh  755
 scripts/volume.sh      644
 scripts/wifi.sh        644
@@ -210,10 +229,8 @@ update-loop.sh         644
 The volume and Wi-Fi helpers work when invoked through Bash, but fail when
 executed directly.
 
-### Duplication and portability
+### Remaining duplication and portability work
 
-- Eww polls time and battery while the legacy update loop attempts to update
-  them too.
 - Hyprland starts both Hyprpaper and swww.
 - The wallpaper path is hard-coded.
 - Hyprland, the bar, and Action Centre use monitor/resolution-specific values.
@@ -223,6 +240,8 @@ executed directly.
 At inspection, these passed `bash -n`:
 
 - `scripts/battery.sh`
+- `scripts/start-eww.sh`
+- `scripts/system-status.sh`
 - `scripts/volume.sh`
 - `scripts/wifi.sh`
 - `scripts/workspaces.sh`

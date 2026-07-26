@@ -1,4 +1,17 @@
 (defwidget clock-button []
   (button
-  :class "icon-button"
-  (label :text {time})))
+    :class "icon-button clock-control"
+    :tooltip "Calendar"
+    :timeout "2s"
+    :onclick {active_surface == "control"
+      ? (control_section == "calendar"
+        ? "${EWW_CMD} update active_surface=none; ${EWW_CMD} close actioncenter"
+        : "${EWW_CMD} update control_section=calendar")
+      : "${EWW_CMD} update active_surface=control control_section=calendar; ${EWW_CMD} open actioncenter"}
+
+    (box
+      :class "clock-stack"
+      :orientation "v"
+      :space-evenly true
+      (label :class "clock-time" :text {time})
+      (label :class "clock-date" :text {date}))))

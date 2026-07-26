@@ -78,6 +78,10 @@ Right group:
 - Device Management;
 - settings where a separate entry remains useful.
 
+The clock uses two compact rows: local time above a short local date. Clicking
+it opens Calendar. Clicking the dual-battery control opens Power. Both controls
+follow the shared repeated-click-to-close and switch-in-place behavior.
+
 The bar must prioritize scanning and clickability over showing every possible
 metric. On narrower displays, secondary words disappear before essential
 status and controls.

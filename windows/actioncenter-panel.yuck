@@ -13,13 +13,29 @@
       :wrap true
       :text detail)))
 
+(defwidget control-tab [section text]
+  (button
+    :halign "start"
+    :class {control_section == section
+      ? "control-tab active"
+      : "control-tab"}
+    :onclick "${EWW_CMD} update control_section=${section}"
+    text))
+
+(defwidget control-section-placeholder [section title detail]
+  (box
+    :visible {control_section == section}
+    (control-placeholder
+      :title title
+      :detail detail)))
+
 (defwindow actioncenter
   :monitor 0
   :geometry (geometry
-    :x "-12px"
-    :y "-60px"
-    :width "540px"
-    :height "380px"
+    :x "0px"
+    :y "0px"
+    :width "750px"
+    :height "700px"
     :anchor "bottom right")
   :stacking "overlay"
   :focusable false
@@ -28,84 +44,97 @@
   (box
     :class "control-centre"
     :orientation "v"
-    :spacing 12
+    :space-evenly false
+    :spacing 0
 
     (box
       :class "control-header"
-      :spacing 8
+      :space-evenly false
+      :vexpand false
       (label
         :class "control-title"
         :xalign 0
+        :hexpand true
         :text "SENOMY CONTROL CENTRE")
-      (box :hexpand true)
       (button
         :class "control-close"
         :tooltip "Close Control Centre"
-        :onclick "eww update active_surface=none; eww close actioncenter"
+        :timeout "2s"
+        :onclick "${EWW_CMD} update active_surface=none; ${EWW_CMD} close actioncenter"
         ""))
 
     (box
       :class "control-content"
+      :space-evenly false
       :vexpand true
 
-      (box
-        :class "control-tabs"
-        :orientation "v"
-        :spacing 4
+      (scroll
+        :class "control-tabs-scroll"
+        :vscroll true
+        :hscroll false
+        :vexpand true
 
-        (button
-          :class {control_section == "overview"
-            ? "control-tab active"
-            : "control-tab"}
-          :onclick "eww update control_section=overview"
-          "  Overview")
+        (box
+          :class "control-tabs"
+          :orientation "v"
+          :spacing 4
 
-        (button
-          :class {control_section == "network"
-            ? "control-tab active"
-            : "control-tab"}
-          :onclick "eww update control_section=network"
-          "  Network")
-
-        (button
-          :class {control_section == "audio"
-            ? "control-tab active"
-            : "control-tab"}
-          :onclick "eww update control_section=audio"
-          "  Audio")
-
-        (button
-          :class {control_section == "devices"
-            ? "control-tab active"
-            : "control-tab"}
-          :onclick "eww update control_section=devices"
-          "  Devices"))
+          (control-tab :section "overview" :text "  Overview")
+          (control-tab :section "network" :text "  Network")
+          (control-tab :section "audio" :text "  Audio")
+          (control-tab :section "power" :text "  Power")
+          (control-tab :section "calendar" :text "  Calendar")
+          (control-tab :section "input" :text "  Input")
+          (control-tab :section "devices" :text "  Devices")
+          (control-tab :section "apps" :text "  Applications")
+          (control-tab :section "settings" :text "  Settings")))
 
       (box
         :class "control-body"
         :vexpand true
         :hexpand true
 
-        (box
-          :visible {control_section == "overview"}
-          (control-placeholder
-            :title "Overview"
-            :detail "System controls and concise status will live here."))
+        (control-section-placeholder
+          :section "overview"
+          :title "Overview"
+          :detail "Planned: concise status and the most useful system controls.")
 
-        (box
-          :visible {control_section == "audio"}
-          (control-placeholder
-            :title "Audio"
-            :detail "Outputs, inputs, volume and routing are coming next."))
+        (control-section-placeholder
+          :section "network"
+          :title "Network"
+          :detail "Planned: connectivity, interfaces and Wi-Fi controls.")
 
-        (box
-          :visible {control_section == "network"}
-          (control-placeholder
-            :title "Network"
-            :detail "Connectivity, interfaces and Wi-Fi controls are coming next."))
+        (control-section-placeholder
+          :section "audio"
+          :title "Audio"
+          :detail "Planned: outputs, inputs, volume and routing.")
 
-        (box
-          :visible {control_section == "devices"}
-          (control-placeholder
-            :title "Device Management"
-            :detail "Displays, audio endpoints, inputs and connected hardware will appear here."))))))
+        (control-section-placeholder
+          :section "power"
+          :title "Power"
+          :detail "Planned: dual-battery details, charging state and power controls.")
+
+        (control-section-placeholder
+          :section "calendar"
+          :title "Calendar"
+          :detail "Planned: date, calendar and time-related controls.")
+
+        (control-section-placeholder
+          :section "input"
+          :title "Input"
+          :detail "Planned: keyboard layout, pointing devices and touch input.")
+
+        (control-section-placeholder
+          :section "devices"
+          :title "Device Management"
+          :detail "Planned: displays, audio endpoints, inputs and connected hardware.")
+
+        (control-section-placeholder
+          :section "apps"
+          :title "Applications"
+          :detail "Planned: background applications and system tray activity.")
+
+        (control-section-placeholder
+          :section "settings"
+          :title "Settings"
+          :detail "Planned: SenomyOS shell and system preferences.")))))

@@ -13,8 +13,30 @@
 
 .battery {
   background-color: transparent;
+  font-size: 17px;
+}
+
+.battery-control {
   padding: 0 8px;
+}
+
+.clock-control {
+  min-width: 92px;
+  padding: 0 8px;
+}
+
+.clock-stack {
+  padding: 2px 0;
+}
+
+.clock-time {
+  color: #f1f1f4;
   font-size: 13px;
+}
+
+.clock-date {
+  color: #92959f;
+  font-size: 9px;
 }
 
 .workspace-box {
@@ -57,8 +79,8 @@
 }
 
 .control-header {
-  min-height: 54px;
-  padding: 0 14px 0 20px;
+  min-height: 30px;
+  padding-left: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
@@ -68,8 +90,9 @@
 }
 
 .control-close {
-  min-width: 36px;
-  min-height: 36px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
   color: #92959f;
   font-size: 16px;
 }
@@ -83,15 +106,19 @@
   background-color: rgba(8, 9, 11, 0.34);
 }
 
-.control-tabs {
-  min-width: 148px;
-  padding: 12px 0;
+.control-tabs-scroll {
+  min-width: 170px;
   border-right: 1px solid rgba(255, 255, 255, 0.14);
 }
 
+.control-tabs {
+  min-width: 170px;
+  padding: 12px 0;
+}
+
 .control-tab {
-  min-height: 38px;
-  padding: 0 18px;
+  min-height: 40px;
+  padding: 0 12px;
   color: #b8bac2;
   border-left: 2px solid transparent;
 }
