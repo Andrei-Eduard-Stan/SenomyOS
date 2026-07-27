@@ -1,13 +1,11 @@
 (defwidget clock-button []
   (button
-    :class "icon-button clock-control"
+    :class {active_surface == "control" && control_section == "calendar"
+      ? "icon-button bar-control clock-control active"
+      : "icon-button bar-control clock-control"}
     :tooltip "Calendar"
     :timeout "2s"
-    :onclick {active_surface == "control"
-      ? (control_section == "calendar"
-        ? "${EWW_CMD} update active_surface=none; ${EWW_CMD} close actioncenter"
-        : "${EWW_CMD} update control_section=calendar")
-      : "${EWW_CMD} update active_surface=control control_section=calendar; ${EWW_CMD} open actioncenter"}
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control calendar"
 
     (box
       :class "clock-stack"

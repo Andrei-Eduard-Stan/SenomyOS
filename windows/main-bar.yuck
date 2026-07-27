@@ -5,24 +5,40 @@
   :exclusive true
   :visible true
 
-  (centerbox :class "bar" :orientation "h"
-    ;; left
+(centerbox
+  :class "bar"
+  :orientation "h"
+
+  ;; Left half of the bar
+  (centerbox
+    :class "mainbar-left"
+    :orientation "h"
+    :hexpand true
+
+    ;; Far left
     (box
-      :class "mainbar-left"
       :halign "start"
       :space-evenly false
       (workspace-indicator))
 
-    ;; center
-    (system-summary)
+    ;; Halfway between workspaces and system-summary
+    (senomy-status)
 
-    ;; right
-    (box
-      :class "mainbar-right"
-      :spacing 10
-      :halign "end"
-      :space-evenly false
-      (clock-button)
-      (volume-button)
-      (wifi-button)
-      (battery-button))))
+    ;; Empty right slot keeps Senomy centred in this half
+    (box))
+
+  ;; True centre of the entire bar
+  (system-summary)
+
+  ;; Far right
+  (box
+    :class "mainbar-right"
+    :spacing 10
+    :halign "end"
+    :space-evenly false
+    (system-tray)
+    (applications-button)
+    (volume-button)
+    (wifi-button)
+    (battery-button)
+    (clock-button))))

@@ -79,6 +79,14 @@ Progress:
 
 - `scripts/system-status.sh` now provides validated procfs CPU, memory, uptime,
   and load JSON;
+- `scripts/surface-state.sh` now centralizes allowlisted primary-surface
+  transitions and serializes rapid actions;
+- window instances are reconciled with `active_surface`, and
+  `scripts/reload-eww.sh` preserves validated surface, section, and Timeline
+  state across a verified full-daemon restart;
+- the replacement daemon starts its exact initial window set through one
+  `eww open-many` process, while the workspace publisher refuses to update an
+  absent daemon;
 - `scripts/audio-status.sh` now provides validated output/input, volume, mute,
   route, and endpoint JSON;
 - `scripts/network-status.sh` now provides validated connectivity, primary
@@ -114,6 +122,34 @@ Goals:
 - include source and freshness information.
 
 No package update count is shown until a successful update check exists.
+
+Progress:
+
+- the bar now has a replaceable Senomy identity/status trigger;
+- the dedicated Insights window participates in the shared primary-surface
+  state and cannot overlap the Control Centre;
+- the first briefing shows live procfs and UPower observations;
+- Insights exposes modular Briefing, Timeline, Updates, Diagnostics, and
+  Reports sections in one shared Obsidian Rail shell;
+- sections without safe connected sources show explicit planned, policy, or
+  not-connected states;
+- Timeline now reads bounded and sanitized User, System, Kernel, and Eww
+  sources with source-specific polling and a working Follow/Pause state;
+- Updates now provides separate manual official and AUR checks, a locked and
+  atomic local cache, source/freshness labels, bounded package lists, and
+  truthful never-checked, checking, ready, partial, unavailable, and error
+  states;
+- Diagnostics now provides six catalog-driven read-only tasks, exact operation
+  previews, explicit scopes and execution sources, a locked mode-0600 cache,
+  bounded sanitized output, and idle, running, complete, failed, timed-out,
+  unavailable, and cache-error states;
+- the Diagnostics runner revalidates task IDs and maps them to fixed argument
+  arrays; no arbitrary prompt, shell interpolation, privilege elevation, or
+  mutating command is connected;
+- package installation remains deliberately disconnected pending a separate
+  review and confirmation design;
+- temporary text marks reserve the avatar locations without committing
+  unfinished character artwork.
 
 ## Stage 5 — Control Centre shell and core sections
 
@@ -171,6 +207,14 @@ Goals:
 - link recommended actions to the appropriate safe surface;
 - avoid alarm fatigue and duplicated messages.
 
+Progress:
+
+- the manual, cached package-discovery foundation is implemented under the
+  Updates tab;
+- official and AUR checks remain separate so the external AUR disclosure is
+  explicit;
+- automatic schedules and installation are not connected.
+
 ## Stage 9 — Applications, Input, and Settings
 
 Goals:
@@ -180,6 +224,17 @@ Goals:
 - add safe preferences for SenomyOS presentation and polling;
 - keep settings separate from system-wide privileged configuration until a
   secure mechanism exists.
+
+Progress:
+
+- the persistent Rail now hosts native StatusNotifier items;
+- the Applications trigger opens the existing Control Centre on `apps`;
+- Flameshot is the first registry-backed managed background application;
+- its card distinguishes service, D-Bus, and tray evidence and exposes fixed
+  capture, launcher, configuration, start, and confirmed-stop actions;
+- the status collector runs only while Applications is visible;
+- arbitrary process enumeration and generic process termination remain outside
+  this section.
 
 ## Stage 10 — Hardening and responsive pass
 

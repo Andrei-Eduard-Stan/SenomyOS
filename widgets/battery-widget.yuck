@@ -1,13 +1,11 @@
 (defwidget battery-button []
   (button
-    :class "icon-button battery-control"
+    :class {active_surface == "control" && control_section == "power"
+      ? "icon-button bar-control battery-control active"
+      : "icon-button bar-control battery-control"}
     :tooltip "Power and battery details"
     :timeout "2s"
-    :onclick {active_surface == "control"
-      ? (control_section == "power"
-        ? "${EWW_CMD} update active_surface=none; ${EWW_CMD} close actioncenter"
-        : "${EWW_CMD} update control_section=power")
-      : "${EWW_CMD} update active_surface=control control_section=power; ${EWW_CMD} open actioncenter"}
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control power"
 
     (box :class "battery" :orientation "h" :space-evenly false
       ;; total battery

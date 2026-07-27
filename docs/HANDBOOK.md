@@ -416,6 +416,12 @@ Before reload:
 3. show the diff;
 4. warn that a parse failure could briefly remove the bar.
 
+Run the supported state-preserving reload:
+
+```bash
+~/.config/eww/scripts/reload-eww.sh
+```
+
 After an approved reload:
 
 ```bash
@@ -423,6 +429,22 @@ eww active-windows
 eww state
 eww logs
 ```
+
+Do not use raw `eww reload`. In Eww 0.5.0 it resets `defvar` values but may
+retain visible window instances, leaving state and panels detached. The
+supported helper closes the old window set, stops the daemon, starts exactly
+`main-bar` plus the remembered primary surface with `eww open-many`, verifies
+them, and restores the validated state.
+
+If a raw reload was run accidentally and IPC still responds, reconcile with:
+
+```bash
+~/.config/eww/scripts/surface-state.sh reconcile
+```
+
+If IPC does not respond, inspect the Eww process tree before recovery. Repeated
+`eww open` attempts can auto-start a second daemon while an orphaned GTK
+process still owns visible layers.
 
 Then visually verify the bar and panel behavior.
 

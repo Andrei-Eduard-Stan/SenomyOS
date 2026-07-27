@@ -136,7 +136,9 @@ Installed relevant fonts:
 
 It builds a stable `1 2 [3]` style string, updates Eww when the value changes,
 and periodically republishes the current value so it recovers after an Eww
-reload.
+restart. It now requires a successful `eww ping` before publishing, so a
+periodic workspace update cannot create a competing daemon while the shell is
+intentionally restarting.
 
 ### Dual-battery collector
 
@@ -207,19 +209,110 @@ which could split the daemon and visible bar into disconnected processes.
 
 ### Planned UI content
 
-- The Control Centre shell exposes all nine approved sections, but their bodies
-  remain honest planned placeholders.
+- The Control Centre shell exposes all nine approved sections. Applications is
+  implemented; the remaining section bodies stay honest planned placeholders.
+- Applications is now the first implemented Control Centre section. The
+  persistent Rail owns Eww's native StatusNotifier tray host, while the section
+  shows registry-backed managed application cards.
+- Flameshot 14.0.0 is installed, enabled through the linked
+  `flameshot.service` user unit, and verified as `Type=dbus` with
+  `org.flameshot.Flameshot`.
+- Live verification on 2026-07-27 observed Flameshot as systemd-active,
+  D-Bus-ready, and registered in Eww's tray watcher. The Applications poll
+  reported one running managed application and one native tray item.
+- Flameshot actions are fixed inside `scripts/background-apps-action.sh`.
+  Capture, launcher, configuration, and start are immediate explicit actions;
+  stop uses an Eww confirmation state that clears when the panel closes or the
+  selected section changes.
 - The battery control opens Power; the two-row clock opens Calendar.
+- The bar has a temporary Senomy identity mark and live status sentence.
+- Ambient personality lines come from a versioned dialogue catalog, remain
+  stable for 15-minute slots, and occasionally select an uncommon English/Latin
+  line. Verified low-power and unavailable-source messages take priority.
+- Senomy Insights opens as a separate surface with live procfs and UPower
+  observations plus an explicitly planned maintenance record.
+- Insights and the Control Centre follow the one-primary-surface rule.
+- Bar triggers and panel close buttons now route through
+  `scripts/surface-state.sh`. It validates section names, serializes
+  transitions, and reconciles window instances with `active_surface`.
+- `scripts/reload-eww.sh` is the supported state-preserving reload command.
+  It closes the old window set, stops the daemon, starts exactly `main-bar`
+  plus the remembered surface in one `eww open-many` process, verifies those
+  windows, and restores validated state. Raw `eww reload` is unsupported.
+- Eww 0.5.0 evaluates expressions inside hidden Updates error rows. Directly
+  indexing nullable `error` objects caused the application response channel to
+  fail while opening Insights. Those labels now use optional access and
+  fallbacks, and unsupported `wrap-mode`, `truncate`, and `sensitive`
+  attributes were removed.
+- Eww's automatic source watcher can still reset `defvar` values to defaults
+  while retaining an existing window instance. This was reproduced while
+  compacting Diagnostics and then reconciled through
+  `scripts/surface-state.sh`. The supported explicit full restart preserves
+  state; persistence across an unsolicited watch reload remains a separate
+  limitation.
+- Live coordinator validation on 2026-07-26 preserved
+  `active_surface=insights`, `control_section=network`,
+  `insights_section=updates`, `timeline_source=kernel`, and
+  `timeline_follow=false` across the supported restart. The final runtime had
+  one Eww process, one 1920x44 bar layer, and one 750x700 Insights layer.
+  Cross-surface switching, same-section close, the panel close action, and the
+  bar Insights toggle all preserved the one-primary-surface invariant.
+- The surface-state fixture covers ordering, cross-surface switching,
+  same-section close, full restart restoration, failed window queries, a
+  missing Performance window, and rejected non-allowlisted input.
+- Timeline can display up to 40 sanitized events from the user journal, system
+  journal, kernel journal, or current Eww log. Continued polling runs only for
+  the selected source while Timeline is visible and Follow is enabled.
+- Updates reads a local cache only while its tab is visible. Official and AUR
+  checks are separate manual actions; neither path installs packages.
+- `checkupdates` remains unavailable, so the verified official fallback is
+  `pacman -Qun` against the local sync databases. On 2026-07-26 that fallback
+  completed successfully with zero recorded updates; the newest local database
+  timestamp was 2026-07-25 00:30 local time.
+- During live panel verification on 2026-07-26, the dedicated AUR and official
+  actions were activated in sequence. The AUR query completed at 20:31:55 and
+  the official local-database query at 20:31:57; both returned zero updates.
+  The AUR result records the disclosed `aur.archlinux.org` query, and no
+  package-check process remained afterward.
+- Fixture validation additionally covered successful non-empty, malformed,
+  failed, partial, and truncated package result states without further network
+  disclosure.
+- Diagnostics exposes six read-only tasks from one internal catalog: failed
+  user units, the workspace listener, recent user warnings, memory pressure,
+  persistent filesystems, and the UPower inventory. The result poll reads only
+  `${XDG_CACHE_HOME:-$HOME/.cache}/senomyos/diagnostics.json`; tasks run only
+  after their dedicated button is activated.
+- The Diagnostics fixture covers exact argument forwarding, task-ID injection
+  rejection, mode-0600 cache writes, home-path normalization, credential-line
+  redaction, output truncation, missing dependencies, nonzero exits, timeout,
+  malformed cache input, and concurrent-run locking.
+- Live Diagnostics verification on 2026-07-26 ran the allowlisted
+  `workspace-service` task successfully. Eww consumed a `COMPLETE`, exit-0,
+  `systemctl-user` result containing 12 sanitized lines; the home path appeared
+  only as `$HOME`. The cache was mode `0600`, no task process remained, the
+  compact catalog left the terminal header and command visible in the initial
+  viewport, and the runtime retained one Eww process with one 1920x44 bar and
+  one 750x700 Insights layer.
+- Final Senomy chibi and full-avatar artwork is being developed separately;
+  current text marks are replaceable placeholders.
 - `windows/battery-panel.yuck` and `windows/clock-panel.yuck` remain empty
   legacy files and are not used by the current Control Centre.
 - The CPU/MEM/UP group does not yet open the separate Performance Dashboard.
-- Senomy Insights does not yet have its dedicated trigger or surface.
 
 ### Helper file modes
 
 ```text
 scripts/battery.sh     755
+scripts/background-apps-action.sh 755
+scripts/background-apps-status.sh 755
+scripts/diagnostics-status.sh 755
+scripts/reload-eww.sh  755
+scripts/senomy-dialogue.sh 755
 scripts/start-eww.sh   755
+scripts/surface-state.sh 755
+scripts/system-status.sh 755
+scripts/timeline-status.sh 755
+scripts/update-status.sh 755
 scripts/workspaces.sh  755
 scripts/volume.sh      644
 scripts/wifi.sh        644
@@ -240,8 +333,16 @@ executed directly.
 At inspection, these passed `bash -n`:
 
 - `scripts/battery.sh`
+- `scripts/background-apps-action.sh`
+- `scripts/background-apps-status.sh`
+- `scripts/diagnostics-status.sh`
+- `scripts/reload-eww.sh`
+- `scripts/senomy-dialogue.sh`
 - `scripts/start-eww.sh`
+- `scripts/surface-state.sh`
 - `scripts/system-status.sh`
+- `scripts/timeline-status.sh`
+- `scripts/update-status.sh`
 - `scripts/volume.sh`
 - `scripts/wifi.sh`
 - `scripts/workspaces.sh`

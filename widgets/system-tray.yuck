@@ -1,0 +1,20 @@
+(defwidget system-tray []
+  (box
+    :class "system-tray"
+    :space-evenly false
+    (systray
+      :orientation "h"
+      :space-evenly false
+      :spacing 6
+      :icon-size 17
+      :prepend-new false)))
+
+(defwidget applications-button []
+  (button
+    :class {active_surface == "control" && control_section == "apps"
+      ? "bar-control applications-trigger active"
+      : "bar-control applications-trigger"}
+    :tooltip "Applications and system tray"
+    :timeout "2s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control apps"
+    (label :text "")))

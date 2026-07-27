@@ -1,0 +1,138 @@
+(defwidget insight-row [state title detail source]
+  (box
+    :class "insight-row"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (label :class "insight-state" :xalign 0 :text state)
+    (label :class "insight-title" :xalign 0 :text title)
+    (label
+      :class "insight-detail"
+      :xalign 0
+      :width 500
+      :wrap true
+      :show-truncated false
+      :text detail)
+    (label :class "insight-source" :xalign 0 :text source)))
+
+(defwidget insights-section-heading [eyebrow title detail]
+  (box
+    :class "section-heading"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (label :class "section-eyebrow" :xalign 0 :text eyebrow)
+    (label :class "section-title" :xalign 0 :text title)
+    (label
+      :class "section-detail"
+      :xalign 0
+      :width 500
+      :wrap true
+      :show-truncated false
+      :text detail)))
+
+(defwidget insights-status-row [state title detail meta]
+  (box
+    :class "insights-status-row"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (label :class "insight-state" :xalign 0 :text state)
+    (label :class "insight-title" :xalign 0 :text title)
+    (label
+      :class "insight-detail"
+      :xalign 0
+      :width 500
+      :wrap true
+      :show-truncated false
+      :text detail)
+    (label :class "insight-source" :xalign 0 :text meta)))
+
+(defwidget insights-tab [section icon text]
+  (button
+    :halign "fill"
+    :class {insights_section == section
+      ? "insights-tab shell-tab active"
+      : "insights-tab shell-tab"}
+    :onclick "${EWW_CMD} update insights_section=${section}"
+    (box
+      :space-evenly false
+      :spacing 10
+      (label :class "shell-tab-icon" :text icon)
+      (label :class "shell-tab-label" :xalign 0 :text text))))
+
+(defwindow insights
+  :monitor 0
+  :geometry (geometry
+    :x "0px"
+    :y "12px"
+    :width "750px"
+    :height "700px"
+    :anchor "bottom left")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "insights-panel shell-panel"
+    :orientation "v"
+    :space-evenly false
+
+    (box
+      :class "insights-header shell-header"
+      :space-evenly false
+      :vexpand false
+      (label
+        :class "shell-header-mark insights-avatar-placeholder"
+        :text "S")
+      (box
+        :class "shell-heading"
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        (label
+          :class "shell-title"
+          :xalign 0
+          :text "SENOMY INSIGHTS")
+        (label
+          :class "shell-subtitle"
+          :xalign 0
+          :text "Evidence-based system operations"))
+      (button
+        :class "insights-close shell-close"
+        :tooltip "Close Senomy Insights"
+        :timeout "2s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh close insights"
+        ""))
+
+    (box
+      :class "insights-content shell-content"
+      :space-evenly false
+      :vexpand true
+
+      (box
+        :class "insights-tabs shell-nav"
+        :orientation "v"
+        :space-evenly false
+        :spacing 4
+        (insights-tab :section "briefing" :icon "" :text "Briefing")
+        (insights-tab :section "timeline" :icon "󰋚" :text "Timeline")
+        (insights-tab :section "updates" :icon "󰚰" :text "Updates")
+        (insights-tab :section "diagnostics" :icon "" :text "Diagnostics")
+        (insights-tab :section "reports" :icon "󰈙" :text "Reports"))
+
+      (scroll
+        :class "insights-body-scroll"
+        :vscroll true
+        :hscroll false
+        :vexpand true
+        :hexpand true
+        (box
+          :class "insights-body shell-body"
+          :vexpand true
+          :hexpand true
+          (box :visible {insights_section == "briefing"} (insights-briefing))
+          (box :visible {insights_section == "timeline"} (insights-timeline))
+          (box :visible {insights_section == "updates"} (insights-updates))
+          (box :visible {insights_section == "diagnostics"} (insights-diagnostics))
+          (box :visible {insights_section == "reports"} (insights-reports)))))))

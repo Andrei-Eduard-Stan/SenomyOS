@@ -1,2 +1,62 @@
+(defwidget workspace-app-icon [app]
+  (box
+    :class "workspace-app-icon"
+    :tooltip {app.count > 1
+      ? "${app.name} · ${app.count} windows"
+      : app.name}
+    :space-evenly false
+    :spacing 2
+
+    (image
+      :icon {app.icon}
+      :icon-size "14")
+
+    (label
+      :class "workspace-app-count"
+      :visible {app.count > 1}
+      :text {app.count})))
+
+(defwidget workspace-chip [workspace]
+  (box
+    :class {workspace.active
+      ? "workspace-chip active"
+      : (workspace.occupied
+        ? "workspace-chip occupied"
+        : "workspace-chip")}
+    :space-evenly false
+
+    (button
+      :class "workspace-number"
+      :tooltip {"Workspace ${workspace.id} · ${workspace.summary}"}
+      :timeout "1s"
+      :onclick "$HOME/.config/eww/scripts/workspace-action.sh switch ${workspace.id}"
+      (label :text {workspace.id}))
+
+    (box
+      :class "workspace-apps"
+      :visible {workspace.app_count > 0}
+      :space-evenly false
+      :spacing 4
+
+      (for app in {workspace.apps}
+        (workspace-app-icon :app app))
+
+      (label
+        :class "workspace-overflow"
+        :visible {workspace.overflow_count > 0}
+        :tooltip {"${workspace.overflow_count} additional applications"}
+        :text "+${workspace.overflow_count}"))))
+
 (defwidget workspace-indicator []
-  (label :class "workspace-box" :text {workspaces})) 
+  (box
+    :class "workspace-strip"
+    :space-evenly false
+    :spacing 4
+
+    (for workspace in {workspace_state?.data?.workspaces ?: []}
+      (workspace-chip :workspace workspace))
+
+    (label
+      :class "workspace-loading"
+      :visible {(workspace_state?.data?.workspaces ?: []) == []}
+      :text "WS --")))

@@ -179,6 +179,22 @@ Insights must never fabricate a diagnosis, update count, command result, or
 hardware condition. A missing source is a visible state, not a reason to invent
 content.
 
+Insights uses five stable sections:
+
+- **Briefing:** prioritized observations, evidence, freshness, and recommended
+  navigation;
+- **Timeline:** bounded, filtered system, application, shell, and SenomyOS
+  events;
+- **Updates:** successful package checks, source, age, review, and confirmed
+  installation flow;
+- **Diagnostics:** terminal-inspired allowlisted tasks with command preview and
+  bounded output, plus a path to a real terminal for arbitrary work;
+- **Reports:** previewed, redacted troubleshooting evidence and approved
+  export.
+
+Timeline does not silently record unrestricted user activity. Diagnostics does
+not expose an unrestricted shell or direct first-click `sudo` execution.
+
 ## Shared interaction model
 
 One primary surface is active at a time:

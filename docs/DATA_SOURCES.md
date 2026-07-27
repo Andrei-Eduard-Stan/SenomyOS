@@ -59,8 +59,10 @@ secrets.
 | Input devices | `hyprctl -j devices` | panel open / events | Redact nothing sensitive |
 | Temperatures | Eww built-ins or `sensors` | 3–5s while dashboard open | Show unavailable if unsupported |
 | Storage | `df`, optional SMART tooling | 30–60s / manual | SMART may require tools/privilege |
-| Packages | `paru -Qu` | manual or 30–60min | Never install automatically |
+| Official packages | `checkupdates`, fallback `pacman -Qun` | manual | Fallback uses potentially stale local databases |
+| AUR packages | `paru -Qua --nodevel` | explicit manual action | Sends installed foreign package names to AUR |
 | User services | `systemctl --user` | panel open / manual | Allowlist restart targets |
+| Background applications | user systemd, session D-Bus, StatusNotifierWatcher | 2s while Applications is visible | Registry is metadata; actions remain hard-coded |
 | Logs | `journalctl --user` | manual | Limit lines and redact sensitive data |
 | Display geometry | `hyprctl -j monitors` | events / surface open | Drives responsive work area |
 | Input capabilities | `hyprctl -j devices`, optional libinput/udev data | login / device events | Prefer capabilities over model names |
@@ -169,6 +171,8 @@ Persistent bar:
 - telemetry summary: 2–5s;
 - workspaces: preserve current listener until an event-driven replacement is
   proven better.
+- ambient Senomy dialogue: select from the local catalog every 15 minutes;
+  verified warnings override ambient dialogue in the presentation layer.
 
 Control Centre:
 
@@ -185,9 +189,124 @@ Performance Dashboard:
 
 Insights:
 
-- package checks: manual or long interval;
+- package source checks: explicit manual action;
+- update cache reads: 2s only while the Updates tab is visible;
 - maintenance and health summaries: derived from cached source records;
 - never run an AUR update check every few seconds.
+
+Applications:
+
+- the native Eww tray host remains instantiated by the persistent bar;
+- managed application status polls every two seconds only while Applications
+  is visible;
+- service state, application D-Bus readiness, and tray registration remain
+  separate evidence fields;
+- the registry supplies metadata only, while the action helper independently
+  allowlists every application and verb.
+
+## Senomy dialogue catalog
+
+`data/senomy-dialogue.json` contains versioned personality lines. Each record
+has a stable ID plus category, severity, rarity, language, tone, and text.
+Wording belongs in the catalog rather than in the selector.
+
+`scripts/senomy-dialogue.sh` validates the catalog and returns one normalized
+record. Selection remains stable within a 15-minute time slot so Eww reloads do
+not make the message flicker. One in five slots prefers the uncommon pool.
+
+Ambient selection never overrides verified critical, warning, recommended, or
+unavailable conditions. Those conditions are derived from successful system
+sources before the selected ambient line reaches the bar.
+
+## Insights timeline collector
+
+`scripts/timeline-status.sh` provides a bounded, read-only Timeline source.
+Its allowlisted modes are `user`, `system`, `kernel`, and `eww`.
+
+Journal records are reduced to an event ID, local date/time, normalized
+severity, source/unit, and message. Messages are capped at 240 characters,
+control characters are replaced, the current home path is normalized to
+`$HOME`, and entries containing obvious credential terms are redacted before
+they reach Eww state.
+
+Each result contains at most 40 entries by default and rejects limits above
+100. Eww maintains one source-specific poll per mode because Eww 0.5 poll
+commands cannot interpolate variables. `:run-while` ensures continued
+five-second polling applies only to the selected source while Insights
+Timeline is visible and Follow is enabled.
+
+## Insights updates collector
+
+`scripts/update-status.sh` maintains the schema-version-1 Updates cache at
+`${XDG_CACHE_HOME:-$HOME/.cache}/senomyos/updates.json`.
+
+The allowlisted actions are:
+
+- `read`: return the cache or a truthful `never_checked` envelope;
+- `check-official`: prefer `checkupdates`, otherwise run `pacman -Qun` against
+  the existing local sync databases;
+- `check-aur`: run `paru -Qua --nodevel` only after the dedicated AUR action.
+
+Official fallback results use the source name `pacman-local-db`, include the
+newest local sync-database timestamp, and always warn that the result may be
+stale. They are not described as a live repository check. AUR results use the
+source name `paru-aur` and retain a visible notice that the query sends
+installed foreign package names to `aur.archlinux.org`. `--nodevel` prevents
+additional VCS-remote probes during this check.
+
+Checks use a non-blocking `flock`, a timeout of 30 seconds by default, and an
+atomic temporary-file rename. Package output is accepted only in the
+`name current -> available` format. Displayed lists are capped at 100 entries
+per source by default while retaining the true parsed count and a truncation
+flag. Raw command errors, package-manager progress, credentials, and
+environment values never enter Eww state.
+
+The collector has no action for package installation, removal, system
+pacman-database synchronization, or privilege elevation.
+
+## Insights diagnostics runner
+
+`scripts/diagnostics-status.sh` owns both the Diagnostics task catalog and its
+schema-version-1 cache at
+`${XDG_CACHE_HOME:-$HOME/.cache}/senomyos/diagnostics.json`.
+
+Its allowlisted actions are:
+
+- `catalog`: return task metadata without executing a diagnostic;
+- `read`: return the current cache or a truthful idle envelope;
+- `run <task-id>`: execute exactly one built-in read-only task.
+
+The initial task IDs and operations are:
+
+- `failed-units`: `systemctl --user --failed --no-pager --plain`;
+- `workspace-service`:
+  `systemctl --user status workspaces.service --no-pager --lines=20`;
+- `recent-errors`:
+  `journalctl --user --priority=warning..alert --since=-30min --no-pager
+  --lines=40 --output=short-iso`;
+- `memory-pressure`: `free -h` plus a direct read of
+  `/proc/pressure/memory`;
+- `filesystems`: `df -h` with temporary, device, SquashFS, and EFI variable
+  filesystems excluded;
+- `power-inventory`: `upower -e`.
+
+The selected ID is looked up again inside the runner. Each external operation
+uses a fixed executable and argument array; there is no `eval`, `sh -c`,
+`bash -c`, free-form command input, `sudo`, or mutation action. Missing
+dependencies produce an explicit unavailable result.
+
+Only one task can run at a time. The default timeout is eight seconds and is
+rejected above 30 seconds. Captured output defaults to 60 lines of at most 240
+characters each, with hard configuration maxima of 100 lines and 500
+characters. Control characters are replaced, the user's home path is
+normalized to `$HOME`, and whole lines containing common credential terms are
+redacted before data reaches Eww. Cache replacement is atomic and the result
+file is mode `0600`.
+
+Eww polls the catalog hourly and the result cache once per second only while
+the Insights Diagnostics tab is visible. Polling reads local state; it never
+runs a task. The cache intentionally retains only the latest result rather
+than a command history.
 
 ## Device Management
 
@@ -230,8 +349,9 @@ or another known restart mechanism.
 
 ## Curated diagnostic console
 
-The dashboard console is a menu of safe diagnostic tasks, not arbitrary command
-execution.
+The Insights implementation above establishes the reusable console contract.
+The future Performance Dashboard console is likewise a menu of safe diagnostic
+tasks, not arbitrary command execution.
 
 Potential allowlisted tasks:
 

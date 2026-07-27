@@ -15,7 +15,7 @@ The stable data flows are:
 Hyprland
   └── workspaces.service
         └── scripts/workspaces.sh
-              └── eww update workspaces=...
+              └── eww ping, then eww update workspaces=...
 
 Eww batt_json poll
   └── scripts/battery.sh
@@ -116,8 +116,58 @@ apps
 settings
 ```
 
+Valid Senomy Insights sections:
+
+```text
+briefing
+timeline
+updates
+diagnostics
+reports
+```
+
 Opening a surface is a single state transition, not a sequence of unrelated
 window flags. Visual active state is derived from this shared state.
+
+`scripts/surface-state.sh` owns primary-surface transitions. Bar triggers and
+panel close buttons pass it only allowlisted verbs and section names. The
+helper serializes transitions with a runtime `flock`, validates existing Eww
+state, closes non-target windows, selects content while the state is `none`,
+opens and verifies the target window, and only then publishes the target
+`active_surface`. A failed Eww window query is an error, not evidence that a
+window is closed.
+
+Window lifecycle remains explicit. `active_surface` drives active styling and
+collector scope, while the coordinator makes the actual open window set match
+that state. Do not bind `defwindow :visible` to `active_surface`; mixing dynamic
+visibility with explicit `eww open`/`eww close` creates two competing lifecycle
+mechanisms.
+
+The supported reload path is:
+
+```text
+scripts/reload-eww.sh
+  └── scripts/surface-state.sh reload
+        ├── capture and validate surface/section state
+        ├── close all windows and stop the old daemon
+        ├── wait until old IPC is unavailable
+        ├── eww open-many with main-bar and the remembered surface
+        ├── wait for daemon IPC
+        ├── verify the exact initial window set
+        └── restore active, section, and Timeline state
+```
+
+The new Eww process must not inherit the transition lock descriptor.
+`scripts/workspaces.sh` pings Eww before publishing, so its periodic update
+cannot bootstrap a competing daemon during the intentional restart gap.
+
+`scripts/surface-state.sh reconcile` is the recovery operation when window
+instances and `active_surface` disagree. It never invents a missing
+Performance Dashboard; an unavailable target returns state to `none`.
+
+Raw `eww reload` is unsupported for this configuration. Eww 0.5.0 resets
+`defvar` values while it may retain window instances, which can detach visible
+panels from `active_surface`.
 
 Adaptive state may include:
 
@@ -148,9 +198,16 @@ Implemented collectors:
 - `system-status.sh` (validated, not yet connected to Eww)
 - `audio-status.sh` (validated, not yet connected to Eww)
 - `network-status.sh` (validated, not yet connected to Eww)
+- `background-apps-status.sh` (connected only while Applications is visible)
 
 Collectors must degrade independently. A network error cannot break the clock,
 bar, or battery display.
+
+The native StatusNotifier tray host lives in the persistent main bar. The
+Applications section does not create a second tray host; it combines an
+allowlisted registry with user-systemd, session D-Bus, and StatusNotifier
+evidence to present larger managed-application controls. Native application
+menus remain owned by their tray items.
 
 ### Action layer
 
@@ -220,6 +277,62 @@ Examples include:
 Insights consumes normalized summaries rather than re-running every source on
 each render. Expensive checks, such as package updates, use manual refresh or a
 long interval.
+
+The Insights window is a stable five-section shell. Section content remains
+modular under `sections/insights/`. Briefing may consume lightweight live
+sources. Timeline uses bounded and redacted readers. Updates caches successful
+checks. Diagnostics invokes only allowlisted tasks. Reports assemble
+previewable evidence from approved sources.
+
+Updates uses a command/cache split:
+
+```text
+Updates tab
+  ├── 2s run-while poll
+  │     └── scripts/update-status.sh read
+  │           └── $XDG_CACHE_HOME/senomyos/updates.json
+  ├── CHECK OFFICIAL
+  │     └── checkupdates, or local pacman -Qun fallback
+  └── CHECK AUR
+        └── paru -Qua --nodevel against aur.archlinux.org
+```
+
+The two checks are separate because the AUR query discloses installed foreign
+package names to an external service. Each check is manual, lock-protected,
+bounded by a timeout, parsed into a maximum-size structured list, and written
+atomically. The Eww poll reads only the local cache and never launches a
+package query by itself. No install, removal, system pacman-database
+synchronization, or privileged package command is connected to this collector.
+
+Diagnostics uses the same presentation/operation separation, with the task
+catalog acting as its policy boundary:
+
+```text
+Diagnostics tab
+  ├── hourly run-while catalog poll
+  │     └── scripts/diagnostics-status.sh catalog
+  ├── 1s run-while result poll
+  │     └── scripts/diagnostics-status.sh read
+  │           └── $XDG_CACHE_HOME/senomyos/diagnostics.json
+  └── selected task ID
+        └── scripts/diagnostics-status.sh run <allowlisted-id>
+              ├── resolve fixed executable and argument array
+              ├── execute under timeout and non-blocking lock
+              ├── sanitize and bound display output
+              └── atomically replace the mode-0600 result cache
+```
+
+The UI catalog and runner are generated from the same internal task records,
+but the runner independently validates every requested ID. Yuck never supplies
+an executable, argument, path, or shell fragment. The cache stores one current
+result, including its exact operation preview, execution source, scope,
+timestamps, exit state, truncation metadata, and sanitized line objects. It
+does not retain command history.
+
+This first implementation lives in Senomy Insights and provides six read-only
+system snapshots. A future Performance Dashboard may reuse the runner
+contract, but it must not bypass the catalog or turn it into an interactive
+PTY.
 
 An insight record should contain:
 

@@ -1,0 +1,34 @@
+(defwidget insights-briefing []
+  (box
+    :class "insights-section"
+    :orientation "v"
+    :space-evenly false
+
+    (insights-section-heading
+      :eyebrow "CURRENT"
+      :title "Briefing"
+      :detail "Verified observations with source and freshness context.")
+
+    (insight-row
+      :state {system_status?.ok == true ? "INFORMATIONAL" : "UNAVAILABLE"}
+      :title "System activity"
+      :detail {system_status?.ok == true
+        ? "CPU ${round(system_status.data.cpu.percent, 0)}% // Memory ${round(system_status.data.memory.percent, 0)}% // Uptime ${system_status.data.uptime.human}"
+        : (system_status?.error?.message ?: "System status is still loading.")}
+      :source "SOURCE // procfs")
+
+    (insight-row
+      :state {batt_json.state == "loading"
+        ? "UNAVAILABLE"
+        : (batt_json.percent_total <= 20 ? "WARNING" : "INFORMATIONAL")}
+      :title "Power"
+      :detail {batt_json.state == "loading"
+        ? "Battery information is still loading."
+        : "${batt_json.percent_total}% combined // ${batt_json.state}"}
+      :source "SOURCE // UPower")
+
+    (insight-row
+      :state "PLANNED"
+      :title "Maintenance briefing"
+      :detail "Package, service and maintenance observations will appear after a successful check is connected."
+      :source "SOURCE // not connected")))

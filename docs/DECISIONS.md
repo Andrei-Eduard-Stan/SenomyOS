@@ -155,3 +155,94 @@ Desktop and laptop support are the first stable targets. Touch and convertible
 support follow. Tablet, ARM, and phone-sized devices remain explicit
 compatibility tiers because kernels, bootloaders, GPUs, modems, sensors, and
 power management vary by device.
+
+## D019 — Use a five-section Senomy Insights shell
+
+**Date:** 2026-07-26
+**Status:** Accepted
+
+Senomy Insights uses Briefing, Timeline, Updates, Diagnostics, and Reports.
+Timeline is bounded and source-filtered. Diagnostics is an allowlisted task
+runner rather than an unrestricted terminal. Arbitrary interactive commands
+belong in a real terminal, and privileged mutations require narrow
+authorization plus explicit confirmation.
+
+## D020 — Share one Obsidian Rail shell language
+
+**Date:** 2026-07-26
+**Status:** Accepted
+
+The Control Centre and Senomy Insights use the same panel, header, navigation,
+close-control, body-spacing, typography, border, hover, and active-state
+classes. Surface-specific classes add behavior or unique content rather than
+forking the visual theme.
+
+## D021 — Never query AUR silently
+
+**Date:** 2026-07-26
+**Status:** Accepted
+
+Official and AUR package checks are separate manual actions. The AUR action
+must disclose that it sends installed foreign package names to
+`aur.archlinux.org`. Opening Insights, switching tabs, polling Eww state, or
+checking only the local official package database must never trigger that
+network query. Package discovery remains separate from installation.
+
+## D022 — Centralize and reconcile primary-surface transitions
+
+**Date:** 2026-07-26
+**Status:** Accepted
+
+Bar triggers, close controls, reload restoration, and recovery use one
+allowlisted surface-state helper. `active_surface` remains the source of truth,
+and the helper makes explicit window instances match it. Activation opens and
+verifies a target before publishing it as active.
+
+Reload captures validated state, closes all windows, stops the daemon, and
+starts one replacement process with exactly `main-bar` plus the remembered
+surface through `eww open-many`. It then verifies the windows and restores
+state. Raw `eww reload` is unsupported because Eww 0.5.0 may reset `defvar`
+values while retaining visible window instances.
+
+Background Eww publishers must verify an existing daemon before updating and
+must never bootstrap one during the restart gap.
+
+## D023 — Hidden Yuck content must remain safe to evaluate
+
+**Date:** 2026-07-26
+**Status:** Accepted
+
+`:visible false` is presentation, not a guarantee that descendant expressions
+will not be evaluated. Every expression must tolerate loading, unavailable,
+and null data independently. Optional chaining and explicit fallbacks are
+required for optional collector fields; a hidden error row must not directly
+index a nullable error object.
+
+## D024 — Make the diagnostic catalog the execution boundary
+
+**Date:** 2026-07-26
+**Status:** Accepted
+
+Diagnostics accepts only a built-in task ID and maps it inside the runner to a
+fixed executable and argument array. The UI may display and request catalog
+records, but it never supplies executable names, arguments, paths, or shell
+fragments. Output is timeout-bounded, sanitized, and atomically cached with no
+history. This contract is reusable by Insights and the future Performance
+Dashboard without exposing an unrestricted shell.
+
+## D025 — Keep one persistent native tray host
+
+**Date:** 2026-07-27
+**Status:** Accepted
+
+The Obsidian Rail owns one persistent Eww `systray`, so native
+StatusNotifier icons and application-provided menus survive Control Centre
+closure. The Applications section represents the same user-facing background
+applications through larger managed cards rather than instantiating a second
+tray.
+
+Managed status combines allowlisted registry metadata with user-systemd,
+session D-Bus, and StatusNotifier evidence. Service activity, D-Bus readiness,
+and tray registration are not treated as interchangeable. Presentation invokes
+only fixed actions from an allowlisted helper, and stopping an application
+requires a visible confirmation state.

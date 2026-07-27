@@ -2,6 +2,7 @@
   (box
     :class "control-placeholder"
     :orientation "v"
+    :space-evenly false
     :spacing 8
     (label
       :class "control-placeholder-title"
@@ -10,20 +11,27 @@
     (label
       :class "control-placeholder-detail"
       :xalign 0
+      :limit-width 64
       :wrap true
       :text detail)))
 
-(defwidget control-tab [section text]
+(defwidget control-tab [section icon text]
   (button
-    :halign "start"
+    :halign "fill"
     :class {control_section == section
-      ? "control-tab active"
-      : "control-tab"}
-    :onclick "${EWW_CMD} update control_section=${section}"
-    text))
+      ? "control-tab shell-tab active"
+      : "control-tab shell-tab"}
+    :onclick "${EWW_CMD} update pending_action=none control_section=${section}"
+    (box
+      :space-evenly false
+      :spacing 10
+      (label :class "shell-tab-icon" :text icon)
+      (label :class "shell-tab-label" :xalign 0 :text text))))
 
 (defwidget control-section-placeholder [section title detail]
   (box
+    :halign "fill"
+    :valign "start"
     :visible {control_section == section}
     (control-placeholder
       :title title
@@ -33,7 +41,7 @@
   :monitor 0
   :geometry (geometry
     :x "0px"
-    :y "0px"
+    :y "12px"
     :width "750px"
     :height "700px"
     :anchor "bottom right")
@@ -42,34 +50,45 @@
   :exclusive false
 
   (box
-    :class "control-centre"
+    :class "control-centre shell-panel"
     :orientation "v"
     :space-evenly false
     :spacing 0
 
     (box
-      :class "control-header"
+      :class "control-header shell-header"
       :space-evenly false
       :vexpand false
       (label
-        :class "control-title"
-        :xalign 0
+        :class "shell-header-mark"
+        :text "")
+      (box
+        :class "shell-heading"
+        :orientation "v"
+        :space-evenly false
         :hexpand true
-        :text "SENOMY CONTROL CENTRE")
+        (label
+          :class "control-title shell-title"
+          :xalign 0
+          :text "SENOMY CONTROL CENTRE")
+        (label
+          :class "shell-subtitle"
+          :xalign 0
+          :text "Contextual system controls"))
       (button
-        :class "control-close"
+        :class "control-close shell-close"
         :tooltip "Close Control Centre"
         :timeout "2s"
-        :onclick "${EWW_CMD} update active_surface=none; ${EWW_CMD} close actioncenter"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh close control"
         ""))
 
     (box
-      :class "control-content"
+      :class "control-content shell-content"
       :space-evenly false
       :vexpand true
 
       (scroll
-        :class "control-tabs-scroll"
+        :class "control-tabs-scroll shell-nav"
         :vscroll true
         :hscroll false
         :vexpand true
@@ -79,18 +98,19 @@
           :orientation "v"
           :spacing 4
 
-          (control-tab :section "overview" :text "  Overview")
-          (control-tab :section "network" :text "  Network")
-          (control-tab :section "audio" :text "  Audio")
-          (control-tab :section "power" :text "  Power")
-          (control-tab :section "calendar" :text "  Calendar")
-          (control-tab :section "input" :text "  Input")
-          (control-tab :section "devices" :text "  Devices")
-          (control-tab :section "apps" :text "  Applications")
-          (control-tab :section "settings" :text "  Settings")))
+          (control-tab :section "overview" :icon "" :text "Overview")
+          (control-tab :section "network" :icon "" :text "Network")
+          (control-tab :section "audio" :icon "" :text "Audio")
+          (control-tab :section "power" :icon "" :text "Power")
+          (control-tab :section "calendar" :icon "" :text "Calendar")
+          (control-tab :section "input" :icon "" :text "Input")
+          (control-tab :section "devices" :icon "" :text "Devices")
+          (control-tab :section "apps" :icon "" :text "Applications")
+          (control-tab :section "settings" :icon "" :text "Settings")))
 
       (box
-        :class "control-body"
+        :class "control-body shell-body"
+        :space-evenly false
         :vexpand true
         :hexpand true
 
@@ -129,10 +149,7 @@
           :title "Device Management"
           :detail "Planned: displays, audio endpoints, inputs and connected hardware.")
 
-        (control-section-placeholder
-          :section "apps"
-          :title "Applications"
-          :detail "Planned: background applications and system tray activity.")
+        (applications-section)
 
         (control-section-placeholder
           :section "settings"

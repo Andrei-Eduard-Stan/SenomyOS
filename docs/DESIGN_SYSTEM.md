@@ -182,6 +182,11 @@ Critical styling is reserved for verified critical conditions.
 The mascot is an identity asset, not an emoji. Final artwork should be produced
 as a real raster asset sized for both the bar and Insights header.
 
+Bar dialogue uses a short `Seno:` speaker label followed by one concise line.
+Verified conditions outrank personality dialogue. Ambient lines may
+occasionally use uncommon English/Latin phrasing, but translations stay brief
+and the line must not imply a system fact that was not observed.
+
 ## Motion
 
 Use motion only to explain:

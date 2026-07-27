@@ -1,0 +1,28 @@
+(defwidget insights-reports []
+  (box
+    :class "insights-section"
+    :orientation "v"
+    :space-evenly false
+
+    (insights-section-heading
+      :eyebrow "EXPORT"
+      :title "Reports"
+      :detail "Assemble reproducible troubleshooting evidence from already-approved sources.")
+
+    (insights-status-row
+      :state "PLANNED"
+      :title "System report"
+      :detail "Versions, uptime, hardware summaries, services and recent bounded errors."
+      :meta "SCOPE // preview before collection")
+
+    (insights-status-row
+      :state "POLICY"
+      :title "Redaction"
+      :detail "Credentials, tokens, private environment variables and unrestricted logs are excluded."
+      :meta "PRIVACY // explicit")
+
+    (insights-status-row
+      :state "PLANNED"
+      :title "Export"
+      :detail "Review the complete report before writing or sharing an artifact."
+      :meta "ACTION // user approved")))

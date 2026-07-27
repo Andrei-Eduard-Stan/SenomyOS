@@ -125,13 +125,38 @@ Where practical, validate a copied configuration with an isolated Eww instance
 rather than disturbing the live daemon. Do not claim that `eww debug` validates
 unloaded on-disk edits; it primarily describes the running daemon state.
 
-After an approved live reload:
+For an approved live reload:
+
+```bash
+~/.config/eww/scripts/reload-eww.sh
+```
+
+After the helper returns successfully:
 
 ```bash
 eww active-windows
 eww state
 eww logs
 ```
+
+Use `scripts/reload-eww.sh` instead of raw `eww reload` during normal
+development. It captures validated state, closes the old windows, stops the
+daemon, starts one replacement with the exact remembered window set through
+`eww open-many`, verifies IPC/windows, and restores active, section, and
+Timeline state.
+
+Do not use raw `eww reload` for this configuration. Eww 0.5.0 can reset
+`defvar` state while retaining visible windows. If it was run accidentally and
+the daemon remains reachable, reconcile the retained instances with the reset
+state:
+
+```bash
+~/.config/eww/scripts/surface-state.sh reconcile
+```
+
+If IPC is no longer reachable, stop before starting another Eww command:
+inspect the exact Eww process tree and recover one daemon deliberately. Do not
+keep issuing `eww open`, because Eww may auto-start a second server.
 
 Verify the bar visually and test repeated-click and cross-surface switching.
 

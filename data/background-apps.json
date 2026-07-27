@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "apps": [
+    {
+      "id": "flameshot",
+      "name": "Flameshot",
+      "description": "Screenshot and annotation service",
+      "desktop_id": "org.flameshot.Flameshot.desktop",
+      "executable": "/usr/bin/flameshot",
+      "icon": "org.flameshot.Flameshot",
+      "unit": "flameshot.service",
+      "bus_name": "org.flameshot.Flameshot",
+      "tray_id": "flameshot",
+      "expects_tray": true
+    }
+  ]
+}
