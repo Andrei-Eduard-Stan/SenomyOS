@@ -1,7 +1,7 @@
 {
   "code": {
     "name": "Visual Studio Code",
-    "icon": "visual-studio-code"
+    "icon": "vscode"
   },
   "kitty": {
     "name": "Kitty",

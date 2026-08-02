@@ -1,0 +1,178 @@
+(defwidget performance-section-title [code title subtitle]
+  (box
+    :class "performance-section-title"
+    :space-evenly false
+    :spacing 10
+    (label :class "performance-section-code" :text code)
+    (box
+      :orientation "v"
+      :space-evenly false
+      :hexpand true
+      (label
+        :class "performance-section-label"
+        :xalign 0
+        :text title)
+      (label
+        :class "performance-section-subtitle"
+        :xalign 0
+        :visible {subtitle != ""}
+        :text subtitle))))
+
+(defwidget performance-stat-row [label value]
+  (box
+    :class "performance-stat-row"
+    :space-evenly false
+    (label
+      :class "performance-stat-label"
+      :xalign 0
+      :hexpand true
+      :text label)
+    (label
+      :class "performance-stat-value"
+      :xalign 1
+      :text value)))
+
+(defwidget performance-kpi [code label value detail tone]
+  (box
+    :class "performance-kpi ${tone}"
+    :orientation "v"
+    :space-evenly false
+    :hexpand true
+    (box
+      :class "performance-kpi-head"
+      :space-evenly false
+      (label :class "performance-kpi-code" :text code)
+      (label
+        :class "performance-kpi-label"
+        :xalign 1
+        :hexpand true
+        :text label))
+    (label
+      :class "performance-kpi-value"
+      :xalign 0
+      :text value)
+    (label
+      :class "performance-kpi-detail"
+      :xalign 0
+      :limit-width 34
+      :show-truncated true
+      :text detail)))
+
+(defwidget performance-meter [label value value_text tone]
+  (box
+    :class "performance-meter"
+    :orientation "v"
+    :space-evenly false
+    :spacing 6
+    (box
+      :space-evenly false
+      (label
+        :class "performance-meter-label"
+        :xalign 0
+        :hexpand true
+        :text label)
+      (label
+        :class "performance-meter-value"
+        :xalign 1
+        :text value_text))
+    (progress
+      :class "performance-meter-track ${tone}"
+      :value value)))
+
+(defwidget performance-history-bars [metric tone]
+  (box
+    :class "performance-history-chart"
+    :orientation "h"
+    :space-evenly false
+    :spacing 2
+    :hexpand true
+    :vexpand true
+
+    (box :class "performance-history-spacer" :hexpand true)
+
+    (label
+      :class "performance-history-empty"
+      :visible {(performance_history?.data?.samples ?: []) == []}
+      :text "ACQUIRING SAMPLES")
+
+    (for sample in {performance_history?.data?.samples ?: []}
+      (progress
+        :class "performance-history-bar ${tone}"
+        :orientation "v"
+        :flipped true
+        :value {metric == "cpu"
+          ? (sample.cpu_percent ?: 0)
+          : metric == "memory"
+            ? (sample.memory_percent ?: 0)
+            : metric == "temperature"
+              ? (sample.temperature_chart_percent ?: 0)
+              : metric == "load"
+                ? (sample.load_chart_percent ?: 0)
+                : metric == "disk-read"
+                  ? (sample.disk_read_chart_percent ?: 0)
+                  : metric == "disk-write"
+                    ? (sample.disk_write_chart_percent ?: 0)
+                    : metric == "disk-busy"
+                      ? (sample.disk_busy_percent ?: 0)
+                      : metric == "network-receive"
+                        ? (sample.network_receive_chart_percent ?: 0)
+                        : metric == "network-transmit"
+                          ? (sample.network_transmit_chart_percent ?: 0)
+                          : metric == "cpu-pressure"
+                            ? (sample.cpu_pressure_percent ?: 0)
+                            : metric == "memory-pressure"
+                              ? (sample.memory_pressure_percent ?: 0)
+                              : (sample.io_pressure_percent ?: 0)}))))
+
+(defwidget performance-history-panel [code title metric tone value meta scale]
+  (box
+    :class "performance-history-panel ${tone}"
+    :orientation "v"
+    :space-evenly false
+    :hexpand true
+    :spacing 9
+
+    (box
+      :class "performance-history-heading"
+      :space-evenly false
+      (box
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        (label :class "performance-history-code" :xalign 0 :text code)
+        (label :class "performance-history-title" :xalign 0 :text title))
+      (box
+        :orientation "v"
+        :space-evenly false
+        (label :class "performance-history-value" :xalign 1 :text value)
+        (label :class "performance-history-meta" :xalign 1 :text meta)))
+
+    (performance-history-bars :metric metric :tone tone)
+
+    (box
+      :class "performance-history-scale"
+      :space-evenly false
+      (label :hexpand true :xalign 0 :text "T-5:00")
+      (label :text scale)
+      (label :hexpand true :xalign 1 :text "NOW"))))
+
+(defwidget performance-notice [state title detail]
+  (box
+    :class "performance-notice ${state}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (label
+      :class "performance-notice-state"
+      :xalign 0
+      :text state)
+    (label
+      :class "performance-notice-title"
+      :xalign 0
+      :text title)
+    (label
+      :class "performance-notice-detail"
+      :xalign 0
+      :wrap true
+      :limit-width 58
+      :text detail)))

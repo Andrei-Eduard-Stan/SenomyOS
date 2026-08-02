@@ -1,0 +1,233 @@
+(defwidget performance-memory-page []
+  (scroll
+    :class "performance-page-scroll"
+    :vscroll true
+    :hscroll false
+    :vexpand true
+    :hexpand true
+
+    (box
+      :class "performance-page performance-memory-page"
+      :orientation "v"
+      :space-evenly false
+      :spacing 14
+
+      (box
+        :class "performance-kpi-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 10
+        (performance-kpi
+          :code "USED"
+          :label "PHYSICAL MEMORY"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.memory.used_bytes / 1073741824, 2)} GiB"
+            : "-- GiB"}
+          :detail {system_status?.ok == true
+            ? "${round(system_status.data.memory.percent, 1)}% committed to active use"
+            : "Memory source unavailable"}
+          :tone "memory")
+        (performance-kpi
+          :code "AVAIL"
+          :label "RECLAIMABLE"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.memory.available_bytes / 1073741824, 2)} GiB"
+            : "-- GiB"}
+          :detail "Kernel estimate available without swapping"
+          :tone "memory")
+        (performance-kpi
+          :code "SWAP"
+          :label "SWAP SPACE"
+          :value {system_status?.data?.memory?.swap?.available == true
+            ? "${round(system_status.data.memory.swap.used_bytes / 1073741824, 2)} GiB"
+            : "DISABLED"}
+          :detail {system_status?.data?.memory?.swap?.available == true
+            ? "${round(system_status.data.memory.swap.percent, 1)}% of swap used"
+            : "No configured swap area"}
+          :tone "swap")
+        (performance-kpi
+          :code "COMMIT"
+          :label "VIRTUAL COMMIT"
+          :value {system_status?.data?.memory?.commit?.available == true
+            ? "${round(system_status.data.memory.commit.percent, 1)}%"
+            : "UNAVAILABLE"}
+          :detail {system_status?.data?.memory?.commit?.available == true
+            ? "${round(system_status.data.memory.commit.committed_bytes / 1073741824, 1)} / ${round(system_status.data.memory.commit.limit_bytes / 1073741824, 1)} GiB"
+            : "Commit accounting unavailable"}
+          :tone "commit"))
+
+      (box
+        :class "performance-chart-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+        (performance-history-panel
+          :code "01"
+          :title "PHYSICAL MEMORY USE"
+          :metric "memory"
+          :tone "memory"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.memory.percent, 1)}%"
+            : "--%"}
+          :meta {system_status?.ok == true
+            ? "${round(system_status.data.memory.total_bytes / 1073741824, 1)} GiB INSTALLED"
+            : "TOTAL --"}
+          :scale "0 - 100%")
+        (performance-history-panel
+          :code "02"
+          :title "MEMORY STALL PRESSURE"
+          :metric "memory-pressure"
+          :tone "pressure"
+          :value "${round(system_status?.data?.pressure?.memory?.full_avg10 ?: 0, 2)}%"
+          :meta "PSI FULL / 10 SECOND AVG"
+          :scale "0 - 100%"))
+
+      (box
+        :class "performance-detail-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "03"
+            :title "MEMORY COMPOSITION"
+            :subtitle "Categories are independent and may overlap")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 10
+            (performance-meter
+              :label "Anonymous pages"
+              :value {system_status?.ok == true
+                ? system_status.data.memory.anonymous_bytes * 100 / system_status.data.memory.total_bytes
+                : 0}
+              :value_text {system_status?.ok == true
+                ? "${round(system_status.data.memory.anonymous_bytes / 1073741824, 2)} GiB"
+                : "--"}
+              :tone "memory")
+            (performance-meter
+              :label "Page cache + reclaimable"
+              :value {system_status?.ok == true
+                ? system_status.data.memory.cache_bytes * 100 / system_status.data.memory.total_bytes
+                : 0}
+              :value_text {system_status?.ok == true
+                ? "${round(system_status.data.memory.cache_bytes / 1073741824, 2)} GiB"
+                : "--"}
+              :tone "cache")
+            (performance-meter
+              :label "Shared memory"
+              :value {system_status?.ok == true
+                ? system_status.data.memory.shared_bytes * 100 / system_status.data.memory.total_bytes
+                : 0}
+              :value_text {system_status?.ok == true
+                ? "${round(system_status.data.memory.shared_bytes / 1073741824, 2)} GiB"
+                : "--"}
+              :tone "shared")
+            (performance-meter
+              :label "Kernel slab"
+              :value {system_status?.ok == true
+                ? system_status.data.memory.slab_bytes * 100 / system_status.data.memory.total_bytes
+                : 0}
+              :value_text {system_status?.ok == true
+                ? "${round(system_status.data.memory.slab_bytes / 1048576, 1)} MiB"
+                : "--"}
+              :tone "system")
+            (performance-meter
+              :label "Buffers"
+              :value {system_status?.ok == true
+                ? system_status.data.memory.buffers_bytes * 100 / system_status.data.memory.total_bytes
+                : 0}
+              :value_text {system_status?.ok == true
+                ? "${round(system_status.data.memory.buffers_bytes / 1048576, 1)} MiB"
+                : "--"}
+              :tone "muted")))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "04"
+            :title "KERNEL MEMORY"
+            :subtitle "Small allocations and writeback state")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Free pages"
+              :value {system_status?.ok == true
+                ? "${round(system_status.data.memory.free_bytes / 1073741824, 2)} GiB"
+                : "--"})
+            (performance-stat-row
+              :label "Page tables"
+              :value {system_status?.ok == true
+                ? "${round(system_status.data.memory.page_tables_bytes / 1048576, 1)} MiB"
+                : "--"})
+            (performance-stat-row
+              :label "Kernel stacks"
+              :value {system_status?.ok == true
+                ? "${round(system_status.data.memory.kernel_stack_bytes / 1048576, 1)} MiB"
+                : "--"})
+            (performance-stat-row
+              :label "Dirty pages"
+              :value {system_status?.ok == true
+                ? "${round(system_status.data.memory.dirty_bytes / 1048576, 2)} MiB"
+                : "--"})
+            (performance-stat-row
+              :label "Writeback"
+              :value {system_status?.ok == true
+                ? "${round(system_status.data.memory.writeback_bytes / 1048576, 2)} MiB"
+                : "--"})
+            (performance-stat-row
+              :label "Mem PSI some / 10s"
+              :value "${round(system_status?.data?.pressure?.memory?.some_avg10 ?: 0, 2)}%")
+            (performance-stat-row
+              :label "Mem PSI full / 10s"
+              :value "${round(system_status?.data?.pressure?.memory?.full_avg10 ?: 0, 2)}%")))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "05"
+            :title "VIRTUAL MEMORY"
+            :subtitle "Swap and kernel commit accounting")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 10
+            (performance-meter
+              :label "Swap utilization"
+              :value {system_status?.data?.memory?.swap?.percent ?: 0}
+              :value_text {system_status?.data?.memory?.swap?.available == true
+                ? "${round(system_status.data.memory.swap.percent, 1)}%"
+                : "DISABLED"}
+              :tone "swap")
+            (performance-meter
+              :label "Commit utilization"
+              :value {system_status?.data?.memory?.commit?.percent ?: 0}
+              :value_text {system_status?.data?.memory?.commit?.available == true
+                ? "${round(system_status.data.memory.commit.percent, 1)}%"
+                : "UNAVAILABLE"}
+              :tone "commit")
+            (performance-stat-row
+              :label "Swap used / total"
+              :value {system_status?.data?.memory?.swap?.available == true
+                ? "${round(system_status.data.memory.swap.used_bytes / 1073741824, 2)} / ${round(system_status.data.memory.swap.total_bytes / 1073741824, 2)} GiB"
+                : "0 / 0 GiB"})
+            (performance-stat-row
+              :label "Committed / limit"
+              :value {system_status?.data?.memory?.commit?.available == true
+                ? "${round(system_status.data.memory.commit.committed_bytes / 1073741824, 2)} / ${round(system_status.data.memory.commit.limit_bytes / 1073741824, 2)} GiB"
+                : "--"})))))))

@@ -2,8 +2,23 @@
   (button
     :class {active_surface == "control" && control_section == "network"
       ? "icon-button bar-control mainbar-wifi-button active"
-      : "icon-button bar-control mainbar-wifi-button"}
-    :tooltip "Network controls"
-    :timeout "2s"
-    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control network"
-    ""))
+      : (bar_network_status?.data?.wifi_enabled != true
+        ? "icon-button bar-control mainbar-wifi-button disabled"
+        : (bar_network_status?.data?.connected != true
+          ? "icon-button bar-control mainbar-wifi-button offline"
+          : "icon-button bar-control mainbar-wifi-button"))}
+    :tooltip {bar_network_status?.data?.available != true
+      ? "NetworkManager unavailable"
+      : (bar_network_status.data.networking_enabled != true
+        ? "Networking disabled"
+        : (bar_network_status.data.wifi_enabled != true
+          ? "Wi-Fi disabled"
+          : (bar_network_status.data.connected
+            ? "${bar_network_status.data.connection_name} · ${bar_network_status.data.signal_percent}% · ${bar_network_status.data.connectivity}"
+            : "Wi-Fi available · not connected")))}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control network ${active_surface} ${active_flyout} ${control_section}"
+    (bar-icon
+      :icon {bar_network_status?.data?.wifi_enabled != true
+        ? "wifi-disabled"
+        : (bar_network_status?.data?.connected == true ? "wifi" : "wifi-offline")})))

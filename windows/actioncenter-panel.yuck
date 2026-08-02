@@ -1,44 +1,17 @@
-(defwidget control-placeholder [title detail]
-  (box
-    :class "control-placeholder"
-    :orientation "v"
-    :space-evenly false
-    :spacing 8
-    (label
-      :class "control-placeholder-title"
-      :xalign 0
-      :text title)
-    (label
-      :class "control-placeholder-detail"
-      :xalign 0
-      :limit-width 64
-      :wrap true
-      :text detail)))
-
 (defwidget control-tab [section icon text]
   (button
     :halign "fill"
     :class {control_section == section
       ? "control-tab shell-tab active"
       : "control-tab shell-tab"}
-    :onclick "${EWW_CMD} update pending_action=none control_section=${section}"
+    :onclick "${EWW_CMD} update pending_action=none && $HOME/.config/eww/scripts/ui-action.sh control-section ${section}"
     (box
       :space-evenly false
       :spacing 10
       (label :class "shell-tab-icon" :text icon)
       (label :class "shell-tab-label" :xalign 0 :text text))))
 
-(defwidget control-section-placeholder [section title detail]
-  (box
-    :halign "fill"
-    :valign "start"
-    :visible {control_section == section}
-    (control-placeholder
-      :title title
-      :detail detail)))
-
 (defwindow actioncenter
-  :monitor 0
   :geometry (geometry
     :x "0px"
     :y "12px"
@@ -50,7 +23,7 @@
   :exclusive false
 
   (box
-    :class "control-centre shell-panel"
+    :class "control-centre shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-nav-px-${appearance_status?.data?.nav_px ?: 10} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
     :orientation "v"
     :space-evenly false
     :spacing 0
@@ -78,24 +51,25 @@
       (button
         :class "control-close shell-close"
         :tooltip "Close Control Centre"
-        :timeout "2s"
-        :onclick "$HOME/.config/eww/scripts/surface-state.sh close control"
+        :timeout "8s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout}"
         ""))
 
     (box
       :class "control-content shell-content"
+      :orientation {(bar_layout?.data?.phone ?: false) ? "v" : "h"}
       :space-evenly false
       :vexpand true
 
       (scroll
         :class "control-tabs-scroll shell-nav"
-        :vscroll true
-        :hscroll false
-        :vexpand true
+        :vscroll {(bar_layout?.data?.phone ?: false) != true}
+        :hscroll {(bar_layout?.data?.phone ?: false) == true}
+        :vexpand {(bar_layout?.data?.phone ?: false) != true}
 
         (box
           :class "control-tabs"
-          :orientation "v"
+          :orientation {(bar_layout?.data?.phone ?: false) ? "h" : "v"}
           :spacing 4
 
           (control-tab :section "overview" :icon "" :text "Overview")
@@ -106,6 +80,7 @@
           (control-tab :section "input" :icon "" :text "Input")
           (control-tab :section "devices" :icon "" :text "Devices")
           (control-tab :section "apps" :icon "" :text "Applications")
+          (control-tab :section "appearance" :icon "󰏘" :text "Appearance")
           (control-tab :section "settings" :icon "" :text "Settings")))
 
       (box
@@ -114,44 +89,22 @@
         :vexpand true
         :hexpand true
 
-        (control-section-placeholder
-          :section "overview"
-          :title "Overview"
-          :detail "Planned: concise status and the most useful system controls.")
+        (control-overview-section)
 
-        (control-section-placeholder
-          :section "network"
-          :title "Network"
-          :detail "Planned: connectivity, interfaces and Wi-Fi controls.")
+        (control-network-section)
 
-        (control-section-placeholder
-          :section "audio"
-          :title "Audio"
-          :detail "Planned: outputs, inputs, volume and routing.")
+        (control-audio-section)
 
-        (control-section-placeholder
-          :section "power"
-          :title "Power"
-          :detail "Planned: dual-battery details, charging state and power controls.")
+        (control-power-section)
 
-        (control-section-placeholder
-          :section "calendar"
-          :title "Calendar"
-          :detail "Planned: date, calendar and time-related controls.")
+        (control-calendar-section)
 
-        (control-section-placeholder
-          :section "input"
-          :title "Input"
-          :detail "Planned: keyboard layout, pointing devices and touch input.")
+        (control-input-section)
 
-        (control-section-placeholder
-          :section "devices"
-          :title "Device Management"
-          :detail "Planned: displays, audio endpoints, inputs and connected hardware.")
+        (control-devices-section)
 
         (applications-section)
 
-        (control-section-placeholder
-          :section "settings"
-          :title "Settings"
-          :detail "Planned: SenomyOS shell and system preferences.")))))
+        (control-appearance-section)
+
+        (control-settings-section)))))

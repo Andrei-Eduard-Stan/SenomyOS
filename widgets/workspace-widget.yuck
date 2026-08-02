@@ -4,54 +4,72 @@
     :tooltip {app.count > 1
       ? "${app.name} · ${app.count} windows"
       : app.name}
+    :halign "center"
+    :valign "center"
     :space-evenly false
     :spacing 2
 
     (image
-      :icon {app.icon}
-      :icon-size "14")
+      :class "workspace-app-image"
+      :halign "center"
+      :valign "center"
+      :path {app.icon_path ?: ""}
+      :image-width 16
+      :image-height 16)
 
     (label
       :class "workspace-app-count"
+      :valign "center"
       :visible {app.count > 1}
       :text {app.count})))
 
 (defwidget workspace-chip [workspace]
-  (box
+  (button
+    :visible {bar_layout?.data?.phone != true || workspace.active}
     :class {workspace.active
       ? "workspace-chip active"
       : (workspace.occupied
         ? "workspace-chip occupied"
         : "workspace-chip")}
-    :space-evenly false
-
-    (button
-      :class "workspace-number"
-      :tooltip {"Workspace ${workspace.id} · ${workspace.summary}"}
-      :timeout "1s"
-      :onclick "$HOME/.config/eww/scripts/workspace-action.sh switch ${workspace.id}"
-      (label :text {workspace.id}))
+    :tooltip {"Workspace ${workspace.id} · ${workspace.summary}"}
+    :timeout "1s"
+    :onclick "$HOME/.config/eww/scripts/workspace-action.sh switch ${workspace.id}"
 
     (box
-      :class "workspace-apps"
-      :visible {workspace.app_count > 0}
+      :class "workspace-chip-content"
+      :valign "center"
       :space-evenly false
-      :spacing 4
-
-      (for app in {workspace.apps}
-        (workspace-app-icon :app app))
 
       (label
-        :class "workspace-overflow"
-        :visible {workspace.overflow_count > 0}
-        :tooltip {"${workspace.overflow_count} additional applications"}
-        :text "+${workspace.overflow_count}"))))
+        :class "workspace-number"
+        :halign "center"
+        :valign "center"
+        :xalign 0.5
+        :yalign 0.5
+        :text {workspace.id})
+
+      (box
+        :class "workspace-apps"
+        :visible {bar_layout?.data?.phone != true && workspace.app_count > 0}
+        :valign "center"
+        :space-evenly false
+        :spacing 4
+
+        (for app in {workspace.apps}
+          (workspace-app-icon :app app))
+
+        (label
+          :class "workspace-overflow"
+          :valign "center"
+          :visible {workspace.overflow_count > 0}
+          :tooltip {"${workspace.overflow_count} additional applications"}
+          :text "+${workspace.overflow_count}")))))
 
 (defwidget workspace-indicator []
   (box
     :class "workspace-strip"
     :space-evenly false
-    :spacing 4
+    :spacing 2
 
     (for workspace in {workspace_state?.data?.workspaces ?: []}
       (workspace-chip :workspace workspace))

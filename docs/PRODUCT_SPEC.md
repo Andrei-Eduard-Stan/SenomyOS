@@ -179,7 +179,7 @@ Insights must never fabricate a diagnosis, update count, command result, or
 hardware condition. A missing source is a visible state, not a reason to invent
 content.
 
-Insights uses five stable sections:
+Insights uses seven stable sections:
 
 - **Briefing:** prioritized observations, evidence, freshness, and recommended
   navigation;
@@ -189,11 +189,19 @@ Insights uses five stable sections:
   installation flow;
 - **Diagnostics:** terminal-inspired allowlisted tasks with command preview and
   bounded output, plus a path to a real terminal for arbitrary work;
-- **Reports:** previewed, redacted troubleshooting evidence and approved
-  export.
+- **Console:** detected shell inventory, a bounded read-only command palette,
+  and launch into a real Kitty PTY for unrestricted Bash, Zsh, Fish, or
+  PowerShell work when installed;
+- **Reports:** selectable Overview, Performance, Network, Power, and Full
+  evidence profiles with manifests, previews, local history, and confirmed
+  deletion;
+- **Wiki:** a local Markdown-maintained knowledge base with category tabs,
+  article navigation, bounded rendering, and validated internal article links.
 
-Timeline does not silently record unrestricted user activity. Diagnostics does
-not expose an unrestricted shell or direct first-click `sudo` execution.
+Timeline does not silently record unrestricted user activity. Diagnostics and
+Console do not interpolate free-form Eww text into shell commands or expose
+direct first-click `sudo` execution. Unrestricted work runs in a real terminal
+PTY. Wiki does not execute Markdown, scripts, embedded HTML, or external links.
 
 ## Shared interaction model
 
@@ -212,7 +220,8 @@ Interaction rules:
 - clicking the Senomy identity area opens or closes Insights;
 - opening any primary surface closes the previous one;
 - every surface has a clear close action;
-- Escape closes the active surface where Eww/GTK keyboard handling permits;
+- a non-consuming compositor Escape binding closes every active SenomyOS
+  surface or flyout while preserving Escape for the focused application;
 - destructive actions open confirmation state rather than executing directly.
 
 ## Failure and empty states

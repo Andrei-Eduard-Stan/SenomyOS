@@ -1,0 +1,10 @@
+(defwidget bar-icon [icon]
+  (image
+    :class "bar-icon-image"
+    :halign "center"
+    :valign "center"
+    :width 16
+    :height 16
+    :image-width 16
+    :image-height 16
+    :path "${EWW_CONFIG_DIR}/assets/icons/bar/${icon}.svg"))

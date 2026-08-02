@@ -1,0 +1,241 @@
+(defwidget control-simple-row [label value]
+  (box :class "control-simple-row" :space-evenly false
+    (label :class "control-simple-label" :xalign 0 :hexpand true :text label)
+    (label :class "control-simple-value" :text value)))
+
+(defwidget control-inventory-card [code title detail]
+  (box :class "control-inventory-card" :orientation "v" :space-evenly false :spacing 4
+    (label :class "control-tech-code" :xalign 0 :text code)
+    (label :class "control-inventory-title" :xalign 0 :text title)
+    (label :class "control-inventory-detail" :xalign 0 :wrap true :text detail)))
+
+(defwidget bluetooth-device-card [device]
+  (box :class {device.connected ? "bluetooth-device connected" : device.paired ? "bluetooth-device paired" : "bluetooth-device"} :orientation "v" :space-evenly false :spacing 8
+    (box :space-evenly false :spacing 10
+      (label :class "bluetooth-device-icon" :text {device.audio_capable ? "󰋋" : "󰂯"})
+      (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+        (label :class "bluetooth-device-name" :xalign 0 :text {device.name})
+        (label :class "bluetooth-device-address" :xalign 0 :text {device.address}))
+      (label :class {device.connected ? "bluetooth-state connected" : device.paired ? "bluetooth-state paired" : "bluetooth-state"} :text {device.connected ? "CONNECTED" : device.paired ? "PAIRED" : "NEARBY"}))
+    (box :class "bluetooth-device-facts" :space-evenly false :spacing 7
+      (label :text {device.audio_capable ? "AUDIO" : device.icon})
+      (label :text "RSSI ${device.rssi ?: "--"} dBm")
+      (label :text {(device.battery_percent ?: -1) >= 0 ? "BAT ${device.battery_percent}%" : "BAT --"})
+      (label :text {device.trusted ? "TRUSTED" : "UNTRUSTED"}))
+    (box :class "bluetooth-device-actions" :space-evenly false :spacing 7
+      (button
+        :class {device.connected && pending_action == "bluetooth-disconnect-${device.address}" ? "bluetooth-action warning confirm" : device.connected ? "bluetooth-action warning" : device.paired ? "bluetooth-action primary" : pending_action == "bluetooth-pair-${device.address}" ? "bluetooth-action primary confirm" : "bluetooth-action primary"}
+        :onclick {device.connected
+          ? (pending_action == "bluetooth-disconnect-${device.address}" ? "$HOME/.config/eww/scripts/bluetooth-action.sh disconnect '${device.address}' >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none &" : "${EWW_CMD} update pending_action=bluetooth-disconnect-${device.address}")
+          : (device.paired ? "$HOME/.config/eww/scripts/bluetooth-action.sh connect '${device.address}' >/dev/null 2>&1 &" : (pending_action == "bluetooth-pair-${device.address}" ? "$HOME/.config/eww/scripts/bluetooth-action.sh pair '${device.address}' >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none &" : "${EWW_CMD} update pending_action=bluetooth-pair-${device.address}"))}
+        {device.connected ? (pending_action == "bluetooth-disconnect-${device.address}" ? "CONFIRM DISCONNECT" : "DISCONNECT") : device.paired ? "CONNECT" : (pending_action == "bluetooth-pair-${device.address}" ? "CONFIRM PAIR" : "PAIR")})
+      (button
+        :visible {device.paired}
+        :class {pending_action == "bluetooth-forget-${device.address}" ? "bluetooth-action danger confirm" : "bluetooth-action danger"}
+        :onclick {pending_action == "bluetooth-forget-${device.address}" ? "$HOME/.config/eww/scripts/bluetooth-action.sh forget '${device.address}' >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none &" : "${EWW_CMD} update pending_action=bluetooth-forget-${device.address}"}
+        {pending_action == "bluetooth-forget-${device.address}" ? "CONFIRM FORGET" : "FORGET"}))))
+
+(defwidget bluetooth-manager []
+  (box :class "bluetooth-manager" :orientation "v" :space-evenly false :spacing 10
+    (box :class "bluetooth-manager-head" :space-evenly false :spacing 12
+      (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+        (label :class "control-tech-code" :xalign 0 :text "BLUETOOTH // BLUEZ DEVICE CONTROL")
+        (label :class "bluetooth-controller-name" :xalign 0 :text {bluetooth_status?.ok ? (bluetooth_status.data.controller.name ?: "Controller") : "Bluetooth unavailable"})
+        (label :class "bluetooth-controller-meta" :xalign 0 :text {bluetooth_status?.ok ? "${bluetooth_status.data.counts.connected} connected // ${bluetooth_status.data.counts.paired} paired // ${bluetooth_status.data.counts.known} known" : (bluetooth_status?.error?.message ?: "Loading controller") }))
+      (label :class {bluetooth_status?.data?.controller?.powered ? "bluetooth-state connected" : "bluetooth-state"} :text {bluetooth_status?.data?.controller?.powered ? "POWERED" : "OFF"}))
+    (box :class "bluetooth-toolbar" :space-evenly false :spacing 7
+      (button :class "bluetooth-action primary" :visible {bluetooth_status?.ok == true && bluetooth_status.data.controller.powered != true} :onclick "$HOME/.config/eww/scripts/bluetooth-action.sh power-on >/dev/null 2>&1 &" "POWER ON")
+      (button :class {bluetooth_status?.data?.controller?.discovering ? "bluetooth-action primary active" : "bluetooth-action primary"} :active {bluetooth_status?.data?.controller?.powered == true && bluetooth_status?.data?.controller?.discovering != true} :onclick "$HOME/.config/eww/scripts/bluetooth-action.sh scan >/dev/null 2>&1 &" {bluetooth_status?.data?.controller?.discovering ? "SCANNING..." : "SCAN 12 SECONDS"})
+      (button :class {pending_action == "bluetooth-power-off" ? "bluetooth-action danger confirm" : "bluetooth-action danger"} :visible {bluetooth_status?.data?.controller?.powered == true} :onclick {pending_action == "bluetooth-power-off" ? "$HOME/.config/eww/scripts/bluetooth-action.sh power-off >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none &" : "${EWW_CMD} update pending_action=bluetooth-power-off"} {pending_action == "bluetooth-power-off" ? "CONFIRM POWER OFF" : "POWER OFF"})
+      (button :class "bluetooth-action" :onclick "$HOME/.config/eww/scripts/bluetooth-action.sh clear" "CLEAR STATUS"))
+    (box :class {bluetooth_status?.data?.action?.state == "failed" ? "bluetooth-action-status failed" : "bluetooth-action-status"} :orientation "v" :space-evenly false :spacing 3
+      (label :class "bluetooth-action-state" :xalign 0 :text {bluetooth_status?.data?.action?.state_label ?: "READY"})
+      (label :class "bluetooth-action-message" :xalign 0 :wrap true :text {bluetooth_status?.data?.action?.message ?: "Bluetooth controls are ready."}))
+    (label :class "bluetooth-empty" :xalign 0 :wrap true :visible {bluetooth_status?.ok == true && bluetooth_status.data.controller.powered == true && bluetooth_status.data.counts.known == 0} :text "No cached devices. Put your earbuds in pairing mode, then run a 12-second scan.")
+    (box :class "bluetooth-device-list" :orientation "v" :space-evenly false :spacing 8
+      (for device in {bluetooth_status?.data?.devices ?: []}
+        (bluetooth-device-card :device device)))))
+
+(defwidget control-page-shell [section eyebrow title detail]
+  (box :class "control-system-section" :orientation "v" :space-evenly false :visible {control_section == section} :vexpand true :hexpand true
+    (scroll :class "control-tech-scroll" :vscroll true :hscroll false :vexpand true :hexpand true
+      (box :class "control-tech-page" :orientation "v" :space-evenly false :spacing 14
+        (box :class "section-heading" :orientation "v" :space-evenly false :spacing 4
+          (label :class "section-eyebrow" :xalign 0 :text eyebrow)
+          (label :class "section-title" :xalign 0 :text title)
+          (label :class "section-detail" :xalign 0 :wrap true :text detail))
+        (children)))))
+
+(defwidget control-overview-section []
+  (control-page-shell :section "overview" :eyebrow "OVERVIEW // LIVE SYSTEM SUMMARY" :title "Command overview" :detail "The most useful current state and direct routes into specialist controls."
+    (box :class "control-tech-grid" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly true :spacing 8
+      (network-metric :label "CPU" :value "${round(rail_system_status?.data?.cpu?.percent ?: 0, 0)}%" :detail "${rail_system_status?.data?.cpu?.logical_count ?: 0} logical threads")
+      (network-metric :label "MEMORY" :value "${round(rail_system_status?.data?.memory?.percent ?: 0, 0)}%" :detail "${round((rail_system_status?.data?.memory?.used_bytes ?: 0)/1073741824,1)} GiB used")
+      (network-metric :label "INTERNET" :value {network_status?.data?.internet?.label ?: "CHECKING"} :detail {network_status?.data?.primary?.connection ?: "No primary route"})
+      (network-metric :label "POWER" :value {batt_json.available == true ? "${batt_json.percent_total}%" : "N/A"} :detail {batt_json.available == true ? batt_json.state : (batt_json.error ?: "No battery detected")}))
+    (box :class "control-tech-brief" :space-evenly false :spacing 14
+      (senomy-avatar :variant "chibi" :size 74 :context "overview" :domain "ambient")
+      (box :orientation "v" :space-evenly false :valign "center" :spacing 4
+        (label :class "control-tech-code" :xalign 0 :text "SENOMY // SYSTEM BRIEF")
+        (label :class "control-tech-brief-copy" :xalign 0 :wrap true :text "Seno: Workspace ${control_status?.data?.session?.workspace ?: "--"} has ${control_status?.data?.session?.window_count ?: 0} window${(control_status?.data?.session?.window_count ?: 0)==1 ? "" : "s"}. ${network_status?.data?.internet?.online == true ? "Global connectivity is verified." : "Network access needs attention."}")))
+    (box :class "control-route-grid" :space-evenly false :spacing 8
+      (button :class "control-route" :onclick "${EWW_CMD} update control_section=network" "NETWORK")
+      (button :class "control-route" :onclick "${EWW_CMD} update control_section=audio" "AUDIO")
+      (button :class "control-route" :onclick "${EWW_CMD} update control_section=power" "POWER")
+      (button :class "control-route" :timeout "8s" :onclick "$HOME/.config/eww/scripts/surface-state.sh show-performance ${active_surface} ${active_flyout}" "PERFORMANCE"))))
+
+(defwidget control-calendar-section []
+  (control-page-shell :section "calendar" :eyebrow "CALENDAR // SYSTEM CLOCK" :title {control_status?.data?.clock?.month ?: "Calendar"} :detail "Local clock, locale, synchronization evidence and a terminal-precise month view."
+    (box :class "calendar-hero" :space-evenly false
+      (box :orientation "v" :space-evenly false :hexpand true
+        (label :class "calendar-day-name" :xalign 0 :text {control_status?.data?.clock?.day_name ?: "--"})
+        (label :class "calendar-day-number" :xalign 0 :text {control_status?.data?.clock?.day_number ?: "--"}))
+      (box :orientation "v" :space-evenly false :valign "center"
+        (label :class "calendar-time" :text time)
+        (label :class "calendar-zone" :text {control_status?.data?.clock?.timezone ?: "--"})))
+    (label :class "calendar-grid-text" :xalign 0 :text {control_status?.data?.clock?.calendar ?: "Calendar unavailable"})
+    (box :class "control-tech-table" :orientation "v" :space-evenly false
+      (control-simple-row :label "ISO time" :value {control_status?.data?.clock?.now_iso ?: "--"})
+      (control-simple-row :label "Locale" :value {control_status?.data?.clock?.locale ?: "--"})
+      (control-simple-row :label "ISO week" :value {control_status?.data?.clock?.week_number ?: "--"})
+      (control-simple-row :label "Network time" :value {control_status?.data?.clock?.ntp_synchronized ? "SYNCHRONIZED" : (control_status?.data?.clock?.ntp_enabled ? "ENABLED / WAITING" : "DISABLED")}))))
+
+(defwidget control-input-section []
+  (control-page-shell :section "input" :eyebrow "INPUT // HYPRLAND CAPABILITIES" :title "Input matrix" :detail "Live compositor inventory. Device configuration remains read-only until profile-safe actions are added."
+    (box :class "control-tech-grid" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly true :spacing 8
+      (network-metric :label "KEYBOARDS" :value "${control_status?.data?.counts?.keyboards ?: 0}" :detail "${control_status?.data?.inputs?.keyboards[0]?.keymap ?: "No keymap"}")
+      (network-metric :label "POINTERS" :value "${control_status?.data?.counts?.pointers ?: 0}" :detail "Mouse / trackpad / pointing stick")
+      (network-metric :label "TOUCH" :value "${control_status?.data?.counts?.touch ?: 0}" :detail {(control_status?.data?.counts?.touch ?: 0)>0 ? "Touch capable" : "Not detected"})
+      (network-metric :label "TABLETS" :value "${control_status?.data?.counts?.tablets ?: 0}" :detail "Pen/tablet devices"))
+    (box :class "control-inventory-list" :orientation "v" :space-evenly false :spacing 8
+      (for keyboard in {control_status?.data?.inputs?.keyboards ?: []}
+        (control-inventory-card :code {keyboard.main ? "KEYBOARD // PRIMARY" : "KEYBOARD"} :title {keyboard.name} :detail "${keyboard.keymap} · layout ${keyboard.layout} · caps ${keyboard.caps_lock ? "on" : "off"}"))
+      (for pointer in {control_status?.data?.inputs?.pointers ?: []}
+        (control-inventory-card :code "POINTER" :title {pointer.name} :detail "Speed ${pointer.default_speed} · scroll factor ${pointer.scroll_factor}"))
+      (for touch in {control_status?.data?.inputs?.touch ?: []}
+        (control-inventory-card :code "TOUCHSCREEN" :title {touch.name} :detail "Direct touch capability exposed by Hyprland")))))
+
+(defwidget control-devices-section []
+  (control-page-shell :section "devices" :eyebrow "DEVICES // CAPABILITY INVENTORY" :title "Device management" :detail "Displays, input, Bluetooth, audio, batteries and network interfaces from bounded live sources."
+    (box :class "control-tech-grid" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly true :spacing 8
+      (network-metric :label "DISPLAYS" :value "${control_status?.data?.counts?.monitors ?: 0}" :detail "${control_status?.data?.monitors[0]?.name ?: "None"}")
+      (network-metric :label "AUDIO" :value "${audio_status?.data?.hardware_count ?: 0}" :detail "hardware cards")
+      (network-metric :label "BATTERIES" :value {batt_json.available == true ? (batt_json.dual ? "2" : "1") : "0"} :detail {batt_json.available == true ? "${batt_json.percent_total}% aggregate" : (batt_json.error ?: "No battery detected")})
+      (network-metric :label "BLUETOOTH" :value {bluetooth_status?.data?.controller?.powered ? "ON" : "OFF"} :detail "${bluetooth_status?.data?.counts?.connected ?: 0} connected"))
+    (bluetooth-manager)
+    (box :class "control-inventory-list" :orientation "v" :space-evenly false :spacing 8
+      (for monitor in {control_status?.data?.monitors ?: []}
+        (control-inventory-card :code {monitor.focused ? "DISPLAY // FOCUSED" : "DISPLAY"} :title "${monitor.name} · ${monitor.description}" :detail "${monitor.width}×${monitor.height} @ ${round(monitor.refresh_hz,2)} Hz · scale ${monitor.scale} · workspace ${monitor.workspace}"))
+      (for device in {network_status?.data?.devices ?: []}
+        (control-inventory-card :code "NETWORK // ${device.type}" :title {device.id} :detail "${device.state} · ${device.driver ?: "driver unavailable"}"))
+      (for card in {audio_status?.data?.hardware ?: []}
+        (control-inventory-card :code "AUDIO HARDWARE" :title {card.name} :detail "${card.active_profile} · ${card.driver}")))))
+
+(defwidget appearance-choice [action value current title detail available]
+  (button
+    :class {current == value ? "appearance-choice active" : "appearance-choice"}
+    :active available
+    :onclick "$HOME/.config/eww/scripts/settings-action.sh ${action} ${value}"
+    (box :orientation "v" :space-evenly false :spacing 3
+      (box :space-evenly false
+        (label :class "appearance-choice-title" :xalign 0 :hexpand true :text title)
+        (label :class "appearance-choice-state" :text {available ? (current == value ? "ACTIVE" : "SELECT") : "MISSING"}))
+      (label :class "appearance-choice-detail" :xalign 0 :wrap true :text detail))))
+
+(defwidget appearance-pixel-control [action title detail value minimum maximum]
+  (box :class "appearance-pixel-control" :space-evenly false :spacing 10
+    (box :orientation "v" :space-evenly false :hexpand true :spacing 2
+      (label :class "appearance-pixel-title" :xalign 0 :text title)
+      (label :class "appearance-pixel-detail" :xalign 0 :wrap true :text detail))
+    (button :class "appearance-pixel-step" :active {value > minimum} :onclick "$HOME/.config/eww/scripts/settings-action.sh ${action} ${value - 1}" "−")
+    (label :class "appearance-pixel-value" :text "${value}px")
+    (button :class "appearance-pixel-step" :active {value < maximum} :onclick "$HOME/.config/eww/scripts/settings-action.sh ${action} ${value + 1}" "+")))
+
+(defwidget control-appearance-section []
+  (control-page-shell :section "appearance" :eyebrow "APPEARANCE // LIVE DESIGN TOKENS" :title "Shell appearance" :detail "Validated global presentation preferences for Control Centre, Insights and Performance. Changes publish immediately and persist across Eww restarts."
+    (box
+      :class "appearance-operation ${appearance_operation_status?.data?.state ?: "idle"}"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      (box :space-evenly false
+        (label :class "appearance-operation-label" :xalign 0 :hexpand true :text {appearance_operation_status?.data?.label ?: "Appearance ready"})
+        (label :class "appearance-operation-state" :text {appearance_operation_status?.data?.state_label ?: "READY"}))
+      (label :class "appearance-operation-copy" :xalign 0 :text {appearance_operation_status?.data?.message ?: "Changes apply live and persist across restarts."})
+      (progress :class "appearance-operation-progress" :value {appearance_operation_status?.data?.progress_percent ?: 0} :orientation "h"))
+
+    (box :class "appearance-preview" :orientation "v" :space-evenly false :spacing 6
+      (label :class "section-eyebrow" :xalign 0 :text "LIVE PREVIEW // ${appearance_status?.data?.accent ?: "cyan"} // ${appearance_status?.data?.font_family ?: "jetbrains"}")
+      (label :class "section-title" :xalign 0 :text "Senomy interface heading")
+      (label :class "section-detail" :xalign 0 :wrap true :text "Body copy remains readable while metadata preserves hierarchy and technical density.")
+      (label :class "insight-source" :xalign 0 :text "METADATA // SOURCE // OBSERVATION"))
+
+    (box :class "appearance-group" :orientation "v" :space-evenly false :spacing 7
+      (label :class "appearance-group-title" :xalign 0 :text "01 // FONT FAMILY")
+      (appearance-choice :action "set-font-family" :value "jetbrains" :current {appearance_status?.data?.font_family ?: "jetbrains"} :title "JetBrains Mono" :detail "Current technical display face." :available {appearance_status?.data?.fonts?.jetbrains?.exact == true})
+      (appearance-choice :action "set-font-family" :value "iosevka" :current {appearance_status?.data?.font_family ?: "jetbrains"} :title "Iosevka" :detail "Narrower technical face for dense layouts." :available {appearance_status?.data?.fonts?.iosevka?.exact == true}))
+
+    (box :class "appearance-group" :orientation "v" :space-evenly false :spacing 7
+      (label :class "appearance-group-title" :xalign 0 :text "02 // GLOBAL READABILITY")
+      (box :space-evenly false :spacing 7
+        (appearance-choice :action "set-font-scale" :value "standard" :current {appearance_status?.data?.font_scale ?: "standard"} :title "Standard" :detail "Current ratio." :available true)
+        (appearance-choice :action "set-font-scale" :value "large" :current {appearance_status?.data?.font_scale ?: "standard"} :title "Large" :detail "+1–2 px text." :available true)
+        (appearance-choice :action "set-font-scale" :value "touch" :current {appearance_status?.data?.font_scale ?: "standard"} :title "Touch" :detail "Large text and targets." :available true)))
+
+    (box :class "appearance-group" :orientation "v" :space-evenly false :spacing 7
+      (button :class {appearance_advanced ? "appearance-advanced-toggle active" : "appearance-advanced-toggle"} :onclick "${EWW_CMD} update appearance_advanced=${!appearance_advanced}"
+        (box :space-evenly false
+          (label :xalign 0 :hexpand true :text "03 // ADVANCED TYPOGRAPHY")
+          (label :text {appearance_advanced ? "HIDE ︿" : "REVEAL ﹀"})))
+      (box :class "appearance-advanced" :visible appearance_advanced :orientation "v" :space-evenly false :spacing 7
+        (label :class "appearance-inspector-copy" :xalign 0 :wrap true :text "Exact sizes are bounded for safety and readability. These categories cover every current shell surface; icon glyph sizing remains a separate layout concern.")
+        (appearance-pixel-control :action "set-title-px" :title "Titles" :detail "Panel titles, section titles, card titles and primary values." :value {appearance_status?.data?.title_px ?: 16} :minimum 12 :maximum 24)
+        (appearance-pixel-control :action "set-body-px" :title "Body" :detail "Descriptions, summaries, messages, output and article copy." :value {appearance_status?.data?.body_px ?: 11} :minimum 9 :maximum 18)
+        (appearance-pixel-control :action "set-meta-px" :title "Metadata" :detail "Eyebrows, sources, codes, timestamps, state labels and secondary metrics." :value {appearance_status?.data?.meta_px ?: 9} :minimum 8 :maximum 15)
+        (appearance-pixel-control :action "set-nav-px" :title "Navigation" :detail "Control, Insights and Performance tabs plus action labels." :value {appearance_status?.data?.nav_px ?: 10} :minimum 9 :maximum 18)
+        (appearance-pixel-control :action "set-rail-px" :title "Obsidian Rail" :detail "Workspace, Senomy, telemetry, volume, battery and clock text." :value {appearance_status?.data?.rail_px ?: 11} :minimum 9 :maximum 16)))
+
+    (box :class "appearance-group" :orientation "v" :space-evenly false :spacing 7
+      (label :class "appearance-group-title" :xalign 0 :text "04 // ACCENT + EDGE TREATMENT")
+      (box :space-evenly false :spacing 7
+        (appearance-choice :action "set-accent" :value "cyan" :current {appearance_status?.data?.accent ?: "cyan"} :title "Signal cyan" :detail "Technical clarity." :available true)
+        (appearance-choice :action "set-accent" :value "violet" :current {appearance_status?.data?.accent ?: "cyan"} :title "Senomy violet" :detail "Identity emphasis." :available true)
+        (appearance-choice :action "set-accent" :value "amber" :current {appearance_status?.data?.accent ?: "cyan"} :title "Terminal amber" :detail "Warm operations." :available true))
+      (box :space-evenly false :spacing 7
+        (appearance-choice :action "set-gradient" :value "off" :current {appearance_status?.data?.gradient ?: "subtle"} :title "Flat edge" :detail "Solid palette border." :available true)
+        (appearance-choice :action "set-gradient" :value "subtle" :current {appearance_status?.data?.gradient ?: "subtle"} :title "Soft blend" :detail "Low-opacity edge blend only." :available true)
+        (appearance-choice :action "set-gradient" :value "strong" :current {appearance_status?.data?.gradient ?: "subtle"} :title "Defined blend" :detail "Higher-contrast edge only." :available true)))
+
+    (box :class "appearance-inspector" :orientation "v" :space-evenly false :spacing 7
+      (label :class "appearance-group-title" :xalign 0 :text "ADVANCED // GTK CSS INSPECTOR")
+      (label :class "appearance-inspector-copy" :xalign 0 :wrap true :text "Eww uses GTK CSS, not browser CSS: there is no DOM, media-query engine, CSS variables, or browser computed-style panel. GTK Inspector is the authoritative live widget/style debugger.")
+      (control-simple-row :label "Responsive profile" :value {bar_layout?.data?.density ?: "standard"})
+      (control-simple-row :label "Logical viewport" :value "${bar_layout?.data?.width ?: 0}×${bar_layout?.data?.height ?: 0} @ ${bar_layout?.data?.scale ?: 1}x")
+      (control-simple-row :label "Stylesheet" :value "$HOME/.config/eww/eww.scss")
+      (control-simple-row :label "JetBrains resolved" :value {appearance_status?.data?.fonts?.jetbrains?.resolved ?: "--"})
+      (control-simple-row :label "Iosevka resolved" :value {appearance_status?.data?.fonts?.iosevka?.resolved ?: "--"})
+      (button :class "appearance-inspector-open" :onclick "${EWW_CMD} inspector" "OPEN GTK INSPECTOR"))))
+
+(defwidget control-settings-section []
+  (control-page-shell :section "settings" :eyebrow "SETTINGS // SENOMYOS SHELL" :title "Shell control" :detail "Runtime state, presentation sources and recoverable maintenance actions. System-wide settings remain delegated to their owning tools."
+    (box :class "control-tech-table" :orientation "v" :space-evenly false
+      (control-simple-row :label "Active surface" :value active_surface)
+      (control-simple-row :label "Control route" :value control_section)
+      (control-simple-row :label "Workspace source" :value {workspace_state?.source ?: "--"})
+      (control-simple-row :label "Avatar manifest" :value {senomy_avatar_catalog?.ok ? "READY" : "UNAVAILABLE"})
+      (control-simple-row :label "Rail density" :value "${bar_layout?.data?.density ?: "standard"} / preference ${bar_layout?.data?.preferred_density ?: "auto"}")
+      (control-simple-row :label "Display brightness" :value {control_status?.data?.brightness?.available == true ? "${control_status?.data?.brightness?.percent ?: 0}%" : "UNAVAILABLE"}))
+    (box :class "settings-density" :orientation "v" :space-evenly false :spacing 7
+      (label :class "control-tech-code" :xalign 0 :text "RAIL DENSITY // USER PREFERENCE")
+      (box :space-evenly false :spacing 7
+        (button :class {bar_layout?.data?.preferred_density == "auto" ? "settings-density-action active" : "settings-density-action"} :onclick "$HOME/.config/eww/scripts/settings-action.sh set-density auto" "AUTO")
+        (button :class {bar_layout?.data?.preferred_density == "standard" ? "settings-density-action active" : "settings-density-action"} :onclick "$HOME/.config/eww/scripts/settings-action.sh set-density standard" "STANDARD")
+        (button :class {bar_layout?.data?.preferred_density == "compact" ? "settings-density-action active" : "settings-density-action"} :onclick "$HOME/.config/eww/scripts/settings-action.sh set-density compact" "COMPACT")
+        (button :class {bar_layout?.data?.preferred_density == "narrow" ? "settings-density-action active" : "settings-density-action"} :onclick "$HOME/.config/eww/scripts/settings-action.sh set-density narrow" "NARROW"))
+      (label :class "settings-boundary" :xalign 0 :wrap true :text "Auto follows logical monitor width. Manual choices affect bar information density only and can always be reset to Auto."))
+    (box :class "settings-action-list" :orientation "v" :space-evenly false :spacing 8
+      (button :class "settings-action" :timeout "8s" :onclick "$HOME/.config/eww/scripts/surface-state.sh show-insights wiki ${active_surface} ${active_flyout}" "OPEN SENOMY WIKI")
+      (button :class "settings-action" :timeout "30s" :onclick "$HOME/.config/eww/scripts/surface-state.sh reload" "RELOAD + RESTORE EWW")
+      (button :class "settings-action" :onclick "${EWW_CMD} update chibi_state=idle" "RESET AMBIENT AVATAR")
+      (button :class "settings-action" :onclick "${EWW_CMD} inspector" "OPEN GTK INSPECTOR"))
+    (label :class "settings-boundary" :xalign 0 :wrap true :text "Preferences are versioned user state outside packaged defaults. Settings does not directly edit privileged system configuration or embed machine-specific assumptions.")))

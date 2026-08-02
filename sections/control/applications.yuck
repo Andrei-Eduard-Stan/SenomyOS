@@ -13,7 +13,7 @@
         :class "background-app-icon"
         (image
           :icon {app.icon}
-          :icon-size "28"))
+          :icon-size "large-toolbar"))
       (box
         :orientation "v"
         :space-evenly false
@@ -159,7 +159,7 @@
         (label
           :class "applications-summary-detail"
           :xalign 0
-          :text "The native icons remain permanently available in the Obsidian Rail."))
+          :text "Native StatusNotifier icons stay hidden in the rail flyout until you open them."))
       (label
         :class {background_apps_status?.data?.tray?.host_available
           ? "applications-tray-state ready"
@@ -183,6 +183,16 @@
         :xalign 0
         :wrap true
         :text {background_apps_status?.error?.message ?: "Background application status is unavailable."}))
+
+    (box :class "control-operation applications ${background_apps_status?.data?.operation?.state ?: "idle"}" :orientation "v" :space-evenly false :spacing 4
+      :visible {(background_apps_status?.data?.operation?.state ?: "idle") != "idle"}
+      (box :space-evenly false :spacing 8
+        (label :class "control-operation-code" :xalign 0 :hexpand true
+          :text "OPERATION // ${background_apps_status.data.operation.state_label}")
+        (label :class "control-state-badge ${background_apps_status.data.operation.state == "failed" ? "danger" : (background_apps_status.data.operation.state == "succeeded" ? "ready" : "") }"
+          :text {background_apps_status.data.operation.state_label}))
+      (label :class "control-operation-title" :xalign 0 :text {background_apps_status.data.operation.label})
+      (label :class "control-operation-copy" :xalign 0 :wrap true :text {background_apps_status.data.operation.message}))
 
     (box
       :class "background-app-list"

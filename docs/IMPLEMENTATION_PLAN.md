@@ -84,14 +84,18 @@ Progress:
 - window instances are reconciled with `active_surface`, and
   `scripts/reload-eww.sh` preserves validated surface, section, and Timeline
   state across a verified full-daemon restart;
-- the replacement daemon starts its exact initial window set through one
-  `eww open-many` process, while the workspace publisher refuses to update an
-  absent daemon;
+- the replacement daemon verifies `main-bar` before restoring the dismiss
+  layer and remembered surface at responsive geometry, while the workspace
+  publisher refuses to update an absent daemon;
+- the workspace listener recovers a missing or stale Hyprland session
+  signature from `hyprctl instances -j`, while its user unit retries failures
+  without entering a permanent start-limit state;
 - `scripts/audio-status.sh` now provides validated output/input, volume, mute,
   route, and endpoint JSON;
 - `scripts/network-status.sh` now provides validated connectivity, primary
   connection, Wi-Fi/Ethernet, address, and interface JSON;
-- Eww does not consume it yet.
+- Eww consumes audio status only while the volume flyout or Audio section is
+  visible; `scripts/volume.sh` now owns validated volume and mute actions.
 
 ## Stage 3 — Obsidian Rail main bar
 
@@ -108,6 +112,22 @@ The bar should be tested first with all primary surfaces closed.
 
 Runtime warning: the first Eww reload may briefly remove the bar if Yuck or SCSS
 fails. Warn immediately before it.
+
+Progress:
+
+- the right-side rail now uses one compact control rhythm and shows only the
+  combined battery summary; physical battery detail remains available in
+  larger surfaces and tooltips;
+- fixed repository-owned SVGs keep the arrow, Applications, volume, Wi-Fi, and
+  battery marks on one visual centerline;
+- native tray items now live in an arrow-triggered overflow flyout instead of
+  consuming permanent rail width;
+- CPU/MEM/UP is a working Performance Dashboard trigger;
+- volume opens a compact slider flyout instead of jumping directly to Audio.
+- persistent Audio and Network marks are event-driven, and standard/compact/
+  narrow information density is capability-derived or user-overridden;
+- all Rail routes, native tray overflow, click-again close, cross-surface
+  replacement, and accessible status states passed live validation.
 
 ## Stage 4 — Senomy Insights foundation
 
@@ -163,6 +183,23 @@ Goals:
 
 Each section gets its own validation and small commit.
 
+Progress:
+
+- Audio is the first live core section, with default output/input state,
+  validated volume adjustment, and mute control;
+- `dismiss` is the common close action for flyouts and primary surfaces;
+- the tracked Hyprland config uses a non-consuming Escape binding so the
+  focused application still receives Escape;
+- every contextual window opens above one transparent shared dismiss layer;
+  outside click, Escape, repeated trigger, and cross-trigger switching now
+  converge on the same serialized lifecycle.
+- Overview, Network, Audio, Power, Calendar, Input, Device Management,
+  Applications, and Settings are connected; collector polling follows the
+  visible section rather than leaving Overview or Device Management on initial
+  placeholders;
+- Control Centre, Insights, Performance, Volume, and Tray expose visible close
+  controls and all five pass the compositor Escape command.
+
 ## Stage 6 — Device Management
 
 Goals:
@@ -174,6 +211,12 @@ Goals:
 - expose read-only details before adding any mutating device actions.
 
 Device actions require explicit scope and confirmation.
+
+Progress:
+
+- read-only monitor, input, audio hardware, battery, Bluetooth, and network
+  interface inventories are connected with capability-aware empty states;
+- mutating device actions remain deliberately outside this stage.
 
 ## Stage 7 — Cathedral Deck Performance Dashboard
 
@@ -197,6 +240,27 @@ Action rollout:
 
 Never expose an unrestricted shell.
 
+Progress:
+
+- the six-route read-only dashboard is implemented for Overview, CPU + GPU,
+  Memory, Storage, Network, and Processes;
+- a runtime cache retains five minutes of CPU, memory, temperature, load,
+  pressure, disk, network, and optional GPU history across dashboard
+  close/reopen cycles;
+- a synchronized live collector supplies total/per-core compute, memory, root
+  I/O, active-link, pressure, frequency, thermal, fan, and GPU metrics;
+- a three-second collector provides twelve instantaneous process rows only on
+  the Processes page;
+- a 15-second collector provides host, topology, package, service, socket,
+  thermal, GPU, network, filesystem, and block-device inventory while open;
+- battery remains a compact snapshot and routes future detailed power work to
+  Control Centre / Power;
+- the allowlisted Insights diagnostics route is visible;
+- process sorting and selection, bounded procfs detail, private report
+  generation, confirmed current-user SIGTERM/SIGKILL, and confirmed restart of
+  currently failed user units are connected;
+- system-unit restart and arbitrary shell execution remain excluded.
+
 ## Stage 8 — Advanced Insights
 
 Goals:
@@ -213,7 +277,15 @@ Progress:
   Updates tab;
 - official and AUR checks remain separate so the external AUR disclosure is
   explicit;
+- a sixth Wiki route renders bounded local Markdown with category tabs,
+  article navigation, tables, code blocks, and validated internal links;
+- a central avatar manifest and shared widget replace per-surface text marks
+  and support separate chibi and portrait assets for seven initial states;
 - automatic schedules and installation are not connected.
+- Briefing now derives maintenance state from successful cached checks instead
+  of presenting a disconnected placeholder;
+- Reports generates a mode-0600 local artifact, previews at most 80 non-empty
+  redacted lines, and never uploads automatically.
 
 ## Stage 9 — Applications, Input, and Settings
 
@@ -227,14 +299,18 @@ Goals:
 
 Progress:
 
-- the persistent Rail now hosts native StatusNotifier items;
+- the Rail exposes a Windows-style overflow arrow and the transient flyout owns
+  the single native StatusNotifier host;
 - the Applications trigger opens the existing Control Centre on `apps`;
 - Flameshot is the first registry-backed managed background application;
 - its card distinguishes service, D-Bus, and tray evidence and exposes fixed
   capture, launcher, configuration, start, and confirmed-stop actions;
-- the status collector runs only while Applications is visible;
+- the status collector runs only while Applications or the tray flyout is
+  visible;
 - arbitrary process enumeration and generic process termination remain outside
   this section.
+- Settings writes a versioned mode-0600 user density preference outside
+  packaged defaults and applies Auto, Standard, Compact, or Narrow immediately.
 
 ## Stage 10 — Hardening and responsive pass
 
@@ -248,7 +324,69 @@ Goals:
 - verify Eww logs and Hyprland errors;
 - update documentation and runtime inventory.
 
+Progress on the T480 reference system:
+
+- standard and injected compact/narrow Rail modes passed visual inspection;
+- missing UPower, audio, and NetworkManager paths emit truthful unavailable
+  state, including zero-battery desktops without false low-charge warnings;
+- all contextual windows open on the focused monitor through Eww `--screen`,
+  so shared Yuck no longer embeds monitor `0`;
+- Escape, X, trigger toggle, outside click, panel replacement, reload restore,
+  idle subscribers, Eww logs, Hyprland errors, and tracked/live config sync
+  were validated;
+- fixed panel geometry remains an Eww 0.5/profile-stage limitation. Physical
+  multi-monitor, portrait, disconnected-device, and non-T480 testing is still
+  required before portability claims.
+
 ## Stage 11 — Hardware and form-factor profiles
+
+Before Stage 11 broadens hardware support, the current shell must pass the
+following locked Obsidian Rail completion program. This is a release gate, not
+an optional backlog.
+
+### Rail and Surface UX Freeze
+
+1. Freeze one component-island Rail composition with transparent unused space,
+   flat translucent fills, palette-aware edges, and one control rhythm.
+2. Require every trigger to open, repeat-click close, cross-switch, outside
+   dismiss, Escape dismiss, and X-close through the shared coordinator.
+3. Require exactly one primary surface, at most one transient flyout, and one
+   shared dismiss layer. No independent popup flag may bypass this invariant.
+4. Normalize Volume, Tray, Network, Calendar, and Battery quick surfaces around
+   shared geometry, padding, focus, close, responsive, and truthful-state rules.
+5. Apply font, typography, palette, focus, and edge preferences to the Rail,
+   Control Centre, Performance, Insights, and every flyout. Safety semantics
+   remain fixed independently of decorative themes.
+
+### Functional completion gates
+
+- Control Centre sections must expose truthful ready, loading, empty,
+  unavailable, warning, error, confirmation, running, success, and failure
+  states where applicable.
+- Performance metrics must identify source, freshness, units, unavailability,
+  and retention period; process and service mutations remain confirmed and
+  allowlisted.
+- Insights Briefing, Timeline, Updates, Diagnostics, Console, Reports, and Wiki
+  must each have a tested data contract and must not fabricate evidence.
+- Persistent Rail sources should be event-driven. Expensive detailed collectors
+  run only while their owning surface is visible.
+- Trigger-to-visible latency is measured, with a 200ms target for cached
+  flyouts and a documented reason for slower hardware-backed surfaces.
+
+### Production acceptance gates
+
+- static shell, JSON, Python, SCSS, Yuck, and whitespace validation;
+- automated state-machine transition tests and collector fixture tests;
+- screenshot comparisons for standard, compact, narrow, and touch profiles;
+- restart, malformed-source, suspend/resume, and last-known-good recovery tests;
+- keyboard, pointer, touch-target, tooltip, and visible-focus review;
+- physical validation at multiple logical sizes and scale factors;
+- measured idle CPU, memory, process, and wake-up cost;
+- a clean-machine installation test before claiming portability.
+
+The shell is considered complete only when these gates pass without a major
+visual inconsistency, behavioral race, false state, or undocumented platform
+limitation.
 
 Goals:
 

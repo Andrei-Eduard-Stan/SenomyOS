@@ -1,0 +1,37 @@
+(defwidget performance-benchmark-page []
+  (scroll
+    :class "performance-page-scroll"
+    :vscroll true
+    :hscroll false
+    :vexpand true
+    :hexpand true
+    (box :class "performance-page benchmark-page" :orientation "v" :space-evenly false :spacing 14
+      (box :class "performance-card benchmark-hero" :orientation "v" :space-evenly false
+        (performance-section-title :code "B01" :title "BOUNDED SYSTEM BENCHMARK" :subtitle "Local, reproducible workloads with retained evidence")
+        (box :class "benchmark-body" :orientation "v" :space-evenly false :spacing 10
+          (label :class "benchmark-copy" :xalign 0 :wrap true
+            :text "Tests CPU hashing, memory buffering, compression, temporary-file I/O and process-launch responsiveness. The run is finite, uses no network or root access, and removes its 128 MiB scratch file.")
+          (box :class "benchmark-stage-row" :space-evenly false
+            (label :class "benchmark-state ${benchmark_status?.data?.state ?: "idle"}" :xalign 0 :text {benchmark_status?.data?.state_label ?: "READY"})
+            (label :class "benchmark-stage" :xalign 1 :hexpand true :text {benchmark_status?.data?.stage ?: "none"}))
+          (progress :class "benchmark-progress" :value {benchmark_status?.data?.progress ?: 0})
+          (label :class "benchmark-message" :xalign 0 :wrap true :text {benchmark_status?.data?.message ?: "Benchmark status is loading."})
+          (box :class "benchmark-actions" :space-evenly false :spacing 8
+            (button :class {pending_action == "benchmark-start" ? "performance-process-action confirm" : "performance-process-action"}
+              :visible {benchmark_status?.data?.state != "running"}
+              :onclick {pending_action == "benchmark-start" ? "$HOME/.config/eww/scripts/benchmark-action.sh start && ${EWW_CMD} update pending_action=none" : "${EWW_CMD} update pending_action=benchmark-start"}
+              {pending_action == "benchmark-start" ? "CONFIRM 30-60S RUN" : "RUN SUITE"})
+            (button :class "performance-process-action quiet" :visible {pending_action == "benchmark-start"} :onclick "${EWW_CMD} update pending_action=none" "CANCEL CONFIRMATION")
+            (button :class "performance-process-action danger" :visible {benchmark_status?.data?.state == "running"} :onclick "$HOME/.config/eww/scripts/benchmark-action.sh cancel" "STOP SAFELY"))))
+      (box :class "performance-card benchmark-log-card" :orientation "v" :space-evenly false
+        (performance-section-title :code "B02" :title "LIVE EXECUTION LOG" :subtitle "Timestamped stages and measured results")
+        (box :class "benchmark-log" :orientation "v" :space-evenly false :spacing 5
+          (label :class "benchmark-log-empty" :visible {(benchmark_status?.data?.logs ?: []) == []} :xalign 0 :text "No benchmark log is available yet.")
+          (for line in {benchmark_status?.data?.logs ?: []}
+            (label :class "benchmark-log-line" :xalign 0 :text line))))
+      (box :class "performance-card benchmark-report-card" :orientation "v" :space-evenly false
+        (performance-section-title :code "B03" :title "RETAINED REPORT" :subtitle "Markdown source and dependency-free PDF export")
+        (box :class "benchmark-report-body" :orientation "v" :space-evenly false :spacing 7
+          (performance-stat-row :label "Markdown" :value {benchmark_status?.data?.markdown_path != "" ? benchmark_status.data.markdown_path : "Not generated"})
+          (performance-stat-row :label "PDF" :value {benchmark_status?.data?.pdf_path != "" ? benchmark_status.data.pdf_path : "Not generated"})
+          (label :class "benchmark-copy" :xalign 0 :wrap true :text "Reports are private (mode 600) and persist under XDG state after the dashboard closes or Eww restarts."))))))

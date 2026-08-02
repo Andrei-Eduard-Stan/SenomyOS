@@ -1,0 +1,77 @@
+(defwidget tray-flyout-content []
+  (box
+    :class "tray-flyout-content"
+    :orientation "v"
+    :space-evenly false
+
+    (box
+      :class "tray-flyout-header"
+      :space-evenly false
+      (box
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        :spacing 3
+        (label
+          :class "tray-flyout-eyebrow"
+          :xalign 0
+          :text "STATUS AREA")
+        (label
+          :class "tray-flyout-title"
+          :xalign 0
+          :text "Background applications"))
+      (label
+        :class "tray-flyout-count"
+        :text {"${background_apps_status?.data?.tray?.registered_count ?: 0} ACTIVE"})
+      (button
+        :class "flyout-close"
+        :tooltip "Close hidden icons"
+        :timeout "4s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh dismiss ${active_surface} ${active_flyout}"
+        ""))
+
+    (box
+      :class "tray-flyout-items"
+      :space-evenly false
+      :halign "fill"
+      :valign "center"
+
+      (label
+        :class "tray-flyout-empty"
+        :visible {(background_apps_status?.data?.tray?.registered_count ?: 0) == 0}
+        :xalign 0
+        :hexpand true
+        :text "No native tray items are registered.")
+
+      (systray
+        :class "tray-overflow-items"
+        :orientation "h"
+        :halign "end"
+        :valign "center"
+        :space-evenly false
+        :spacing 8
+        :icon-size 18
+        :prepend-new false))
+
+    (button
+      :class "tray-manage-apps"
+      :visible {bar_layout?.data?.phone == true}
+      :onclick "$HOME/.config/eww/scripts/surface-state.sh show-control apps ${active_surface} ${active_flyout}"
+      "MANAGE APPLICATIONS")))
+
+(defwindow tray-flyout
+  :geometry (geometry
+    :x "286px"
+    :y "10px"
+    :width "260px"
+    :height "112px"
+    :anchor "bottom right")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "tray-flyout compact-flyout shell-panel layout-${bar_layout?.data?.density ?: "standard"} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+    :orientation "v"
+    :space-evenly false
+    (tray-flyout-content)))

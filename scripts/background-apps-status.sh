@@ -7,6 +7,7 @@ set -u
 export LC_ALL=C
 
 readonly REGISTRY="${SENOMY_BACKGROUND_APPS_REGISTRY:-${XDG_CONFIG_HOME:-"$HOME/.config"}/eww/data/background-apps.json}"
+readonly ACTION_CACHE="${SENOMY_BACKGROUND_APPS_CACHE:-${XDG_RUNTIME_DIR:-/tmp}/senomyos/background-apps-operation.json}"
 
 printf -v observed_at '%(%s)T' -1
 
@@ -276,12 +277,18 @@ while IFS= read -r app; do
   )"
 done < <(jq -c '.apps[]' <<< "$registry_json")
 
+operation='{"state":"idle","state_label":"READY","app":"none","action":"none","label":"APPLICATIONS // READY","message":"No application operation has run in this session.","exit_code":null,"finished_at":0}'
+if [[ -r "$ACTION_CACHE" ]] && jq -e 'type == "object" and (.state | IN("running","succeeded","failed"))' "$ACTION_CACHE" >/dev/null 2>&1; then
+  operation="$(< "$ACTION_CACHE")"
+fi
+
 jq -nc \
   --argjson observed_at "$observed_at" \
   --argjson tray_host_available "$tray_host_available" \
   --argjson registered_items "$registered_items" \
   --argjson registered_ids "$registered_ids" \
   --argjson apps "$apps" \
+  --argjson operation "$operation" \
   '{
     schema_version: 1,
     ok: true,
@@ -298,6 +305,7 @@ jq -nc \
         $apps[]
         | select(.state == "running" or .state == "external")
       ] | length),
+      operation: $operation,
       apps: $apps
     },
     error: null

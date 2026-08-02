@@ -1,24 +1,54 @@
 (defwidget system-summary []
-  (box
-    :class "system-summary"
-    :orientation "h"
-    :spacing 10
-    :space-evenly false
-    :tooltip {system_status?.ok == true
-      ? "Performance Dashboard coming next"
-      : (system_status?.error?.message ?: "System status loading")}
+  (button
+    :class {active_surface == "performance"
+      ? "system-summary active"
+      : (rail_system_status?.ok != true
+        ? "system-summary unavailable"
+        : (rail_system_status.data.cpu.percent >= 90 || rail_system_status.data.memory.percent >= 90
+          ? "system-summary critical"
+          : (rail_system_status.data.cpu.percent >= 70 || rail_system_status.data.memory.percent >= 80
+            ? "system-summary warning"
+            : "system-summary")))}
+    :tooltip {rail_system_status?.ok == true
+      ? "Open Performance Dashboard"
+      : (rail_system_status?.error?.message ?: "System status loading")}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-performance ${active_surface} ${active_flyout}"
 
-    (label
-      :text {system_status?.ok == true
-        ? "CPU ${round(system_status.data.cpu.percent, 0)}%"
-        : "CPU --"})
+    (box
+      :class "system-summary-content"
+      :orientation "h"
+      :halign "center"
+      :valign "center"
+      :spacing 9
+      :space-evenly false
 
-    (label
-      :text {system_status?.ok == true
-        ? "MEM ${round(system_status.data.memory.percent, 0)}%"
-        : "MEM --"})
+      (label
+        :class "system-summary-metric"
+        :text {rail_system_status?.ok == true
+          ? "CPU ${round(rail_system_status.data.cpu.percent, 0)}%"
+          : "CPU --"})
 
-    (label
-      :text {system_status?.ok == true
-        ? "UP ${system_status.data.uptime.human}"
-        : "UP --"})))
+      (label
+        :class "system-summary-divider"
+        :visible {bar_layout?.data?.phone != true}
+        :text "/")
+
+      (label
+        :class "system-summary-metric"
+        :visible {bar_layout?.data?.phone != true}
+        :text {rail_system_status?.ok == true
+          ? "MEM ${round(rail_system_status.data.memory.percent, 0)}%"
+          : "MEM --"})
+
+      (label
+        :class "system-summary-divider"
+        :visible {bar_layout?.data?.narrow != true}
+        :text "/")
+
+      (label
+        :class "system-summary-metric"
+        :visible {bar_layout?.data?.narrow != true}
+        :text {rail_system_status?.ok == true
+          ? "UP ${rail_system_status.data.uptime.human}"
+          : "UP --"}))))

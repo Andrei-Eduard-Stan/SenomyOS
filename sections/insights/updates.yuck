@@ -55,7 +55,7 @@
     (label
       :class "updates-source-detail"
       :xalign 0
-      :width 500
+      :hexpand true
       :wrap true
       :show-truncated false
       :text detail)
@@ -86,7 +86,7 @@
       :visible {(status?.warning ?: "") != ""}
       (label
         :xalign 0
-        :width 480
+        :hexpand true
         :wrap true
         :show-truncated false
         :text {status?.warning ?: ""}))
@@ -104,7 +104,7 @@
       (label
         :class "updates-error-copy"
         :xalign 0
-        :width 480
+        :hexpand true
         :wrap true
         :show-truncated false
         :text {status?.error?.message ?: "The package source is unavailable."}))
@@ -148,6 +148,7 @@
 
       (box
         :class "updates-overview"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
         :space-evenly false
         :spacing 10
         (box
@@ -195,7 +196,7 @@
       (label
         :class "updates-cache-note"
         :xalign 0
-        :width 500
+        :hexpand true
         :wrap true
         :show-truncated false
         :text "The interface polls only this local result cache. Package commands run once, only when you choose a check."))
@@ -213,7 +214,7 @@
       (label
         :class "updates-error-copy"
         :xalign 0
-        :width 480
+        :hexpand true
         :wrap true
         :show-truncated false
         :text {updates_status?.error?.message ?: "The update cache is unavailable."}))

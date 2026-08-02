@@ -3,7 +3,7 @@
     :class {timeline_source == source
       ? "timeline-source-button active"
       : "timeline-source-button"}
-    :onclick "${EWW_CMD} update timeline_source=${source}"
+    :onclick "$HOME/.config/eww/scripts/ui-action.sh timeline-source ${source}"
     text))
 
 (defwidget timeline-event [event]
@@ -24,6 +24,10 @@
       (label
         :class "timeline-event-source"
         :text {event.source}))
+    (label
+      :class "timeline-event-title"
+      :xalign 0
+      :text {event?.title ?: "Event"})
     (label
       :class "timeline-message"
       :xalign 0
@@ -85,7 +89,22 @@
     (insights-section-heading
       :eyebrow "EVENTS"
       :title "Timeline"
-      :detail "Up to 40 sanitized events. Polling runs only while this tab is visible and Follow is on.")
+      :detail "A bounded local record of shell interactions and sanitized operating-system evidence. It never records keystrokes, file contents, websites, passwords or credentials.")
+
+    (box
+      :class "timeline-explainer"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      (label
+        :class "timeline-explainer-title"
+        :xalign 0
+        :text {timeline_source == "activity" ? "SENOMY ACTIVITY" : timeline_source == "session" ? "USER SESSION JOURNAL" : timeline_source == "system" ? "SYSTEM JOURNAL" : timeline_source == "kernel" ? "KERNEL JOURNAL" : "EWW DAEMON LOG"})
+      (label
+        :class "timeline-explainer-copy"
+        :xalign 0
+        :wrap true
+        :text {timeline_source == "activity" ? "Buttons, panel transitions, section changes and approved SenomyOS actions." : timeline_source == "session" ? "Messages emitted by applications and services in your user session. This is not a history of everything you personally do." : timeline_source == "system" ? "Host services and operating-system events available to your account." : timeline_source == "kernel" ? "Hardware, driver and kernel messages available to your account." : "Native daemon output when available. If this Eww build leaves its cache empty, a clearly sourced Senomy interaction bridge shows component commands instead."}))
 
     (box
       :class "timeline-toolbar"
@@ -97,7 +116,8 @@
         :class "timeline-sources"
         :space-evenly false
         :spacing 4
-        (timeline-source-button :source "user" :text "User")
+        (timeline-source-button :source "activity" :text "Activity")
+        (timeline-source-button :source "session" :text "Session")
         (timeline-source-button :source "system" :text "System")
         (timeline-source-button :source "kernel" :text "Kernel")
         (timeline-source-button :source "eww" :text "Eww"))
@@ -110,13 +130,16 @@
             ? "timeline-follow active"
             : "timeline-follow"}
           :onclick {timeline_follow
-            ? "${EWW_CMD} update timeline_follow=false"
-            : "${EWW_CMD} update timeline_follow=true"}
+            ? "$HOME/.config/eww/scripts/ui-action.sh timeline-follow false"
+            : "$HOME/.config/eww/scripts/ui-action.sh timeline-follow true"}
           {timeline_follow ? "FOLLOW // ON" : "FOLLOW // PAUSED"})))
 
     (box
-      :visible {timeline_source == "user"}
-      (timeline-source-view :status timeline_user_status))
+      :visible {timeline_source == "activity"}
+      (timeline-source-view :status timeline_activity_status))
+    (box
+      :visible {timeline_source == "session"}
+      (timeline-source-view :status timeline_session_status))
     (box
       :visible {timeline_source == "system"}
       (timeline-source-view :status timeline_system_status))

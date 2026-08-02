@@ -7,7 +7,7 @@ set -u
 
 export LC_ALL=C
 
-readonly MODE="${1:-user}"
+readonly MODE="${1:-activity}"
 readonly LIMIT="${SENOMY_TIMELINE_LIMIT:-40}"
 readonly USER_NAME="${USER:-unknown}"
 readonly USER_HOME="${HOME:-/nonexistent}"
@@ -146,6 +146,7 @@ emit_journal() {
             time: $event_time.time,
             severity: priority_name,
             source: source_name,
+            title: source_name,
             message: message_text
           }
       )
@@ -166,8 +167,40 @@ emit_journal() {
     ' <<< "$journal_json"
 }
 
+emit_activity() {
+  local event_file="${SENOMY_STATE_HOME:-${XDG_STATE_HOME:-"$USER_HOME/.local/state"}/senomyos}/activity.jsonl"
+  local activity_json='[]'
+
+  if [[ -r "$event_file" ]]; then
+    activity_json="$(tail -n "$LIMIT" "$event_file" 2>/dev/null | jq -sc 'map(select(type == "object"))')" ||
+      emit_error "senomy-activity" "source_unavailable" "Unable to read the Senomy activity journal"
+  fi
+
+  jq -nc --argjson observed_at "$observed_at" --argjson limit "$LIMIT" \
+    --arg mode "$MODE" --argjson events "$activity_json" '
+      def words: gsub("[-_.]"; " ");
+      def title: words | split(" ") | map(if length > 0 then (.[0:1] | ascii_upcase) + .[1:] else . end) | join(" ");
+      $events | reverse | map(
+        (.epoch // 0) as $epoch
+        | {
+            id: ("activity-" + ($epoch | tostring) + "-" + (.event // "event")),
+            date: ($epoch | strftime("%Y-%m-%d")),
+            time: ($epoch | strftime("%H:%M:%S")),
+            severity: (if .outcome == "failed" then "error" elif .outcome == "requested" then "notice" else "info" end),
+            source: ("senomy/" + (.category // "shell")),
+            title: ((.event // "event") | title),
+            message: (((.event // "event") | words) + " // " + ((.target // "none") | words) + " // " + (.outcome // "succeeded"))
+          }
+      ) | {
+        schema_version: 1, ok: true, source: "senomy-activity", observed_at: $observed_at,
+        data: {mode: $mode, limit: $limit, count: length, entries: .}, error: null
+      }
+    '
+}
+
 emit_eww() {
   local cache_root="${XDG_CACHE_HOME:-"$USER_HOME/.cache"}/eww"
+  local activity_file="${SENOMY_STATE_HOME:-${XDG_STATE_HOME:-"$USER_HOME/.local/state"}/senomyos}/activity.jsonl"
   local log_file
   local log_text
 
@@ -180,7 +213,16 @@ emit_eww() {
   )"
 
   [[ -n "$log_file" && -r "$log_file" ]] ||
-    emit_error "eww-log" "source_unavailable" "No readable Eww log is available"
+    emit_error "eww-log" "source_unavailable" "No readable native Eww log file exists. Senomy interactions remain available under Activity."
+
+  if [[ ! -s "$log_file" && -r "$activity_file" ]]; then
+    SENOMY_STATE_HOME="$(dirname "$activity_file")" emit_activity |
+      jq -c '.source = "eww-interaction-bridge" | .data.mode = "eww" | .data.native_available = false'
+    return
+  fi
+
+  [[ -s "$log_file" ]] ||
+    emit_error "eww-log" "empty_native_log" "This Eww build created an empty native log. No structured shell interactions have been recorded yet."
 
   log_text="$(tail -n "$LIMIT" "$log_file" 2>/dev/null)" ||
     emit_error "eww-log" "source_unavailable" "Unable to read the Eww log"
@@ -225,6 +267,7 @@ emit_eww() {
             end
           ),
           source: "eww",
+          title: "Eww daemon",
           message: (.value | sanitize)
         })
       | reverse
@@ -245,9 +288,12 @@ emit_eww() {
 }
 
 case "$MODE" in
-  user)
+  activity)
+    emit_activity
+    ;;
+  session | user)
     emit_journal \
-      "journalctl-user" \
+      "journalctl-session" \
       journalctl --user -n "$LIMIT" -o json --no-pager
     ;;
   system)

@@ -1,0 +1,75 @@
+(defwidget console-shell-card [shell]
+  (box
+    :class {shell.available ? "console-shell-card available" : "console-shell-card unavailable"}
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (box
+      :space-evenly false
+      (label :class "console-shell-code" :xalign 0 :hexpand true :text {shell.code})
+      (label :class {shell.available ? "console-availability ready" : "console-availability"} :text {shell.available ? "READY" : "NOT INSTALLED"}))
+    (label :class "console-shell-name" :xalign 0 :text {shell.name})
+    (label :class "console-shell-summary" :xalign 0 :wrap true :text {shell.summary})
+    (label :class "console-shell-path" :xalign 0 :text {shell.available ? shell.path : "No executable detected"})
+    (button
+      :class "console-launch"
+      :active {shell.available && console_catalog?.data?.terminal?.available == true}
+      :tooltip {shell.available ? "Launch ${shell.name} in Kitty with a real PTY" : "Install ${shell.name} before launching it"}
+      :onclick "$HOME/.config/eww/scripts/console-status.sh launch-ui ${shell.id} ${active_surface} ${active_flyout}"
+      "OPEN REAL ${shell.code} SESSION")))
+
+(defwidget console-task [task]
+  (button
+    :class {console_status?.data?.task_id == task.id ? "console-task active" : "console-task"}
+    :tooltip {task.preview}
+    :active {console_status?.data?.state != "running"}
+    :onclick "$HOME/.config/eww/scripts/console-status.sh run-async ${task.id}"
+    (box
+      :space-evenly false
+      :spacing 10
+      (label :class "console-task-code" :text {task.code})
+      (box :orientation "v" :space-evenly false :hexpand true
+        (label :class "console-task-title" :xalign 0 :text {task.title})
+        (label :class "console-task-summary" :xalign 0 :text {task.summary}))
+      (label :class "console-task-run" :text "RUN >"))))
+
+(defwidget console-output-line [line]
+  (box :class "console-output-line" :space-evenly false :spacing 9
+    (label :class "console-output-number" :yalign 0 :text {line.line_no})
+    (label :class "console-output-text" :xalign 0 :yalign 0 :wrap true :text {line.text})))
+
+(defwidget insights-console []
+  (box
+    :class "insights-section console-section"
+    :orientation "v"
+    :space-evenly false
+    :spacing 14
+    (insights-section-heading
+      :eyebrow "SHELL COCKPIT"
+      :title "Console"
+      :detail "Run safe bounded inspections here, or hand off to a real terminal emulator for unrestricted interactive work.")
+    (box :class "console-boundary" :orientation "v" :space-evenly false :spacing 4
+      (label :class "console-boundary-title" :xalign 0 :text "WHY THE PROMPT IS NOT EMBEDDED")
+      (label :class "console-boundary-copy" :xalign 0 :wrap true :text "Eww is a widget engine, not a PTY terminal. Free-form text callbacks would expose shell injection and cannot correctly provide job control, signals, sudo prompts or full-screen terminal programs. Launch buttons open Kitty, where those facilities are real."))
+    (box :class "console-shell-grid" :orientation "v" :space-evenly false :spacing 8
+      (label :class "console-section-label" :xalign 0 :text "DETECTED SHELLS // REAL PTY HANDOFF")
+      (for shell in {console_catalog?.data?.shells ?: []}
+        (console-shell-card :shell shell)))
+    (box :class "console-task-list" :orientation "v" :space-evenly false :spacing 6
+      (label :class "console-section-label" :xalign 0 :text "BOUNDED COMMAND PALETTE // NO SUDO // NO MUTATION")
+      (for task in {console_catalog?.data?.tasks ?: []}
+        (console-task :task task)))
+    (box :class "console-terminal" :orientation "v" :space-evenly false
+      (box :class "console-terminal-header" :space-evenly false
+        (label :class "console-terminal-mark" :text {console_status?.data?.code ?: "RUN"})
+        (label :class "console-terminal-title" :xalign 0 :hexpand true :text {console_status?.data?.title ?: "Console standing by"})
+        (label :class "console-terminal-state" :text {console_status?.data?.state_label ?: "READY"})
+        (button :class "console-clear" :onclick "$HOME/.config/eww/scripts/console-status.sh clear" "CLEAR"))
+      (box :class "console-command-line" :space-evenly false :spacing 8
+        (label :class "console-prompt" :text "seno@arch:~$")
+        (label :class "console-command-preview" :xalign 0 :wrap true :text {console_status?.data?.command_preview ?: "select <task>"}))
+      (box :class "console-output" :orientation "v" :space-evenly false
+        (for line in {console_status?.data?.output ?: []}
+          (console-output-line :line line)))
+      (label :class "console-empty" :xalign 0 :visible {console_status?.data?.state == "idle"} :text "No bounded command has run in this session.")
+      (label :class "console-truncated" :xalign 0 :visible {console_status?.data?.truncated == true} :text "OUTPUT BOUNDED // ${console_status.data.line_count} total lines"))))

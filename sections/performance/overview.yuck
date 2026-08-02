@@ -1,0 +1,223 @@
+(defwidget performance-overview-page []
+  (scroll
+    :class "performance-page-scroll"
+    :vscroll true
+    :hscroll false
+    :vexpand true
+    :hexpand true
+
+    (box
+      :class "performance-page performance-overview-page"
+      :orientation "v"
+      :space-evenly false
+      :spacing 14
+
+      (box
+        :class "performance-kpi-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 10
+        (performance-kpi
+          :code "CPU"
+          :label "COMPUTE"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.cpu.percent, 1)}%"
+            : "--%"}
+          :detail {system_status?.data?.cpu?.frequency?.available == true
+            ? "${system_status.data.cpu.frequency.current_mhz} MHz / ${system_status.data.cpu.logical_cpus} threads"
+            : "${system_status?.data?.cpu?.logical_cpus ?: 0} logical threads"}
+          :tone "cpu")
+        (performance-kpi
+          :code "MEM"
+          :label "WORKING SET"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.memory.used_bytes / 1073741824, 1)} GiB"
+            : "-- GiB"}
+          :detail {system_status?.ok == true
+            ? "${round(system_status.data.memory.percent, 1)}% of ${round(system_status.data.memory.total_bytes / 1073741824, 1)} GiB"
+            : "Memory source unavailable"}
+          :tone "memory")
+        (performance-kpi
+          :code "I/O"
+          :label "ROOT DEVICE"
+          :value {system_status?.data?.disk?.available == true
+            ? "${round((system_status.data.disk.read_bytes_per_second + system_status.data.disk.write_bytes_per_second) / 1048576, 2)} MiB/s"
+            : "UNAVAILABLE"}
+          :detail {system_status?.data?.disk?.available == true
+            ? "${system_status.data.disk.device} / ${round(system_status.data.disk.busy_percent, 1)}% busy"
+            : "No root block counter"}
+          :tone "storage")
+        (performance-kpi
+          :code "NET"
+          :label "LINK TRAFFIC"
+          :value {system_status?.data?.network?.available == true
+            ? "${round((system_status.data.network.receive_bytes_per_second + system_status.data.network.transmit_bytes_per_second) / 1024, 1)} KiB/s"
+            : "OFFLINE"}
+          :detail {system_status?.data?.network?.available == true
+            ? "${system_status.data.network.interface} / ${system_status.data.network.kind}"
+            : "No active route"}
+          :tone "network"))
+
+      (box
+        :class "performance-chart-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+        (performance-history-panel
+          :code "01"
+          :title "TOTAL CPU UTILIZATION"
+          :metric "cpu"
+          :tone "cpu"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.cpu.percent, 1)}%"
+            : "--%"}
+          :meta {system_status?.data?.thermal?.cpu?.available == true
+            ? "${round(system_status.data.thermal.cpu.celsius, 1)} C PACKAGE"
+            : "TEMP UNAVAILABLE"}
+          :scale "0 - 100%")
+        (performance-history-panel
+          :code "02"
+          :title "PHYSICAL MEMORY"
+          :metric "memory"
+          :tone "memory"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.memory.percent, 1)}%"
+            : "--%"}
+          :meta {system_status?.ok == true
+            ? "${round(system_status.data.memory.available_bytes / 1073741824, 1)} GiB AVAILABLE"
+            : "MEMORY UNAVAILABLE"}
+          :scale "0 - 100%"))
+
+      (box
+        :class "performance-overview-lower"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+
+        (box
+          :class "performance-card performance-overview-health"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "03"
+            :title "SYSTEM STATE"
+            :subtitle "Host, kernel and pressure summary")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Host"
+              :value {performance_status?.data?.health?.hostname ?: "--"})
+            (performance-stat-row
+              :label "Operating system"
+              :value {performance_status?.data?.health?.os ?: "--"})
+            (performance-stat-row
+              :label "Kernel"
+              :value {performance_status?.data?.health?.kernel ?: "--"})
+            (performance-stat-row
+              :label "Uptime"
+              :value {system_status?.data?.uptime?.human ?: "--"})
+            (performance-stat-row
+              :label "Load 1 / 5 / 15"
+              :value {system_status?.ok == true
+                ? "${system_status.data.load.one} / ${system_status.data.load.five} / ${system_status.data.load.fifteen}"
+                : "-- / -- / --"})
+            (performance-stat-row
+              :label "CPU pressure / 10s"
+              :value {system_status?.data?.pressure?.available == true
+                ? "${round(system_status.data.pressure.cpu.some_avg10, 2)}%"
+                : "UNAVAILABLE"})
+            (performance-stat-row
+              :label "Failed services"
+              :value {performance_status?.data?.services?.available == true
+                ? "${performance_status.data.services.failed_total}"
+                : "UNAVAILABLE"})))
+
+        (box
+          :class "performance-card performance-overview-power"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "04"
+            :title "POWER SNAPSHOT"
+            :subtitle "Presentation remains intentionally compact")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 9
+            (box
+              :space-evenly false
+              (label
+                :class "performance-stat-label"
+                :hexpand true
+                :xalign 0
+                :text {batt_json.dual ? "BAT0" : "BATTERY"})
+              (label
+                :class "performance-stat-value"
+                :text {batt_json.dual
+                  ? "${batt_json.bat0_percent}%"
+                  : "${batt_json.percent_total}%"}))
+            (progress
+              :class "performance-meter-track battery"
+              :value {batt_json.dual
+                ? batt_json.bat0_percent
+                : batt_json.percent_total})
+            (box
+              :visible {batt_json.dual}
+              :space-evenly false
+              (label
+                :class "performance-stat-label"
+                :hexpand true
+                :xalign 0
+                :text "BAT1")
+              (label
+                :class "performance-stat-value"
+                :text "${batt_json.bat1_percent}%"))
+            (progress
+              :class "performance-meter-track battery"
+              :visible {batt_json.dual}
+              :value {batt_json.bat1_percent})
+            (performance-stat-row
+              :label "Combined"
+              :value "${batt_json.percent_total}% / ${batt_json.state}")
+            (label
+              :class "performance-scope-note"
+              :xalign 0
+              :wrap true
+              :text "Advanced battery health, charging controls and power policy belong to Control Centre / Power.")))
+
+        (box
+          :class "performance-card performance-overview-observer"
+          :orientation "v"
+          :space-evenly false
+          (performance-section-title
+            :code "S"
+            :title "SENOMY OBSERVER"
+            :subtitle "Read-only system interpretation")
+          (box
+            :class "performance-observer-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 9
+            (senomy-avatar
+              :variant "portrait"
+              :size 52
+              :context "observer"
+              :domain "performance")
+            (label
+              :class "performance-observer-message"
+              :xalign 0
+              :wrap true
+              :text {performance_status?.data?.services?.failed_total == 0
+                ? "Seno: System services are steady. Deep telemetry is recording locally."
+                : "Seno: A failed service needs inspection. I can open the diagnostic deck."})
+            (button
+              :class "performance-observer-action"
+              :tooltip "Open curated diagnostics in Senomy Insights"
+              :timeout "8s"
+              :onclick "$HOME/.config/eww/scripts/surface-state.sh show-insights diagnostics ${active_surface} ${active_flyout}"
+              "OPEN DIAGNOSTICS")))))))

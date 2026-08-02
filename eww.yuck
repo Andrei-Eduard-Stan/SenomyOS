@@ -1,5 +1,7 @@
 ;;Include windgets --
 
+(include "widgets/bar-icon.yuck")
+(include "widgets/senomy-avatar.yuck")
 (include "widgets/workspace-widget.yuck")
 (include "widgets/system-widget.yuck")
 (include "widgets/volume-widget.yuck")
@@ -8,6 +10,7 @@
 (include "widgets/clock-widget.yuck")
 (include "widgets/senomy-status.yuck")
 (include "widgets/system-tray.yuck")
+(include "widgets/performance-components.yuck")
 
 ; Include section content --
 
@@ -15,43 +18,187 @@
 (include "sections/insights/timeline.yuck")
 (include "sections/insights/updates.yuck")
 (include "sections/insights/diagnostics.yuck")
+(include "sections/insights/console.yuck")
 (include "sections/insights/reports.yuck")
+(include "sections/insights/wiki.yuck")
 (include "sections/control/applications.yuck")
+(include "sections/control/network.yuck")
+(include "sections/control/audio.yuck")
+(include "sections/control/power.yuck")
+(include "sections/control/system-sections.yuck")
+(include "sections/performance/overview.yuck")
+(include "sections/performance/cpu.yuck")
+(include "sections/performance/memory.yuck")
+(include "sections/performance/storage.yuck")
+(include "sections/performance/network.yuck")
+(include "sections/performance/processes.yuck")
+(include "sections/performance/benchmarks.yuck")
 
 ; Include windows --
 
+(include "windows/surface-dismiss.yuck")
 (include "windows/clock-panel.yuck")
 (include "windows/actioncenter-panel.yuck")
 (include "windows/insights-panel.yuck")
+(include "windows/volume-flyout.yuck")
+(include "windows/tray-flyout.yuck")
+(include "windows/performance-dashboard.yuck")
 (include "windows/main-bar.yuck")
 
 ; Variables --
 (defvar workspaces "")
 (defvar workspace_state "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"active_id\":0,\"max_id\":0,\"workspaces\":[]},\"error\":{\"code\":\"loading\",\"message\":\"Workspace state is loading\"}}")
 (defvar active_surface "none") ; none|control|performance|insights
-(defvar control_section "overview") ; overview|network|audio|power|calendar|input|devices|apps|settings
-(defvar insights_section "briefing") ; briefing|timeline|updates|diagnostics|reports
-(defvar timeline_source "user") ; user|system|kernel|eww
+(defvar active_flyout "none") ; none|volume|tray
+(defvar dismiss_armed false) ; release guard for the shared outside-click layer
+(defvar control_section "overview") ; overview|network|audio|power|calendar|input|devices|apps|appearance|settings
+(defvar insights_section "briefing") ; briefing|timeline|updates|diagnostics|console|reports|wiki
+(defvar performance_section "overview") ; overview|cpu|memory|storage|network|processes|benchmarks
+(defvar timeline_source "activity") ; activity|session|system|kernel|eww
 (defvar timeline_follow true)
-(defvar chibi_state "idle")
+(defvar report_profile "overview") ; overview|performance|network|power|full
+(defvar chibi_state "idle") ; manual ambient domain only
+(defvar wiki_category "start")
+(defvar wiki_article "welcome")
 (defvar pending_action "none")
+(defvar appearance_advanced false)
+(defvar performance_process_sort "cpu") ; cpu|memory|name
+(defvar performance_process_filter "all") ; all|user|active|heavy
+(defvar selected_process_pid 0)
 
+(defpoll senomy_avatar_catalog
+  :interval "60s"
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"default_state\":\"idle\",\"states\":[]},\"error\":{\"code\":\"loading\",\"message\":\"Senomy avatar assets are loading\"}}"
+  "/usr/bin/env sh -c 'config=$SENOMY_EWW_CONFIG; if [ -z \"$config\" ]; then base=$XDG_CONFIG_HOME; [ -n \"$base\" ] || base=$HOME/.config; config=$base/eww; fi; exec \"$config/scripts/senomy-avatar.sh\" catalog'")
+(defpoll wiki_catalog
+  :interval "3s"
+  :run-while {active_surface == "insights" && insights_section == "wiki"}
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"root\":\"\",\"default_category_id\":\"start\",\"default_article_id\":\"welcome\",\"category_count\":0,\"article_count\":0,\"categories\":[],\"articles\":[],\"warnings\":[],\"errors\":[]},\"error\":{\"code\":\"loading\",\"message\":\"The Markdown catalog is loading\"}}"
+  "/usr/bin/env sh -c 'config=$SENOMY_EWW_CONFIG; if [ -z \"$config\" ]; then base=$XDG_CONFIG_HOME; [ -n \"$base\" ] || base=$HOME/.config; config=$base/eww; fi; exec \"$config/scripts/wiki-status.py\" catalog'")
 (defpoll time :interval "60s" "date +%H:%M")
 (defpoll date :interval "60s" "date '+%a, %d %b'")
+(deflisten bar_audio_status
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"available\":false,\"muted\":false,\"volume_percent\":0,\"name\":\"Loading\"},\"error\":{\"code\":\"loading\",\"message\":\"Audio state is loading\"}}"
+  "$HOME/.config/eww/scripts/bar-audio-listener.sh")
+(deflisten bar_network_status
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"available\":false,\"networking_enabled\":false,\"wifi_enabled\":false,\"connected\":false,\"connectivity\":\"unknown\",\"connection_name\":\"Loading\",\"signal_percent\":0},\"error\":{\"code\":\"loading\",\"message\":\"Network state is loading\"}}"
+  "$HOME/.config/eww/scripts/bar-network-listener.sh")
+(defpoll bar_layout
+  :interval "15s"
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"monitor_id\":0,\"width\":1920,\"height\":1080,\"scale\":1,\"preferred_density\":\"auto\",\"density\":\"standard\",\"compact\":false,\"narrow\":false},\"error\":null}"
+  "$HOME/.config/eww/scripts/bar-layout.sh")
+(deflisten appearance_status
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"font_family\":\"jetbrains\",\"font_scale\":\"standard\",\"heading_scale\":\"standard\",\"body_scale\":\"standard\",\"meta_scale\":\"standard\",\"title_px\":16,\"body_px\":11,\"meta_px\":9,\"nav_px\":10,\"rail_px\":11,\"accent\":\"cyan\",\"gradient\":\"subtle\",\"fonts\":{}},\"error\":null}"
+  "$HOME/.config/eww/scripts/appearance-listener.sh")
+(defpoll appearance_operation_status
+  :interval "250ms"
+  :run-while {active_surface == "control" && control_section == "appearance"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"label\":\"Appearance ready\",\"message\":\"Changes apply live and persist across restarts.\",\"progress_percent\":0},\"error\":null}"
+  "$HOME/.config/eww/scripts/settings-action.sh status")
 (defpoll batt_json
   :interval "10s"
-  :initial "{\"dual\":false,\"bat0_percent\":0,\"bat0_icon\":\"\",\"bat1_percent\":0,\"bat1_icon\":\"\",\"percent_total\":0,\"total_icon\":\"\",\"state\":\"loading\"}"
+  :initial "{\"available\":false,\"dual\":false,\"bat0_percent\":0,\"bat0_icon\":\"\",\"bat1_percent\":0,\"bat1_icon\":\"\",\"percent_total\":0,\"total_icon\":\"\",\"state\":\"loading\",\"error\":null}"
   "~/.config/eww/scripts/battery.sh")
-(defpoll system_status :interval "2s" :initial "{}" "$HOME/.config/eww/scripts/system-status.sh")
+(defpoll power_status
+  :interval "5s"
+  :run-while {active_surface == "control" && control_section == "power"}
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":null,\"error\":{\"code\":\"loading\",\"message\":\"Detailed power telemetry is loading\"}}"
+  "$HOME/.config/eww/scripts/power-status.sh")
+(defpoll power_operation_status
+  :interval "500ms"
+  :run-while {active_surface == "control" && control_section == "power"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"action\":\"none\",\"label\":\"Power control ready\",\"message\":\"No power profile operation has run in this session.\",\"exit_code\":null},\"error\":null}"
+  "$HOME/.config/eww/scripts/power-action.sh status")
+(defpoll brightness_operation_status
+  :interval "500ms"
+  :run-while {active_surface == "control" && control_section == "power"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"action\":\"none\",\"label\":\"DISPLAY BRIGHTNESS\",\"message\":\"No brightness operation has run in this session.\",\"exit_code\":null},\"error\":null}"
+  "$HOME/.config/eww/scripts/brightness-action.sh status")
+(defpoll system_status
+  :interval "10s"
+  :initial "{}"
+  "$HOME/.config/eww/scripts/performance-history.sh sample")
+(defpoll rail_system_status
+  :interval "2s"
+  :initial "{}"
+  "$HOME/.config/eww/scripts/rail-system-status.sh")
+(defpoll performance_history
+  :interval "10s"
+  :run-while {active_surface == "performance" && (performance_section == "overview" || performance_section == "cpu" || performance_section == "storage" || performance_section == "network")}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"window_seconds\":300,\"sample_interval_seconds\":10,\"data\":{\"samples\":[],\"scales\":{\"disk_bytes_per_second\":1048576,\"network_bytes_per_second\":131072}},\"error\":null}"
+  "$HOME/.config/eww/scripts/performance-history.sh read")
+(defpoll audio_status
+  :interval "1s"
+  :run-while {active_flyout == "volume" || (active_surface == "control" && (control_section == "audio" || control_section == "devices"))}
+  :initial "{\"schema_version\":2,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"available\":false,\"server\":{\"name\":\"\",\"version\":\"\",\"protocol\":0,\"sample_spec\":\"\",\"pipewire_active\":false,\"wireplumber_active\":false},\"output\":{\"id\":\"\",\"index\":0,\"name\":\"\",\"is_default\":false,\"volume_percent\":0,\"muted\":false,\"state\":\"\",\"active_port\":\"\",\"active_port_description\":\"\",\"ports\":[],\"sample_spec\":\"\",\"channel_map\":\"\",\"driver\":\"\",\"hardware\":{\"product\":\"\",\"codec\":\"\",\"bus\":\"\",\"profile\":\"\"}},\"input\":{\"id\":\"\",\"index\":0,\"name\":\"\",\"is_default\":false,\"volume_percent\":0,\"muted\":false,\"state\":\"\",\"active_port\":\"\",\"active_port_description\":\"\",\"ports\":[],\"sample_spec\":\"\",\"channel_map\":\"\",\"driver\":\"\",\"hardware\":{\"product\":\"\",\"codec\":\"\",\"bus\":\"\",\"profile\":\"\"}},\"outputs\":[],\"inputs\":[],\"hardware\":[],\"output_count\":0,\"input_count\":0,\"physical_output_count\":0,\"hardware_count\":0,\"degraded\":false,\"degraded_reason\":\"\"},\"error\":{\"code\":\"loading\",\"message\":\"Audio status is loading\"}}"
+  "$HOME/.config/eww/scripts/audio-status.sh")
+(defpoll audio_operation_status
+  :interval "500ms"
+  :run-while {active_surface == "control" && control_section == "audio"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"action\":\"none\",\"label\":\"Audio control ready\",\"message\":\"No discrete audio operation has run in this session.\",\"exit_code\":null},\"error\":null}"
+  "$HOME/.config/eww/scripts/audio-action.sh status")
+(defpoll network_status
+  :interval "4s"
+  :run-while {active_surface == "control" && (control_section == "overview" || control_section == "network" || control_section == "devices")}
+  :initial "{\"schema_version\":2,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"\",\"connectivity\":\"\",\"networking_enabled\":false,\"connected\":false,\"internet\":{\"online\":false,\"captive_portal\":false,\"limited\":false,\"label\":\"\",\"detail\":\"\"},\"primary\":{\"id\":\"\",\"type\":\"\",\"state\":\"\",\"connected\":false,\"connection\":\"\",\"connection_uuid\":\"\",\"mtu\":0,\"hardware_address\":\"\",\"driver\":\"\",\"firmware\":\"\",\"ip4_addresses\":[],\"ip6_addresses\":[],\"gateway4\":\"\",\"gateway6\":\"\",\"dns\":[],\"carrier\":false,\"speed_mbps\":\"\"},\"wifi\":{\"enabled\":false,\"connected\":false,\"device\":{\"id\":\"\",\"type\":\"\",\"state\":\"\",\"connected\":false,\"connection\":\"\",\"connection_uuid\":\"\",\"mtu\":0,\"hardware_address\":\"\",\"driver\":\"\",\"firmware\":\"\",\"ip4_addresses\":[],\"ip6_addresses\":[],\"gateway4\":\"\",\"gateway6\":\"\",\"dns\":[],\"carrier\":false,\"speed_mbps\":\"\"},\"access_point\":{\"bssid\":\"\",\"ssid\":\"\",\"channel\":0,\"frequency_mhz\":0,\"band\":\"\",\"rate\":\"\",\"signal_percent\":0,\"security\":\"\"},\"saved_profile_count\":0,\"saved_profiles\":[],\"nearby\":[],\"nearby_count\":0,\"hidden_network_count\":0},\"ethernet\":{\"connected\":false,\"device\":{\"id\":\"\",\"type\":\"\",\"state\":\"\",\"connected\":false,\"connection\":\"\",\"connection_uuid\":\"\",\"mtu\":0,\"hardware_address\":\"\",\"driver\":\"\",\"firmware\":\"\",\"ip4_addresses\":[],\"ip6_addresses\":[],\"gateway4\":\"\",\"gateway6\":\"\",\"dns\":[],\"carrier\":false,\"speed_mbps\":\"\"}},\"devices\":[],\"device_count\":0},\"error\":{\"code\":\"loading\",\"message\":\"Network telemetry is loading\"}}"
+  "$HOME/.config/eww/scripts/network-status.sh")
+(defpoll network_operation_status
+  :interval "500ms"
+  :run-while {active_surface == "control" && control_section == "network"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"action\":\"none\",\"label\":\"Network control ready\",\"message\":\"No network operation has run in this session.\",\"exit_code\":null},\"error\":null}"
+  "$HOME/.config/eww/scripts/network-action.sh status")
+(defpoll control_status
+  :interval "5s"
+  :run-while {active_surface == "control" && (control_section == "overview" || control_section == "calendar" || control_section == "input" || control_section == "devices" || control_section == "appearance" || control_section == "settings")}
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":null,\"error\":{\"code\":\"loading\",\"message\":\"Control Centre inventory is loading\"}}"
+  "$HOME/.config/eww/scripts/control-status.sh")
+(defpoll bluetooth_status
+  :interval "2s"
+  :run-while {active_surface == "control" && control_section == "devices"}
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"available\":false,\"controller\":null,\"devices\":[],\"counts\":{\"known\":0,\"paired\":0,\"connected\":0},\"action\":{\"state\":\"idle\",\"state_label\":\"LOADING\",\"message\":\"Bluetooth inventory is loading.\"}},\"error\":null}"
+  "$HOME/.config/eww/scripts/bluetooth-status.sh")
+(defpoll performance_status
+  :interval "15s"
+  :run-while {active_surface == "performance"}
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":null,\"error\":{\"code\":\"loading\",\"message\":\"Performance data is loading\"}}"
+  "$HOME/.config/eww/scripts/performance-status.sh")
+(defpoll performance_processes
+  :interval "3s"
+  :run-while {active_surface == "performance" && performance_section == "processes"}
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":null,\"error\":{\"code\":\"loading\",\"message\":\"Process data is loading\"}}"
+  "$HOME/.config/eww/scripts/performance-processes.sh")
+(defpoll performance_operation_status
+  :interval "1s"
+  :run-while {active_surface == "performance" && performance_section == "processes"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"action\":\"none\",\"label\":\"PERFORMANCE CONTROL READY\",\"message\":\"No performance operation has run in this session.\",\"exit_code\":null},\"error\":null}"
+  "$HOME/.config/eww/scripts/performance-action.sh status")
+(defpoll benchmark_status
+  :interval "500ms"
+  :run-while {active_surface == "performance" && performance_section == "benchmarks"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"progress\":0,\"stage\":\"none\",\"message\":\"Benchmark status is loading.\",\"started_at\":0,\"finished_at\":0,\"markdown_path\":\"\",\"pdf_path\":\"\",\"logs\":[]},\"error\":null}"
+  "$HOME/.config/eww/scripts/benchmark-status.sh")
+(defpoll performance_process_detail
+  :interval "2s"
+  :run-while {active_surface == "performance" && performance_section == "processes" && selected_process_pid > 0}
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":null,\"error\":{\"code\":\"no_selection\",\"message\":\"Select a process to inspect\"}}"
+  "$HOME/.config/eww/scripts/performance-process-detail.sh")
 (defpoll senomy_ambient
   :interval "15m"
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"id\":\"ambient-initial\",\"category\":\"ambient\",\"severity\":\"ambient\",\"rarity\":\"common\",\"language\":\"en\",\"tone\":\"calm\",\"text\":\"Everything looks steady.\"},\"error\":null}"
   "$HOME/.config/eww/scripts/senomy-dialogue.sh ambient")
-(defpoll timeline_user_status
+(deflisten senomy_rail_message
+  :initial "Everything looks steady."
+  "$HOME/.config/eww/scripts/senomy-rail-message.sh")
+(defpoll timeline_activity_status
+  :interval "2s"
+  :run-while {active_surface == "insights" && insights_section == "timeline" && timeline_source == "activity" && timeline_follow}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"mode\":\"activity\",\"limit\":40,\"count\":0,\"entries\":[]},\"error\":null}"
+  "$HOME/.config/eww/scripts/timeline-status.sh activity")
+(defpoll timeline_session_status
   :interval "5s"
-  :run-while {active_surface == "insights" && insights_section == "timeline" && timeline_source == "user" && timeline_follow}
-  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"mode\":\"user\",\"limit\":40,\"count\":0,\"entries\":[]},\"error\":null}"
-  "$HOME/.config/eww/scripts/timeline-status.sh user")
+  :run-while {active_surface == "insights" && insights_section == "timeline" && timeline_source == "session" && timeline_follow}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"mode\":\"session\",\"limit\":40,\"count\":0,\"entries\":[]},\"error\":null}"
+  "$HOME/.config/eww/scripts/timeline-status.sh session")
 (defpoll timeline_system_status
   :interval "5s"
   :run-while {active_surface == "insights" && insights_section == "timeline" && timeline_source == "system" && timeline_follow}
@@ -69,9 +216,14 @@
   "$HOME/.config/eww/scripts/timeline-status.sh eww")
 (defpoll updates_status
   :interval "2s"
-  :run-while {active_surface == "insights" && insights_section == "updates"}
+  :run-while {active_surface == "insights" && (insights_section == "briefing" || insights_section == "updates")}
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"never_checked\",\"active_check\":\"none\",\"known_total_count\":0,\"successful_source_count\":0,\"last_attempt_at\":0,\"last_attempt_label\":\"NEVER\",\"official\":{\"state\":\"never_checked\",\"state_label\":\"NOT CHECKED\",\"ok\":false,\"source\":\"none\",\"freshness\":\"unknown\",\"checked_at\":0,\"checked_at_label\":\"NEVER\",\"count\":0,\"shown_count\":0,\"truncated\":false,\"packages\":[],\"warning\":\"Without checkupdates, the fallback reads pacman local databases and may be stale.\",\"error\":null},\"aur\":{\"state\":\"never_checked\",\"state_label\":\"NOT CHECKED\",\"ok\":false,\"source\":\"none\",\"freshness\":\"unknown\",\"checked_at\":0,\"checked_at_label\":\"NEVER\",\"count\":0,\"shown_count\":0,\"truncated\":false,\"packages\":[],\"warning\":\"An AUR check queries aur.archlinux.org with installed foreign package names.\",\"error\":null}},\"error\":null}"
   "$HOME/.config/eww/scripts/update-status.sh read")
+(defpoll report_status
+  :interval "2s"
+  :run-while {active_surface == "insights" && insights_section == "reports"}
+  :initial "{\"schema_version\":2,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"exists\":false,\"latest\":{},\"history\":[],\"history_count\":0,\"preview\":[]},\"error\":null}"
+  "$HOME/.config/eww/scripts/performance-report.sh read-json")
 (defpoll diagnostics_catalog
   :interval "1h"
   :run-while {active_surface == "insights" && insights_section == "diagnostics"}
@@ -82,8 +234,18 @@
   :run-while {active_surface == "insights" && insights_section == "diagnostics"}
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"active_task\":\"none\",\"task_id\":\"none\",\"code\":\"RUN\",\"title\":\"Awaiting task\",\"category\":\"policy\",\"summary\":\"Six read-only tasks are available.\",\"command_preview\":\"select <allowlisted-task>\",\"execution_source\":\"senomy-diagnostics\",\"scope\":\"No command has run.\",\"guidance\":\"Choose a task above. Arbitrary commands belong in a real terminal.\",\"started_at\":0,\"started_at_label\":\"NEVER\",\"finished_at\":0,\"finished_at_label\":\"NEVER\",\"duration_ms\":0,\"exit_code\":null,\"line_count\":0,\"shown_line_count\":0,\"truncated\":false,\"output\":[]},\"error\":null}"
   "$HOME/.config/eww/scripts/diagnostics-status.sh read")
+(defpoll console_catalog
+  :interval "30s"
+  :run-while {active_surface == "insights" && insights_section == "console"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"terminal\":{\"available\":false},\"shells\":[],\"tasks\":[]},\"error\":null}"
+  "$HOME/.config/eww/scripts/console-status.sh catalog")
+(defpoll console_status
+  :interval "1s"
+  :run-while {active_surface == "insights" && insights_section == "console"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"task_id\":\"none\",\"code\":\"RUN\",\"title\":\"Console standing by\",\"command_preview\":\"select <task>\",\"line_count\":0,\"truncated\":false,\"output\":[]},\"error\":null}"
+  "$HOME/.config/eww/scripts/console-status.sh read")
 (defpoll background_apps_status
   :interval "2s"
-  :run-while {active_surface == "control" && control_section == "apps"}
+  :run-while {(active_surface == "control" && control_section == "apps") || active_flyout == "tray"}
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"tray\":{\"host_available\":false,\"registered_count\":0,\"registered_ids\":[]},\"app_count\":0,\"running_count\":0,\"apps\":[]},\"error\":null}"
   "$HOME/.config/eww/scripts/background-apps-status.sh")

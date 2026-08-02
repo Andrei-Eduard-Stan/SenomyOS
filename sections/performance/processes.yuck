@@ -1,0 +1,354 @@
+(defwidget performance-processes-page []
+  (scroll
+    :class "performance-page-scroll"
+    :vscroll true
+    :hscroll false
+    :vexpand true
+    :hexpand true
+
+    (box
+      :class "performance-page performance-processes-page"
+      :orientation "v"
+      :space-evenly false
+      :spacing 14
+
+      (box :class "control-operation performance ${performance_operation_status.data.state}" :orientation "v" :space-evenly false :spacing 4
+        :visible {performance_operation_status.data.state != "idle"}
+        (box :space-evenly false :spacing 8
+          (label :class "control-operation-code" :xalign 0 :hexpand true
+            :text "OPERATION // ${performance_operation_status.data.state_label}")
+          (label :class "control-state-badge ${performance_operation_status.data.state == "failed" ? "danger" : (performance_operation_status.data.state == "succeeded" ? "ready" : "") }"
+            :text {performance_operation_status.data.state_label}))
+        (label :class "control-operation-title" :xalign 0 :text {performance_operation_status.data.label})
+        (label :class "control-operation-copy" :xalign 0 :wrap true :text {performance_operation_status.data.message}))
+
+      (box
+        :class "performance-kpi-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 10
+        (performance-kpi
+          :code "PROC"
+          :label "PROCESSES"
+          :value "${performance_processes?.data?.process_count ?: "--"}"
+          :detail "${performance_processes?.data?.thread_count ?: "--"} total threads"
+          :tone "process")
+        (performance-kpi
+          :code "RUN"
+          :label "RUNNABLE"
+          :value "${performance_processes?.data?.states?.running ?: 0}"
+          :detail "${performance_processes?.data?.states?.disk_sleep ?: 0} in uninterruptible sleep"
+          :tone "process")
+        (performance-kpi
+          :code "ZMB"
+          :label "ZOMBIES"
+          :value "${performance_processes?.data?.states?.zombie ?: 0}"
+          :detail "${performance_processes?.data?.states?.stopped ?: 0} stopped"
+          :tone {(performance_processes?.data?.states?.zombie ?: 0) > 0
+            ? "warning"
+            : "process"})
+        (performance-kpi
+          :code "UNIT"
+          :label "FAILED SERVICES"
+          :value "${performance_status?.data?.services?.failed_total ?: "--"}"
+          :detail "${performance_status?.data?.services?.system_state ?: "--"} / ${performance_status?.data?.services?.user_state ?: "--"}"
+          :tone {(performance_status?.data?.services?.failed_total ?: 0) > 0
+            ? "warning"
+            : "service"}))
+
+      (box
+        :class "performance-card performance-process-table-card"
+        :orientation "v"
+        :space-evenly false
+        (performance-section-title
+          :code "01"
+          :title "INSTANTANEOUS PROCESS ACTIVITY"
+          :subtitle "CPU is derived from procfs deltas, not lifetime averages")
+
+        (box
+          :class "performance-process-toolbar"
+          :space-evenly false
+          :spacing 7
+          (label :class "performance-toolbar-label" :text "SORT")
+          (button :class {performance_process_sort == "cpu" ? "performance-sort active" : "performance-sort"} :onclick "$HOME/.config/eww/scripts/performance-action.sh set-sort cpu && ${EWW_CMD} update performance_process_sort=cpu" "CPU")
+          (button :class {performance_process_sort == "memory" ? "performance-sort active" : "performance-sort"} :onclick "$HOME/.config/eww/scripts/performance-action.sh set-sort memory && ${EWW_CMD} update performance_process_sort=memory" "MEMORY")
+          (button :class {performance_process_sort == "name" ? "performance-sort active" : "performance-sort"} :onclick "$HOME/.config/eww/scripts/performance-action.sh set-sort name && ${EWW_CMD} update performance_process_sort=name" "NAME")
+          (label :class "performance-toolbar-label" :text "FILTER")
+          (button :class {performance_process_filter == "all" ? "performance-sort active" : "performance-sort"} :onclick "$HOME/.config/eww/scripts/performance-action.sh set-filter all && ${EWW_CMD} update performance_process_filter=all" "ALL")
+          (button :class {performance_process_filter == "user" ? "performance-sort active" : "performance-sort"} :onclick "$HOME/.config/eww/scripts/performance-action.sh set-filter user && ${EWW_CMD} update performance_process_filter=user" "MINE")
+          (button :class {performance_process_filter == "active" ? "performance-sort active" : "performance-sort"} :onclick "$HOME/.config/eww/scripts/performance-action.sh set-filter active && ${EWW_CMD} update performance_process_filter=active" "ACTIVE")
+          (button :class {performance_process_filter == "heavy" ? "performance-sort active" : "performance-sort"} :onclick "$HOME/.config/eww/scripts/performance-action.sh set-filter heavy && ${EWW_CMD} update performance_process_filter=heavy" "HEAVY")
+          (label :hexpand true :text "")
+          (button
+            :class "performance-report-action"
+            :tooltip "Write a private runtime report to $XDG_RUNTIME_DIR/senomyos"
+            :onclick "$HOME/.config/eww/scripts/performance-report.sh generate-path performance | xargs -r notify-send 'SenomyOS report created'"
+            "EXPORT REPORT"))
+
+        (box
+          :class "performance-process-head"
+          :space-evenly false
+          (label :class "performance-process-rank" :text "#")
+          (label :class "performance-process-name" :xalign 0 :hexpand true :text "PROCESS")
+          (label :class "performance-process-user" :xalign 0 :text "USER")
+          (label :class "performance-process-state" :text "S")
+          (label :class "performance-process-pid" :xalign 1 :text "PID")
+          (label :class "performance-process-cpu" :xalign 1 :text "CPU")
+          (label :class "performance-process-memory" :xalign 1 :text "MEM")
+          (label :class "performance-process-memory-pct" :xalign 1 :text "MEM%")
+          (label :class "performance-process-threads" :xalign 1 :text "THR")
+          (label :class "performance-process-age" :xalign 1 :text "AGE"))
+
+        (box
+          :class "performance-process-loading"
+          :visible {performance_processes?.ok != true}
+          (label
+            :xalign 0
+            :text {performance_processes?.error?.message ?: "Acquiring an instantaneous process sample..."}))
+
+        (for process in {performance_processes?.data?.processes ?: []}
+          (button
+            :class {selected_process_pid == process.pid
+              ? "performance-process-row selected"
+              : process.rank == 1
+                ? "performance-process-row hot"
+                : process.state == "D" || process.state == "Z"
+                  ? "performance-process-row warning"
+                  : "performance-process-row"}
+            :tooltip "Inspect PID ${process.pid}"
+            :onclick "$HOME/.config/eww/scripts/performance-action.sh set-selection ${process.pid} && ${EWW_CMD} update selected_process_pid=${process.pid} pending_action=none"
+            (box
+            :space-evenly false
+            (label :class "performance-process-rank" :text {process.rank})
+            (label
+              :class "performance-process-name"
+              :xalign 0
+              :hexpand true
+              :limit-width 28
+              :show-truncated true
+              :text {process.name})
+            (label
+              :class "performance-process-user"
+              :xalign 0
+              :limit-width 10
+              :show-truncated true
+              :text {process.user})
+            (label
+              :class "performance-process-state"
+              :tooltip "R running, S sleeping, D I/O wait, I idle, T stopped, Z zombie"
+              :text {process.state})
+            (label :class "performance-process-pid" :xalign 1 :text {process.pid})
+            (label
+              :class "performance-process-cpu"
+              :xalign 1
+              :text "${round(process.cpu_percent, 1)}%")
+            (label
+              :class "performance-process-memory"
+              :xalign 1
+              :text "${process.memory_mib}M")
+            (label
+              :class "performance-process-memory-pct"
+              :xalign 1
+              :text "${process.memory_percent}%")
+            (label
+              :class "performance-process-threads"
+              :xalign 1
+              :text {process.threads})
+            (label
+              :class "performance-process-age"
+              :xalign 1
+              :text {process.elapsed}))))
+
+        (box
+          :class "performance-process-foot"
+          :space-evenly false
+          (label
+            :hexpand true
+            :xalign 0
+            :text "SAMPLE ${round(performance_processes?.data?.sample_seconds ?: 0, 2)}S")
+          (label
+            :xalign 1
+            :text "TOP ${performance_processes?.data?.shown_count ?: 0} / ${performance_processes?.data?.process_count ?: 0}")))
+
+      (box
+        :class "performance-card performance-process-detail-card"
+        :orientation "v"
+        :space-evenly false
+        (performance-section-title
+          :code "02"
+          :title "SELECTED PROCESS"
+          :subtitle {selected_process_pid > 0 ? "Bounded procfs inspection for PID ${selected_process_pid}" : "Select a row above to inspect it"})
+        (box
+          :class "performance-process-empty"
+          :visible {selected_process_pid == 0 || performance_process_detail?.ok != true}
+          (label :xalign 0 :text {performance_process_detail?.error?.message ?: "Select a process to inspect"}))
+        (box
+          :class "performance-process-detail-grid"
+          :visible {selected_process_pid > 0 && performance_process_detail?.ok == true}
+          :space-evenly false
+          :spacing 12
+          (box :orientation "v" :hexpand true :space-evenly false
+            (performance-stat-row :label "Name / state" :value "${performance_process_detail?.data?.name ?: "--"} / ${performance_process_detail?.data?.state ?: "--"}")
+            (performance-stat-row :label "Owner / PID" :value "${performance_process_detail?.data?.user ?: "--"} / ${performance_process_detail?.data?.pid ?: "--"}")
+            (performance-stat-row :label "Resident / virtual" :value "${performance_process_detail?.data?.rss_mib ?: 0} / ${performance_process_detail?.data?.virtual_mib ?: 0} MiB")
+            (performance-stat-row :label "Threads / descriptors" :value "${performance_process_detail?.data?.threads ?: 0} / ${performance_process_detail?.data?.fd_count ?: 0}")
+            (performance-stat-row :label "Context switches" :value "${performance_process_detail?.data?.context_switches?.voluntary ?: 0} voluntary / ${performance_process_detail?.data?.context_switches?.involuntary ?: 0} forced"))
+          (box :orientation "v" :hexpand true :space-evenly false :spacing 7
+            (label :class "performance-detail-label" :xalign 0 :text "COMMAND")
+            (label :class "performance-detail-copy" :xalign 0 :wrap true :limit-width 72 :text {performance_process_detail?.data?.command ?: "Unavailable"})
+            (label :class "performance-detail-label" :xalign 0 :text "EXECUTABLE / WORKING DIRECTORY")
+            (label :class "performance-detail-copy" :xalign 0 :wrap true :limit-width 72 :text "${performance_process_detail?.data?.executable ?: "Unavailable"}\n${performance_process_detail?.data?.cwd ?: "Unavailable"}")))
+        (box
+          :class "performance-process-actions"
+          :visible {selected_process_pid > 0 && performance_process_detail?.ok == true}
+          :space-evenly false
+          :spacing 8
+          (label
+            :class "performance-action-boundary"
+            :xalign 0
+            :hexpand true
+            :text {performance_process_detail?.data?.action_allowed == true ? "CURRENT-USER PROCESS // explicit confirmation required" : "READ-ONLY // process is not owned by this session"})
+          (button
+            :class {pending_action == "process-term-${selected_process_pid}" ? "performance-process-action confirm" : "performance-process-action"}
+            :visible {performance_process_detail?.data?.action_allowed == true}
+            :onclick {pending_action == "process-term-${selected_process_pid}" ? "$HOME/.config/eww/scripts/performance-action.sh terminate ${selected_process_pid} && $HOME/.config/eww/scripts/performance-action.sh set-selection 0 && ${EWW_CMD} update pending_action=none selected_process_pid=0" : "${EWW_CMD} update pending_action=process-term-${selected_process_pid}"}
+            {pending_action == "process-term-${selected_process_pid}" ? "CONFIRM TERMINATE" : "TERMINATE"})
+          (button
+            :class {pending_action == "process-kill-${selected_process_pid}" ? "performance-process-action danger confirm" : "performance-process-action danger"}
+            :visible {performance_process_detail?.data?.action_allowed == true}
+            :onclick {pending_action == "process-kill-${selected_process_pid}" ? "$HOME/.config/eww/scripts/performance-action.sh kill ${selected_process_pid} && $HOME/.config/eww/scripts/performance-action.sh set-selection 0 && ${EWW_CMD} update pending_action=none selected_process_pid=0" : "${EWW_CMD} update pending_action=process-kill-${selected_process_pid}"}
+            {pending_action == "process-kill-${selected_process_pid}" ? "CONFIRM FORCE KILL" : "FORCE KILL"})
+          (button :class "performance-process-action quiet" :onclick "$HOME/.config/eww/scripts/performance-action.sh set-selection 0 && ${EWW_CMD} update selected_process_pid=0 pending_action=none" "CLEAR")))
+
+      (box
+        :class "performance-detail-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "03"
+            :title "PROCESS STATES"
+            :subtitle "Current state distribution")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Running"
+              :value "${performance_processes?.data?.states?.running ?: 0}")
+            (performance-stat-row
+              :label "Sleeping / idle"
+              :value "${performance_processes?.data?.states?.sleeping ?: 0}")
+            (performance-stat-row
+              :label "Uninterruptible I/O"
+              :value "${performance_processes?.data?.states?.disk_sleep ?: 0}")
+            (performance-stat-row
+              :label "Stopped / traced"
+              :value "${performance_processes?.data?.states?.stopped ?: 0}")
+            (performance-stat-row
+              :label "Zombie"
+              :value "${performance_processes?.data?.states?.zombie ?: 0}")
+            (performance-stat-row
+              :label "Kernel runnable"
+              :value "${system_status?.data?.cpu?.scheduler?.running ?: 0}")
+            (performance-stat-row
+              :label "Kernel blocked"
+              :value "${system_status?.data?.cpu?.scheduler?.blocked ?: 0}")))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "04"
+            :title "SERVICE MANAGERS"
+            :subtitle "Read-only systemd health")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "System manager"
+              :value {performance_status?.data?.services?.available == true
+                ? performance_status.data.services.system_state
+                : "UNAVAILABLE"})
+            (performance-stat-row
+              :label "User manager"
+              :value {performance_status?.data?.services?.available == true
+                ? performance_status.data.services.user_state
+                : "UNAVAILABLE"})
+            (performance-stat-row
+              :label "System failures"
+              :value "${performance_status?.data?.services?.system_failed_count ?: 0}")
+            (performance-stat-row
+              :label "User failures"
+              :value "${performance_status?.data?.services?.user_failed_count ?: 0}")
+            (performance-notice
+              :state {(performance_status?.data?.services?.failed_total ?: 0) == 0
+                ? "NOMINAL"
+                : "ATTENTION"}
+              :title {(performance_status?.data?.services?.failed_total ?: 0) == 0
+                ? "NO FAILED SERVICES"
+                : "${performance_status?.data?.services?.failed_total ?: 0} FAILED SERVICES"}
+              :detail {(performance_status?.data?.services?.failed_total ?: 0) == 0
+                ? "Both service managers report no failed units."
+                : "Open curated diagnostics to inspect failures before taking action."})))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "05"
+            :title "DIAGNOSTIC BOUNDARY"
+            :subtitle "Inspection is allowlisted and read-only")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 9
+            (label
+              :class "performance-diagnostic-copy"
+              :xalign 0
+              :wrap true
+              :text "The dashboard observes. Senomy Diagnostics runs curated commands. Administrative or arbitrary commands remain in a real terminal.")
+            (button
+              :class "performance-diagnostic-action"
+              :tooltip "Open curated diagnostics in Senomy Insights"
+              :timeout "8s"
+              :onclick "$HOME/.config/eww/scripts/surface-state.sh show-insights diagnostics ${active_surface} ${active_flyout}"
+              "OPEN SENOMY DIAGNOSTICS"))))
+
+      (box
+        :class "performance-card"
+        :orientation "v"
+        :space-evenly false
+        :visible {(performance_status?.data?.services?.failed ?: []) != []}
+        (performance-section-title
+          :code "06"
+          :title "FAILED UNITS"
+          :subtitle "Bounded to twelve entries")
+        (box
+          :class "performance-card-body"
+          :orientation "v"
+          :space-evenly false
+          (for service in {performance_status?.data?.services?.failed ?: []}
+            (box
+              :class "performance-failed-unit"
+              :space-evenly false
+              (label :hexpand true :xalign 0 :text "${service.scope} / ${service.unit}")
+              (label :class "performance-failed-state" :text {service.state})
+              (button
+                :class {pending_action == "restart-${service.unit}" ? "performance-process-action confirm" : "performance-process-action"}
+                :visible {service.scope == "user"}
+                :tooltip "Only currently failed user units can be restarted here"
+                :onclick {pending_action == "restart-${service.unit}" ? "$HOME/.config/eww/scripts/performance-action.sh restart-user-unit ${service.unit} && ${EWW_CMD} update pending_action=none" : "${EWW_CMD} update pending_action=restart-${service.unit}"}
+                {pending_action == "restart-${service.unit}" ? "CONFIRM RESTART" : "RESTART"}))))))))

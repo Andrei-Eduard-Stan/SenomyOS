@@ -1,0 +1,60 @@
+(defwidget senomy-avatar-render [variant size context state]
+  (box
+    :class "senomy-avatar senomy-avatar-${context} senomy-avatar-state-${state}"
+    :halign "center"
+    :valign "center"
+    :space-evenly false
+    (label
+      :class "senomy-avatar-unavailable"
+      :visible {senomy_avatar_catalog?.ok != true}
+      :tooltip {senomy_avatar_catalog?.error?.message
+        ?: "Senomy avatar assets are unavailable"}
+      :text "?")
+    (for avatar in {senomy_avatar_catalog?.data?.states ?: []}
+      (image
+        :class "senomy-avatar-image"
+        :visible {avatar.id == state}
+        :tooltip "Senomy // ${avatar.label} // ${avatar.activity}"
+        :path {variant == "portrait"
+          ? avatar.portrait_path
+          : avatar.chibi_path}
+        :image-width size
+        :image-height size))))
+
+;; Domains select independently; the manifest remains the single asset registry.
+(defwidget senomy-avatar [variant size context domain]
+  (senomy-avatar-render
+    :variant variant
+    :size size
+    :context context
+    :state {domain == "battery"
+      ? (batt_json.state == "loading"
+        ? "thinking"
+        : (batt_json.available != true
+          ? "thinking"
+          : (batt_json.percent_total <= 20
+          ? "warning"
+          : (batt_json.state == "charging" ? "happy" : "idle"))))
+      : (domain == "performance"
+        ? (system_status?.ok != true
+          ? "thinking"
+          : ((performance_status?.data?.services?.failed_total ?: 0) > 0
+            || system_status.data.cpu.percent >= 90
+            || system_status.data.memory.percent >= 90
+            ? "warning"
+            : (system_status.data.cpu.percent >= 70
+              || system_status.data.memory.percent >= 80
+              ? "busy"
+              : "focused")))
+        : (domain == "insights-header"
+          ? "browsing"
+          : (domain == "insights"
+            ? (insights_section == "updates"
+              || insights_section == "diagnostics"
+              || insights_section == "console"
+              ? "busy"
+              : (insights_section == "wiki"
+                || insights_section == "timeline"
+                ? "focused"
+                : "thinking"))
+            : chibi_state)))}))

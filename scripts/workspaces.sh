@@ -1,141 +1,390 @@
 #!/usr/bin/env bash
 
-# Publish the legacy workspace label and structured workspace/application state.
+# Publish workspace/application state after Hyprland events.
 # The existing user service remains the single workspace update path.
 
-set -u
+set -uo pipefail
 
 export LC_ALL=C
 
-readonly EWW_BIN="/usr/bin/eww"
-readonly HYPRCTL_BIN="/usr/bin/hyprctl"
-readonly JQ_BIN="/usr/bin/jq"
-readonly EWW_CONFIG="${XDG_CONFIG_HOME:-"$HOME/.config"}/eww"
-readonly ICON_MAP="$EWW_CONFIG/data/app-icons.json"
+readonly EWW_BIN="${SENOMY_EWW_BIN:-/usr/bin/eww}"
+readonly FIND_BIN="${SENOMY_FIND_BIN:-/usr/bin/find}"
+readonly HYPRCTL_BIN="${SENOMY_HYPRCTL_BIN:-/usr/bin/hyprctl}"
+readonly JQ_BIN="${SENOMY_JQ_BIN:-/usr/bin/jq}"
+readonly SOCAT_BIN="${SENOMY_SOCAT_BIN:-/usr/bin/socat}"
+readonly EWW_CONFIG="${SENOMY_EWW_CONFIG:-${XDG_CONFIG_HOME:-"$HOME/.config"}/eww}"
+readonly ICON_MAP="${SENOMY_ICON_MAP:-$EWW_CONFIG/data/app-icons.json}"
 
-readonly SHRINK_THRESHOLD=3
-readonly SYNC_INTERVAL=10
+readonly HEARTBEAT_SECONDS=10
+readonly FULL_RESYNC_SECONDS=300
+readonly EVENT_DEBOUNCE_SECONDS="0.04"
+readonly EVENT_DRAIN_SECONDS="0.01"
+readonly MAX_DRAINED_EVENTS=100
 readonly ACTIVE_APP_LIMIT=4
 readonly INACTIVE_APP_LIMIT=2
 
-last_text=""
-last_json=""
-last_max=1
-shrink_streak=0
-sync_age=0
-
 next_text=""
 next_json=""
+next_data=""
 
-required_commands_available() {
-  [[ -x "$EWW_BIN" ]] &&
-    [[ -x "$HYPRCTL_BIN" ]] &&
-    [[ -x "$JQ_BIN" ]]
+cached_text=""
+cached_json=""
+cached_data=""
+
+last_published_text=""
+last_published_data=""
+last_heartbeat_at=0
+last_full_resync_at=0
+
+event_fd=""
+socat_pid=""
+event_socket=""
+
+icon_map_source=""
+resolved_icon_map="{}"
+resolved_icon_path=""
+fallback_icon_path=""
+declare -A icon_path_cache=()
+
+log() {
+  printf 'SenomyOS workspaces: %s\n' "$1" >&2
 }
 
-read_icon_map() {
-  local icon_json
+usage() {
+  printf 'Usage: %s [--print-once|--publish-once]\n' "$0" >&2
+  exit 2
+}
 
-  if [[ ! -r "$ICON_MAP" ]]; then
-    printf '{}\n'
+snapshot_commands_available() {
+  local command_path
+
+  for command_path in "$FIND_BIN" "$HYPRCTL_BIN" "$JQ_BIN"; do
+    if [[ ! -x "$command_path" ]]; then
+      log "required command is unavailable: $command_path"
+      return 1
+    fi
+  done
+}
+
+runtime_commands_available() {
+  local command_path
+
+  snapshot_commands_available || return
+
+  for command_path in "$EWW_BIN" "$SOCAT_BIN"; do
+    if [[ ! -x "$command_path" ]]; then
+      log "required command is unavailable: $command_path"
+      return 1
+    fi
+  done
+}
+
+now_seconds() {
+  printf '%(%s)T\n' -1
+}
+
+resolve_hyprland_session() {
+  local instances_json
+  local discovered_signature
+  local discovered_wayland
+
+  event_socket=""
+
+  if [[ -z "${XDG_RUNTIME_DIR:-}" && -d "/run/user/$EUID" ]]; then
+    export XDG_RUNTIME_DIR="/run/user/$EUID"
+  fi
+
+  if [[ -n "${XDG_RUNTIME_DIR:-}" &&
+        -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    event_socket="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+
+    if [[ -S "$event_socket" ]]; then
+      return 0
+    fi
+  fi
+
+  instances_json="$("$HYPRCTL_BIN" instances -j 2>/dev/null)" || {
+    log "unable to discover a running Hyprland instance"
+    return 1
+  }
+
+  discovered_signature="$(
+    "$JQ_BIN" -r '
+      [
+        .[]?
+        | select(
+            (.instance | type) == "string"
+            and (.instance | test("^[A-Za-z0-9._-]+$"))
+            and (.time | type) == "number"
+          )
+      ]
+      | if length == 0 then "" else (max_by(.time).instance) end
+    ' <<< "$instances_json"
+  )" || return 1
+
+  discovered_wayland="$(
+    "$JQ_BIN" -r \
+      --arg instance "$discovered_signature" '
+        [
+          .[]?
+          | select(.instance == $instance)
+          | .wl_socket
+          | select(type == "string")
+        ][0] // ""
+      ' <<< "$instances_json"
+  )" || return 1
+
+  if [[ -z "${XDG_RUNTIME_DIR:-}" || -z "$discovered_signature" ]]; then
+    log "Hyprland session environment is unavailable"
+    return 1
+  fi
+
+  event_socket="$XDG_RUNTIME_DIR/hypr/$discovered_signature/.socket2.sock"
+  if [[ ! -S "$event_socket" ]]; then
+    log "discovered Hyprland event socket is unavailable: $event_socket"
+    return 1
+  fi
+
+  export HYPRLAND_INSTANCE_SIGNATURE="$discovered_signature"
+  if [[ -n "$discovered_wayland" ]]; then
+    export WAYLAND_DISPLAY="$discovered_wayland"
+  fi
+
+  log "recovered Hyprland session from runtime instance discovery"
+}
+
+resolve_icon_path() {
+  local icon_name="$1"
+  local data_dir
+  local theme_dir
+  local candidate
+  local size
+  local category
+  local extension
+  local -a data_dirs
+
+  resolved_icon_path=""
+
+  if [[ -z "$icon_name" ]]; then
     return
   fi
 
-  icon_json="$(< "$ICON_MAP")"
+  if [[ "$icon_name" == /* ]]; then
+    if [[ -r "$icon_name" ]]; then
+      resolved_icon_path="$icon_name"
+    fi
+    return
+  fi
 
-  if "$JQ_BIN" -e 'type == "object"' >/dev/null 2>&1 <<< "$icon_json"; then
-    printf '%s\n' "$icon_json"
+  if [[ ! "$icon_name" =~ ^[A-Za-z0-9._+-]+$ ]]; then
+    return
+  fi
+
+  if [[ ${icon_path_cache[$icon_name]+cached} ]]; then
+    resolved_icon_path="${icon_path_cache[$icon_name]}"
+    return
+  fi
+
+  IFS=: read -r -a data_dirs <<< \
+    "${XDG_DATA_HOME:-"$HOME/.local/share"}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+
+  for data_dir in "${data_dirs[@]}"; do
+    [[ -n "$data_dir" ]] || continue
+
+    for extension in png svg xpm; do
+      candidate="$data_dir/pixmaps/$icon_name.$extension"
+
+      if [[ -r "$candidate" ]]; then
+        resolved_icon_path="$candidate"
+        break 2
+      fi
+    done
+
+    for size in 16x16 22x22 24x24 32x32 48x48 scalable; do
+      for category in apps mimetypes; do
+        for extension in png svg xpm; do
+          candidate="$data_dir/icons/hicolor/$size/$category/$icon_name.$extension"
+
+          if [[ -r "$candidate" ]]; then
+            resolved_icon_path="$candidate"
+            break 4
+          fi
+        done
+      done
+    done
+  done
+
+  if [[ -z "$resolved_icon_path" ]]; then
+    for data_dir in "${data_dirs[@]}"; do
+      for theme_dir in "$data_dir"/icons/*; do
+        [[ -d "$theme_dir" ]] || continue
+
+        for size in 16x16 22x22 24x24 32x32 48x48 scalable; do
+          for category in apps mimetypes; do
+            for extension in png svg xpm; do
+              candidate="$theme_dir/$size/$category/$icon_name.$extension"
+
+              if [[ -r "$candidate" ]]; then
+                resolved_icon_path="$candidate"
+                break 5
+              fi
+            done
+          done
+        done
+      done
+    done
+  fi
+
+  if [[ -z "$resolved_icon_path" ]]; then
+    for data_dir in "${data_dirs[@]}"; do
+      [[ -d "$data_dir/icons" ]] || continue
+
+      while IFS= read -r candidate; do
+        resolved_icon_path="$candidate"
+        break
+      done < <(
+        "$FIND_BIN" "$data_dir/icons" -type f \
+          \( -name "$icon_name.png" \
+          -o -name "$icon_name.svg" \
+          -o -name "$icon_name.xpm" \) \
+          -print 2>/dev/null
+      )
+
+      [[ -n "$resolved_icon_path" ]] && break
+    done
+  fi
+
+  icon_path_cache["$icon_name"]="$resolved_icon_path"
+}
+
+load_icon_map() {
+  local raw_icon_map
+
+  if [[ -r "$ICON_MAP" ]]; then
+    raw_icon_map="$(< "$ICON_MAP")"
   else
-    printf '{}\n'
+    raw_icon_map="{}"
+  fi
+
+  if [[ "$raw_icon_map" == "$icon_map_source" ]]; then
+    resolved_icon_map="$icon_map_source"
+    return
+  fi
+
+  if ! "$JQ_BIN" -e 'type == "object"' >/dev/null 2>&1 \
+    <<< "$raw_icon_map"; then
+    log "icon map is invalid; using generic application icons"
+    raw_icon_map="{}"
+  fi
+
+  icon_map_source="$raw_icon_map"
+  resolved_icon_map="$icon_map_source"
+
+  if [[ -z "$fallback_icon_path" ]]; then
+    resolve_icon_path "application-x-executable"
+    fallback_icon_path="$resolved_icon_path"
   fi
 }
 
-build_once() {
-  local workspaces_json
-  local active_json
-  local clients_json
-  local icons_json
-  local active
-  local proposed_max
-  local workspace_id
-  local observed_at
-  local output
+resolve_client_icon_paths() {
+  local snapshot_json="$1"
+  local key
+  local icon_name
 
-  workspaces_json="$("$HYPRCTL_BIN" -j workspaces 2>/dev/null)" ||
-    return 1
-
-  active_json="$("$HYPRCTL_BIN" -j activeworkspace 2>/dev/null)" ||
-    return 1
-
-  clients_json="$("$HYPRCTL_BIN" -j clients 2>/dev/null)" ||
-    return 1
-
-  "$JQ_BIN" -e 'type == "array"' >/dev/null 2>&1 \
-    <<< "$workspaces_json" ||
-    return 1
-
-  "$JQ_BIN" -e 'type == "object"' >/dev/null 2>&1 \
-    <<< "$active_json" ||
-    return 1
-
-  "$JQ_BIN" -e 'type == "array"' >/dev/null 2>&1 \
-    <<< "$clients_json" ||
-    return 1
-
-  active="$("$JQ_BIN" -r '.id // 1' <<< "$active_json")"
-
-  [[ "$active" =~ ^[1-9][0-9]*$ ]] ||
-    active=1
-
-  proposed_max="$(
+  while IFS=$'\t' read -r key icon_name; do
+    resolve_icon_path "$icon_name"
+    resolved_icon_map="$(
+      "$JQ_BIN" -c \
+        --arg key "$key" \
+        --arg icon_path "$resolved_icon_path" \
+        '.[$key].icon_path = $icon_path' \
+        <<< "$resolved_icon_map"
+    )" || return 1
+  done < <(
     "$JQ_BIN" -r \
-      --argjson active "$active" \
+      --argjson snapshot "$snapshot_json" \
+      --argjson icons "$resolved_icon_map" \
       '
         [
-          .[]
-          | .id
-          | select(type == "number" and . > 0)
-        ] + [$active]
-        | max // 1
-      ' <<< "$workspaces_json"
-  )"
+          $snapshot.clients[]
+          | select(
+              (.mapped == true)
+              and ((.hidden // false) == false)
+              and (.workspace.id > 0)
+            )
+          | (
+              if ((.initialClass // "") | length) > 0 then
+                .initialClass
+              elif ((.class // "") | length) > 0 then
+                .class
+              else
+                "unknown"
+              end
+              | ascii_downcase
+            ) as $key
+          | [
+              $key,
+              ($icons[$key].icon // "application-x-executable")
+            ]
+        ]
+        | unique_by(.[0])[]
+        | @tsv
+      ' -n
+  )
+}
 
-  [[ "$proposed_max" =~ ^[1-9][0-9]*$ ]] ||
-    proposed_max="$last_max"
+build_once() {
+  local snapshot_json
+  local observed_at
+  local normalized_output
+  local -a normalized_lines
 
-  if ((proposed_max < last_max)); then
-    shrink_streak=$((shrink_streak + 1))
+  snapshot_json="$(
+    "$HYPRCTL_BIN" --batch \
+      'j/workspaces;j/activeworkspace;j/clients' 2>/dev/null
+  )" || {
+    log "hyprctl workspace batch query failed"
+    return 1
+  }
 
-    if ((shrink_streak < SHRINK_THRESHOLD)); then
-      proposed_max="$last_max"
-    fi
-  else
-    shrink_streak=0
-  fi
+  snapshot_json="$(
+    "$JQ_BIN" -sc \
+      '
+        if (
+          length == 3
+          and (.[0] | type) == "array"
+          and (.[1] | type) == "object"
+          and (.[2] | type) == "array"
+        ) then
+          {
+            workspaces: .[0],
+            active_workspace: .[1],
+            clients: .[2]
+          }
+        else
+          error("invalid Hyprland workspace batch")
+        end
+      ' <<< "$snapshot_json"
+  )" || {
+    log "hyprctl workspace batch returned invalid JSON"
+    return 1
+  }
 
-  last_max="$proposed_max"
+  load_icon_map || {
+    log "failed to resolve the application icon map"
+    return 1
+  }
+  resolve_client_icon_paths "$snapshot_json" || {
+    log "failed to resolve running application icons"
+    return 1
+  }
+  observed_at="$(now_seconds)"
 
-  output=""
-
-  for ((workspace_id = 1; workspace_id <= proposed_max; workspace_id++)); do
-    if ((workspace_id == active)); then
-      output+=" [$workspace_id]"
-    else
-      output+=" $workspace_id"
-    fi
-  done
-
-  next_text="${output# }"
-  icons_json="$(read_icon_map)"
-  printf -v observed_at '%(%s)T' -1
-
-  next_json="$(
-    "$JQ_BIN" -nc \
-      --argjson workspaces "$workspaces_json" \
-      --argjson active_workspace "$active_json" \
-      --argjson clients "$clients_json" \
-      --argjson icons "$icons_json" \
-      --argjson max_id "$proposed_max" \
+  normalized_output="$(
+    "$JQ_BIN" -nr \
+      --argjson snapshot "$snapshot_json" \
+      --argjson icons "$resolved_icon_map" \
+      --arg fallback_icon_path "$fallback_icon_path" \
       --argjson observed_at "$observed_at" \
       --argjson active_app_limit "$ACTIVE_APP_LIMIT" \
       --argjson inactive_app_limit "$INACTIVE_APP_LIMIT" \
@@ -167,7 +416,14 @@ build_once() {
             "application-x-executable"
           end;
 
-        def workspace_apps($workspace_id):
+        def client_icon_path($metadata):
+          if (($metadata.icon_path // "") | length) > 0 then
+            $metadata.icon_path
+          else
+            $fallback_icon_path
+          end;
+
+        def workspace_apps($workspace_id; $clients):
           [
             $clients[]
             | select(
@@ -182,7 +438,8 @@ build_once() {
             | {
                 key: $key,
                 name: client_name($client; $metadata),
-                icon: client_icon($metadata)
+                icon: client_icon($metadata),
+                icon_path: client_icon_path($metadata)
               }
           ]
           | sort_by(.key)
@@ -194,8 +451,38 @@ build_once() {
                 }
             );
 
-        ($active_workspace.id // 1) as $active_id
-        | {
+        ($snapshot.active_workspace.id // 1) as $active_candidate
+        | (
+            if (
+              ($active_candidate | type) == "number"
+              and $active_candidate > 0
+            ) then
+              $active_candidate
+            else
+              1
+            end
+          ) as $active_id
+        | (
+            [
+              $snapshot.workspaces[]
+              | .id
+              | select(type == "number" and . > 0)
+            ] + [$active_id]
+            | max // 1
+          ) as $max_id
+        | (
+            [
+              range(1; $max_id + 1)
+              | . as $workspace_id
+              | if $workspace_id == $active_id then
+                  "[\($workspace_id)]"
+                else
+                  "\($workspace_id)"
+                end
+            ]
+            | join(" ")
+          ) as $legacy_text
+        | ({
             schema_version: 1,
             ok: true,
             source: "hyprland",
@@ -205,7 +492,7 @@ build_once() {
               max_id: $max_id,
               workspaces: [
                 range(1; $max_id + 1) as $workspace_id
-                | workspace_apps($workspace_id) as $all_apps
+                | workspace_apps($workspace_id; $snapshot.clients) as $all_apps
                 | (
                     if $workspace_id == $active_id then
                       $active_app_limit
@@ -248,53 +535,210 @@ build_once() {
               ]
             },
             error: null
-          }
+          }) as $state
+        | $legacy_text,
+          ($state | tojson),
+          ($state.data | tojson)
       '
-  )" || return 1
+  )" || {
+    log "failed to normalize the Hyprland workspace snapshot"
+    return 1
+  }
+
+  mapfile -t normalized_lines <<< "$normalized_output"
+
+  if [[ ${#normalized_lines[@]} -ne 3 ||
+        -z "${normalized_lines[0]}" ||
+        -z "${normalized_lines[1]}" ||
+        -z "${normalized_lines[2]}" ]]; then
+    log "workspace normalization returned an incomplete result"
+    return 1
+  fi
+
+  next_text="${normalized_lines[0]}"
+  next_json="${normalized_lines[1]}"
+  next_data="${normalized_lines[2]}"
 }
 
-publish() {
-  local combined_update_succeeded=false
-
-  build_once || return
-
-  sync_age=$((sync_age + 1))
-
-  if [[ "$next_text" == "$last_text" &&
-        "$next_json" == "$last_json" &&
-        "$sync_age" -lt "$SYNC_INTERVAL" ]]; then
-    return
-  fi
+publish_cached() {
+  [[ -n "$cached_json" ]] || return 1
 
   "$EWW_BIN" --config "$EWW_CONFIG" ping >/dev/null 2>&1 ||
-    return
+    return 1
 
   if "$EWW_BIN" --config "$EWW_CONFIG" update \
-    "workspaces=$next_text" \
-    "workspace_state=$next_json" >/dev/null 2>&1; then
-    combined_update_succeeded=true
+    "workspaces=$cached_text" \
+    "workspace_state=$cached_json" >/dev/null 2>&1; then
+    last_published_text="$cached_text"
+    last_published_data="$cached_data"
+    return 0
   fi
 
-  if [[ "$combined_update_succeeded" == true ]]; then
-    last_text="$next_text"
-    last_json="$next_json"
-    sync_age=0
-    return
-  fi
-
-  # Preserve the old workspace label while Eww is still loading an older config.
+  # Preserve the legacy label while Eww is still loading an older config.
   if "$EWW_BIN" --config "$EWW_CONFIG" update \
-    "workspaces=$next_text" >/dev/null 2>&1; then
-    last_text="$next_text"
+    "workspaces=$cached_text" >/dev/null 2>&1; then
+    last_published_text="$cached_text"
+  fi
+
+  return 1
+}
+
+refresh_snapshot() {
+  local force="${1:-false}"
+
+  build_once || return 1
+
+  cached_text="$next_text"
+  cached_json="$next_json"
+  cached_data="$next_data"
+  last_full_resync_at="$(now_seconds)"
+
+  if [[ "$force" != true &&
+        "$cached_text" == "$last_published_text" &&
+        "$cached_data" == "$last_published_data" ]]; then
+    return 0
+  fi
+
+  publish_cached
+}
+
+event_requires_refresh() {
+  case "$1" in
+    "workspace>>"* | \
+    "workspacev2>>"* | \
+    "focusedmon>>"* | \
+    "focusedmonv2>>"* | \
+    "createworkspace>>"* | \
+    "createworkspacev2>>"* | \
+    "destroyworkspace>>"* | \
+    "destroyworkspacev2>>"* | \
+    "moveworkspace>>"* | \
+    "moveworkspacev2>>"* | \
+    "renameworkspace>>"* | \
+    "openwindow>>"* | \
+    "closewindow>>"* | \
+    "kill>>"* | \
+    "movewindow>>"* | \
+    "movewindowv2>>"* | \
+    "monitoradded>>"* | \
+    "monitoraddedv2>>"* | \
+    "monitorremoved>>"* | \
+    "monitorremovedv2>>"* | \
+    "configreloaded>>"*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+drain_event_burst() {
+  local ignored_event
+  local drained
+
+  sleep "$EVENT_DEBOUNCE_SECONDS"
+
+  for ((drained = 0; drained < MAX_DRAINED_EVENTS; drained++)); do
+    if ! IFS= read -r -t "$EVENT_DRAIN_SECONDS" -u "$event_fd" ignored_event; then
+      break
+    fi
+  done
+}
+
+perform_maintenance() {
+  local current_time
+
+  current_time="$(now_seconds)"
+
+  if ((current_time - last_full_resync_at >= FULL_RESYNC_SECONDS)); then
+    if ! refresh_snapshot true; then
+      publish_cached || true
+    fi
+    last_heartbeat_at="$current_time"
+  elif ((current_time - last_heartbeat_at >= HEARTBEAT_SECONDS)); then
+    publish_cached || true
+    last_heartbeat_at="$current_time"
   fi
 }
 
-required_commands_available || {
-  printf 'SenomyOS workspaces: required commands are unavailable\n' >&2
-  exit 1
+cleanup_listener() {
+  if [[ -n "$event_fd" ]]; then
+    exec {event_fd}<&- 2>/dev/null || true
+  fi
+
+  if [[ -n "$socat_pid" ]] && kill -0 "$socat_pid" 2>/dev/null; then
+    kill "$socat_pid" 2>/dev/null || true
+    wait "$socat_pid" 2>/dev/null || true
+  fi
 }
 
-while true; do
-  publish
-  sleep 1
-done
+listen_for_events() {
+  local event_socket="$1"
+  local event
+  local read_status
+
+  exec {event_fd}< <(
+    "$SOCAT_BIN" -U - "UNIX-CONNECT:$event_socket"
+  )
+  socat_pid="$!"
+
+  while true; do
+    IFS= read -r -t "$HEARTBEAT_SECONDS" -u "$event_fd" event
+    read_status=$?
+
+    if ((read_status == 0)); then
+      if event_requires_refresh "$event"; then
+        drain_event_burst
+        refresh_snapshot false ||
+          log "event-triggered workspace refresh failed"
+      fi
+    elif ((read_status == 1)); then
+      log "Hyprland event socket closed"
+      return 1
+    fi
+
+    perform_maintenance
+  done
+}
+
+main() {
+  case "${1:-}" in
+    --print-once)
+      [[ $# -eq 1 ]] || usage
+      snapshot_commands_available || return 1
+      resolve_hyprland_session || return 1
+      build_once || return 1
+      printf '%s\n' "$next_json"
+      return
+      ;;
+    --publish-once)
+      [[ $# -eq 1 ]] || usage
+      runtime_commands_available || return 1
+      resolve_hyprland_session || return 1
+      refresh_snapshot true
+      return
+      ;;
+    "")
+      [[ $# -eq 0 ]] || usage
+      ;;
+    *)
+      usage
+      ;;
+  esac
+
+  runtime_commands_available || return 1
+
+  resolve_hyprland_session || return 1
+
+  refresh_snapshot true ||
+    log "initial workspace publication will retry"
+  last_heartbeat_at="$(now_seconds)"
+
+  listen_for_events "$event_socket"
+}
+
+trap cleanup_listener EXIT
+trap 'exit 0' INT TERM
+
+main "$@"

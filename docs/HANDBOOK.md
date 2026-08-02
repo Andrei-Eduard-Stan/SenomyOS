@@ -433,8 +433,8 @@ eww logs
 Do not use raw `eww reload`. In Eww 0.5.0 it resets `defvar` values but may
 retain visible window instances, leaving state and panels detached. The
 supported helper closes the old window set, stops the daemon, starts exactly
-`main-bar` plus the remembered primary surface with `eww open-many`, verifies
-them, and restores the validated state.
+one verified `main-bar`, then restores the dismiss layer and remembered primary
+surface at responsive geometry before restoring validated state.
 
 If a raw reload was run accidentally and IPC still responds, reconcile with:
 
@@ -464,6 +464,113 @@ Opening one primary surface closes the previous one.
 - Different control → switch section in the existing panel.
 - CPU/MEM/UP → Performance Dashboard.
 - Senomy identity/message → Senomy Insights.
+
+## Senomy avatar workflow
+
+All visible Senomy artwork is selected in one place:
+
+```text
+data/senomy-avatars.json
+```
+
+Each state has two independent paths:
+
+- `chibi` for the 24–34px bar and panel-header contexts;
+- `portrait` for larger observer or briefing contexts.
+
+Both paths are relative to the Eww configuration directory and must stay under
+`assets/senomy/`. To inspect and switch the manual ambient state:
+
+```bash
+scripts/senomy-avatar.sh list
+scripts/senomy-avatar.sh set thinking
+scripts/senomy-avatar.sh show
+scripts/senomy-avatar.sh reset
+```
+
+To replace artwork, put the file under `assets/senomy/`, then change only its
+manifest path. The five-second local catalog refresh updates every place that
+uses the shared widget. `chibi_state` controls only the ambient domain used by
+the bar. Battery, Performance, and Insights resolve independent states
+centrally in `widgets/senomy-avatar.yuck`; individual panels declare a domain
+but do not choose an image path or duplicate mood rules.
+
+Current domains are:
+
+- `ambient`: manual state for the bar;
+- `battery`: charging state and combined UPower percentage;
+- `performance`: current CPU, memory, availability, and failed-service data;
+- `insights-header`: fixed browsing identity for the Insights header;
+- `insights`: the active Insights route.
+
+For example, a low-battery Power avatar may be `warning` while the bar remains
+`idle` and the Insights header remains `focused`.
+
+To add a new state:
+
+1. add its chibi and portrait assets;
+2. add one unique lowercase state record to the manifest;
+3. run `scripts/senomy-avatar.sh catalog | jq -e .`;
+4. run `scripts/senomy-avatar.sh list`;
+5. use the controlled Eww reload only if Yuck or SCSS also changed.
+
+## Wiki authoring workflow
+
+The Insights Wiki reads Markdown from:
+
+```text
+wiki/
+```
+
+Start an article with restricted front matter:
+
+```markdown
+---
+title: Audio Architecture
+category: Shell
+category_order: 20
+order: 30
+summary: How PipeWire status and actions reach the Rail.
+---
+```
+
+Then use headings, paragraphs, ordered or unordered lists, block quotes,
+fenced code, horizontal rules, and pipe tables. Link articles with either:
+
+```markdown
+[Panel guide](panels.md)
+[[panels|Panel guide]]
+```
+
+Paths are relative to the current article unless they begin with `/`. Internal
+targets become navigation buttons and automatically switch category and
+article. A missing target stays visible as `MISSING`; an external URL stays
+visible as `EXTERNAL` but is not launched.
+
+While Insights Wiki is open, the parser refreshes every three seconds. Validate
+authoring directly with:
+
+```bash
+scripts/wiki-status.py catalog | jq -e .
+```
+
+The parser does not support executable code, HTML, embedded GTK/Yuck markup,
+remote images, or a full CommonMark extension ecosystem. This is deliberate:
+the Wiki remains a predictable local documentation surface.
+
+## Screenshot capture workflow
+
+Print Screen and the Applications capture action both route through:
+
+```text
+scripts/screenshot-action.sh capture
+```
+
+The helper serializes capture, dismisses any SenomyOS context layer, waits for
+the compositor to repaint, ensures `flameshot.service` is active, and launches
+`flameshot gui`. The exact capture client is floated before Hyprland forces it
+fullscreen, so it cannot resize the underlying tile. Do not restore direct
+`flameshot gui` bindings or broad Flameshot window rules.
 
 ## Destructive-action policy
 

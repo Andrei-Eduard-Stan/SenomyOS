@@ -5,28 +5,32 @@
       : "senomy-trigger bar-control"}
     :tooltip {batt_json.state == "loading"
       ? "Battery status is loading"
-      : (batt_json.percent_total <= 10
+      : (batt_json.available != true
+        ? "Open Senomy Insights"
+        : (batt_json.percent_total <= 10
         ? "Combined battery is ${batt_json.percent_total}% and requires attention"
         : (batt_json.percent_total <= 20
           ? "Combined battery is ${batt_json.percent_total}% and discharging"
-          : (system_status?.ok == true
+          : (rail_system_status?.ok == true
             ? "Open Senomy Insights"
-            : (system_status?.error?.message ?: "System status is loading"))))}
-    :timeout "2s"
-    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-insights"
+            : (rail_system_status?.error?.message ?: "System status is loading"))))) }
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-insights ${active_surface} ${active_flyout} ${insights_section}"
 
     (box
       :class "senomy-identity"
       :space-evenly false
       :spacing 10
 
-      ;; Temporary identity mark. Replace with the final chibi asset later.
-      (label
-        :class "senomy-avatar-placeholder"
-        :text "S")
+      (senomy-avatar
+        :variant "chibi"
+        :size 24
+        :context "bar"
+        :domain "ambient")
 
       (box
         :class "senomy-copy"
+        :visible {bar_layout?.data?.phone != true}
         :space-evenly false
         :spacing 6
         (label
@@ -34,18 +38,12 @@
           :xalign 0
           :text "Seno:")
         (label
-          :class {batt_json.percent_total <= 10
+          :class {batt_json.available == true && batt_json.percent_total <= 10
             ? "senomy-dialogue critical"
-            : (batt_json.percent_total <= 20
+            : (batt_json.available == true && batt_json.percent_total <= 20
               ? "senomy-dialogue warning"
               : "senomy-dialogue")}
           :xalign 0
-          :text {batt_json.state == "loading"
-            ? "I'm still reading the power state."
-            : (batt_json.percent_total <= 10
-              ? "Battery is at ${batt_json.percent_total}%. Connect power now."
-              : (batt_json.percent_total <= 20
-                ? "Low battery. Keep a charger nearby."
-              : (system_status?.ok == true
-                ? (senomy_ambient?.data?.text ?: "Everything looks steady.")
-                : "I can't read the system status right now.")))})))))
+          :limit-width {bar_layout?.data?.narrow == true ? 26 : (bar_layout?.data?.compact == true ? 40 : 52)}
+          :show-truncated false
+          :text {senomy_rail_message})))))

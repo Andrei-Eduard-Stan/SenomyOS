@@ -141,8 +141,8 @@ eww logs
 
 Use `scripts/reload-eww.sh` instead of raw `eww reload` during normal
 development. It captures validated state, closes the old windows, stops the
-daemon, starts one replacement with the exact remembered window set through
-`eww open-many`, verifies IPC/windows, and restores active, section, and
+daemon, verifies the replacement `main-bar`, restores the dismiss layer and
+remembered surface at responsive geometry, then restores active, section, and
 Timeline state.
 
 Do not use raw `eww reload` for this configuration. Eww 0.5.0 can reset

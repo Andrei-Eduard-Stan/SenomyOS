@@ -136,6 +136,40 @@ Hover should not move surrounding content.
 Hover is supplementary. Active state, tooltips, and essential explanations
 must remain available on devices that do not provide hover.
 
+Right-side rail controls share one 36px pointer rhythm. Tray, Applications,
+Audio, Network, and battery glyphs align to the same visual center. The rail
+shows only the combined battery percentage; physical-battery detail belongs in
+tooltips and larger surfaces rather than expanding the bar unpredictably.
+
+The arrow, Applications, Audio, Network, and battery marks use repository-owned
+SVGs on identical 24x24 canvases, rendered into 16x16 image boxes. Do not
+replace them with mixed font glyphs or theme-icon names without re-running
+pixel-level alignment QA. Battery may use a wider control to pair the fixed
+icon box with its percentage, but its icon remains on the same centerline.
+
+## Transient flyouts
+
+Immediate controls may use a compact transient flyout without becoming a new
+primary surface. The Audio flyout contains one mute target, one default-output
+slider, its current value, and one labelled route to the full Audio section.
+The tray flyout contains the native background-application icons under a
+compact status header. Both use the same surface, border, typography, accent,
+hover, and focus tokens as the Control Centre.
+
+Flyouts should remain small enough to preserve context, close on repeated
+trigger, outside click, or Escape, and never grow into a second Control Centre.
+
+The Rail has three density modes derived from logical monitor width. Standard
+keeps the full Senomy dialogue, uptime, and two-row clock. Compact keeps the
+avatar and primary telemetry while removing secondary prose/date content.
+Narrow also removes uptime and tightens workspace/application padding. Core
+navigation, CPU, memory, audio, network, battery percentage, and time remain
+available in every mode.
+The same dismissal behavior applies to the Control Centre, Performance
+Dashboard, and Senomy Insights. A transparent shared backdrop may intercept the
+first outside click, but it must stop above the exclusive bar and remain below
+the visible panel so bar triggers and panel controls stay interactive.
+
 ## Control Centre
 
 Use a stable shell:
@@ -152,19 +186,30 @@ Device Management replaces Performance in the navigation.
 
 ## Performance Dashboard
 
-The dashboard is denser but follows the same tokens and typography.
+The dashboard is denser but follows the same Obsidian Rail tokens, typography,
+border hierarchy, semantic colours, and interaction states as the Control
+Centre and Senomy Insights. Cathedral Deck describes its information density,
+not a separate visual theme.
 
 Its hierarchy is:
 
 1. dashboard title and scope;
-2. metric summaries and history;
-3. process/service investigation;
-4. hardware health and reports;
-5. curated diagnostic console;
-6. confirmed actions.
+2. six stable routes for Overview, CPU + GPU, Memory, Storage, Network, and
+   Processes;
+3. four current-value KPIs and paired retained-history charts;
+4. detailed read-only cards and one process table;
+5. a visible route to the curated diagnostic console;
+6. later report and confirmed-action layers.
 
-Graphs should be thin and quiet. A process table is one shared surface with row
-separators, not a grid of cards.
+Graphs should be thin and quiet. Bars grow upward from one baseline, keep a
+five-minute rolling period, and place older samples to the left. Rate graphs
+state their current dynamic scale. A process table is one shared surface with
+row separators, not a grid of cards.
+
+Performance may summarize combined and per-battery charge, but must not grow
+power controls or detailed battery policy. Those belong to Control Centre /
+Power, which is the single future home for health, charging thresholds,
+profiles, policy, and confirmed power-setting changes.
 
 ## Senomy Insights
 
@@ -180,12 +225,24 @@ Severity uses text, icon shape, and restrained semantic colour together.
 Critical styling is reserved for verified critical conditions.
 
 The mascot is an identity asset, not an emoji. Final artwork should be produced
-as a real raster asset sized for both the bar and Insights header.
+as real image assets for compact chibi and larger portrait contexts. Every
+surface reads those paths from `data/senomy-avatars.json` through the shared
+`senomy-avatar` widget; no surface owns a private hard-coded mascot path.
+
+The initial state vocabulary is idle, focused, thinking, happy, warning, busy,
+and sleeping. State expresses presentation, not evidence. A warning avatar may
+only be selected automatically from a verified warning source, and decorative
+mood changes must never imply an unobserved system condition.
 
 Bar dialogue uses a short `Seno:` speaker label followed by one concise line.
 Verified conditions outrank personality dialogue. Ambient lines may
 occasionally use uncommon English/Latin phrasing, but translations stay brief
 and the line must not imply a system fact that was not observed.
+
+The Wiki route keeps the same shell and typography. Category tabs form a
+compact sub-navigation row, article titles form a narrow index, and Markdown
+blocks render as native Eww labels, lists, code surfaces, tables, and internal
+navigation buttons. It is documentation inside Insights, not a browser clone.
 
 ## Motion
 
@@ -202,6 +259,22 @@ decorative movement.
 ## Adaptive and touch layouts
 
 SenomyOS uses one visual identity across input modes, but density may change.
+Surface windows are sized from focused-monitor logical geometry when opened.
+Responsive behavior means reflowing navigation, grids, controls, and text into
+fewer columns; it does not mean scaling the complete desktop layout down until
+it becomes unreadable. Narrow profiles retain a practical text and touch-target
+floor, while standard profiles preserve the approved desktop proportions.
+
+Appearance accents are semantic palettes rather than isolated text colors.
+Each palette supplies one base accent, bright foreground, soft background,
+medium border, and strong indicator color. Those roles are shared by the rail,
+headers, navigation, cards, controls, sliders, graphs, flyouts, and identity
+surfaces. Warning, critical, destructive, and success colors remain fixed so a
+theme cannot conceal system meaning.
+
+Gradient strength is independent from palette choice. Off removes decorative
+background images, Subtle uses low-opacity palette stops, and Strong increases
+the same palette stops without changing layout or semantic status colors.
 
 Pointer-dense mode:
 

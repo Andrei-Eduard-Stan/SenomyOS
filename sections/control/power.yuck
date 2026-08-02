@@ -1,0 +1,410 @@
+(defwidget power-metric [label value detail]
+  (box
+    :class "power-metric"
+    :orientation "v"
+    :space-evenly false
+    :spacing 3
+    (label :class "power-metric-label" :xalign 0 :text label)
+    (label :class "power-metric-value" :xalign 0 :text value)
+    (label
+      :class "power-metric-detail"
+      :xalign 0
+      :limit-width 28
+      :show-truncated true
+      :text detail)))
+
+(defwidget power-detail-row [label value]
+  (box
+    :class "power-detail-row"
+    :space-evenly false
+    (label :class "power-detail-label" :xalign 0 :hexpand true :text label)
+    (label :class "power-detail-value" :text value)))
+
+(defwidget power-battery-card [battery]
+  (box
+    :class "power-battery-card ${battery.health.grade}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    (box
+      :class "power-battery-card-head"
+      :space-evenly false
+      (box
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        :spacing 3
+        (label
+          :class "power-battery-name"
+          :xalign 0
+          :text "${battery.id} // ${battery.manufacturer ?: "UNKNOWN"} ${battery.model ?: "UNKNOWN"}")
+        (label
+          :class "power-battery-identity"
+          :xalign 0
+          :text "${battery.technology ?: "UNKNOWN CHEMISTRY"} · SERIAL ${battery.serial ?: "UNAVAILABLE"}"))
+      (box
+        :class "power-battery-charge"
+        :orientation "v"
+        :space-evenly false
+        (label :class "power-battery-percent" :text "${battery.percent ?: 0}%")
+        (label :class "power-battery-state" :text {battery.status})))
+
+    (progress
+      :class "power-battery-progress"
+      :value {battery.percent ?: 0})
+
+    (box
+      :class "power-battery-vitals"
+      :space-evenly true
+      :spacing 8
+      (power-metric
+        :label "HEALTH"
+        :value {battery.health.available ? "${battery.health.percent}%" : "N/A"}
+        :detail {battery.health.available ? "${battery.health.wear_percent}% wear" : "Not exposed"})
+      (power-metric
+        :label "CYCLES"
+        :value {battery.cycles.available ? "${battery.cycles.count}" : "N/A"}
+        :detail {battery.cycles.available ? "Kernel counter" : "Not exposed"})
+      (power-metric
+        :label "RATE"
+        :value {(battery.electrical.power_w ?: "") != "" ? "${round(battery.electrical.power_w, 2)} W" : "N/A"}
+        :detail {battery.status})
+      (power-metric
+        :label "VOLTAGE"
+        :value {(battery.electrical.voltage_v ?: "") != "" ? "${round(battery.electrical.voltage_v, 2)} V" : "N/A"}
+        :detail {(battery.electrical.current_a ?: "") != "" ? "${round(battery.electrical.current_a, 2)} A" : "Current unavailable"}))
+
+    (box
+      :class "power-battery-detail-grid"
+      :orientation "v"
+      :space-evenly false
+      (power-detail-row
+        :label "Energy remaining"
+        :value {(battery.energy.now_wh ?: "") != "" ? "${battery.energy.now_wh} Wh" : "Unavailable"})
+      (power-detail-row
+        :label "Full charge capacity"
+        :value {(battery.energy.full_wh ?: "") != "" ? "${battery.energy.full_wh} Wh" : "Unavailable"})
+      (power-detail-row
+        :label "Design capacity"
+        :value {(battery.energy.design_wh ?: "") != "" ? "${battery.energy.design_wh} Wh" : "Unavailable"})
+      (power-detail-row
+        :label "Design voltage"
+        :value {(battery.electrical.design_voltage_v ?: "") != "" ? "${battery.electrical.design_voltage_v} V" : "Unavailable"})
+      (power-detail-row
+        :label "Temperature"
+        :value {(battery.electrical.temperature_c ?: "") != "" ? "${battery.electrical.temperature_c}°C" : "Not exposed"})
+      (power-detail-row
+        :label "Pack estimate"
+        :value {battery.estimates.time_to_empty
+          ?: (battery.estimates.time_to_full ?: "Unavailable")})
+      (power-detail-row
+        :label "Charge thresholds"
+        :value {battery.thresholds.supported
+          ? "${battery.thresholds.start_percent}% → ${battery.thresholds.end_percent}%"
+          : "Unsupported"}))
+
+    (box
+      :class "power-health-note ${battery.health.grade}"
+      :space-evenly false
+      (label
+        :class "power-health-grade"
+        :xalign 0
+        :hexpand true
+        :text "CONDITION // ${battery.health.grade}")
+      (label
+        :class "power-health-source"
+        :text "FULL ÷ DESIGN CAPACITY"))))
+
+(defwidget power-plan-button [id code name summary]
+  (button
+    :class {power_status?.data?.policy?.current_plan == id
+      ? "power-plan active"
+      : "power-plan"}
+    :active {power_status?.data?.policy?.authorization?.actions_available == true
+      && pending_action == "none"}
+    :tooltip {power_status?.data?.policy?.authorization?.actions_available == true
+      ? "Review ${name} before applying"
+      : "A graphical polkit authentication agent is required"}
+    :onclick "${EWW_CMD} update pending_action=power-plan-${id}"
+    (box
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      (box :space-evenly false
+        (label :class "power-plan-code" :xalign 0 :hexpand true :text code)
+        (label
+          :class "power-plan-state"
+          :text {power_status?.data?.policy?.current_plan == id ? "ACTIVE" : "SELECT"}))
+      (label :class "power-plan-name" :xalign 0 :text name)
+      (label
+        :class "power-plan-summary"
+        :xalign 0
+        :wrap true
+        :text summary))))
+
+(defwidget power-plan-confirm [id name impact]
+  (box
+    :class "power-plan-confirm"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+    :visible {pending_action == "power-plan-${id}"}
+    (label :class "power-confirm-code" :xalign 0 :text "CONFIRM // TLP ${id}")
+    (label
+      :class "power-confirm-title"
+      :xalign 0
+      :text "Apply ${name}?")
+    (label
+      :class "power-confirm-copy"
+      :xalign 0
+      :wrap true
+      :text "${impact} This changes the active runtime profile and may alter performance, heat, device power saving and battery runtime. TLP automatic switching remains configured.")
+    (box
+      :space-evenly false
+      :spacing 8
+      (button
+        :class "power-confirm-action"
+        :onclick "${EWW_CMD} update pending_action=none"
+        "CANCEL")
+      (button
+        :class "power-confirm-action apply"
+        :timeout "15s"
+        :onclick "$HOME/.config/eww/scripts/power-action.sh ${id} >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none &"
+        "AUTHORIZE + APPLY"))))
+
+(defwidget control-power-section []
+  (box
+    :class "control-power-section"
+    :orientation "v"
+    :space-evenly false
+    :visible {control_section == "power"}
+    :vexpand true
+    :hexpand true
+
+    (box :class "control-operation power ${power_operation_status.data.state}" :orientation "v" :space-evenly false :spacing 4
+      :visible {power_operation_status.data.state != "idle"}
+      (box :space-evenly false :spacing 8
+        (label :class "control-operation-code" :xalign 0 :hexpand true
+          :text "OPERATION // ${power_operation_status.data.state_label}")
+        (label :class "control-state-badge ${power_operation_status.data.state == "failed" ? "danger" : (power_operation_status.data.state == "succeeded" ? "ready" : "") }"
+          :text {power_operation_status.data.state_label}))
+      (label :class "control-operation-title" :xalign 0 :text {power_operation_status.data.label})
+      (label :class "control-operation-copy" :xalign 0 :wrap true :text {power_operation_status.data.message}))
+
+    (scroll
+      :class "power-scroll"
+      :vscroll true
+      :hscroll false
+      :vexpand true
+      :hexpand true
+
+      (box
+        :class "power-page"
+        :orientation "v"
+        :space-evenly false
+        :spacing 16
+
+        (box
+          :class "section-heading"
+          :orientation "v"
+          :space-evenly false
+          :spacing 4
+          (label :class "section-eyebrow" :xalign 0 :text "POWER // UPOWER + SYSFS + TLP")
+          (label :class "section-title" :xalign 0 :text "Energy command")
+          (label
+            :class "section-detail"
+            :xalign 0
+            :wrap true
+            :text "Live pack telemetry, wear evidence, electrical values, charge policy and confirmed runtime profiles. Unsupported fields remain explicit."))
+
+        (box
+          :class "power-source-error"
+          :orientation "v"
+          :space-evenly false
+          :spacing 5
+          :visible {power_status?.ok != true}
+          (label
+            :class "power-error-code"
+            :xalign 0
+            :text "SOURCE // ${power_status?.error?.code ?: "LOADING"}")
+          (label
+            :class "power-error-copy"
+            :xalign 0
+            :wrap true
+            :text {power_status?.error?.message ?: "Detailed power telemetry is loading."}))
+
+        (box
+          :class "power-live-content"
+          :orientation "v"
+          :space-evenly false
+          :spacing 16
+          :visible {power_status?.ok == true}
+
+          (box
+            :class "power-senomy-brief"
+            :space-evenly false
+            :spacing 16
+            (senomy-avatar
+              :variant "chibi"
+              :size 104
+              :context "power"
+              :domain "battery")
+            (box
+              :orientation "v"
+              :space-evenly false
+              :valign "center"
+              :spacing 5
+              (label
+                :class "power-senomy-kicker"
+                :xalign 0
+                :text "SENOMY // ENERGY WATCH")
+              (label
+                :class "power-senomy-message"
+                :xalign 0
+                :wrap true
+                :text {(power_status?.data?.summary?.percent ?: 0) <= 20
+                  ? "Seno: Reserve is ${power_status?.data?.summary?.percent ?: 0}%. ${(power_status?.data?.summary?.ac_online ?: false) ? "External power is connected; let the packs recover." : "Connect a charger soon."}"
+                  : "Seno: ${power_status?.data?.summary?.energy_now_wh ?: 0} Wh remain across ${power_status?.data?.summary?.present_count ?: 0} packs. Estimated endurance is ${power_status?.data?.summary?.time_to_empty ?: "not currently available"}."})))
+
+          (box
+            :class "power-summary-grid"
+            :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+            :space-evenly true
+            :spacing 8
+            (power-metric
+              :label "COMBINED"
+              :value "${power_status?.data?.summary?.percent ?: 0}%"
+              :detail "${power_status?.data?.summary?.energy_now_wh ?: 0} / ${power_status?.data?.summary?.energy_full_wh ?: 0} Wh")
+            (power-metric
+              :label "HEALTH"
+              :value "${power_status?.data?.summary?.health_percent ?: 0}%"
+              :detail "${power_status?.data?.summary?.energy_full_wh ?: 0} / ${power_status?.data?.summary?.energy_design_wh ?: 0} Wh")
+            (power-metric
+              :label "FLOW"
+              :value "${round(power_status?.data?.summary?.power_w ?: 0, 2)} W"
+              :detail {power_status?.data?.summary?.state ?: "UNKNOWN"})
+            (power-metric
+              :label "ESTIMATE"
+              :value {power_status?.data?.summary?.time_to_empty
+                ?: (power_status?.data?.summary?.time_to_full ?: "N/A")}
+              :detail {(power_status?.data?.summary?.ac_online ?: false) ? "AC ONLINE" : "ON BATTERY"}))
+
+          (box
+            :class "power-pack-list"
+            :orientation "v"
+            :space-evenly false
+            :spacing 12
+            (for battery in {power_status?.data?.batteries ?: []}
+              (power-battery-card :battery battery)))
+
+          (box :class "power-policy-card brightness-control-card" :orientation "v" :space-evenly false :spacing 10
+            (box :space-evenly false
+              (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+                (label :class "power-policy-code" :xalign 0 :text "DISPLAY // BACKLIGHT")
+                (label :class "power-policy-title" :xalign 0 :text "Screen energy"))
+              (label :class "control-state-badge" :text {control_status?.data?.brightness?.available == true ? "${control_status?.data?.brightness?.percent ?: 0}%" : "UNAVAILABLE"}))
+            (progress :class "power-meter" :value {control_status?.data?.brightness?.percent ?: 0})
+            (box :class "brightness-preset-grid" :space-evenly true :spacing 7
+              (button :class "power-plan" :active {control_status?.data?.brightness?.available == true} :onclick "$HOME/.config/eww/scripts/brightness-action.sh set 25" "25%")
+              (button :class "power-plan" :active {control_status?.data?.brightness?.available == true} :onclick "$HOME/.config/eww/scripts/brightness-action.sh set 50" "50%")
+              (button :class "power-plan" :active {control_status?.data?.brightness?.available == true} :onclick "$HOME/.config/eww/scripts/brightness-action.sh set 75" "75%")
+              (button :class "power-plan" :active {control_status?.data?.brightness?.available == true} :onclick "$HOME/.config/eww/scripts/brightness-action.sh set 100" "100%"))
+            (box :class "control-operation brightness ${brightness_operation_status.data.state}" :orientation "v" :space-evenly false :spacing 4
+              :visible {brightness_operation_status.data.state != "idle"}
+              (label :class "control-operation-code" :xalign 0 :text {brightness_operation_status.data.label})
+              (label :class "control-operation-copy" :xalign 0 :wrap true :text {brightness_operation_status.data.message})))
+
+          (box
+            :class "power-policy-card"
+            :orientation "v"
+            :space-evenly false
+            :spacing 12
+            (box
+              :class "power-policy-head"
+              :space-evenly false
+              (box
+                :orientation "v"
+                :space-evenly false
+                :hexpand true
+                :spacing 3
+                (label :class "power-policy-code" :xalign 0 :text "POLICY // ${power_status?.data?.policy?.backend ?: "UNAVAILABLE"}")
+                (label :class "power-policy-title" :xalign 0 :text "Runtime power plans"))
+              (label
+                :class {(power_status?.data?.policy?.service_active ?: false)
+                  ? "power-policy-service ready"
+                  : "power-policy-service unavailable"}
+                :text {(power_status?.data?.policy?.service_active ?: false)
+                  ? "TLP ${power_status?.data?.policy?.version ?: ""} ACTIVE"
+                  : "BACKEND INACTIVE"}))
+
+            (box
+              :class "power-effective-row"
+              :space-evenly false
+              :spacing 8
+              (label :class "power-effective-chip" :text "DRIVER ${power_status?.data?.policy?.effective?.cpu_driver ?: "N/A"}")
+              (label :class "power-effective-chip" :text "GOV ${power_status?.data?.policy?.effective?.governor ?: "N/A"}")
+              (label :class "power-effective-chip" :text "EPP ${power_status?.data?.policy?.effective?.energy_performance_preference ?: "N/A"}")
+              (label :class "power-effective-chip" :text {(power_status?.data?.policy?.effective?.turbo_available ?: false) ? "TURBO AVAILABLE" : "TURBO LIMITED"}))
+
+            (box
+              :class "power-plan-grid"
+              :space-evenly true
+              :spacing 8
+              (power-plan-button
+                :id "power-saver"
+                :code "SAV"
+                :name "Power Saver"
+                :summary "Maximize endurance and reduce background device energy.")
+              (power-plan-button
+                :id "balanced"
+                :code "BAL"
+                :name "Balanced"
+                :summary "Daily profile for responsive work with controlled energy use.")
+              (power-plan-button
+                :id "performance"
+                :code "PRF"
+                :name "Performance"
+                :summary "Favor throughput and responsiveness at higher heat and drain."))
+
+            (box
+              :class "power-auth-warning"
+              :orientation "v"
+              :space-evenly false
+              :spacing 4
+              :visible {power_status?.data?.policy?.authorization?.actions_available != true}
+              (label :class "power-auth-title" :xalign 0 :text "PROFILE ACTIONS LOCKED")
+              (label
+                :class "power-auth-copy"
+                :xalign 0
+                :wrap true
+                :text {(power_status?.data?.policy?.available ?: false)
+                  ? ((power_status?.data?.policy?.authorization?.agent_installed ?: false)
+                    ? "TLP is available and an authentication agent is installed, but the agent is not running in this session."
+                    : "TLP is available, but no graphical polkit authentication agent was detected. Plans remain read-only until an agent is installed and started.")
+                  : "No supported power-plan backend was detected."}))
+
+            (power-plan-confirm
+              :id "power-saver"
+              :name "Power Saver"
+              :impact "Expect reduced peak responsiveness and lower device energy use.")
+            (power-plan-confirm
+              :id "balanced"
+              :name "Balanced"
+              :impact "Expect a moderate responsiveness and endurance policy.")
+            (power-plan-confirm
+              :id "performance"
+              :name "Performance"
+              :impact "Expect higher power draw, heat and fan activity under load.")
+
+            (box
+              :class "power-policy-foot"
+              :space-evenly false
+              (label
+                :class "power-policy-foot-copy"
+                :xalign 0
+                :hexpand true
+                :text "AUTO SWITCH ${(power_status?.data?.policy?.automatic_switching ?: false) ? "ON" : "OFF"} · AC ${power_status?.data?.policy?.configured_ac_profile ?: "N/A"} · BAT ${power_status?.data?.policy?.configured_battery_profile ?: "N/A"}")
+              (label
+                :class "power-policy-foot-copy"
+                :text "SOURCE // TLP + INTEL_PSTATE"))))))))

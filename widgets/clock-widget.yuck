@@ -4,12 +4,12 @@
       ? "icon-button bar-control clock-control active"
       : "icon-button bar-control clock-control"}
     :tooltip "Calendar"
-    :timeout "2s"
-    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control calendar"
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control calendar ${active_surface} ${active_flyout} ${control_section}"
 
     (box
       :class "clock-stack"
       :orientation "v"
       :space-evenly true
       (label :class "clock-time" :text {time})
-      (label :class "clock-date" :text {date}))))
+      (label :class "clock-date" :visible {bar_layout?.data?.compact != true} :text {date}))))

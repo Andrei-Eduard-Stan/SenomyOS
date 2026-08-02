@@ -4,6 +4,13 @@
   color: #f1f1f4;
 }
 
+.surface-dismiss-layer,
+.surface-dismiss-hit-area {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
 .bar {
   background-color: rgba(8, 9, 11, 0.97);
   border-top: 1px solid rgba(255, 255, 255, 0.22);
@@ -11,13 +18,83 @@
   font-size: 13px;
 }
 
-.battery {
-  background-color: transparent;
-  font-size: 17px;
+.bar.compact {
+  padding: 0 8px;
+}
+
+.bar.compact .senomy-trigger {
+  padding: 0 9px;
+}
+
+.bar.compact .clock-control {
+  min-width: 58px;
+  padding: 0 5px;
+}
+
+.bar.narrow .workspace-apps {
+  padding: 0 4px;
+}
+
+.bar.narrow .system-summary {
+  padding: 0 8px;
+}
+
+.bar.layout-phone {
+  padding: 0 4px;
+}
+
+.bar.layout-phone .workspace-strip,
+.bar.layout-phone .senomy-trigger,
+.bar.layout-phone .system-summary {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.bar.layout-phone .clock-control,
+.bar.layout-phone .battery-control {
+  min-width: 38px;
+  padding: 0 2px;
+}
+
+.tray-manage-apps {
+  min-height: 38px;
+  margin: 0 10px 9px;
+  color: #aeb2ba;
+  border-top: 1px solid rgba(103, 184, 201, 0.28);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.mainbar-right {
+  min-height: 44px;
+  padding-right: 6px;
+}
+
+.central-rail-island {
+  min-height: 40px;
+  min-width: 700px;
+}
+
+.central-island-divider {
+  min-width: 1px;
+  min-height: 24px;
+  margin: 0 2px;
+  background-color: rgba(255, 255, 255, 0.10);
 }
 
 .battery-control {
-  padding: 0 8px;
+  min-width: 70px;
+  padding: 0 6px;
+}
+
+.battery-summary {
+  min-height: 36px;
+}
+
+.battery-percent {
+  min-width: 30px;
+  color: #b8bac2;
+  font-size: 11px;
 }
 
 .clock-control {
@@ -41,13 +118,31 @@
 
 .workspace-strip {
   min-height: 36px;
-  padding: 0 8px;
+  padding: 0;
 }
 
 .workspace-chip {
   min-height: 30px;
+  padding: 0;
+  color: #92959f;
   background-color: rgba(255, 255, 255, 0.018);
   border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+}
+
+.workspace-rail-zone {
+  min-height: 40px;
+}
+
+.workspace-chip:hover,
+.workspace-chip:focus {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.workspace-chip:active {
+  background-color: rgba(152, 146, 232, 0.12);
 }
 
 .workspace-chip.occupied {
@@ -60,21 +155,16 @@
   border-color: rgba(152, 146, 232, 0.46);
 }
 
-.workspace-number {
-  min-width: 26px;
+.workspace-chip-content {
   min-height: 30px;
-  padding: 0 5px;
-  color: #92959f;
-  font-size: 11px;
 }
 
-.workspace-number label {
+.workspace-number {
+  min-width: 24px;
+  min-height: 30px;
+  padding: 0 3px;
   color: inherit;
-}
-
-.workspace-number:hover {
-  color: #f1f1f4;
-  background-color: rgba(255, 255, 255, 0.045);
+  font-size: 11px;
 }
 
 .workspace-chip.active .workspace-number {
@@ -88,8 +178,12 @@
 }
 
 .workspace-app-icon {
-  min-width: 18px;
-  min-height: 18px;
+  min-width: 20px;
+  min-height: 24px;
+}
+
+.workspace-app-image {
+  margin: 0 1px;
 }
 
 .workspace-app-count {
@@ -109,15 +203,19 @@
 }
 
 .senomy-trigger {
-  padding: 0 16px;
+  padding: 0 14px;
   background-color: rgba(255, 255, 255, 0.018);
   border-left: 1px solid rgba(152, 146, 232, 0.20);
   border-right: 1px solid rgba(152, 146, 232, 0.20);
 }
 
 .bar-control {
+  min-width: 36px;
   min-height: 36px;
+  padding: 0;
+  margin: 0;
   color: #f1f1f4;
+  border-top: 2px solid transparent;
   border-bottom: 2px solid transparent;
 }
 
@@ -132,38 +230,97 @@
   border-bottom-color: #9892e8;
 }
 
-.system-tray {
-  min-height: 36px;
-  padding: 0 4px;
+.bar-control.muted,
+.bar-control.offline,
+.bar-control.disabled,
+.system-summary.unavailable {
+  background-color: rgba(207, 118, 110, 0.045);
 }
 
-.system-tray button {
-  min-width: 30px;
-  min-height: 30px;
-  padding: 0 2px;
+.battery-control.low,
+.system-summary.critical {
+  color: #cf766e;
+  background-color: rgba(207, 118, 110, 0.07);
+  border-bottom-color: rgba(207, 118, 110, 0.62);
 }
 
-.system-tray button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.battery-control.charging {
+  background-color: rgba(120, 190, 195, 0.06);
 }
 
+.system-summary.warning {
+  color: #c49b63;
+  background-color: rgba(196, 155, 99, 0.06);
+  border-bottom-color: rgba(196, 155, 99, 0.55);
+}
+
+.bar-icon-image {
+  min-width: 16px;
+  min-height: 16px;
+}
+
+.tray-overflow-trigger,
 .applications-trigger {
   min-width: 36px;
-  padding: 0 7px;
-  font-size: 16px;
+  padding: 0;
 }
 
-.senomy-avatar-placeholder {
+.senomy-avatar-bar {
   min-width: 28px;
   min-height: 28px;
-  color: #aaa4ff;
-  border: 1px solid rgba(152, 146, 232, 0.55);
-  font-size: 14px;
+  background-color: rgba(152, 146, 232, 0.035);
+  border: 1px solid rgba(152, 146, 232, 0.42);
+  border-radius: 4px;
+}
+
+.senomy-avatar-header {
+  min-width: 38px;
+  min-height: 38px;
+  margin-right: 12px;
+  background-color: rgba(152, 146, 232, 0.035);
+  border: 1px solid rgba(152, 146, 232, 0.42);
+  border-radius: 4px;
+}
+
+.senomy-avatar-observer {
+  min-width: 56px;
+  min-height: 56px;
+  background-color: rgba(152, 146, 232, 0.035);
+  border: 1px solid rgba(152, 146, 232, 0.42);
+  border-radius: 4px;
+}
+
+.senomy-avatar-power {
+  min-width: 120px;
+  min-height: 120px;
+  background-color: rgba(152, 146, 232, 0.035);
+  border: 1px solid rgba(152, 146, 232, 0.42);
+  border-radius: 5px;
+}
+
+.senomy-avatar-state-warning {
+  border-color: rgba(196, 111, 125, 0.78);
+  background-color: rgba(196, 111, 125, 0.07);
+}
+
+.senomy-avatar-image {
+  margin: 2px;
+}
+
+.senomy-avatar-unavailable {
+  color: #c46f7d;
+  font-size: 13px;
 }
 
 .senomy-copy {
-  min-width: 260px;
+  min-width: 390px;
 }
+
+.bar.compact .central-rail-island { min-width: 620px; }
+.bar.compact .senomy-copy { min-width: 315px; }
+.bar.narrow .central-rail-island { min-width: 430px; }
+.bar.narrow .senomy-copy { min-width: 245px; }
+.bar.layout-phone .central-rail-island { min-width: 210px; }
 
 .senomy-speaker {
   color: #aaa4ff;
@@ -193,13 +350,40 @@
 
 .icon-button {
   min-width: 36px;
+  min-height: 36px;
   font-size: 17px;
 }
 
 .system-summary {
+  min-height: 36px;
   color: #92959f;
   padding: 0 16px;
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
   font-size: 12px;
+}
+
+.system-summary:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.system-summary.active {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.07);
+  border-bottom-color: #9892e8;
+}
+
+.system-summary-content {
+  min-height: 36px;
+}
+
+.system-summary-metric {
+  color: inherit;
+}
+
+.system-summary-divider {
+  color: #9892e8;
 }
 
 /* Shared Obsidian Rail shell used by Control Centre and Insights. */
@@ -247,6 +431,210 @@
 .shell-close:hover {
   color: #f1f1f4;
   background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Compact volume flyout. */
+.volume-flyout {
+  background-color: rgba(10, 12, 15, 0.985);
+}
+
+.volume-flyout-content {
+  min-height: 58px;
+  padding: 0 8px;
+}
+
+.volume-mute {
+  min-width: 32px;
+  min-height: 34px;
+  padding: 0;
+  color: #b8bac2;
+  border: none;
+}
+
+.volume-mute:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.volume-mute.active {
+  color: #c46f7d;
+  background-color: rgba(196, 111, 125, 0.07);
+}
+
+.volume-mute:disabled {
+  color: #4f525b;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.volume-mute-icon {
+  font-size: 17px;
+}
+
+.volume-slider-stack {
+  min-width: 190px;
+}
+
+.volume-flyout.layout-narrow .volume-flyout-content {
+  min-height: 230px;
+  padding: 14px;
+}
+
+.volume-flyout.layout-narrow .volume-slider-stack {
+  min-width: 0;
+  min-height: 58px;
+}
+
+.volume-flyout.layout-narrow .volume-mute,
+.volume-flyout.layout-narrow .volume-open-audio,
+.volume-flyout.layout-narrow .flyout-close {
+  min-height: 42px;
+  margin-left: 0;
+}
+
+.tray-flyout.layout-narrow .tray-flyout-content {
+  padding: 0 10px;
+}
+
+.tray-flyout.layout-narrow .tray-flyout-title {
+  font-size: 11px;
+}
+
+.volume-flyout-meta {
+  min-height: 14px;
+}
+
+.volume-flyout-device {
+  color: #b8bac2;
+  font-size: 9px;
+}
+
+.volume-flyout-value {
+  min-width: 36px;
+  color: #aaa4ff;
+  font-size: 10px;
+}
+
+.volume-scale trough {
+  min-height: 4px;
+  background-color: rgba(255, 255, 255, 0.11);
+}
+
+.volume-scale trough highlight {
+  background-color: #9892e8;
+}
+
+.volume-scale slider {
+  min-width: 14px;
+  min-height: 14px;
+  margin: -5px 0;
+  background-color: #f1f1f4;
+  border: 2px solid #9892e8;
+  border-radius: 50%;
+}
+
+.volume-scale:disabled trough highlight {
+  background-color: #4f525b;
+}
+
+.volume-open-audio {
+  min-width: 58px;
+  min-height: 34px;
+  padding: 0 7px;
+  color: #b8bac2;
+  border: none;
+}
+
+.volume-open-audio:hover {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.07);
+}
+
+.volume-open-audio-label {
+  color: inherit;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+}
+
+.volume-open-audio-icon {
+  color: #aaa4ff;
+  font-size: 14px;
+}
+
+/* Native tray overflow. */
+.tray-flyout {
+  background-color: rgba(10, 12, 15, 0.985);
+}
+
+.tray-flyout-content {
+  min-height: 110px;
+  padding: 0 14px;
+}
+
+.tray-flyout-header {
+  min-height: 54px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.tray-flyout-eyebrow {
+  color: #aaa4ff;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.tray-flyout-title {
+  color: #f1f1f4;
+  font-size: 10px;
+}
+
+.tray-flyout-count {
+  color: #777b85;
+  font-size: 8px;
+  letter-spacing: 0.6px;
+}
+
+.flyout-close {
+  min-width: 36px;
+  min-height: 36px;
+  margin-left: 9px;
+  color: #777b85;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  box-shadow: none;
+  font-size: 11px;
+}
+
+.flyout-close:hover {
+  color: #f1f1f4;
+  background-color: rgba(207, 118, 110, 0.10);
+  border-color: rgba(207, 118, 110, 0.42);
+}
+
+.tray-flyout-items {
+  min-height: 54px;
+}
+
+.tray-flyout-empty {
+  color: #666a74;
+  font-size: 8px;
+}
+
+.tray-overflow-items button {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.tray-overflow-items button:hover {
+  background-color: rgba(152, 146, 232, 0.08);
+  border-color: rgba(152, 146, 232, 0.42);
+}
+
+.tray-overflow-items image {
+  min-width: 18px;
+  min-height: 18px;
 }
 
 .shell-content {
@@ -313,14 +701,1071 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
+.control-power-section {
+  min-width: 0;
+  min-height: 0;
+}
+
+.power-scroll {
+  min-height: 0;
+  background-color: transparent;
+}
+
+.power-scroll scrollbar {
+  min-width: 7px;
+  background-color: rgba(255, 255, 255, 0.018);
+}
+
+.power-scroll scrollbar slider {
+  min-width: 3px;
+  background-color: rgba(152, 146, 232, 0.34);
+}
+
+.power-page {
+  padding-right: 10px;
+  padding-bottom: 20px;
+}
+
+.power-source-error {
+  padding: 13px;
+  background-color: rgba(196, 111, 125, 0.06);
+  border-left: 2px solid #c46f7d;
+}
+
+.power-error-code,
+.power-auth-title {
+  color: #c46f7d;
+  font-size: 8px;
+  letter-spacing: 0.9px;
+}
+
+.power-error-copy,
+.power-auth-copy {
+  color: #aaaeb7;
+  font-size: 9px;
+}
+
+.power-senomy-brief {
+  padding: 13px;
+  background-color: rgba(152, 146, 232, 0.025);
+  border: 1px solid rgba(152, 146, 232, 0.20);
+}
+
+.power-senomy-kicker {
+  color: #9892e8;
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+
+.power-senomy-message {
+  color: #c7c8cf;
+  font-size: 11px;
+}
+
+.power-summary-grid {
+  min-width: 0;
+}
+
+.power-metric {
+  min-width: 102px;
+  min-height: 58px;
+  padding: 9px 10px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-top: 2px solid rgba(152, 146, 232, 0.50);
+}
+
+.power-metric-label {
+  color: #656a74;
+  font-size: 7px;
+  letter-spacing: 0.9px;
+}
+
+.power-metric-value {
+  color: #f0f0f3;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.power-metric-detail {
+  color: #777c86;
+  font-size: 7px;
+}
+
+.power-pack-list {
+  padding-top: 2px;
+}
+
+.power-battery-card {
+  padding: 13px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-left: 2px solid #9892e8;
+}
+
+.power-battery-card.worn {
+  border-left-color: #c49b63;
+}
+
+.power-battery-card.replace-soon {
+  border-left-color: #c46f7d;
+}
+
+.power-battery-card-head {
+  min-height: 38px;
+}
+
+.power-battery-name {
+  color: #e2e3e7;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.4px;
+}
+
+.power-battery-identity,
+.power-battery-state {
+  color: #777b85;
+  font-size: 7px;
+  letter-spacing: 0.6px;
+}
+
+.power-battery-charge {
+  min-width: 70px;
+}
+
+.power-battery-percent {
+  color: #f1f1f4;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.power-battery-progress trough {
+  min-height: 5px;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.power-battery-progress progress {
+  background-color: #9892e8;
+}
+
+.power-battery-vitals .power-metric {
+  min-width: 92px;
+  min-height: 52px;
+  padding: 8px;
+}
+
+.power-battery-detail-grid {
+  padding: 7px 9px;
+  background-color: rgba(0, 0, 0, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.power-detail-row {
+  min-height: 23px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+}
+
+.power-detail-label {
+  color: #737883;
+  font-size: 8px;
+}
+
+.power-detail-value {
+  color: #c8cad0;
+  font-size: 8px;
+}
+
+.power-health-note {
+  min-height: 26px;
+  padding: 0 8px;
+  background-color: rgba(127, 169, 138, 0.035);
+  border-left: 2px solid #7fa98a;
+}
+
+.power-health-note.worn {
+  background-color: rgba(196, 155, 99, 0.04);
+  border-left-color: #c49b63;
+}
+
+.power-health-note.replace-soon {
+  background-color: rgba(196, 111, 125, 0.05);
+  border-left-color: #c46f7d;
+}
+
+.power-health-grade,
+.power-health-source {
+  color: #777c86;
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
+.power-policy-card {
+  padding: 13px;
+  background-color: rgba(2, 4, 6, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-top: 2px solid rgba(152, 146, 232, 0.55);
+}
+
+.power-policy-code {
+  color: #9892e8;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.power-policy-title {
+  color: #e1e2e6;
+  font-size: 12px;
+}
+
+.power-policy-service {
+  padding: 4px 7px;
+  color: #c46f7d;
+  border: 1px solid rgba(196, 111, 125, 0.35);
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
+.power-policy-service.ready {
+  color: #7fa98a;
+  border-color: rgba(127, 169, 138, 0.35);
+}
+
+.power-effective-row {
+  min-height: 29px;
+}
+
+.power-effective-chip {
+  padding: 4px 6px;
+  color: #7d828c;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 7px;
+  letter-spacing: 0.4px;
+}
+
+.power-plan {
+  min-width: 132px;
+  min-height: 92px;
+  padding: 9px;
+  color: #a7aab2;
+  background-color: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.power-plan:hover {
+  color: #ececf0;
+  background-color: rgba(152, 146, 232, 0.045);
+  border-color: rgba(152, 146, 232, 0.35);
+}
+
+.power-plan.active {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.075);
+  border-color: rgba(152, 146, 232, 0.58);
+}
+
+.power-plan:disabled {
+  color: #61656e;
+  background-color: rgba(255, 255, 255, 0.008);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.power-plan-code,
+.power-plan-state {
+  color: #7771b8;
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+
+.power-plan-state {
+  color: #626772;
+}
+
+.power-plan-name {
+  color: inherit;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.power-plan-summary {
+  color: #777c86;
+  font-size: 7px;
+}
+
+.power-auth-warning {
+  padding: 10px;
+  background-color: rgba(196, 155, 99, 0.045);
+  border-left: 2px solid #c49b63;
+}
+
+.power-auth-title {
+  color: #c49b63;
+}
+
+.power-plan-confirm {
+  padding: 12px;
+  background-color: rgba(196, 155, 99, 0.05);
+  border: 1px solid rgba(196, 155, 99, 0.28);
+  border-left: 2px solid #c49b63;
+}
+
+.power-confirm-code {
+  color: #c49b63;
+  font-size: 7px;
+  letter-spacing: 0.9px;
+}
+
+.power-confirm-title {
+  color: #f0f0f3;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.power-confirm-copy {
+  color: #a6a9b1;
+  font-size: 8px;
+}
+
+.power-confirm-action {
+  min-height: 31px;
+  padding: 0 11px;
+  color: #aeb1b9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 8px;
+}
+
+.power-confirm-action.apply {
+  color: #d7b47a;
+  background-color: rgba(196, 155, 99, 0.06);
+  border-color: rgba(196, 155, 99, 0.38);
+}
+
+.power-policy-foot {
+  min-height: 28px;
+  padding: 0 8px;
+  background-color: rgba(0, 0, 0, 0.16);
+}
+
+.power-policy-foot-copy {
+  color: #5f646e;
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
 .section-eyebrow {
   color: #aaa4ff;
   font-size: 9px;
   letter-spacing: 1.2px;
 }
 
+.control-audio-section,
+.control-network-section {
+  min-width: 0;
+  min-height: 0;
+}
+
+.control-tech-scroll {
+  min-height: 0;
+  background-color: transparent;
+}
+
+.control-tech-scroll scrollbar {
+  min-width: 7px;
+  background-color: rgba(255, 255, 255, 0.018);
+}
+
+.control-tech-scroll scrollbar slider {
+  min-width: 3px;
+  background-color: rgba(103, 184, 201, 0.38);
+}
+
+.control-tech-scroll.audio scrollbar slider {
+  background-color: rgba(152, 146, 232, 0.38);
+}
+
+.control-tech-page {
+  padding-right: 10px;
+  padding-bottom: 20px;
+}
+
+.control-source-error {
+  padding: 13px;
+  background-color: rgba(196, 111, 125, 0.07);
+  border-left: 2px solid #c46f7d;
+}
+
+.control-source-error-code {
+  color: #c46f7d;
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+
+.control-source-error-copy {
+  color: #b8bac2;
+  font-size: 9px;
+}
+
+.control-operation {
+  padding: 10px 12px;
+  border: 1px solid rgba(103, 184, 201, 0.30);
+  background: rgba(8, 11, 14, 0.76);
+}
+
+.control-operation.running {
+  border-color: rgba(196, 155, 99, 0.48);
+}
+
+.control-operation.succeeded {
+  border-color: rgba(120, 190, 195, 0.48);
+}
+
+.control-operation.failed {
+  border-color: rgba(196, 111, 125, 0.58);
+}
+
+.control-operation-code,
+.control-operation-title,
+.control-operation-copy {
+  font-weight: 700;
+}
+
+.control-operation-code {
+  color: #92959f;
+  font-size: 9px;
+}
+
+.control-operation-title {
+  color: #f1f1f4;
+  font-size: 11px;
+}
+
+.control-operation-copy {
+  color: #b8bac2;
+  font-size: 9px;
+}
+
+.control-tech-brief {
+  min-height: 68px;
+  padding: 12px 14px;
+  background-color: rgba(103, 184, 201, 0.025);
+  border: 1px solid rgba(103, 184, 201, 0.20);
+}
+
+.control-tech-brief.audio {
+  background-color: rgba(152, 146, 232, 0.025);
+  border-color: rgba(152, 146, 232, 0.20);
+}
+
+.control-tech-brief-icon {
+  min-width: 50px;
+  color: #67b8c9;
+  font-size: 28px;
+}
+
+.control-tech-brief.audio .control-tech-brief-icon {
+  color: #9892e8;
+}
+
+.control-tech-brief-copy {
+  color: #c7c8cf;
+  font-size: 10px;
+}
+
+.control-tech-grid {
+  min-width: 0;
+}
+
+.control-tech-metric {
+  min-width: 102px;
+  min-height: 58px;
+  padding: 9px 10px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-top: 2px solid rgba(152, 146, 232, 0.50);
+}
+
+.control-tech-metric.network {
+  border-top-color: rgba(103, 184, 201, 0.58);
+}
+
+.control-tech-label {
+  color: #656a74;
+  font-size: 7px;
+  letter-spacing: 0.9px;
+}
+
+.control-tech-value {
+  color: #f0f0f3;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.control-tech-detail {
+  color: #777c86;
+  font-size: 7px;
+}
+
+.control-tech-code {
+  color: #67b8c9;
+  font-size: 7px;
+  letter-spacing: 0.9px;
+}
+
+.control-audio-section .control-tech-code {
+  color: #9892e8;
+}
+
+.control-tech-card,
+.audio-endpoint-card,
+.network-interface-card,
+.network-radio-card,
+.network-ap-card {
+  padding: 13px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-left: 2px solid #67b8c9;
+}
+
+.audio-endpoint-card {
+  border-left-color: #9892e8;
+}
+
+.audio-endpoint-card.input {
+  border-left-color: #8f77b8;
+}
+
+.network-interface-card.offline {
+  border-left-color: #555b65;
+}
+
+.control-tech-card-title,
+.audio-endpoint-name {
+  color: #e2e3e7;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.audio-endpoint-port {
+  color: #777c86;
+  font-size: 8px;
+}
+
+.control-state-badge {
+  padding: 4px 7px;
+  color: #858a94;
+  border: 1px solid rgba(133, 138, 148, 0.35);
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
+.control-state-badge.ready {
+  color: #7fa98a;
+  border-color: rgba(127, 169, 138, 0.38);
+}
+
+.control-state-badge.danger {
+  color: #c46f7d;
+  border-color: rgba(196, 111, 125, 0.40);
+}
+
+.control-tech-table {
+  padding: 6px 9px;
+  background-color: rgba(0, 0, 0, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.control-tech-row {
+  min-height: 23px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+}
+
+.control-tech-row-label {
+  color: #737883;
+  font-size: 8px;
+}
+
+.control-tech-row-value {
+  color: #c8cad0;
+  font-size: 8px;
+}
+
+.audio-level-row {
+  min-height: 38px;
+}
+
+.audio-mute {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  color: #b8bac2;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 14px;
+}
+
+.audio-mute:hover,
+.audio-route:hover,
+.network-action:hover,
+.network-disconnect:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.audio-mute.active {
+  color: #c46f7d;
+  background-color: rgba(196, 111, 125, 0.07);
+  border-color: rgba(196, 111, 125, 0.42);
+}
+
+.audio-scale trough {
+  min-height: 5px;
+  background-color: rgba(255, 255, 255, 0.11);
+}
+
+.audio-scale trough highlight {
+  background-color: #9892e8;
+}
+
+.audio-scale slider {
+  min-width: 14px;
+  min-height: 14px;
+  margin: -5px 0;
+  background-color: #f1f1f4;
+  border: 2px solid #9892e8;
+  border-radius: 50%;
+}
+
+.audio-percent {
+  min-width: 42px;
+  color: #aaa4ff;
+  font-size: 11px;
+}
+
+.audio-route {
+  min-height: 30px;
+  padding: 0 8px;
+  color: #8a8e97;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.audio-route.active {
+  color: #d8d6fa;
+  background-color: rgba(152, 146, 232, 0.055);
+  border-color: rgba(152, 146, 232, 0.34);
+}
+
+.audio-route:disabled {
+  color: #525761;
+}
+
+.audio-route-mark {
+  min-width: 18px;
+  color: inherit;
+  font-size: 8px;
+}
+
+.audio-route-name {
+  color: inherit;
+  font-size: 8px;
+}
+
+.audio-route-state {
+  color: #676c76;
+  font-size: 7px;
+}
+
+.audio-default-action {
+  min-height: 36px;
+  color: #b5edf2;
+  background-color: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(103, 184, 201, 0.34);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.audio-default-action:hover {
+  background-color: rgba(0, 0, 0, 0.32);
+  border-color: rgba(103, 184, 201, 0.58);
+}
+
+.network-signal {
+  color: #67b8c9;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.network-signal-bar trough {
+  min-height: 5px;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.network-signal-bar progress {
+  background-color: #67b8c9;
+}
+
+.network-action,
+.network-disconnect {
+  min-height: 31px;
+  padding: 0 10px;
+  color: #9ba0a9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
+.network-action.warning,
+.network-disconnect {
+  color: #c49b63;
+  border-color: rgba(196, 155, 99, 0.34);
+}
+
+.network-catalog-card {
+  padding: 13px;
+  background-color: rgba(2, 4, 6, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-top: 2px solid rgba(103, 184, 201, 0.55);
+}
+
+.network-catalog-count {
+  padding: 4px 7px;
+  color: #67b8c9;
+  border: 1px solid rgba(103, 184, 201, 0.34);
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
+.network-nearby-list {
+  padding-top: 2px;
+}
+
+.network-nearby-row {
+  padding: 9px 10px;
+  background-color: rgba(255, 255, 255, 0.014);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.network-nearby-row:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+  border-color: rgba(103, 184, 201, 0.22);
+}
+
+.network-nearby-row.active {
+  background-color: rgba(103, 184, 201, 0.045);
+  border-color: rgba(103, 184, 201, 0.38);
+  border-left: 2px solid #67b8c9;
+}
+
+.network-nearby-signal {
+  min-width: 26px;
+  color: #67b8c9;
+  font-size: 16px;
+}
+
+.network-nearby-name,
+.network-profile-name {
+  color: #e1e2e6;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.network-nearby-meta,
+.network-profile-ssid {
+  color: #6f747e;
+  font-size: 7px;
+}
+
+.network-nearby-badge {
+  min-width: 50px;
+  padding: 3px 5px;
+  color: #858a94;
+  border: 1px solid rgba(133, 138, 148, 0.28);
+  font-size: 6px;
+  letter-spacing: 0.5px;
+}
+
+.network-nearby-badge.saved {
+  color: #aaa4ff;
+  border-color: rgba(152, 146, 232, 0.34);
+}
+
+.network-nearby-badge.active {
+  color: #7fa98a;
+  border-color: rgba(127, 169, 138, 0.38);
+}
+
+.network-row-action {
+  min-width: 54px;
+  min-height: 27px;
+  padding: 0 7px;
+  color: #9da1aa;
+  background-color: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  font-size: 6px;
+  letter-spacing: 0.5px;
+}
+
+.network-row-action:hover {
+  color: #f1f1f4;
+  background-color: rgba(103, 184, 201, 0.055);
+  border-color: rgba(103, 184, 201, 0.38);
+}
+
+.network-row-action.warning {
+  color: #c49b63;
+  border-color: rgba(196, 155, 99, 0.30);
+}
+
+.network-row-action.danger {
+  color: #c46f7d;
+  border-color: rgba(196, 111, 125, 0.30);
+}
+
+.network-nearby-strength trough {
+  min-height: 3px;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.network-nearby-strength progress {
+  background-color: rgba(103, 184, 201, 0.72);
+}
+
+.network-catalog-empty {
+  padding: 12px 10px;
+  color: #777c86;
+  background-color: rgba(255, 255, 255, 0.012);
+  border-left: 2px solid #565b65;
+  font-size: 8px;
+}
+
+.network-hidden-note {
+  padding: 8px 9px;
+  color: #848993;
+  background-color: rgba(196, 155, 99, 0.025);
+  border-left: 2px solid rgba(196, 155, 99, 0.48);
+  font-size: 7px;
+}
+
+.network-portal-card {
+  padding: 12px;
+  background-color: rgba(196, 155, 99, 0.055);
+  border: 1px solid rgba(196, 155, 99, 0.28);
+  border-left: 2px solid #c49b63;
+}
+
+.network-portal-action {
+  min-height: 31px;
+  padding: 0 11px;
+  color: #d7b47a;
+  background-color: rgba(196, 155, 99, 0.055);
+  border: 1px solid rgba(196, 155, 99, 0.38);
+  font-size: 8px;
+}
+
+.network-portal-action:hover {
+  color: #f1f1f4;
+  background-color: rgba(196, 155, 99, 0.10);
+}
+
+.network-profile-card {
+  padding: 11px;
+  background-color: rgba(255, 255, 255, 0.014);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 2px solid #686d77;
+}
+
+.network-profile-card.active {
+  background-color: rgba(127, 169, 138, 0.035);
+  border-left-color: #7fa98a;
+}
+
+.network-profile-actions {
+  min-height: 29px;
+}
+
+.control-confirm {
+  padding: 12px;
+  background-color: rgba(196, 155, 99, 0.05);
+  border: 1px solid rgba(196, 155, 99, 0.28);
+  border-left: 2px solid #c49b63;
+}
+
+.control-confirm-code {
+  color: #c49b63;
+  font-size: 7px;
+  letter-spacing: 0.9px;
+}
+
+.control-confirm-title {
+  color: #f0f0f3;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.control-confirm-copy {
+  color: #a6a9b1;
+  font-size: 8px;
+}
+
+.control-confirm-action {
+  min-height: 31px;
+  padding: 0 11px;
+  color: #aeb1b9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 8px;
+}
+
+.control-confirm-action.apply {
+  color: #d7b47a;
+  background-color: rgba(196, 155, 99, 0.06);
+  border-color: rgba(196, 155, 99, 0.38);
+}
+
+.control-system-section {
+  min-width: 0;
+  min-height: 0;
+}
+
+.control-simple-row {
+  min-height: 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.control-simple-label {
+  color: #737883;
+  font-size: 8px;
+}
+
+.control-simple-value {
+  color: #c8cad0;
+  font-size: 8px;
+}
+
+.control-route-grid {
+  min-height: 36px;
+}
+
+.control-route {
+  min-height: 34px;
+  padding: 0 11px;
+  color: #aaa4ff;
+  background-color: rgba(152, 146, 232, 0.025);
+  border: 1px solid rgba(152, 146, 232, 0.24);
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
+.control-route:hover {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.08);
+}
+
+.calendar-hero {
+  min-height: 112px;
+  padding: 15px;
+  background-color: rgba(152, 146, 232, 0.025);
+  border: 1px solid rgba(152, 146, 232, 0.20);
+  border-left: 2px solid #9892e8;
+}
+
+.calendar-day-name {
+  color: #aaa4ff;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.calendar-day-number {
+  color: #f1f1f4;
+  font-size: 42px;
+}
+
+.calendar-time {
+  color: #f1f1f4;
+  font-size: 21px;
+}
+
+.calendar-zone {
+  color: #747984;
+  font-size: 8px;
+}
+
+.calendar-grid-text {
+  padding: 13px;
+  color: #c8cad0;
+  background-color: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+}
+
+.control-inventory-card {
+  padding: 11px;
+  background-color: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 2px solid #686d77;
+}
+
+.control-inventory-title {
+  color: #e1e2e6;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.control-inventory-detail {
+  color: #737883;
+  font-size: 8px;
+}
+
+.settings-action-list {
+  padding: 11px;
+  background-color: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-density {
+  padding: 11px;
+  background-color: rgba(0, 0, 0, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-density-action {
+  min-height: 28px;
+  padding: 0 9px;
+  color: #858a94;
+  background-color: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 2px;
+}
+
+.settings-density-action:hover,
+.settings-density-action.active {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.10);
+  border-color: rgba(152, 146, 232, 0.42);
+}
+
+.settings-action {
+  min-height: 34px;
+  padding: 0 11px;
+  color: #b8bac2;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  font-size: 8px;
+  letter-spacing: 0.6px;
+}
+
+.settings-action:hover {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.065);
+  border-color: rgba(152, 146, 232, 0.38);
+}
+
+.settings-boundary {
+  padding: 10px;
+  color: #777c86;
+  background-color: rgba(196, 155, 99, 0.025);
+  border-left: 2px solid rgba(196, 155, 99, 0.48);
+  font-size: 8px;
+}
+
 .applications-section {
-  min-width: 480px;
+  min-width: 0;
 }
 
 .applications-tray-summary {
@@ -461,7 +1906,7 @@
 }
 
 .insights-section {
-  min-width: 480px;
+  min-width: 0;
 }
 
 .insight-row,
@@ -995,6 +2440,282 @@
   font-size: 8px;
 }
 
+/* Markdown-backed SenomyOS Wiki. */
+.wiki-section {
+  min-width: 0;
+}
+
+.wiki-status-error {
+  margin-top: 14px;
+  padding: 12px;
+  background-color: rgba(196, 111, 125, 0.06);
+  border-left: 2px solid #c46f7d;
+}
+
+.wiki-status-error-code {
+  color: #c46f7d;
+  font-size: 8px;
+  letter-spacing: 0.9px;
+}
+
+.wiki-status-error-copy {
+  color: #b8bac2;
+  font-size: 10px;
+}
+
+.wiki-categories {
+  min-height: 40px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.wiki-category {
+  min-height: 28px;
+  padding: 0 9px;
+  color: #777b85;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.wiki-category:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
+.wiki-category.active {
+  color: #aaa4ff;
+  background-color: rgba(152, 146, 232, 0.07);
+  border-color: rgba(152, 146, 232, 0.42);
+}
+
+.wiki-category-title {
+  color: inherit;
+  font-size: 9px;
+}
+
+.wiki-category-count {
+  color: #666a74;
+  font-size: 8px;
+}
+
+.wiki-workspace {
+  padding-top: 12px;
+}
+
+.wiki-index {
+  min-width: 134px;
+  padding-right: 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.wiki-index-label {
+  padding: 0 7px 4px;
+  color: #666a74;
+  font-size: 8px;
+  letter-spacing: 0.9px;
+}
+
+.wiki-article-index {
+  min-height: 46px;
+  padding: 7px;
+  color: #92959f;
+  border-left: 2px solid transparent;
+}
+
+.wiki-article-index:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.wiki-article-index.active {
+  color: #aaa4ff;
+  background-color: rgba(152, 146, 232, 0.055);
+  border-left-color: #9892e8;
+}
+
+.wiki-article-index-title {
+  color: inherit;
+  font-size: 9px;
+}
+
+.wiki-article-index-summary {
+  color: #5f636d;
+  font-size: 7px;
+}
+
+.wiki-reader {
+  padding-left: 16px;
+}
+
+.wiki-article-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.wiki-article-category,
+.wiki-article-source {
+  color: #666a74;
+  font-size: 7px;
+  letter-spacing: 0.6px;
+}
+
+.wiki-article-title {
+  color: #f1f1f4;
+  font-size: 15px;
+}
+
+.wiki-article-summary {
+  color: #92959f;
+  font-size: 9px;
+}
+
+.wiki-article-blocks {
+  padding-top: 8px;
+}
+
+.wiki-block {
+  padding: 6px 0;
+}
+
+.wiki-heading {
+  color: #e5e5e9;
+  font-weight: 700;
+}
+
+.wiki-heading.level-1 {
+  padding: 8px 0 4px;
+  color: #aaa4ff;
+  font-size: 14px;
+}
+
+.wiki-heading.level-2 {
+  padding: 6px 0 3px;
+  font-size: 12px;
+}
+
+.wiki-heading.level-3 {
+  padding: 4px 0 2px;
+  color: #b8bac2;
+  font-size: 10px;
+}
+
+.wiki-paragraph,
+.wiki-list-copy,
+.wiki-quote {
+  color: #a8aab2;
+  font-size: 9px;
+}
+
+.wiki-quote {
+  padding: 9px 11px;
+  background-color: rgba(152, 146, 232, 0.035);
+  border-left: 2px solid rgba(152, 146, 232, 0.55);
+}
+
+.wiki-list-marker {
+  min-width: 20px;
+  color: #9892e8;
+  font-size: 8px;
+}
+
+.wiki-code {
+  background-color: #07080a;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.wiki-code-language {
+  padding: 5px 8px;
+  color: #666a74;
+  background-color: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+
+.wiki-code-text {
+  padding: 9px;
+  color: #b8bac2;
+  font-size: 8px;
+}
+
+.wiki-table {
+  border-top: 1px solid rgba(255, 255, 255, 0.11);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wiki-table-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wiki-table-row.header {
+  background-color: rgba(152, 146, 232, 0.045);
+}
+
+.wiki-table-cell {
+  min-width: 70px;
+  padding: 6px 7px;
+  color: #92959f;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 7px;
+}
+
+.wiki-table-cell.header {
+  color: #c7c4f2;
+  font-weight: 700;
+}
+
+.wiki-divider {
+  min-height: 1px;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.wiki-links {
+  padding-top: 5px;
+}
+
+.wiki-link {
+  min-height: 28px;
+  padding: 0 8px;
+  color: #b8bac2;
+  background-color: rgba(152, 146, 232, 0.03);
+  border: 1px solid rgba(152, 146, 232, 0.20);
+}
+
+.wiki-link:hover {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.08);
+  border-color: rgba(152, 146, 232, 0.48);
+}
+
+.wiki-link.unavailable,
+.wiki-link.unavailable:hover {
+  color: #666a74;
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.wiki-link-mark,
+.wiki-link-state {
+  color: #9892e8;
+  font-size: 7px;
+}
+
+.wiki-link-label {
+  color: inherit;
+  font-size: 8px;
+}
+
+.wiki-link-state {
+  color: #5f636d;
+  letter-spacing: 0.6px;
+}
+
+.wiki-warning-count {
+  padding-top: 10px;
+  color: #c8a367;
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
 .diagnostics-guidance {
   padding: 10px 12px;
   color: #777b85;
@@ -1002,3 +2723,2415 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 8px;
 }
+
+/* Cathedral Deck inspired Performance Dashboard. */
+.performance-dashboard {
+  background-color: rgba(8, 10, 13, 0.985);
+}
+
+.performance-header {
+  min-height: 60px;
+  padding-left: 18px;
+}
+
+.performance-header-mark {
+  min-width: 34px;
+  min-height: 34px;
+  margin-right: 12px;
+  color: #aaa4ff;
+  font-size: 17px;
+}
+
+.performance-title-divider {
+  color: #666a74;
+  font-size: 11px;
+}
+
+.performance-title-accent {
+  color: #aaa4ff;
+  font-size: 11px;
+  letter-spacing: 1.4px;
+}
+
+.performance-live-state {
+  min-height: 30px;
+  margin-right: 12px;
+  padding: 0 10px;
+  color: #777b85;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+
+.performance-live-dot {
+  color: #7fa98a;
+  font-size: 8px;
+}
+
+.performance-content {
+  padding: 14px 18px 18px;
+  background-color: rgba(5, 7, 9, 0.32);
+}
+
+.performance-metrics-column {
+  min-width: 320px;
+  padding-right: 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.performance-metric-block {
+  padding: 12px 0 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.performance-metric-heading {
+  min-height: 24px;
+}
+
+.performance-metric-name {
+  min-width: 72px;
+  color: #f1f1f4;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1.3px;
+}
+
+.performance-metric-value {
+  color: #f1f1f4;
+  font-size: 13px;
+}
+
+.performance-metric-value.accent {
+  color: #aaa4ff;
+}
+
+.performance-metric-meta {
+  color: #b8bac2;
+  font-size: 10px;
+}
+
+.performance-history-chart {
+  min-width: 300px;
+  min-height: 70px;
+  background-color: rgba(255, 255, 255, 0.012);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.20);
+}
+
+.performance-history-empty {
+  color: #4f525b;
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+
+.performance-history-bar trough {
+  min-width: 3px;
+  min-height: 70px;
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.performance-history-bar trough progress {
+  min-width: 3px;
+  background-color: #9892e8;
+}
+
+.performance-history-bar.memory trough progress {
+  background-color: #b8bac2;
+}
+
+.performance-graph-scale {
+  color: #4f525b;
+  font-size: 7px;
+}
+
+.performance-process-column {
+  min-width: 390px;
+  padding: 0 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.performance-section-title {
+  min-height: 42px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.performance-section-code {
+  color: #666a74;
+  font-size: 8px;
+}
+
+.performance-section-label {
+  color: #f1f1f4;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1.3px;
+}
+
+.performance-process-head {
+  min-height: 30px;
+  color: #666a74;
+  font-size: 8px;
+  letter-spacing: 0.7px;
+}
+
+.performance-process-head label {
+  color: inherit;
+}
+
+.performance-process-row {
+  min-height: 38px;
+  color: #b8bac2;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 9px;
+}
+
+.performance-process-row:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
+.performance-process-row.hot {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.08);
+  border-left: 2px solid rgba(152, 146, 232, 0.65);
+}
+
+.performance-process-row label {
+  color: inherit;
+}
+
+.performance-process-rank {
+  min-width: 24px;
+  color: #666a74;
+}
+
+.performance-process-name {
+  min-width: 132px;
+}
+
+.performance-process-pid {
+  min-width: 50px;
+}
+
+.performance-process-cpu {
+  min-width: 54px;
+}
+
+.performance-process-memory {
+  min-width: 60px;
+}
+
+.performance-process-loading {
+  padding: 16px 8px;
+  color: #c8a367;
+  font-size: 9px;
+}
+
+.performance-health-column {
+  min-width: 280px;
+  padding: 0 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.performance-health-list {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.performance-health-row {
+  min-height: 22px;
+}
+
+.performance-health-label {
+  color: #92959f;
+  font-size: 9px;
+}
+
+.performance-health-value {
+  color: #d2d3d8;
+  font-size: 9px;
+}
+
+.performance-storage,
+.performance-batteries {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.performance-progress trough {
+  min-height: 4px;
+  background-color: rgba(255, 255, 255, 0.10);
+}
+
+.performance-progress trough progress {
+  background-color: #9892e8;
+}
+
+.performance-progress.battery trough progress {
+  background-color: #7fa98a;
+}
+
+.performance-battery-summary {
+  min-height: 24px;
+  color: #777b85;
+  font-size: 8px;
+}
+
+.performance-battery-summary label {
+  color: inherit;
+}
+
+.performance-observer {
+  min-width: 138px;
+  padding-left: 18px;
+}
+
+.performance-observer-title {
+  color: #b8bac2;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.performance-observer-state {
+  color: #666a74;
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+
+.performance-observer-action {
+  min-width: 118px;
+  min-height: 34px;
+  margin-top: 8px;
+  color: #b8bac2;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+
+.performance-observer-action:hover {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.07);
+  border-color: rgba(152, 146, 232, 0.45);
+}
+
+/* Performance Dashboard v2: modular Cathedral Deck telemetry. */
+.performance-dashboard {
+  color: #e7e8ec;
+  background-color: rgba(6, 8, 11, 0.992);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.performance-header {
+  min-height: 64px;
+  padding: 0 12px 0 18px;
+  background-color: rgba(255, 255, 255, 0.015);
+}
+
+.performance-header-mark {
+  min-width: 36px;
+  min-height: 36px;
+  margin-right: 12px;
+  color: #aaa4ff;
+  border: 1px solid rgba(152, 146, 232, 0.38);
+  font-size: 17px;
+}
+
+.performance-title-divider {
+  color: #565b65;
+  font-size: 10px;
+}
+
+.performance-title-accent {
+  color: #aaa4ff;
+  font-size: 10px;
+  letter-spacing: 1.4px;
+}
+
+.performance-header-facts {
+  margin-right: 14px;
+  padding-right: 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.performance-header-fact-label {
+  color: #585d67;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.performance-header-fact-value {
+  color: #c9cbd1;
+  font-size: 9px;
+}
+
+.performance-live-state {
+  min-width: 104px;
+  min-height: 34px;
+  margin-right: 10px;
+  padding: 0 10px;
+  color: #8f939d;
+  background-color: rgba(127, 169, 138, 0.035);
+  border: 1px solid rgba(127, 169, 138, 0.24);
+}
+
+.performance-live-dot {
+  color: #75b889;
+  font-size: 8px;
+}
+
+.performance-live-dot.error {
+  color: #cf766e;
+}
+
+.performance-live-label {
+  color: #c9cbd1;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.performance-live-detail {
+  color: #696e78;
+  font-size: 7px;
+}
+
+.performance-tabs-scroll {
+  min-height: 47px;
+  background-color: rgba(4, 6, 8, 0.82);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.performance-tabs-scroll scrollbar {
+  min-width: 0;
+  min-height: 0;
+}
+
+.performance-tabs {
+  min-height: 46px;
+  padding-left: 16px;
+}
+
+.performance-tab {
+  min-width: 158px;
+  min-height: 46px;
+  padding: 0 15px;
+  color: #777c86;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 2px solid transparent;
+  font-size: 9px;
+  letter-spacing: 0.7px;
+}
+
+.performance-tab:hover {
+  color: #d7d8dd;
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.performance-tab.active {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.07);
+  border-bottom-color: #9892e8;
+}
+
+.performance-tab-code {
+  color: #555a64;
+  font-size: 7px;
+}
+
+.performance-tab.active .performance-tab-code {
+  color: #aaa4ff;
+}
+
+.performance-tab-label {
+  color: inherit;
+}
+
+.performance-pages {
+  background-color: rgba(3, 5, 7, 0.38);
+}
+
+.performance-page-scroll {
+  background-color: transparent;
+}
+
+.performance-page-scroll scrollbar {
+  min-width: 7px;
+  background-color: rgba(255, 255, 255, 0.018);
+}
+
+.performance-page-scroll scrollbar slider {
+  min-width: 3px;
+  background-color: rgba(170, 164, 255, 0.32);
+}
+
+.performance-page {
+  padding: 14px 17px 20px;
+}
+
+.performance-kpi-grid,
+.performance-chart-grid,
+.performance-detail-grid,
+.performance-overview-lower {
+  min-width: 0;
+}
+
+.performance-kpi {
+  min-width: 250px;
+  min-height: 82px;
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-top: 2px solid rgba(152, 146, 232, 0.52);
+}
+
+.performance-kpi.cpu,
+.performance-kpi.load {
+  border-top-color: #9892e8;
+}
+
+.performance-kpi.memory,
+.performance-kpi.cache,
+.performance-kpi.commit {
+  border-top-color: #9298a8;
+}
+
+.performance-kpi.storage,
+.performance-kpi.storage-read,
+.performance-kpi.storage-write {
+  border-top-color: #c49b63;
+}
+
+.performance-kpi.network,
+.performance-kpi.network-receive,
+.performance-kpi.network-transmit {
+  border-top-color: #5ea5ad;
+}
+
+.performance-kpi.thermal,
+.performance-kpi.warning {
+  border-top-color: #cf766e;
+}
+
+.performance-kpi.process,
+.performance-kpi.service {
+  border-top-color: #75b889;
+}
+
+.performance-kpi-head {
+  min-height: 15px;
+}
+
+.performance-kpi-code {
+  color: #5d626c;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.performance-kpi-label {
+  color: #7e838d;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.performance-kpi-value {
+  margin-top: 5px;
+  color: #f0f0f3;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.performance-kpi-detail {
+  margin-top: 3px;
+  color: #727781;
+  font-size: 8px;
+}
+
+.performance-history-panel {
+  min-width: 0;
+  min-height: 176px;
+  padding: 12px 13px 9px;
+  background-color: rgba(255, 255, 255, 0.014);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.performance-history-heading {
+  min-height: 31px;
+}
+
+.performance-history-code {
+  color: #555a64;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.performance-history-title {
+  color: #d9dade;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.performance-history-value {
+  color: #f0f0f3;
+  font-size: 13px;
+}
+
+.performance-history-meta {
+  color: #676c76;
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
+.performance-history-chart {
+  min-width: 0;
+  min-height: 95px;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.performance-history-empty {
+  color: #4d525c;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.performance-history-bar trough {
+  min-width: 4px;
+  min-height: 95px;
+  background-color: rgba(255, 255, 255, 0.018);
+}
+
+.performance-history-bar trough progress {
+  min-width: 4px;
+  background-color: #9892e8;
+}
+
+.performance-history-bar.memory trough progress {
+  background-color: #9da2af;
+}
+
+.performance-history-bar.load trough progress {
+  background-color: #7b78bd;
+}
+
+.performance-history-bar.storage-read trough progress {
+  background-color: #d0aa72;
+}
+
+.performance-history-bar.storage-write trough progress {
+  background-color: #a87952;
+}
+
+.performance-history-bar.network-receive trough progress {
+  background-color: #65b4bc;
+}
+
+.performance-history-bar.network-transmit trough progress {
+  background-color: #4a818c;
+}
+
+.performance-history-bar.pressure trough progress {
+  background-color: #cf766e;
+}
+
+.performance-history-scale {
+  color: #4e535d;
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
+.performance-card {
+  min-width: 280px;
+  background-color: rgba(255, 255, 255, 0.014);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.performance-section-title {
+  min-height: 43px;
+  padding: 0 12px;
+  background-color: rgba(255, 255, 255, 0.012);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.performance-section-code {
+  min-width: 34px;
+  color: #aaa4ff;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.performance-section-label {
+  color: #d9dade;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.performance-section-subtitle {
+  color: #60656f;
+  font-size: 7px;
+}
+
+.performance-card-body {
+  padding: 10px 12px 12px;
+}
+
+.performance-stat-row {
+  min-height: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+}
+
+.performance-stat-label {
+  color: #777c86;
+  font-size: 8px;
+}
+
+.performance-stat-value {
+  color: #ced0d5;
+  font-size: 8px;
+}
+
+.performance-meter {
+  min-height: 29px;
+}
+
+.performance-meter-label {
+  color: #777c86;
+  font-size: 8px;
+}
+
+.performance-meter-value {
+  color: #ced0d5;
+  font-size: 8px;
+}
+
+.performance-meter-track trough {
+  min-height: 5px;
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.performance-meter-track trough progress {
+  min-height: 5px;
+  background-color: #9892e8;
+}
+
+.performance-meter-track.memory trough progress,
+.performance-meter-track.cache trough progress,
+.performance-meter-track.shared trough progress {
+  background-color: #9298a8;
+}
+
+.performance-meter-track.system trough progress {
+  background-color: #707786;
+}
+
+.performance-meter-track.storage trough progress {
+  background-color: #c49b63;
+}
+
+.performance-meter-track.warning trough progress,
+.performance-meter-track.pressure trough progress {
+  background-color: #cf766e;
+}
+
+.performance-meter-track.swap trough progress,
+.performance-meter-track.commit trough progress {
+  background-color: #8d82bc;
+}
+
+.performance-meter-track.battery trough progress {
+  background-color: #75b889;
+}
+
+.performance-meter-track.muted trough progress {
+  background-color: #555b66;
+}
+
+.performance-core-card {
+  padding-bottom: 10px;
+}
+
+.performance-core-grid {
+  padding: 10px 11px 0;
+}
+
+.performance-core {
+  min-width: 112px;
+  min-height: 65px;
+  padding: 8px 9px;
+  background-color: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.performance-core.warm {
+  border-color: rgba(196, 155, 99, 0.38);
+}
+
+.performance-core.hot {
+  background-color: rgba(207, 118, 110, 0.04);
+  border-color: rgba(207, 118, 110, 0.48);
+}
+
+.performance-core-id {
+  color: #737883;
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+
+.performance-core-value {
+  color: #e1e2e6;
+  font-size: 10px;
+}
+
+.performance-core-frequency {
+  color: #60656f;
+  font-size: 7px;
+}
+
+.performance-sensor-list {
+  min-height: 170px;
+}
+
+.performance-scope-note,
+.performance-diagnostic-copy {
+  color: #666b75;
+  font-size: 8px;
+}
+
+.performance-overview-observer {
+  min-width: 310px;
+}
+
+.performance-observer-body {
+  padding: 12px;
+}
+
+.performance-observer-message {
+  color: #b5b8c0;
+  font-size: 8px;
+}
+
+.performance-observer-action,
+.performance-diagnostic-action {
+  min-height: 32px;
+  padding: 0 12px;
+  color: #b8bac2;
+  background-color: rgba(152, 146, 232, 0.035);
+  border: 1px solid rgba(152, 146, 232, 0.28);
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+
+.performance-observer-action:hover,
+.performance-diagnostic-action:hover {
+  color: #f1f1f4;
+  background-color: rgba(152, 146, 232, 0.09);
+  border-color: rgba(152, 146, 232, 0.55);
+}
+
+.performance-notice {
+  margin-top: 8px;
+  padding: 9px 10px;
+  background-color: rgba(255, 255, 255, 0.012);
+  border-left: 2px solid #6d727c;
+}
+
+.performance-notice.NOMINAL {
+  border-left-color: #75b889;
+}
+
+.performance-notice.ATTENTION {
+  border-left-color: #cf766e;
+}
+
+.performance-notice-state {
+  color: #777c86;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.performance-notice-title {
+  color: #d4d5da;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.performance-notice-detail {
+  color: #666b75;
+  font-size: 8px;
+}
+
+.performance-device-list {
+  padding: 11px;
+}
+
+.performance-device {
+  min-width: 260px;
+  min-height: 70px;
+  padding: 9px 10px;
+  background-color: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.performance-device-name {
+  color: #e0e1e5;
+  font-size: 10px;
+}
+
+.performance-device-kind {
+  color: #656a74;
+  font-size: 7px;
+}
+
+.performance-device-model {
+  margin-top: 5px;
+  color: #aeb1b9;
+  font-size: 8px;
+}
+
+.performance-device-meta {
+  margin-top: 3px;
+  color: #60656f;
+  font-size: 7px;
+}
+
+.performance-process-table-card {
+  min-height: 482px;
+}
+
+.performance-process-toolbar {
+  min-height: 37px;
+  padding: 0 10px;
+  background-color: rgba(0, 0, 0, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.performance-toolbar-label,
+.performance-detail-label {
+  color: #626873;
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+
+.performance-sort,
+.performance-report-action,
+.performance-process-action {
+  min-height: 24px;
+  padding: 0 9px;
+  color: #8d929c;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 2px;
+  box-shadow: none;
+  font-size: 7px;
+}
+
+.performance-sort:hover,
+.performance-report-action:hover,
+.performance-process-action:hover,
+.performance-sort.active {
+  color: #eeeeF2;
+  background: rgba(120, 190, 195, 0.10);
+  border-color: rgba(120, 190, 195, 0.38);
+}
+
+.performance-report-action {
+  color: #9fc6c5;
+}
+
+.report-actions {
+  min-height: 42px;
+  margin-top: 10px;
+}
+
+.report-generate {
+  min-height: 32px;
+  padding: 0 12px;
+  color: #9fc6c5;
+  background-color: rgba(120, 190, 195, 0.07);
+  border: 1px solid rgba(120, 190, 195, 0.32);
+  border-radius: 2px;
+}
+
+.report-generate:hover {
+  color: #f1f1f4;
+  background-color: rgba(120, 190, 195, 0.13);
+}
+
+.report-freshness,
+.report-preview-title {
+  color: #646a75;
+  font-size: 8px;
+  letter-spacing: 0.6px;
+}
+
+.report-preview {
+  margin-top: 10px;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.20);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.report-preview-line {
+  margin-top: 3px;
+  color: #aeb1b9;
+  font-size: 8px;
+}
+
+.performance-process-head {
+  min-height: 29px;
+  padding: 0 10px;
+  color: #5f646e;
+  background-color: rgba(0, 0, 0, 0.16);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
+.performance-process-head label {
+  color: inherit;
+}
+
+.performance-process-row {
+  min-height: 30px;
+  padding: 0 10px;
+  color: #aeb1b9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  font-size: 8px;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.performance-process-row:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.performance-process-row.hot {
+  color: #e8e8ec;
+  background-color: rgba(152, 146, 232, 0.055);
+  border-left: 2px solid #9892e8;
+}
+
+.performance-process-row.warning {
+  color: #d4aaa5;
+  background-color: rgba(207, 118, 110, 0.035);
+  border-left: 2px solid #cf766e;
+}
+
+.performance-process-row.selected {
+  color: #f3f3f5;
+  background-color: rgba(120, 190, 195, 0.11);
+  border-left: 2px solid #78bec3;
+}
+
+.performance-process-row label {
+  color: inherit;
+}
+
+.performance-process-rank {
+  min-width: 25px;
+  color: #5c616b;
+}
+
+.performance-process-name {
+  min-width: 210px;
+}
+
+.performance-process-user {
+  min-width: 92px;
+}
+
+.performance-process-state {
+  min-width: 30px;
+}
+
+.performance-process-pid {
+  min-width: 58px;
+}
+
+.performance-process-cpu {
+  min-width: 64px;
+}
+
+.performance-process-memory {
+  min-width: 68px;
+}
+
+.performance-process-memory-pct {
+  min-width: 52px;
+}
+
+.performance-process-threads {
+  min-width: 42px;
+}
+
+.performance-process-age {
+  min-width: 72px;
+}
+
+.performance-process-loading {
+  padding: 16px 12px;
+  color: #c49b63;
+  font-size: 8px;
+}
+
+.performance-process-foot {
+  min-height: 27px;
+  padding: 0 10px;
+  color: #555a64;
+  background-color: rgba(0, 0, 0, 0.12);
+  font-size: 7px;
+  letter-spacing: 0.6px;
+}
+
+.performance-process-foot label {
+  color: inherit;
+}
+
+.performance-process-detail-card {
+  min-height: 190px;
+}
+
+.performance-process-empty {
+  padding: 18px 13px;
+  color: #686e78;
+  font-size: 8px;
+}
+
+.performance-process-detail-grid {
+  padding: 10px 13px;
+}
+
+.performance-detail-copy {
+  color: #aeb2ba;
+  font-size: 8px;
+}
+
+.performance-process-actions {
+  min-height: 42px;
+  padding: 0 13px;
+  background-color: rgba(0, 0, 0, 0.13);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.performance-action-boundary {
+  color: #646a75;
+  font-size: 7px;
+  letter-spacing: 0.35px;
+}
+
+.performance-process-action.confirm {
+  color: #f2d7a7;
+  background-color: rgba(196, 155, 99, 0.13);
+  border-color: rgba(196, 155, 99, 0.48);
+}
+
+.performance-process-action.danger {
+  color: #c88a84;
+}
+
+.performance-process-action.danger.confirm {
+  color: #f0b3ac;
+  background-color: rgba(207, 118, 110, 0.14);
+  border-color: rgba(207, 118, 110, 0.55);
+}
+
+.performance-process-action.quiet {
+  color: #686e78;
+}
+
+.performance-failed-unit {
+  min-height: 36px;
+  padding: 0 2px;
+  color: #aeb1b9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 8px;
+}
+
+.performance-failed-state {
+  min-width: 70px;
+  color: #cf766e;
+}
+
+.performance-footer {
+  min-height: 29px;
+  padding: 0 17px;
+  color: #4f545e;
+  background-color: rgba(2, 4, 6, 0.94);
+  border-top: 1px solid rgba(255, 255, 255, 0.11);
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
+.performance-footer label {
+  color: inherit;
+}
+
+.performance-footer-retention {
+  margin-right: 24px;
+}
+
+.performance-footer-state {
+  color: #7570ac;
+}
+
+/* Insights hero: the avatar is intentionally three times the previous 34px. */
+.insights-header {
+  min-height: 126px;
+  padding: 10px 14px 10px 16px;
+  background-image: linear-gradient(105deg, rgba(152, 146, 232, 0.12), rgba(10, 12, 15, 0.2) 58%, rgba(103, 184, 201, 0.06));
+  border-bottom: 1px solid rgba(152, 146, 232, 0.34);
+}
+
+.senomy-avatar-insights-hero {
+  min-width: 108px;
+  min-height: 108px;
+  margin-right: 18px;
+  background-color: rgba(3, 5, 8, 0.55);
+  border: 1px solid rgba(152, 146, 232, 0.48);
+  border-radius: 5px;
+  box-shadow: 0 0 22px rgba(103, 184, 201, 0.10);
+}
+
+.senomy-avatar-insights-hero .senomy-avatar-image {
+  border-radius: 3px;
+}
+
+.insights-hero-eyebrow {
+  margin-bottom: 5px;
+  color: #9edce6;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.insights-header .shell-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.insights-header .shell-subtitle {
+  margin-top: 4px;
+  color: #b8bac2;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.insights-hero-status {
+  margin-top: 9px;
+}
+
+.insights-hero-status label {
+  padding: 3px 6px;
+  color: #8ebf9a;
+  background-color: rgba(127, 169, 138, 0.07);
+  border: 1px solid rgba(127, 169, 138, 0.24);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.timeline-explainer {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background-color: rgba(103, 184, 201, 0.045);
+  border: 1px solid rgba(103, 184, 201, 0.18);
+  border-left: 3px solid #67b8c9;
+}
+
+.timeline-explainer-title {
+  color: #9edce6;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.timeline-explainer-copy {
+  color: #b8bac2;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.timeline-sources {
+  min-height: 38px;
+}
+
+.timeline-source-button,
+.timeline-follow {
+  min-height: 34px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.timeline-source-view {
+  padding-top: 12px;
+}
+
+.timeline-event {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 2px solid rgba(152, 146, 232, 0.55);
+}
+
+.timeline-event-title {
+  color: #e5e6ea;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.timeline-time,
+.timeline-severity,
+.timeline-event-source,
+.timeline-summary {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.timeline-message {
+  color: #c5c7cd;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Readability floor for dense shell surfaces. Existing hierarchy is retained,
+ * but metadata no longer drops to the 7px ultra-light scale. */
+.shell-panel,
+.performance-dashboard,
+.volume-flyout,
+.tray-flyout {
+  font-weight: 500;
+}
+
+.control-tech-label,
+.control-tech-detail,
+.control-tech-code,
+.control-state-badge,
+.performance-header-fact-label,
+.performance-live-detail,
+.performance-tab-code,
+.performance-kpi-code,
+.performance-kpi-label,
+.performance-history-code,
+.performance-history-meta,
+.performance-history-empty,
+.performance-history-scale,
+.performance-section-code,
+.performance-section-subtitle,
+.performance-core-id,
+.performance-core-frequency,
+.performance-notice-state,
+.performance-device-kind,
+.performance-device-meta,
+.performance-toolbar-label,
+.performance-detail-label,
+.performance-sort,
+.performance-report-action,
+.performance-process-action,
+.performance-process-head,
+.performance-process-foot,
+.performance-action-boundary,
+.performance-footer {
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.power-error-code,
+.power-auth-title,
+.power-error-copy,
+.power-auth-copy,
+.power-senomy-kicker,
+.control-source-error-code,
+.control-source-error-copy,
+.audio-endpoint-port,
+.control-tech-row-label,
+.control-tech-row-value,
+.background-app-action,
+.background-app-confirm-copy,
+.performance-kpi-detail,
+.performance-stat-label,
+.performance-stat-value,
+.performance-meter-label,
+.performance-meter-value,
+.performance-scope-note,
+.performance-diagnostic-copy,
+.performance-observer-message,
+.performance-observer-action,
+.performance-diagnostic-action,
+.performance-notice-title,
+.performance-notice-detail,
+.performance-device-model,
+.report-freshness,
+.report-preview-title,
+.report-preview-line,
+.performance-process-row,
+.performance-process-loading,
+.performance-process-empty,
+.performance-detail-copy,
+.performance-failed-unit {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* Senomy Console cockpit. */
+.console-section,
+.reports-section {
+  padding-bottom: 24px;
+}
+
+.console-boundary,
+.report-policy {
+  padding: 13px 15px;
+  background-image: linear-gradient(100deg, rgba(103, 184, 201, 0.09), rgba(103, 184, 201, 0.025));
+  border: 1px solid rgba(103, 184, 201, 0.24);
+  border-left: 3px solid #67b8c9;
+}
+
+.console-boundary-title,
+.report-policy-title,
+.console-section-label,
+.report-section-label {
+  color: #8ed1dc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+}
+
+.console-boundary-copy,
+.report-policy-copy {
+  color: #c0c3ca;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.console-shell-card {
+  padding: 12px 14px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 3px solid #555b65;
+}
+
+.console-shell-card.available {
+  background-image: linear-gradient(100deg, rgba(103, 184, 201, 0.055), rgba(255, 255, 255, 0.012));
+  border-color: rgba(103, 184, 201, 0.25);
+  border-left-color: #67b8c9;
+}
+
+.console-shell-card.unavailable {
+  opacity: 0.72;
+}
+
+.console-shell-code,
+.console-availability {
+  color: #777d87;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.console-availability.ready {
+  color: #8ebf9a;
+}
+
+.console-shell-name {
+  color: #f0f1f4;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.console-shell-summary {
+  color: #b5b8c0;
+  font-size: 11px;
+}
+
+.console-shell-path {
+  color: #707681;
+  font-size: 10px;
+}
+
+.console-launch {
+  min-height: 34px;
+  margin-top: 5px;
+  color: #a7dce4;
+  background-color: rgba(103, 184, 201, 0.07);
+  border: 1px solid rgba(103, 184, 201, 0.34);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.console-launch:hover {
+  color: #f3f6f7;
+  background-color: rgba(103, 184, 201, 0.14);
+}
+
+.console-launch:disabled {
+  color: #5c616a;
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.console-task {
+  min-height: 54px;
+  padding: 7px 11px;
+  color: #b9bdc5;
+  background-color: rgba(255, 255, 255, 0.016);
+  border: 1px solid rgba(255, 255, 255, 0.085);
+}
+
+.console-task:hover,
+.console-task.active {
+  color: #eef1f3;
+  background-color: rgba(196, 155, 99, 0.075);
+  border-color: rgba(196, 155, 99, 0.34);
+}
+
+.console-task-code {
+  min-width: 40px;
+  color: #c49b63;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.console-task-title {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.console-task-summary {
+  color: #858b95;
+  font-size: 10px;
+}
+
+.console-task-run {
+  color: #c49b63;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.console-terminal {
+  background-color: rgba(2, 4, 6, 0.82);
+  border: 1px solid rgba(103, 184, 201, 0.23);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.28);
+}
+
+.console-terminal-header {
+  min-height: 38px;
+  padding: 0 11px;
+  background-color: rgba(103, 184, 201, 0.075);
+  border-bottom: 1px solid rgba(103, 184, 201, 0.19);
+}
+
+.console-terminal-mark {
+  min-width: 42px;
+  color: #0b1013;
+  background-color: #67b8c9;
+  padding: 4px 6px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.console-terminal-title,
+.console-terminal-state {
+  color: #d9e5e7;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.console-clear {
+  min-height: 28px;
+  padding: 0 8px;
+  margin-left: 8px;
+  color: #858a94;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.console-clear:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.console-command-line {
+  min-height: 38px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+.console-prompt {
+  color: #c49b63;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.console-command-preview {
+  color: #c5c9cf;
+  font-size: 10px;
+}
+
+.console-output {
+  padding: 9px 12px;
+}
+
+.console-output-line {
+  min-height: 20px;
+}
+
+.console-output-number,
+.report-preview-number {
+  min-width: 28px;
+  color: #535a64;
+  font-size: 9px;
+}
+
+.console-output-text {
+  color: #b8c9c9;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.console-empty,
+.console-truncated {
+  padding: 12px;
+  color: #6f7680;
+  font-size: 10px;
+}
+
+/* Evidence Studio. */
+.report-policy {
+  background-image: linear-gradient(100deg, rgba(152, 146, 232, 0.09), rgba(152, 146, 232, 0.02));
+  border-color: rgba(152, 146, 232, 0.25);
+  border-left-color: #9892e8;
+}
+
+.report-policy-title,
+.report-section-label {
+  color: #aaa4ff;
+}
+
+.report-profile {
+  min-height: 70px;
+  padding: 10px 13px;
+  color: #b9bcc4;
+  background-color: rgba(255, 255, 255, 0.016);
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-left: 3px solid #555b65;
+}
+
+.report-profile:hover,
+.report-profile.active {
+  color: #f0f0f4;
+  background-image: linear-gradient(100deg, rgba(152, 146, 232, 0.09), rgba(255, 255, 255, 0.012));
+  border-color: rgba(152, 146, 232, 0.34);
+  border-left-color: #9892e8;
+}
+
+.report-profile-code,
+.report-profile-mark {
+  color: #7d788f;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.report-profile.active .report-profile-code,
+.report-profile.active .report-profile-mark {
+  color: #aaa4ff;
+}
+
+.report-profile-title {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.report-profile-detail {
+  color: #8d919b;
+  font-size: 10px;
+}
+
+.report-build,
+.report-history {
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.report-build-state {
+  color: #8ebf9a;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.report-generate.primary {
+  min-height: 38px;
+  color: #d8d6fa;
+  background-color: rgba(152, 146, 232, 0.09);
+  border-color: rgba(152, 146, 232, 0.40);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.report-latest {
+  padding: 12px 14px;
+  background-color: rgba(152, 146, 232, 0.035);
+  border: 1px solid rgba(152, 146, 232, 0.17);
+}
+
+.report-latest-title {
+  color: #e4e3f5;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.report-latest-meta,
+.report-latest-path,
+.report-latest-sections {
+  color: #8d919b;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.report-preview {
+  margin-top: 0;
+  padding: 12px 13px;
+  background-color: rgba(2, 4, 6, 0.62);
+  border-color: rgba(152, 146, 232, 0.17);
+}
+
+.report-preview-row {
+  min-height: 20px;
+}
+
+.report-preview-line {
+  margin-top: 0;
+  color: #b8bac2;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.report-history-row {
+  min-height: 46px;
+  padding: 6px 10px;
+  background-color: rgba(255, 255, 255, 0.014);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+.report-history-profile {
+  min-width: 74px;
+  color: #aaa4ff;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.report-history-id {
+  color: #d1d2d7;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.report-history-meta,
+.report-history-time {
+  color: #6f747e;
+  font-size: 9px;
+}
+
+.report-danger {
+  padding: 12px 14px;
+  background-color: rgba(196, 111, 125, 0.045);
+  border: 1px solid rgba(196, 111, 125, 0.18);
+}
+
+.report-danger-copy {
+  color: #a9a5aa;
+  font-size: 10px;
+}
+
+.report-delete {
+  min-height: 34px;
+  color: #c9818c;
+  border: 1px solid rgba(196, 111, 125, 0.32);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.report-delete.confirm {
+  color: #f0b7bf;
+  background-color: rgba(196, 111, 125, 0.13);
+  border-color: rgba(196, 111, 125, 0.55);
+}
+
+/* BlueZ device manager. */
+.bluetooth-manager {
+  padding: 14px;
+  background-image: linear-gradient(110deg, rgba(103, 184, 201, 0.07), rgba(8, 10, 13, 0.3) 55%, rgba(152, 146, 232, 0.05));
+  border: 1px solid rgba(103, 184, 201, 0.24);
+  border-top: 2px solid rgba(103, 184, 201, 0.62);
+}
+
+.bluetooth-manager-head { min-height: 52px; }
+.bluetooth-controller-name { color: #f0f1f4; font-size: 14px; font-weight: 700; }
+.bluetooth-controller-meta,
+.bluetooth-device-address { color: #7f848e; font-size: 10px; font-weight: 500; }
+
+.bluetooth-state {
+  padding: 4px 7px;
+  color: #8a8f99;
+  border: 1px solid rgba(138, 143, 153, 0.34);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+.bluetooth-state.paired { color: #c5bdf0; border-color: rgba(152, 146, 232, 0.4); }
+.bluetooth-state.connected { color: #99d9c2; background-color: rgba(127, 190, 168, 0.06); border-color: rgba(127, 190, 168, 0.42); }
+
+.bluetooth-action {
+  min-height: 34px;
+  padding: 0 10px;
+  color: #aeb2ba;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 9px;
+  font-weight: 700;
+}
+.bluetooth-action:hover,
+.bluetooth-action.active { color: #f2f3f5; background-color: rgba(255, 255, 255, 0.05); }
+.bluetooth-action.primary { color: #9edce6; border-color: rgba(103, 184, 201, 0.42); }
+.bluetooth-action.warning { color: #d7b47a; border-color: rgba(196, 155, 99, 0.4); }
+.bluetooth-action.danger { color: #cf827b; border-color: rgba(207, 118, 110, 0.38); }
+.bluetooth-action.confirm { background-color: rgba(207, 118, 110, 0.12); border-color: rgba(207, 118, 110, 0.62); }
+
+.bluetooth-action-status { padding: 9px 11px; background-color: rgba(127, 169, 138, 0.04); border-left: 2px solid #7fa98a; }
+.bluetooth-action-status.failed { background-color: rgba(196, 111, 125, 0.06); border-left-color: #c46f7d; }
+.bluetooth-action-state { color: #91c49e; font-size: 9px; font-weight: 700; letter-spacing: 0.8px; }
+.bluetooth-action-message,
+.bluetooth-empty { color: #b9bdc5; font-size: 10px; font-weight: 500; }
+.bluetooth-empty { padding: 15px; border: 1px dashed rgba(255, 255, 255, 0.13); }
+
+.bluetooth-device {
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 3px solid #555b65;
+}
+.bluetooth-device.paired { border-left-color: #9892e8; }
+.bluetooth-device.connected { background-color: rgba(103, 184, 201, 0.035); border-left-color: #67b8c9; }
+.bluetooth-device-icon { min-width: 32px; color: #8ed1dc; font-size: 22px; }
+.bluetooth-device-name { color: #ebecf0; font-size: 12px; font-weight: 700; }
+.bluetooth-device-facts label {
+  padding: 3px 5px;
+  color: #8d929c;
+  background-color: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* Runtime monitor profiles. Size is set by surface-state.sh at open time;
+ * these classes reflow the content without reducing touch/readability floors. */
+.shell-panel.layout-compact .shell-nav { min-width: 145px; }
+.shell-panel.layout-compact .shell-body { padding: 16px; }
+.shell-panel.layout-compact .insights-header { min-height: 110px; padding: 8px 12px; }
+.shell-panel.layout-compact .senomy-avatar-insights-hero { min-width: 88px; min-height: 88px; margin-right: 13px; }
+.shell-panel.layout-compact .insights-header .senomy-avatar-image { min-width: 82px; min-height: 82px; }
+.shell-panel.layout-compact .insights-header .shell-title { font-size: 16px; }
+.shell-panel.layout-compact .performance-header-facts { margin-left: 10px; }
+
+.shell-panel.layout-narrow .shell-nav { min-width: 112px; padding: 8px 0; }
+.shell-panel.layout-narrow .shell-tab { min-height: 44px; padding: 0 8px; }
+.shell-panel.layout-narrow .shell-tab-icon { min-width: 16px; font-size: 14px; }
+.shell-panel.layout-narrow .shell-tab-label { font-size: 10px; }
+.shell-panel.layout-narrow .shell-body { padding: 11px; }
+.shell-panel.layout-narrow .insights-header { min-height: 92px; padding: 7px 10px; }
+.shell-panel.layout-narrow .senomy-avatar-insights-hero { min-width: 72px; min-height: 72px; margin-right: 10px; }
+.shell-panel.layout-narrow .insights-header .senomy-avatar-image { min-width: 66px; min-height: 66px; }
+.shell-panel.layout-narrow .insights-hero-eyebrow { font-size: 9px; }
+.shell-panel.layout-narrow .insights-header .shell-title { font-size: 14px; letter-spacing: 1px; }
+.shell-panel.layout-narrow .insights-header .shell-subtitle { font-size: 10px; }
+.shell-panel.layout-narrow .insights-hero-status { margin-top: 5px; }
+.shell-panel.layout-narrow .insights-hero-status label { padding: 2px 4px; font-size: 8px; }
+.shell-panel.layout-narrow .control-tech-grid,
+.shell-panel.layout-narrow .report-profile-grid,
+.shell-panel.layout-narrow .console-shell-grid { min-width: 0; }
+.shell-panel.layout-narrow .performance-header-facts,
+.shell-panel.layout-narrow .performance-title-divider,
+.shell-panel.layout-narrow .performance-title-accent { opacity: 0; font-size: 0; min-width: 0; margin: 0; padding: 0; }
+.shell-panel.layout-narrow .performance-page { padding: 10px; }
+
+/* Narrow screens retain large pointer/touch targets even when copy reflows. */
+.shell-panel.layout-narrow button { min-height: 40px; }
+.shell-panel.layout-narrow .shell-close { min-width: 42px; min-height: 42px; }
+
+.shell-panel.layout-phone .shell-nav {
+  min-width: 0;
+  min-height: 48px;
+  padding: 4px 6px;
+}
+
+.shell-panel.layout-phone .shell-tab {
+  min-width: 112px;
+  min-height: 42px;
+}
+
+.shell-panel.layout-phone .shell-body {
+  padding: 10px;
+}
+
+.shell-panel.layout-phone .insights-header {
+  min-height: 82px;
+}
+
+.shell-panel.layout-phone .senomy-avatar-insights-hero,
+.shell-panel.layout-phone .insights-header .senomy-avatar-image {
+  min-width: 58px;
+  min-height: 58px;
+}
+
+/* Persisted Appearance tokens shared by every primary surface. */
+.appearance-font-jetbrains,
+.appearance-font-jetbrains * { font-family: "JetBrains Mono", "Symbols Nerd Font Mono", monospace; }
+.appearance-font-iosevka,
+.appearance-font-iosevka * { font-family: "Iosevka", "Symbols Nerd Font Mono", monospace; }
+
+/* Final typography layer. Every visible label receives the body token first;
+ * semantic categories below then override it. This deliberately comes after
+ * component styling so preferences cannot be lost to selector order. */
+@for $size from 9 through 18 {
+  .appearance-body-px-#{$size} label { font-size: #{$size}px; }
+}
+
+@for $size from 12 through 24 {
+  .appearance-title-px-#{$size} .shell-title,
+  .appearance-title-px-#{$size} .section-title,
+  .appearance-title-px-#{$size} .insight-title,
+  .appearance-title-px-#{$size} .control-title,
+  .appearance-title-px-#{$size} .control-placeholder-title,
+  .appearance-title-px-#{$size} .control-inventory-title,
+  .appearance-title-px-#{$size} .control-tech-card-title,
+  .appearance-title-px-#{$size} .performance-section-title,
+  .appearance-title-px-#{$size} .performance-history-title,
+  .appearance-title-px-#{$size} .performance-notice-title,
+  .appearance-title-px-#{$size} .performance-device-name,
+  .appearance-title-px-#{$size} .performance-process-name,
+  .appearance-title-px-#{$size} .console-shell-name,
+  .appearance-title-px-#{$size} .console-task-title,
+  .appearance-title-px-#{$size} .report-profile-title,
+  .appearance-title-px-#{$size} .report-latest-title,
+  .appearance-title-px-#{$size} .wiki-article-title,
+  .appearance-title-px-#{$size} .timeline-event-title,
+  .appearance-title-px-#{$size} .updates-source-title,
+  .appearance-title-px-#{$size} .power-battery-name,
+  .appearance-title-px-#{$size} .audio-endpoint-name,
+  .appearance-title-px-#{$size} .network-nearby-name,
+  .appearance-title-px-#{$size} .bluetooth-device-name { font-size: #{$size}px; }
+}
+
+@for $size from 8 through 15 {
+  .appearance-meta-px-#{$size} .section-eyebrow,
+  .appearance-meta-px-#{$size} .insight-state,
+  .appearance-meta-px-#{$size} .insight-source,
+  .appearance-meta-px-#{$size} .control-tech-code,
+  .appearance-meta-px-#{$size} .control-tech-label,
+  .appearance-meta-px-#{$size} .control-simple-label,
+  .appearance-meta-px-#{$size} .performance-section-code,
+  .appearance-meta-px-#{$size} .performance-kpi-code,
+  .appearance-meta-px-#{$size} .performance-kpi-label,
+  .appearance-meta-px-#{$size} .performance-header-fact-label,
+  .appearance-meta-px-#{$size} .performance-history-code,
+  .appearance-meta-px-#{$size} .performance-history-meta,
+  .appearance-meta-px-#{$size} .performance-stat-label,
+  .appearance-meta-px-#{$size} .performance-meter-label,
+  .appearance-meta-px-#{$size} .performance-device-meta,
+  .appearance-meta-px-#{$size} .timeline-time,
+  .appearance-meta-px-#{$size} .timeline-severity,
+  .appearance-meta-px-#{$size} .timeline-event-source,
+  .appearance-meta-px-#{$size} .console-shell-code,
+  .appearance-meta-px-#{$size} .console-task-code,
+  .appearance-meta-px-#{$size} .report-profile-code,
+  .appearance-meta-px-#{$size} .report-latest-meta,
+  .appearance-meta-px-#{$size} .updates-source-meta,
+  .appearance-meta-px-#{$size} .updates-source-state,
+  .appearance-meta-px-#{$size} .power-detail-label,
+  .appearance-meta-px-#{$size} .power-plan-code,
+  .appearance-meta-px-#{$size} .wiki-code-language { font-size: #{$size}px; }
+}
+
+@for $size from 9 through 18 {
+  .appearance-nav-px-#{$size} .shell-tab *,
+  .appearance-nav-px-#{$size} .performance-tab *,
+  .appearance-nav-px-#{$size} .appearance-choice *,
+  .appearance-nav-px-#{$size} .settings-density-action *,
+  .appearance-nav-px-#{$size} .updates-check-button *,
+  .appearance-nav-px-#{$size} .report-generate *,
+  .appearance-nav-px-#{$size} .console-launch * { font-size: #{$size}px; }
+}
+
+@for $size from 9 through 16 {
+  .appearance-rail-px-#{$size} label { font-size: #{$size}px; }
+}
+
+.shell-panel.appearance-scale-large .shell-tab-label,
+.shell-panel.appearance-scale-large .section-detail,
+.shell-panel.appearance-scale-large .insight-detail,
+.shell-panel.appearance-scale-large .console-boundary-copy,
+.shell-panel.appearance-scale-large .report-policy-copy,
+.shell-panel.appearance-scale-large .control-inventory-detail { font-size: 12px; }
+.shell-panel.appearance-scale-large .shell-subtitle,
+.shell-panel.appearance-scale-large .insight-source,
+.shell-panel.appearance-scale-large .control-tech-label,
+.shell-panel.appearance-scale-large .control-tech-detail { font-size: 11px; }
+
+.shell-panel.appearance-scale-touch button { min-height: 46px; }
+.shell-panel.appearance-scale-touch .shell-tab { min-height: 50px; }
+.shell-panel.appearance-scale-touch .shell-tab-label,
+.shell-panel.appearance-scale-touch .section-detail,
+.shell-panel.appearance-scale-touch .insight-detail { font-size: 13px; }
+.shell-panel.appearance-scale-touch .shell-close { min-width: 48px; min-height: 48px; }
+
+.shell-panel.appearance-heading-large .shell-title { font-size: 16px; }
+.shell-panel.appearance-heading-large .section-title,
+.shell-panel.appearance-heading-large .control-placeholder-title { font-size: 19px; }
+.shell-panel.appearance-heading-large .insight-title,
+.shell-panel.appearance-heading-large .console-shell-name,
+.shell-panel.appearance-heading-large .report-profile-title { font-size: 15px; }
+
+.shell-panel.appearance-body-large .section-detail,
+.shell-panel.appearance-body-large .insight-detail,
+.shell-panel.appearance-body-large .console-boundary-copy,
+.shell-panel.appearance-body-large .report-policy-copy,
+.shell-panel.appearance-body-large .control-inventory-detail,
+.shell-panel.appearance-body-large .bluetooth-action-message { font-size: 12px; }
+
+.shell-panel.appearance-meta-large .section-eyebrow,
+.shell-panel.appearance-meta-large .insight-state,
+.shell-panel.appearance-meta-large .insight-source,
+.shell-panel.appearance-meta-large .control-tech-code,
+.shell-panel.appearance-meta-large .control-tech-label,
+.shell-panel.appearance-meta-large .timeline-time,
+.shell-panel.appearance-meta-large .performance-section-code { font-size: 11px; }
+
+/* Complete semantic theme layer. Warning, critical, destructive and success
+ * colors intentionally remain fixed so appearance choices cannot hide state. */
+@mixin appearance-accent-theme($name, $accent, $bright, $soft, $medium, $strong) {
+  .appearance-accent-#{$name} {
+    .senomy-speaker,
+    .system-summary-divider,
+    .workspace-chip.active .workspace-number,
+    .shell-header-mark,
+    .section-eyebrow,
+    .control-tech-code,
+    .control-confirm-code,
+    .insight-state,
+    .insights-hero-eyebrow,
+    .shell-tab.active,
+    .performance-tab.active,
+    .performance-title-accent,
+    .performance-section-code,
+    .performance-kpi-code,
+    .performance-history-code,
+    .performance-live-state,
+    .benchmark-state,
+    .benchmark-stage,
+    .console-boundary-title,
+    .console-section-label,
+    .console-task-code,
+    .console-task-run,
+    .console-prompt,
+    .report-policy-title,
+    .report-section-label,
+    .report-profile.active .report-profile-code,
+    .report-build-state,
+    .wiki-link-mark,
+    .wiki-category.active,
+    .tray-flyout-eyebrow,
+    .volume-flyout-value,
+    .volume-open-audio-icon,
+    .appearance-group-title,
+    .appearance-advanced-toggle.active,
+    .appearance-inspector-open,
+    .appearance-choice-state,
+    .appearance-pixel-value,
+    .control-operation-code,
+    .audio-default-action,
+    .tray-manage-apps,
+    .console-launch,
+    .report-generate.primary { color: $bright; }
+
+    .bar-control.active,
+    .system-summary.active,
+    .mainbar-volume-button.active,
+    .shell-tab.active,
+    .performance-tab.active,
+    .appearance-choice.active,
+    .appearance-advanced-toggle.active,
+    .settings-density-action.active,
+    .power-plan.active,
+    .audio-route.active,
+    .network-nearby-row.active,
+    .network-profile-card.active,
+    .timeline-source-button.active,
+    .timeline-follow.active,
+    .diagnostics-task.active,
+    .console-task.active,
+    .report-profile.active,
+    .wiki-category.active,
+    .wiki-article-index.active,
+    .workspace-chip.active,
+    .performance-process-row.selected { background-color: rgba(0, 0, 0, 0.30); border-color: $medium; }
+
+    .bar-island-edge { background-color: $medium; background-image: none; }
+
+    .bar-control.active,
+    .system-summary.active,
+    .mainbar-volume-button.active { border-bottom-color: $strong; }
+
+    .shell-tab.active,
+    .report-profile.active,
+    .timeline-event,
+    .control-inventory-card,
+    .wiki-article-index.active,
+    .workspace-chip.active,
+    .power-plan.active,
+    .audio-route.active,
+    .network-nearby-row.active,
+    .network-profile-card.active,
+    .timeline-source-button.active,
+    .diagnostics-task.active,
+    .performance-process-row.selected { border-left-color: $accent; }
+
+    .senomy-trigger,
+    .senomy-avatar-bar,
+    .senomy-avatar-header,
+    .senomy-avatar-observer,
+    .senomy-avatar-power,
+    .senomy-avatar-insights-hero { border-color: $medium; }
+
+    .appearance-preview,
+    .appearance-inspector,
+    .appearance-advanced,
+    .console-boundary,
+    .report-policy,
+    .bluetooth-manager,
+    .network-nearby-card,
+    .audio-endpoint,
+    .power-policy-card,
+    .power-battery-card,
+    .benchmark-hero { border-left-color: $accent; }
+
+    .appearance-inspector-open,
+    .console-launch,
+    .report-generate.primary,
+    .audio-default-action,
+    .tray-manage-apps,
+    .performance-sort.active { border-color: $medium; }
+
+    scale trough highlight,
+    progressbar trough progress,
+    .performance-meter-fill,
+    .performance-history-line,
+    .audio-meter-fill,
+    .power-meter-fill { background-color: $accent; }
+
+    scale slider { border-color: $accent; }
+
+    .appearance-choice:hover,
+    .appearance-pixel-step:hover,
+    .console-launch:hover,
+    .audio-default-action:hover,
+    .tray-manage-apps:hover,
+    .volume-open-audio:hover,
+    .tray-overflow-items button:hover { border-color: $medium; background-color: $soft; }
+
+    button:focus,
+    button:active { background-color: rgba(0, 0, 0, 0.28); border-color: $medium; }
+  }
+}
+
+.benchmark-body,
+.benchmark-report-body { padding: 14px; }
+.benchmark-copy,
+.benchmark-message { color: #b4b8c0; font-size: 10px; font-weight: 600; }
+.benchmark-stage-row { min-height: 26px; }
+.benchmark-state { color: #8ed1dc; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
+.benchmark-state.running { color: #e2c18b; }
+.benchmark-state.succeeded { color: #99d9c2; }
+.benchmark-state.failed,
+.benchmark-state.cancelled { color: #cf827b; }
+.benchmark-stage { color: #737985; font-size: 9px; font-weight: 700; }
+.benchmark-progress trough { min-height: 7px; background-color: rgba(255,255,255,0.07); }
+.benchmark-progress trough progress { min-height: 7px; background-color: #67b8c9; }
+.benchmark-actions { min-height: 38px; }
+.benchmark-log { min-height: 210px; padding: 13px; background-color: rgba(0,0,0,0.22); }
+.benchmark-log-line { color: #b8bdc5; font-family: "JetBrains Mono"; font-size: 9px; font-weight: 600; }
+.benchmark-log-empty { color: #686e78; font-size: 9px; }
+
+@include appearance-accent-theme(cyan, #67b8c9, #9edce6, rgba(103, 184, 201, 0.09), rgba(103, 184, 201, 0.38), rgba(103, 184, 201, 0.70));
+@include appearance-accent-theme(violet, #9892e8, #c5bdf0, rgba(152, 146, 232, 0.09), rgba(152, 146, 232, 0.40), rgba(152, 146, 232, 0.72));
+@include appearance-accent-theme(amber, #c49b63, #e2c18b, rgba(196, 155, 99, 0.09), rgba(196, 155, 99, 0.40), rgba(196, 155, 99, 0.72));
+
+@mixin appearance-gradient-theme($name, $subtle-start, $subtle-end, $strong-start, $strong-mid, $strong-end) {
+  .appearance-accent-#{$name}.appearance-gradient-subtle {
+    &.bar .bar-island-edge { background-image: linear-gradient(90deg, $subtle-start, $subtle-end 28%, $subtle-start 72%, $subtle-end); }
+    .shell-header,
+    .performance-header,
+    .appearance-preview,
+    .console-boundary,
+    .report-policy,
+    .bluetooth-manager,
+    .report-profile.active,
+    .console-shell-card.available { background-image: linear-gradient(105deg, $subtle-start, rgba(10, 12, 15, 0.12) 64%, $subtle-end); }
+  }
+
+  .appearance-accent-#{$name}.appearance-gradient-strong {
+    &.bar .bar-island-edge { background-image: linear-gradient(90deg, $strong-start, $strong-mid 28%, $strong-start 72%, $strong-end); }
+    .shell-header,
+    .performance-header,
+    .appearance-preview,
+    .console-boundary,
+    .report-policy,
+    .bluetooth-manager,
+    .report-profile.active,
+    .console-shell-card.available { background-image: linear-gradient(105deg, $strong-start, $strong-mid 58%, $strong-end); }
+
+    .shell-tab.active,
+    .performance-tab.active,
+    .mainbar-volume-button.active,
+    .appearance-choice.active { background-image: linear-gradient(90deg, $strong-start, $strong-end); }
+  }
+}
+
+@include appearance-gradient-theme(cyan, rgba(103, 184, 201, 0.10), rgba(103, 184, 201, 0.025), rgba(103, 184, 201, 0.20), rgba(103, 184, 201, 0.08), rgba(103, 184, 201, 0.025));
+@include appearance-gradient-theme(violet, rgba(152, 146, 232, 0.10), rgba(152, 146, 232, 0.025), rgba(152, 146, 232, 0.20), rgba(152, 146, 232, 0.08), rgba(152, 146, 232, 0.025));
+@include appearance-gradient-theme(amber, rgba(196, 155, 99, 0.10), rgba(196, 155, 99, 0.025), rgba(196, 155, 99, 0.20), rgba(196, 155, 99, 0.08), rgba(196, 155, 99, 0.025));
+
+.appearance-gradient-off {
+  &.bar { background-image: none; }
+  .shell-header,
+  .performance-header,
+  .appearance-preview,
+  .bluetooth-manager,
+  .console-boundary,
+  .console-shell-card.available,
+  .report-policy,
+  .report-profile.active,
+  .shell-tab.active,
+  .performance-tab.active,
+  .mainbar-volume-button.active,
+  .appearance-choice.active { background-image: none; }
+}
+
+.appearance-preview,
+.appearance-group,
+.appearance-inspector {
+  padding: 13px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.appearance-preview { background-image: linear-gradient(110deg, rgba(103, 184, 201, 0.09), rgba(152, 146, 232, 0.04)); border-left: 3px solid #67b8c9; }
+
+.appearance-advanced-toggle {
+  min-height: 42px;
+  padding: 0 12px;
+  color: #aeb2ba;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  font-weight: 700;
+}
+
+.appearance-advanced-toggle.active {
+  color: #9edce6;
+  background-color: rgba(103, 184, 201, 0.07);
+  border-color: rgba(103, 184, 201, 0.34);
+}
+
+.appearance-advanced {
+  padding: 10px;
+  background-color: rgba(2, 4, 6, 0.34);
+  border: 1px solid rgba(103, 184, 201, 0.18);
+}
+
+.appearance-pixel-control {
+  min-height: 58px;
+  padding: 8px 10px;
+  background-color: rgba(255, 255, 255, 0.015);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.appearance-pixel-title { color: #e6e8eb; font-weight: 700; }
+.appearance-pixel-detail { color: #858b95; }
+.appearance-pixel-value { min-width: 48px; color: #9edce6; font-weight: 800; }
+.appearance-pixel-step {
+  min-width: 38px;
+  min-height: 38px;
+  color: #d8dcdf;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  font-size: 16px;
+}
+.appearance-pixel-step:hover { background-color: rgba(103, 184, 201, 0.10); border-color: rgba(103, 184, 201, 0.38); }
+.appearance-pixel-step:disabled { color: #454a52; border-color: rgba(255, 255, 255, 0.05); }
+
+/* Rail audio is a compact status capsule, not an oversized icon button. */
+.mainbar-volume-button {
+  min-width: 58px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+}
+
+.mainbar-volume-content { min-height: 34px; }
+.mainbar-volume-button .bar-icon-image { min-width: 15px; min-height: 15px; }
+.mainbar-volume-value { min-width: 27px; color: #aeb2ba; font-weight: 700; }
+.mainbar-volume-button:hover { border-color: rgba(255, 255, 255, 0.12); }
+.mainbar-volume-button.active {
+  color: #b5edf2;
+  background-color: rgba(103, 184, 201, 0.09);
+  border-color: rgba(103, 184, 201, 0.36);
+  border-bottom-color: rgba(103, 184, 201, 0.65);
+}
+.mainbar-volume-button.active .mainbar-volume-value { color: #b5edf2; }
+.mainbar-volume-button.muted .mainbar-volume-value { color: #cf766e; }
+.appearance-group-title { color: #8ed1dc; font-size: 10px; font-weight: 700; letter-spacing: 0.9px; }
+.appearance-choice {
+  min-width: 122px;
+  min-height: 62px;
+  padding: 9px 10px;
+  color: #aeb2ba;
+  background-color: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.appearance-choice:hover { color: #f1f1f4; border-color: rgba(103, 184, 201, 0.36); }
+.appearance-choice.active { color: #e9fbff; background-color: rgba(103, 184, 201, 0.07); border-color: rgba(103, 184, 201, 0.55); }
+.appearance-choice:disabled { color: #5c616a; }
+.appearance-choice-title { color: inherit; font-size: 11px; font-weight: 700; }
+.appearance-choice-state { color: #67b8c9; font-size: 8px; font-weight: 700; }
+.appearance-choice-detail { color: #7f848e; font-size: 9px; font-weight: 500; }
+.appearance-inspector { border-top: 2px solid rgba(152, 146, 232, 0.55); }
+.appearance-inspector-copy { color: #b8bac2; font-size: 10px; font-weight: 500; }
+.appearance-inspector-open { min-height: 38px; color: #c5bdf0; border: 1px solid rgba(152, 146, 232, 0.42); font-size: 10px; font-weight: 700; }
+.appearance-inspector-open:hover { color: #f1f1f4; background-color: rgba(152, 146, 232, 0.08); }
+
+/* Obsidian Rail islands: the full-width layer only reserves screen space.
+ * Visible fill exists exclusively behind actual component clusters. */
+.bar {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+}
+
+.bar-island-edge {
+  padding: 1px;
+  border-radius: 7px;
+}
+
+.bar-island-fill {
+  min-height: 40px;
+  background-color: rgba(8, 9, 11, 0.76);
+  background-image: none;
+  border-radius: 6px;
+}
+
+.workspace-strip,
+.senomy-trigger,
+.system-summary {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+}
+
+.mainbar-right.bar-island-fill {
+  background-color: rgba(8, 9, 11, 0.76);
+  background-image: none;
+  border: none;
+  border-radius: 6px;
+}
+
+/* Theme gradients are edge-only. Decorative panel/card fills stay flat. */
+.appearance-gradient-subtle,
+.appearance-gradient-strong,
+.appearance-gradient-off {
+  &.bar { background-image: none; }
+
+  .shell-header,
+  .performance-header,
+  .appearance-preview,
+  .bluetooth-manager,
+  .console-boundary,
+  .console-shell-card.available,
+  .report-policy,
+  .report-profile.active,
+  .shell-tab.active,
+  .performance-tab.active,
+  .mainbar-volume-button.active,
+  .appearance-choice.active { background-image: none; }
+}
+
+/* Seno artwork should read as imagery, not as a framed status button. */
+.senomy-trigger,
+.senomy-avatar-bar,
+.senomy-avatar-header,
+.senomy-avatar-observer,
+.senomy-avatar-power,
+.senomy-avatar-insights-hero {
+  border: none;
+  box-shadow: none;
+}
+
+/* Selected controls retain palette-colored text/edges over a neutral overlay. */
+.bar-control.active,
+.system-summary.active,
+.shell-tab.active,
+.performance-tab.active,
+.appearance-choice.active,
+.appearance-advanced-toggle.active,
+.settings-density-action.active,
+.console-task.active,
+.report-profile.active,
+.wiki-category.active,
+.wiki-article-index.active {
+  background-color: rgba(0, 0, 0, 0.30);
+}
+
+/* Volume is the same rail target as adjacent icon controls; only its flyout is
+ * wider, and that flyout stays compact enough to read as a mini panel. */
+.mainbar-volume-button {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+
+.volume-flyout-content {
+  min-height: 58px;
+  padding: 0 8px;
+}
+
+.volume-slider-stack { min-width: 180px; }
+.volume-mute { min-width: 32px; min-height: 34px; }
+.volume-open-audio { min-width: 58px; min-height: 34px; padding: 0 7px; }
+.volume-open-audio-label { font-size: 8px; }
+.volume-flyout .flyout-close {
+  min-width: 30px;
+  min-height: 34px;
+  margin-left: 0;
+  border: none;
+  background-color: transparent;
+}
+
+.appearance-operation {
+  padding: 9px 11px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border-left: 2px solid rgba(103, 184, 201, 0.42);
+}
+
+.appearance-operation.running { border-left-color: #c49b63; }
+.appearance-operation.succeeded { border-left-color: #78bec3; }
+.appearance-operation-label { color: #e5e6ea; font-size: 10px; font-weight: 700; }
+.appearance-operation-state { color: #c49b63; font-size: 8px; font-weight: 700; }
+.appearance-operation-copy { color: #92959f; font-size: 9px; font-weight: 500; }
+.appearance-operation-progress trough {
+  min-height: 3px;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.appearance-operation-progress trough progress { background-color: #c49b63; }
+.appearance-operation.succeeded .appearance-operation-progress trough progress { background-color: #78bec3; }

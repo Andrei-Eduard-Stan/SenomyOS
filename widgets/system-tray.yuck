@@ -1,20 +1,25 @@
 (defwidget system-tray []
-  (box
-    :class "system-tray"
-    :space-evenly false
-    (systray
-      :orientation "h"
-      :space-evenly false
-      :spacing 6
-      :icon-size 17
-      :prepend-new false)))
+  (button
+    :class {active_flyout == "tray"
+      ? "icon-button bar-control tray-overflow-trigger active"
+      : "icon-button bar-control tray-overflow-trigger"}
+    :tooltip {active_flyout == "tray"
+      ? "Close hidden icons"
+      : "Show hidden icons"}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-tray ${active_surface} ${active_flyout}"
+    (bar-icon
+      :icon {active_flyout == "tray"
+        ? "tray-down"
+        : "tray-up"})))
 
 (defwidget applications-button []
   (button
+    :visible {bar_layout?.data?.phone != true}
     :class {active_surface == "control" && control_section == "apps"
-      ? "bar-control applications-trigger active"
-      : "bar-control applications-trigger"}
+      ? "icon-button bar-control applications-trigger active"
+      : "icon-button bar-control applications-trigger"}
     :tooltip "Applications and system tray"
-    :timeout "2s"
-    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control apps"
-    (label :text "")))
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control apps ${active_surface} ${active_flyout} ${control_section}"
+    (bar-icon :icon "applications")))

@@ -1,0 +1,179 @@
+(defwidget audio-metric [label value detail]
+  (box :class "control-tech-metric" :orientation "v" :space-evenly false :spacing 3
+    (label :class "control-tech-label" :xalign 0 :text label)
+    (label :class "control-tech-value" :xalign 0 :text value)
+    (label :class "control-tech-detail" :xalign 0 :limit-width 26 :show-truncated true :text detail)))
+
+(defwidget audio-detail-row [label value]
+  (box :class "control-tech-row" :space-evenly false
+    (label :class "control-tech-row-label" :xalign 0 :hexpand true :text label)
+    (label :class "control-tech-row-value" :limit-width 40 :show-truncated true :text value)))
+
+(defwidget audio-hardware-card [card]
+  (box :class "control-tech-card audio-hardware-card" :orientation "v" :space-evenly false :spacing 9
+    (box :space-evenly false
+      (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+        (label :class "control-tech-code" :xalign 0 :text "HARDWARE // ALSA CARD")
+        (label :class "control-tech-card-title" :xalign 0 :text {card.name})
+        (label :class "control-tech-detail" :xalign 0 :text {card.driver}))
+      (label :class "control-state-badge" :text {card.active_profile ?: "OFF"}))
+    (box :class "audio-port-list" :orientation "v" :space-evenly false :spacing 5
+      (label :class "control-tech-label" :xalign 0 :text "AVAILABLE HARDWARE PROFILES")
+      (for profile in {card.profiles}
+        (button
+          :class {profile.active ? "audio-route active" : "audio-route"}
+          :active {!profile.active}
+          :onclick "$HOME/.config/eww/scripts/audio-action.sh set-card-profile '${card.id}' '${profile.name}'"
+          (box :space-evenly false
+            (label :class "audio-route-mark" :text {profile.active ? "●" : "○"})
+            (label :class "audio-route-name" :xalign 0 :hexpand true :text {profile.description})
+            (label :class "audio-route-state" :text {profile.active ? "ACTIVE" : "SELECT"}))))
+      (label :class "control-source-error-copy" :visible {arraylength(card.profiles) == 0}
+        :xalign 0 :wrap true :text "PipeWire reports no available profile for this card."))))
+
+(defwidget audio-endpoint-card [endpoint kind]
+  (box
+    :class "audio-endpoint-card ${kind}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+    (box :space-evenly false
+      (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+        (label :class "control-tech-code" :xalign 0 :text "${kind == "output" ? "OUTPUT" : "INPUT"} // ${endpoint.is_default ? "DEFAULT" : "AVAILABLE"}")
+        (label :class "audio-endpoint-name" :xalign 0 :limit-width 46 :show-truncated true :text {endpoint.name})
+        (label :class "audio-endpoint-port" :xalign 0 :text {endpoint.active_port_description}))
+      (label
+        :class {endpoint.muted ? "control-state-badge danger" : "control-state-badge ready"}
+        :text {endpoint.muted ? "MUTED" : endpoint.state}))
+
+    (box :class "audio-level-row" :space-evenly false :spacing 10
+      (button
+        :class {endpoint.muted ? "audio-mute active" : "audio-mute"}
+        :tooltip {endpoint.muted ? "Unmute ${kind}" : "Mute ${kind}"}
+        :timeout "3s"
+        :onclick {kind == "output"
+          ? "$HOME/.config/eww/scripts/volume.sh toggle-mute"
+          : "$HOME/.config/eww/scripts/audio-action.sh toggle-input-mute"}
+        (label :text {kind == "output" ? (endpoint.muted ? "󰝟" : "") : (endpoint.muted ? "󰍭" : "")}))
+      (scale
+        :class "audio-scale"
+        :orientation "h"
+        :hexpand true
+        :min 0 :max 100
+        :value {endpoint.volume_percent ?: 0}
+        :active {kind == "output" && endpoint.is_default}
+        :draw-value false :round-digits 0
+        :timeout "80ms"
+        :onchange {kind == "output" ? "$HOME/.config/eww/scripts/volume.sh set {}" : "true"})
+      (label :class "audio-percent" :text "${endpoint.volume_percent ?: 0}%"))
+
+    (button
+      :class "audio-default-action"
+      :visible {!endpoint.is_default}
+      :timeout "5s"
+      :onclick {kind == "output"
+        ? "$HOME/.config/eww/scripts/audio-action.sh set-default-output '${endpoint.id}'"
+        : "$HOME/.config/eww/scripts/audio-action.sh set-default-input '${endpoint.id}'"}
+      "MAKE DEFAULT ${kind == "output" ? "OUTPUT" : "INPUT"}")
+
+    (box :class "control-tech-table" :orientation "v" :space-evenly false
+      (audio-detail-row :label "Active route" :value {endpoint.active_port_description})
+      (audio-detail-row :label "Sample format" :value {endpoint.sample_spec})
+      (audio-detail-row :label "Channel map" :value {endpoint.channel_map})
+      (audio-detail-row :label "Hardware" :value {endpoint.hardware.product})
+      (audio-detail-row :label "Codec" :value {endpoint.hardware.codec})
+      (audio-detail-row :label "Profile" :value {endpoint.hardware.profile}))
+
+    (box :class "audio-port-list" :orientation "v" :space-evenly false :spacing 5
+      (label :class "control-tech-label" :xalign 0 :text "ROUTES / PORT AVAILABILITY")
+      (for port in {endpoint.ports}
+        (button
+          :class {port.active ? "audio-route active" : "audio-route"}
+          :active {port.availability != "not available" && !port.active}
+          :tooltip {"Route ${endpoint.name} through ${port.description}"}
+          :timeout "3s"
+          :onclick {kind == "output"
+            ? "$HOME/.config/eww/scripts/audio-action.sh set-output-port '${endpoint.id}' '${port.name}'"
+            : "$HOME/.config/eww/scripts/audio-action.sh set-input-port '${endpoint.id}' '${port.name}'"}
+          (box :space-evenly false
+            (label :class "audio-route-mark" :text {port.active ? "●" : "○"})
+            (label :class "audio-route-name" :xalign 0 :hexpand true :text {port.description})
+            (label :class "audio-route-state" :text {port.active ? "ACTIVE" : port.availability})))))))
+
+(defwidget control-audio-section []
+  (box
+    :class "control-audio-section"
+    :orientation "v"
+    :space-evenly false
+    :visible {control_section == "audio"}
+    :vexpand true :hexpand true
+    (scroll :class "control-tech-scroll audio" :vscroll true :hscroll false :vexpand true :hexpand true
+      (box :class "control-tech-page" :orientation "v" :space-evenly false :spacing 16
+        (box :class "section-heading" :orientation "v" :space-evenly false :spacing 4
+          (label :class "section-eyebrow" :xalign 0 :text "AUDIO // PIPEWIRE + WIREPLUMBER")
+          (label :class "section-title" :xalign 0 :text "Signal routing")
+          (label :class "section-detail" :xalign 0 :wrap true
+            :text "Live endpoints, gain, mute, physical routes, stream format and hardware identity. Controls are bound to validated PipeWire objects."))
+
+        (box :class "control-source-error" :orientation "v" :space-evenly false :spacing 5
+          :visible {audio_status?.ok != true}
+          (label :class "control-source-error-code" :xalign 0 :text "SOURCE // ${audio_status?.error?.code ?: "LOADING"}")
+          (label :class "control-source-error-copy" :xalign 0 :wrap true :text {audio_status?.error?.message ?: "Audio telemetry is loading."}))
+
+        (box :class "control-operation audio ${audio_operation_status.data.state}" :orientation "v" :space-evenly false :spacing 4
+          :visible {audio_operation_status.data.state != "idle"}
+          (box :space-evenly false :spacing 8
+            (label :class "control-operation-code" :xalign 0 :hexpand true
+              :text "OPERATION // ${audio_operation_status.data.state_label}")
+            (label :class "control-state-badge ${audio_operation_status.data.state == "failed" ? "danger" : (audio_operation_status.data.state == "succeeded" ? "ready" : "") }"
+              :text {audio_operation_status.data.state_label}))
+          (label :class "control-operation-title" :xalign 0 :text {audio_operation_status.data.label})
+          (label :class "control-operation-copy" :xalign 0 :wrap true :text {audio_operation_status.data.message}))
+
+        (box :class "control-tech-live" :orientation "v" :space-evenly false :spacing 16
+          :visible {audio_status?.ok == true}
+          (box :class "control-tech-brief audio" :space-evenly false :spacing 14
+            (label :class "control-tech-brief-icon" :text "󰓃")
+            (box :orientation "v" :space-evenly false :valign "center" :spacing 4
+              (label :class "control-tech-code" :xalign 0 :text {audio_status.data.degraded ? "ROUTING FABRIC // DEGRADED" : "ROUTING FABRIC // LIVE"})
+              (label :class "control-tech-brief-copy" :xalign 0 :wrap true
+                :text {audio_status.data.degraded
+                  ? "Seno: The audio server is running, but only its dummy output exists. Your ${audio_status.data.hardware_count} detected hardware card${audio_status.data.hardware_count == 1 ? " has" : "s have"} no usable PipeWire profile, so no physical speaker or microphone route is available."
+                  : "Seno: ${audio_status.data.output_count} output route${audio_status.data.output_count == 1 ? "" : "s"} and ${audio_status.data.input_count} capture route${audio_status.data.input_count == 1 ? "" : "s"} are registered. ${audio_status.data.output.muted ? "Your default output is muted." : "Signal is flowing at ${audio_status.data.output.volume_percent}%."}"})))
+
+          (box :class "control-source-error" :orientation "v" :space-evenly false :spacing 5
+            :visible {audio_status.data.degraded}
+            (label :class "control-source-error-code" :xalign 0 :text "AUDIO POLICY // PHYSICAL PROFILES MISSING")
+            (label :class "control-source-error-copy" :xalign 0 :wrap true :text {audio_status.data.degraded_reason}))
+
+          (box :class "control-tech-grid" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly true :spacing 8
+            (audio-metric :label "OUTPUTS" :value "${audio_status.data.output_count}" :detail {audio_status.data.output.name})
+            (audio-metric :label "INPUTS" :value "${audio_status.data.input_count}" :detail {audio_status.data.input.name ?: "Unavailable"})
+            (audio-metric :label "ENGINE" :value {audio_status.data.server.pipewire_active ? "READY" : "DOWN"} :detail {audio_status.data.server.name})
+            (audio-metric :label "POLICY" :value {audio_status.data.server.wireplumber_active ? "READY" : "DOWN"} :detail "WirePlumber"))
+
+          (box :class "audio-endpoint-list" :orientation "v" :space-evenly false :spacing 10
+            (label :class "control-tech-code" :xalign 0 :text "OUTPUT ENDPOINTS // ${audio_status.data.output_count}")
+            (for endpoint in {audio_status.data.outputs}
+              (audio-endpoint-card :endpoint endpoint :kind "output"))
+            (label :class "control-source-error-copy" :visible {audio_status.data.output_count == 0}
+              :xalign 0 :wrap true :text "No PipeWire output endpoint is available."))
+
+          (box :class "audio-endpoint-list" :orientation "v" :space-evenly false :spacing 10
+            (label :class "control-tech-code" :xalign 0 :text "INPUT ENDPOINTS // ${audio_status.data.input_count}")
+            (for endpoint in {audio_status.data.inputs}
+              (audio-endpoint-card :endpoint endpoint :kind "input"))
+            (label :class "control-source-error-copy" :visible {audio_status.data.input_count == 0}
+              :xalign 0 :wrap true :text "No PipeWire capture endpoint is available."))
+
+          (box :class "control-tech-card" :orientation "v" :space-evenly false :spacing 10
+            (label :class "control-tech-code" :xalign 0 :text "ENGINE // SERVER CONTRACT")
+            (label :class "control-tech-card-title" :xalign 0 :text "PipeWire compatibility layer")
+            (box :class "control-tech-table" :orientation "v" :space-evenly false
+              (audio-detail-row :label "Server" :value {audio_status.data.server.name})
+              (audio-detail-row :label "Version" :value {audio_status.data.server.version})
+              (audio-detail-row :label "Default sample spec" :value {audio_status.data.server.sample_spec})
+              (audio-detail-row :label "Hardware cards" :value "${audio_status.data.hardware_count}")))
+          (box :class "audio-hardware-list" :orientation "v" :space-evenly false :spacing 10
+            (for card in {audio_status.data.hardware}
+              (audio-hardware-card :card card))))))))

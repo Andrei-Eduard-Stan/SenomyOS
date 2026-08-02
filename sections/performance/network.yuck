@@ -1,0 +1,239 @@
+(defwidget performance-network-page []
+  (scroll
+    :class "performance-page-scroll"
+    :vscroll true
+    :hscroll false
+    :vexpand true
+    :hexpand true
+
+    (box
+      :class "performance-page performance-network-page"
+      :orientation "v"
+      :space-evenly false
+      :spacing 14
+
+      (box
+        :class "performance-kpi-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 10
+        (performance-kpi
+          :code "RX"
+          :label "RECEIVE"
+          :value {system_status?.data?.network?.available == true
+            ? "${round(system_status.data.network.receive_bytes_per_second / 1024, 1)} KiB/s"
+            : "OFFLINE"}
+          :detail "${round(system_status?.data?.network?.receive_packets_per_second ?: 0, 1)} packets/s"
+          :tone "network-receive")
+        (performance-kpi
+          :code "TX"
+          :label "TRANSMIT"
+          :value {system_status?.data?.network?.available == true
+            ? "${round(system_status.data.network.transmit_bytes_per_second / 1024, 1)} KiB/s"
+            : "OFFLINE"}
+          :detail "${round(system_status?.data?.network?.transmit_packets_per_second ?: 0, 1)} packets/s"
+          :tone "network-transmit")
+        (performance-kpi
+          :code "LINK"
+          :label "ACTIVE ROUTE"
+          :value {system_status?.data?.network?.interface ?: "NONE"}
+          :detail {system_status?.data?.network?.available == true
+            ? "${system_status.data.network.kind} / ${system_status.data.network.state}"
+            : "No default-route interface"}
+          :tone "network")
+        (performance-kpi
+          :code "SOCK"
+          :label "KERNEL SOCKETS"
+          :value "${performance_status?.data?.sockets?.used ?: 0}"
+          :detail "${performance_status?.data?.sockets?.tcp?.established ?: 0} TCP established"
+          :tone "network"))
+
+      (box
+        :class "performance-chart-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+        (performance-history-panel
+          :code "01"
+          :title "RECEIVE THROUGHPUT"
+          :metric "network-receive"
+          :tone "network-receive"
+          :value {system_status?.data?.network?.available == true
+            ? "${round(system_status.data.network.receive_bytes_per_second / 1024, 1)} KiB/s"
+            : "--"}
+          :meta "${round(system_status?.data?.network?.receive_packets_per_second ?: 0, 1)} PACKETS/S"
+          :scale "SCALE ${round((performance_history?.data?.scales?.network_bytes_per_second ?: 131072) / 1024, 0)} KiB/s")
+        (performance-history-panel
+          :code "02"
+          :title "TRANSMIT THROUGHPUT"
+          :metric "network-transmit"
+          :tone "network-transmit"
+          :value {system_status?.data?.network?.available == true
+            ? "${round(system_status.data.network.transmit_bytes_per_second / 1024, 1)} KiB/s"
+            : "--"}
+          :meta "${round(system_status?.data?.network?.transmit_packets_per_second ?: 0, 1)} PACKETS/S"
+          :scale "SCALE ${round((performance_history?.data?.scales?.network_bytes_per_second ?: 131072) / 1024, 0)} KiB/s"))
+
+      (box
+        :class "performance-detail-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "03"
+            :title "INTERFACE"
+            :subtitle "Active default-route metadata")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Connection"
+              :value {performance_status?.data?.network?.connection ?: "--"})
+            (performance-stat-row
+              :label "Interface / kind"
+              :value "${performance_status?.data?.network?.interface ?: "--"} / ${performance_status?.data?.network?.kind ?: "--"}")
+            (performance-stat-row
+              :label "Operational state"
+              :value {performance_status?.data?.network?.state ?: "--"})
+            (performance-stat-row
+              :label "MTU"
+              :value "${performance_status?.data?.network?.mtu ?: "--"} B")
+            (performance-stat-row
+              :label "Link speed"
+              :value {(system_status?.data?.network?.link_speed_mbps ?: -1) >= 0
+                ? "${system_status.data.network.link_speed_mbps} Mbps"
+                : "NOT EXPOSED"})
+            (performance-stat-row
+              :label "Wireless signal"
+              :value {(system_status?.data?.network?.signal_dbm ?: -200) > -200
+                ? "${system_status.data.network.signal_dbm} dBm"
+                : "NOT APPLICABLE"})))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "04"
+            :title "ADDRESSING"
+            :subtitle "Local interface and default gateway")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "IPv4"
+              :value {performance_status?.data?.network?.ipv4 ?: "--"})
+            (performance-stat-row
+              :label "IPv6"
+              :value {performance_status?.data?.network?.ipv6 ?: "--"})
+            (performance-stat-row
+              :label "Default gateway"
+              :value {performance_status?.data?.network?.gateway ?: "--"})
+            (performance-stat-row
+              :label "Received since boot"
+              :value "${round((system_status?.data?.network?.total_received_bytes ?: 0) / 1073741824, 2)} GiB")
+            (performance-stat-row
+              :label "Transmitted since boot"
+              :value "${round((system_status?.data?.network?.total_transmitted_bytes ?: 0) / 1073741824, 2)} GiB")))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "05"
+            :title "LINK INTEGRITY"
+            :subtitle "Kernel interface error and drop counters")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Receive errors"
+              :value "${system_status?.data?.network?.receive_errors ?: 0}")
+            (performance-stat-row
+              :label "Transmit errors"
+              :value "${system_status?.data?.network?.transmit_errors ?: 0}")
+            (performance-stat-row
+              :label "Receive drops"
+              :value "${system_status?.data?.network?.receive_drops ?: 0}")
+            (performance-stat-row
+              :label "Transmit drops"
+              :value "${system_status?.data?.network?.transmit_drops ?: 0}")
+            (performance-notice
+              :state {((system_status?.data?.network?.receive_errors ?: 0) + (system_status?.data?.network?.transmit_errors ?: 0)) == 0
+                ? "NOMINAL"
+                : "ATTENTION"}
+              :title "COUNTER STATUS"
+              :detail {((system_status?.data?.network?.receive_errors ?: 0) + (system_status?.data?.network?.transmit_errors ?: 0)) == 0
+                ? "No interface errors have been recorded since boot."
+                : "One or more interface errors have been recorded; inspect the link and kernel log."}))))
+
+      (box
+        :class "performance-detail-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "06"
+            :title "TCP"
+            :subtitle "Aggregate socket counts, never remote endpoints")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "In use"
+              :value "${performance_status?.data?.sockets?.tcp?.in_use ?: 0}")
+            (performance-stat-row
+              :label "Established"
+              :value "${performance_status?.data?.sockets?.tcp?.established ?: 0}")
+            (performance-stat-row
+              :label "Listening"
+              :value "${performance_status?.data?.sockets?.tcp?.listening ?: 0}")
+            (performance-stat-row
+              :label "Time wait"
+              :value "${performance_status?.data?.sockets?.tcp?.time_wait ?: 0}")
+            (performance-stat-row
+              :label "Orphaned"
+              :value "${performance_status?.data?.sockets?.tcp?.orphaned ?: 0}")))
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "07"
+            :title "OTHER TRANSPORTS"
+            :subtitle "Kernel aggregate counts")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "All allocated sockets"
+              :value "${performance_status?.data?.sockets?.used ?: 0}")
+            (performance-stat-row
+              :label "UDP in use"
+              :value "${performance_status?.data?.sockets?.udp_in_use ?: 0}")
+            (performance-stat-row
+              :label "RAW in use"
+              :value "${performance_status?.data?.sockets?.raw_in_use ?: 0}")
+            (performance-stat-row
+              :label "Interface packets / s"
+              :value "${round((system_status?.data?.network?.receive_packets_per_second ?: 0) + (system_status?.data?.network?.transmit_packets_per_second ?: 0), 1)}")))))))

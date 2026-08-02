@@ -1,44 +1,35 @@
 (defwindow main-bar
   :geometry (geometry :x "0" :y "0" :width "100%" :height "44px" :anchor "bottom center")
   :stacking "fg"
-  :monitor 0
   :exclusive true
   :visible true
 
 (centerbox
-  :class "bar"
+  :class "bar ${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-nav-px-${appearance_status?.data?.nav_px ?: 10} appearance-rail-px-${appearance_status?.data?.rail_px ?: 11} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
   :orientation "h"
 
-  ;; Left half of the bar
-  (centerbox
-    :class "mainbar-left"
-    :orientation "h"
-    :hexpand true
+  ;; Left zone
+  (box :class "workspace-rail-zone" :halign "start"
+    (workspace-indicator))
 
-    ;; Far left
+  ;; True center zone: Senomy and Performance share one visual segment.
+  (box :class "bar-island-edge"
     (box
-      :halign "start"
+      :class "central-rail-island bar-island-fill"
       :space-evenly false
-      (workspace-indicator))
+      (senomy-status)
+      (box :class "central-island-divider")
+      (system-summary)))
 
-    ;; Halfway between workspaces and system-summary
-    (senomy-status)
-
-    ;; Empty right slot keeps Senomy centred in this half
-    (box))
-
-  ;; True centre of the entire bar
-  (system-summary)
-
-  ;; Far right
-  (box
-    :class "mainbar-right"
-    :spacing 10
-    :halign "end"
-    :space-evenly false
-    (system-tray)
-    (applications-button)
-    (volume-button)
-    (wifi-button)
-    (battery-button)
-    (clock-button))))
+  ;; Right zone
+  (box :class "bar-island-edge" :halign "end" :valign "center"
+    (box
+      :class "mainbar-right bar-island-fill"
+      :spacing 2
+      :space-evenly false
+      (system-tray)
+      (applications-button)
+      (volume-button)
+      (wifi-button)
+      (battery-button)
+      (clock-button)))))

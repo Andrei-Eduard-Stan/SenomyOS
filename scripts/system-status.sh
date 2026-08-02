@@ -154,8 +154,8 @@ uptime_minutes=$(((uptime_seconds % 3600) / 60))
 uptime_remaining_seconds=$((uptime_seconds % 60))
 
 if ((uptime_days > 0)); then
-  printf -v uptime_human '%dd %02dh %02dm' \
-    "$uptime_days" "$uptime_hours" "$uptime_minutes"
+  printf -v uptime_human '%dd %02d:%02d:%02d' \
+    "$uptime_days" "$uptime_hours" "$uptime_minutes" "$uptime_remaining_seconds"
 else
   printf -v uptime_human '%02d:%02d:%02d' \
     "$uptime_hours" "$uptime_minutes" "$uptime_remaining_seconds"

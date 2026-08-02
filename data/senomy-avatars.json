@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "default_state": "idle",
+  "states": [
+    {
+      "id": "idle",
+      "label": "Idle",
+      "emotion": "calm",
+      "activity": "observing",
+      "chibi": "assets/senomy/placeholders/idle.svg",
+      "portrait": "assets/senomy/placeholders/idle.svg"
+    },
+    {
+      "id": "focused",
+      "label": "Focused",
+      "emotion": "intent",
+      "activity": "working",
+      "chibi": "assets/senomy/placeholders/focused.svg",
+      "portrait": "assets/senomy/placeholders/focused.svg"
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking",
+      "emotion": "curious",
+      "activity": "reasoning",
+      "chibi": "assets/senomy/placeholders/thinking.svg",
+      "portrait": "assets/senomy/placeholders/thinking.svg"
+    },
+    {
+      "id": "happy",
+      "label": "Happy",
+      "emotion": "pleased",
+      "activity": "celebrating",
+      "chibi": "assets/senomy/placeholders/happy.svg",
+      "portrait": "assets/senomy/placeholders/happy.svg"
+    },
+    {
+      "id": "warning",
+      "label": "Warning",
+      "emotion": "concerned",
+      "activity": "alerting",
+      "chibi": "assets/senomy/placeholders/warning.svg",
+      "portrait": "assets/senomy/placeholders/warning.svg"
+    },
+    {
+      "id": "busy",
+      "label": "Busy",
+      "emotion": "determined",
+      "activity": "processing",
+      "chibi": "assets/senomy/placeholders/busy.svg",
+      "portrait": "assets/senomy/placeholders/busy.svg"
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping",
+      "emotion": "resting",
+      "activity": "idle",
+      "chibi": "assets/senomy/placeholders/sleeping.svg",
+      "portrait": "assets/senomy/placeholders/sleeping.svg"
+    },
+    {
+      "id": "browsing",
+      "label": "Browsing",
+      "emotion": "curious",
+      "activity": "browsing",
+      "chibi": "assets/senomy/senomy_chibi_browsing.jpg",
+      "portrait": "assets/senomy/senomy_chibi_browsing.jpg"
+    }
+  ]
+}

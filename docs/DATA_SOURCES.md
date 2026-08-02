@@ -45,8 +45,9 @@ secrets.
 
 | Domain | Preferred source | Suggested cadence | Notes |
 |---|---|---:|---|
-| Workspaces | `hyprctl -j workspaces`, `activeworkspace` | existing 1s listener | Preserve current service |
-| Battery | UPower + `jq` | 10–30s | Existing dual-battery script works |
+| Workspaces | Hyprland `.socket2.sock` events plus `hyprctl -j workspaces`, `activeworkspace`, and `clients` snapshots | event-triggered; 10s cached heartbeat; 30s safety resync | Preserve the systemd-owned listener; discover the active runtime instance if inherited session variables are absent |
+| Battery bar summary | UPower DisplayDevice + per-pack UPower | 10s | Energy-weighted aggregate plus compact dual-pack state |
+| Detailed Power | UPower + `/sys/class/power_supply` + optional TLP runtime | 5s while visible | Identity, chemistry, energy, health, wear, cycles, electrical values, estimates, thresholds, effective policy, and explicit unavailable fields |
 | Volume/mute | `pamixer` | event or 1–2s while visible | `wpctl`/`pactl` for endpoints |
 | Audio devices | `wpctl`, `pactl` | event or panel-open poll | Handle PipeWire naming changes |
 | Wi-Fi state | `nmcli` | 5–15s while visible | Never request stored passwords |
@@ -130,13 +131,13 @@ dependency.
 ## Audio status collector
 
 `scripts/audio-status.sh` reads PipeWire/PulseAudio compatibility data through
-`pactl` and emits schema version 1 JSON containing:
+`pactl` and emits schema version 2 JSON containing:
 
 - the default output and input;
-- normalized display names and stable source IDs;
-- volume, mute, state, and active port;
+- normalized display names, stable IDs, volume, mute, and state;
+- physical routes, sample formats, channel maps, driver and codec identity;
 - all available non-monitor outputs and inputs;
-- endpoint counts and overall output availability.
+- card profiles, server/service state, endpoint and hardware counts.
 
 The collector is read-only. It never changes volume, mute state, or routing.
 PulseAudio monitor sources are excluded from the user-facing input list.
@@ -144,16 +145,78 @@ PulseAudio monitor sources are excluded from the user-facing input list.
 The script returns structured errors for missing dependencies, unavailable
 audio services, and malformed JSON.
 
+Eww consumes this collector every second only while the compact volume flyout
+or the Control Centre Audio section is visible. `scripts/volume.sh` owns
+default-output gain/mute; `scripts/audio-action.sh` validates current
+endpoints and ports before input-mute or routing mutations.
+
+The persistent Rail instead consumes `scripts/bar-audio-listener.sh`. It emits
+one cheap default-sink summary at startup and refreshes it from
+`pactl subscribe` sink, server, and card events. It does not enumerate audio
+hardware continuously.
+
+## Performance Dashboard collectors
+
+`scripts/performance-history.sh` wraps `scripts/performance-live.sh`. Its
+`sample` action returns one synchronized current-status envelope to Eww while
+appending at most one normalized history point every five seconds. Its `read`
+action returns a rolling 300-second array from
+`${XDG_RUNTIME_DIR}/senomyos/performance-history.json`.
+
+The runtime directory is mode 0700 and the atomically replaced history file is
+mode 0600. The cache contains only timestamps and aggregate CPU, memory,
+temperature, load, pressure, disk, network, and optional GPU values. It is
+session-scoped, bounded, and continues to advance while the bar is running, so
+destroying the Performance window cannot erase the visible period. Disk and
+network charts use a dynamic five-minute peak with documented minimum scales;
+the displayed current values remain unscaled real rates.
+
+`scripts/performance-live.sh` takes two procfs/sysfs snapshots 250ms apart. One
+sample supplies total and per-core CPU, CPU time distribution, scheduler rates,
+memory composition, swap and commit, root-disk throughput/IOPS/busy time,
+active-interface traffic and counters, PSI, frequency policy, temperatures,
+fans, and optional DRM GPU telemetry. Missing capabilities are reported as
+unavailable rather than estimated.
+
+`scripts/performance-processes.sh` emits at most twelve process records with
+PID, user, state, command name, instantaneous CPU from procfs deltas, resident
+memory, thread count, age, priority, and nice value. It runs every three seconds
+only while the Processes page is active and excludes its own short-lived
+collector processes.
+
+`scripts/performance-status.sh` emits the slower inventory:
+
+- host, operating-system, kernel, architecture, and package count;
+- CPU topology, cache sizes, virtualization, and frequency limits;
+- root filesystem, mount options, block-device geometry, and disk inventory;
+- capability-detected thermal sensors, fans, and GPU identity;
+- active-interface addressing, connection, route, and gateway;
+- aggregate socket counts without exposing remote endpoints;
+- system and user service-manager health plus a bounded failed-unit list.
+
+It runs every 15 seconds only while Performance is visible. The persistent
+two-second sample remains owned by `performance-live.sh`, while
+`performance-history.sh` retains the bounded five-minute visual history.
+
 ## Network status collector
 
 `scripts/network-status.sh` reads NetworkManager state through `nmcli` and
-emits schema version 1 JSON containing:
+emits schema version 2 JSON containing:
 
 - global state and connectivity;
 - networking and Wi-Fi radio state;
 - the primary non-loopback connection;
-- connected Wi-Fi and Ethernet summaries;
-- normalized device type, state, connection, IPv4 addresses, and gateway;
+- access-point identity, signal, band, channel, frequency, rate, and security;
+- a bounded nearby-network catalog grouped by SSID, preferring the active
+  radio and otherwise the strongest radio while retaining band/radio counts;
+- IPv4/IPv6, gateways, DNS, MTU, driver, firmware, carrier, and link speed;
+- saved Wi-Fi profile UUID, display name, SSID, active/autoconnect state, and
+  last-used timestamp without credentials;
+- hidden access-point count without pretending hidden radios are connectable
+  named networks;
+- separate association/route and NetworkManager connectivity evidence, with
+  explicit full-internet, captive-portal, limited, link-only, and offline
+  labels;
 - the complete interface inventory for Device Management.
 
 The collector is read-only. It never scans for networks, connects,
@@ -162,6 +225,78 @@ disconnects, changes radios, or reads saved credentials.
 The script returns structured errors for missing dependencies and an
 unavailable NetworkManager service.
 
+Eww polls every four seconds only while Network is visible.
+`scripts/network-action.sh` accepts only radio/networking toggles, validated
+disconnect, manual rescan, saved-profile activation/deactivation, autoconnect
+toggle, profile edit/create, confirmed profile deletion, and secure interactive
+connection. Every UUID, BSSID, and device is checked against current
+NetworkManager state before use.
+
+Saved profiles activate by UUID and never expose their stored authentication
+material. Unknown networks launch `nmcli --ask` in a dedicated Kitty process;
+the password travels directly from that terminal to NetworkManager and never
+enters an Eww variable, generated shell command, collector payload, or SenomyOS
+log. Profile creation/editing delegates to `nm-connection-editor`.
+
+Cached open networks use a separate validated no-secret action. NetworkManager
+may associate and obtain an address while reporting only site, portal, or
+limited connectivity. The UI must call that state linked, not online, and
+offer a browser-based captive-portal entry. An open hotspot does not request a
+Wi-Fi password; any login belongs to its browser portal.
+
+Radio disable, active disconnect, and profile deletion require an in-panel
+impact confirmation. Connecting to a selected network, changing autoconnect,
+manual refresh, and opening NetworkManager's editor are explicit immediate
+actions.
+
+The persistent Rail consumes `scripts/bar-network-listener.sh`, which emits a
+small current connection/radio summary at startup and again for each
+`nmcli monitor` event. It does not scan or build the nearby-network catalog.
+
+## Reports and user preferences
+
+`scripts/performance-report.sh` generates Overview, Performance, Network,
+Power, or Full evidence profiles from fixed read-only collectors. It writes an
+immutable mode-0600 text artifact and JSON sidecar manifest beneath
+`${XDG_STATE_HOME:-$HOME/.local/state}/senomyos/reports`, plus a mode-0600
+latest pointer. Insights previews at most 100 non-empty lines and indexes ten
+recent manifests. Credentials, unrestricted logs, saved network secrets, and
+environment dumps are excluded. The latest path may be copied or opened in a
+real Kitty/`less` pager only after the manifest path is revalidated beneath the
+report root.
+
+## Insights Console collector
+
+`scripts/console-status.sh` detects Kitty, tmux, Bash, Zsh, Fish, and
+PowerShell without installing anything. Ten in-panel task IDs map to fixed,
+read-only command implementations with an eight-second timeout, 80-line output
+limit, 260-character line width, home-path normalization, and sensitive-term
+redaction. The cache is mode 0600.
+
+The launcher accepts only allowlisted shell IDs and resolves executables with
+`command -v`. Available shells open in Kitty with a real PTY; free-form command
+text never crosses from Eww into a shell command.
+
+## Bluetooth device collector and actions
+
+`scripts/bluetooth-status.sh` reads the BlueZ controller and at most 30 cached
+devices through `bluetoothctl`. It reports power/discovery state, pairing,
+trust, connection, block state, RSSI, audio capability, and battery percentage
+only when BlueZ exposes the property. The collector never starts discovery or
+changes a device.
+
+`scripts/bluetooth-action.sh` accepts only fixed controller/device operations
+and strict MAC addresses. Scan is bounded to 12 seconds. Pairing uses BlueZ's
+`NoInputNoOutput` agent for devices such as earbuds; devices requiring PIN or
+keyboard confirmation fail visibly rather than bypassing authentication.
+Power-off, pairing, disconnect, and forget are confirmation-gated in Eww.
+Action state is private mode-0600 cache data and contains no pairing secrets.
+
+`scripts/settings-action.sh` accepts only the Rail density values `auto`,
+`standard`, `compact`, and `narrow`. It atomically writes a mode-0600 versioned
+preference under `${XDG_CONFIG_HOME}/senomyos/preferences.json` and publishes a
+fresh `bar-layout.sh` result. Packaged defaults remain untouched.
+
 ## Polling budget
 
 Persistent bar:
@@ -169,10 +304,17 @@ Persistent bar:
 - clock: 30–60s;
 - battery: 10–30s;
 - telemetry summary: 2–5s;
-- workspaces: preserve current listener until an event-driven replacement is
-  proven better.
+- workspaces: refresh after relevant Hyprland workspace/window events, republish
+  cached state every 10 seconds, and take a safety snapshot every 30 seconds;
 - ambient Senomy dialogue: select from the local catalog every 15 minutes;
   verified warnings override ambient dialogue in the presentation layer.
+
+The workspace listener validates an inherited
+`HYPRLAND_INSTANCE_SIGNATURE` against its event socket. If it is absent or
+stale, it selects the newest valid entry from `hyprctl instances -j`, exports
+that instance and Wayland socket for its child commands, and then connects to
+`.socket2.sock`. Failure remains explicit; systemd retries after two seconds
+without a permanent start-limit lockout.
 
 Control Centre:
 
@@ -182,23 +324,26 @@ Control Centre:
 
 Performance Dashboard:
 
-- CPU/RAM/network history: 1–2s while open;
-- processes: 3–5s while open;
-- storage and hardware inventory: 30–60s or manual;
+- synchronized current summary: 2s globally;
+- multidomain history: retain one point at most every 5s for 300s;
+- history cache reads: 2s only while Performance is visible;
+- processes: 3s only on the Processes page;
+- system and hardware inventory: 15s while Performance is open;
 - stop expensive collectors when the dashboard closes.
 
 Insights:
 
 - package source checks: explicit manual action;
 - update cache reads: 2s only while the Updates tab is visible;
+- local Markdown catalog: 3s only while the Wiki tab is visible;
 - maintenance and health summaries: derived from cached source records;
 - never run an AUR update check every few seconds.
 
 Applications:
 
-- the native Eww tray host remains instantiated by the persistent bar;
-- managed application status polls every two seconds only while Applications
-  is visible;
+- the native Eww tray host exists only while the tray flyout is visible;
+- managed application status polls every two seconds while Applications or the
+  tray flyout is visible;
 - service state, application D-Bus readiness, and tray registration remain
   separate evidence fields;
 - the registry supplies metadata only, while the action helper independently
@@ -218,10 +363,65 @@ Ambient selection never overrides verified critical, warning, recommended, or
 unavailable conditions. Those conditions are derived from successful system
 sources before the selected ambient line reaches the bar.
 
+## Senomy avatar catalog
+
+`data/senomy-avatars.json` is the portable source of avatar state metadata.
+Each allowlisted state contains an ID, label, emotion, activity, and relative
+paths for a chibi and portrait asset under `assets/senomy/`.
+
+`scripts/senomy-avatar.sh catalog` validates schema version 1, unique bounded
+state IDs, the default state, path containment, and readable referenced files.
+It emits absolute resolved paths only after validation. Eww polls this small
+local catalog every five seconds. No image data, state, or path is sent over
+the network.
+
+The helper also exposes `list`, `set STATE`, `reset`, and `show`. `set`
+independently validates the state before updating the ambient Eww
+`chibi_state`. Automatic battery, performance, and Insights states are
+centrally derived from their existing structured sources and do not overwrite
+that ambient value. Presentation surfaces never execute a path from widget
+text.
+
+## Insights Wiki collector
+
+`scripts/wiki-status.py catalog` reads UTF-8 `.md` files below `wiki/` and
+emits schema-version-1 JSON. It is implemented with the Python standard
+library and has no package or network dependency.
+
+The bounded contract permits at most 128 files, 256 KiB per file, 2 MiB total,
+2,500 lines per article, 320 rendered blocks, eight table columns, and 64 table
+rows. Symbolic-link files and names beginning with `_` are ignored. Supported
+front matter is limited to `title`, `category`, `category_order`, `order`, and
+`summary`.
+
+The rendered Markdown subset is:
+
+- headings levels one through three;
+- paragraphs and inline emphasis reduced to plain text;
+- ordered and unordered lists;
+- block quotes and horizontal rules;
+- fenced code blocks;
+- pipe tables;
+- `[label](article.md)` and `[[article|label]]` internal links.
+
+Internal targets are normalized and checked against the parsed catalog.
+Missing targets become visible unavailable links. External links are labelled
+but never opened. Images, HTML, scripts, GTK markup, and code execution are not
+supported. Eww polls every three seconds only while Insights Wiki is visible.
+
 ## Insights timeline collector
 
-`scripts/timeline-status.sh` provides a bounded, read-only Timeline source.
-Its allowlisted modes are `user`, `system`, `kernel`, and `eww`.
+`scripts/timeline-status.sh` provides bounded Timeline sources. Its allowlisted
+modes are `activity`, `session`, `system`, `kernel`, and `eww`. `session` is the
+user-level systemd journal; it is not presented as a record of everything the
+person does.
+
+`activity` reads the private mode-0600 journal written by
+`scripts/senomy-event.sh`. The journal retains at most 500 structured shell
+events such as surface transitions and section navigation. Categories, event
+names, targets, and outcomes are allowlisted tokens. It never accepts arbitrary
+command text and does not record keystrokes, file contents, websites, passwords,
+credentials, or unrestricted application activity.
 
 Journal records are reduced to an event ID, local date/time, normalized
 severity, source/unit, and message. Messages are capped at 240 characters,
@@ -233,7 +433,13 @@ Each result contains at most 40 entries by default and rejects limits above
 100. Eww maintains one source-specific poll per mode because Eww 0.5 poll
 commands cannot interpolate variables. `:run-while` ensures continued
 five-second polling applies only to the selected source while Insights
-Timeline is visible and Follow is enabled.
+Timeline is visible and Follow is enabled. Activity uses a two-second interval.
+If Eww creates an empty native cache log, Timeline reports that fact and points
+to a labeled `eww-interaction-bridge` sourced from the same structured Activity
+journal rather than representing the empty file as native daemon output.
+Project-owned daemon startup paths enable Eww's global `--debug` option so
+future daemon sessions populate the native source. Timeline still sanitizes and
+limits what reaches widget state; the native cache remains local to the user.
 
 ## Insights updates collector
 
