@@ -203,11 +203,6 @@
             :orientation "v"
             :space-evenly false
             :spacing 9
-            (senomy-avatar
-              :variant "portrait"
-              :size 52
-              :context "observer"
-              :domain "performance")
             (label
               :class "performance-observer-message"
               :xalign 0

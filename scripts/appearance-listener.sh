@@ -26,10 +26,10 @@ if command -v inotifywait >/dev/null 2>&1; then
 else
   signature="$(stat -c '%y:%s' "$PREFERENCES" 2>/dev/null || printf missing)"
   ticks=0
-  while sleep 0.10; do
+  while sleep 1; do
     next="$(stat -c '%y:%s' "$PREFERENCES" 2>/dev/null || printf missing)"
     ticks=$((ticks + 1))
-    if [[ "$next" != "$signature" || $ticks -ge 600 ]]; then
+    if [[ "$next" != "$signature" || $ticks -ge 60 ]]; then
       signature="$next"
       ticks=0
       emit

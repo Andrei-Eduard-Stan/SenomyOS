@@ -55,8 +55,21 @@ check "GTK stylesheet contract" bash -c '
   ! grep -qF "var(--" "$1/eww.scss" &&
     ! grep -R -nE "data\\?\\.phone[[:space:]]+\\?[[:space:]]+\"" "$1/windows" "$1/widgets" "$1/sections" >/dev/null
 ' _ "$CONFIG_DIR"
+check "Isolated Eww definitions" "$CONFIG_DIR/scripts/validate-eww-config.sh"
 check "Session startup contract" "$CONFIG_DIR/scripts/validate-startup-contract.sh"
+check "Eww client no-autostart contract" bash -c '
+  for file in \
+    start-eww.sh surface-state.sh ui-action.sh workspaces.sh \
+    audio-action.sh brightness-action.sh console-status.sh network-action.sh \
+    performance-action.sh power-action.sh senomy-avatar.sh \
+    senomy-rail-message.sh companion-state.sh screenshot-action.sh senomy-shellctl.sh \
+    validate-all-panels.sh validate-interactions.sh validate-eww-config.sh; do
+    grep -q -- "--no-daemonize" "$1/scripts/$file" || exit 1
+  done
+  ! grep -R -nE "\"\\\$EWW_BIN\" --config|\"\\\$EW\" --config|(^|[[:space:]])eww --config" "$1/scripts" >/dev/null
+' _ "$CONFIG_DIR"
 check "Rail behavior contracts" "$CONFIG_DIR/scripts/validate-rail-contracts.sh"
+check "Companion behavior contract" "$CONFIG_DIR/scripts/validate-companion-contract.sh"
 check "Action failure contracts" "$CONFIG_DIR/scripts/validate-action-contracts.sh"
 check "Surface data contracts" "$CONFIG_DIR/scripts/validate-data-contracts.sh"
 check "Insights action contracts" "$CONFIG_DIR/scripts/validate-insights-actions.sh"
@@ -65,9 +78,9 @@ check "Appearance action contracts" "$CONFIG_DIR/scripts/validate-appearance-act
 check "Git whitespace" git -C "$CONFIG_DIR" diff --check
 
 if [[ "$MODE" == --live ]]; then
-  check "Eww daemon" eww --config "$CONFIG_DIR" ping
+  check "Eww daemon" eww --no-daemonize --config "$CONFIG_DIR" ping
   check "Single main bar" bash -c '
-    windows="$(eww --config "$1" active-windows)"
+    windows="$(eww --no-daemonize --config "$1" active-windows)"
     [[ "$(grep -cE "^[^:]+: main-bar$" <<<"$windows")" -eq 1 ]]
   ' _ "$CONFIG_DIR"
   check "Surface state contract" bash -c '

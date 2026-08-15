@@ -14,15 +14,21 @@ Senomy Insights is a separate surface linked to the mascot and status message.
 Local concept references:
 
 - Obsidian Rail:
-  `/home/Duku/.codex/generated_images/019efbe2-8acc-7161-9f04-56c1f4427d98/call_6bGKGVkvKVHWcFhB5cnHaPwW.png`
+  `docs/design-references/obsidian-rail-approved.png`
 - Cathedral Deck:
-  `/home/Duku/.codex/generated_images/019efbe2-8acc-7161-9f04-56c1f4427d98/call_i4FThxr2wLdg5zgzVKPFSt5L.png`
+  `docs/design-references/cathedral-deck-approved.png`
+- Command Lens and File Workspace:
+  `docs/design-references/command-lens-rofi-thunar.png`
 - Original functional wireframes:
   `/home/Duku/Downloads/IHvCMvnv.jpg`,
   `/home/Duku/Downloads/E0sf21hK.jpg`,
   `/home/Duku/Downloads/uQWETAHL.jpg`
 
 The wireframes define features only. Do not reproduce their proportions.
+
+The approved launcher/file-manager direction is documented in
+`docs/LAUNCHER_FILE_MANAGER.md`. It extends the same token system into Rofi and
+GTK 3 while preserving their separate interaction and configuration models.
 
 ## Character
 
@@ -104,7 +110,8 @@ Initial targets:
 - touch-oriented control target: at least 44x44px, preferably 48x48px for
   frequently used actions;
 - bar outer padding: 8–12px;
-- Control Centre width: approximately 520–560px where space permits;
+- Control Centre width: approximately 888px on a wide desktop, capped to 94%
+  of the focused monitor and reflowed for compact/narrow profiles;
 - Control Centre gap above bar: 12–16px;
 - Performance Dashboard: broad relative width, capped to the work area;
 - panel corner radius: 4–6px;
@@ -117,7 +124,8 @@ then row separators only where scanning needs them.
 
 The bar has three visual groups:
 
-1. workspaces and Senomy identity;
+1. workspaces and one joined Senomy identity unit: avatar trigger plus adjacent
+   Insights dialogue;
 2. telemetry;
 3. controls and clock.
 
@@ -135,6 +143,11 @@ Hover should not move surrounding content.
 
 Hover is supplementary. Active state, tooltips, and essential explanations
 must remain available on devices that do not provide hover.
+
+The avatar and dialogue have separate interaction targets but no visual gap
+that makes them look unrelated. The avatar is the companion trigger and reads
+as the profile image for the dialogue; the dialogue remains the Insights
+trigger. No second Senomy portrait is added elsewhere in the Rail.
 
 Right-side rail controls share one 36px pointer rhythm. Tray, Applications,
 Audio, Network, and battery glyphs align to the same visual center. The rail
@@ -161,7 +174,8 @@ trigger, outside click, or Escape, and never grow into a second Control Centre.
 
 The Rail has three density modes derived from logical monitor width. Standard
 keeps the full Senomy dialogue, uptime, and two-row clock. Compact keeps the
-avatar and primary telemetry while removing secondary prose/date content.
+single avatar trigger and primary telemetry while removing secondary
+prose/date content.
 Narrow also removes uptime and tightens workspace/application padding. Core
 navigation, CPU, memory, audio, network, battery percentage, and time remain
 available in every mode.
@@ -183,6 +197,28 @@ Navigation may use a narrow labelled rail where width permits. On narrower
 layouts, use a compact section selector without exposing a second panel.
 
 Device Management replaces Performance in the navigation.
+
+The primary-surface masthead is shared by Control Centre, Performance, and
+Senomy Insights. Insights is the visual source of truth for hierarchy: an
+approximately 100px desktop header with eyebrow, title, wrapped description,
+compact evidence chips, and a 42px close target. It does not reserve character
+artwork. Compact, narrow, and phone profiles reduce padding and typography
+together; they do not return to unrelated utility-header proportions.
+
+## Senomy companion
+
+The companion owns the large character presentation. Expanded mode is a
+roughly 330px edge sidecar with a large bounded avatar, a concise observation,
+evidence source, and a route into Insights. Compact mode removes the opaque
+panel wall around the character and keeps only a tight transparent avatar
+stage with a small readable observation strip.
+
+Both modes expose close, minimize/expand, left/right edge switch, and session
+pin controls. The overlay remains above normal windows without requesting
+keyboard focus, a backdrop, or exclusive work-area reservation. It snaps to
+an edge rather than presenting a misleading free-drag affordance. Transparent
+pixels do not make GTK's rectangular input window disappear, so compact bounds
+must remain close to the visible artwork.
 
 ## Performance Dashboard
 
@@ -224,13 +260,15 @@ Insights should feel like a briefing prepared by the desktop:
 Severity uses text, icon shape, and restrained semantic colour together.
 Critical styling is reserved for verified critical conditions.
 
-The mascot is an identity asset, not an emoji. Final artwork should be produced
-as real image assets for compact chibi and larger portrait contexts. Every
-surface reads those paths from `data/senomy-avatars.json` through the shared
-`senomy-avatar` widget; no surface owns a private hard-coded mascot path.
+The mascot is an identity asset, not an emoji. Artwork is stored as real image
+assets for compact Rail and large companion contexts. Only the Rail trigger
+and companion read those paths from `data/senomy-avatars.json` through the
+shared `senomy-avatar` widget; primary headers and content cards use copy and
+status rather than duplicate character portraits. No component owns a private
+hard-coded mascot path.
 
-The initial state vocabulary is idle, focused, thinking, happy, warning, busy,
-and sleeping. State expresses presentation, not evidence. A warning avatar may
+The state vocabulary includes idle, focused, thinking, happy, warning, busy,
+sleeping, browsing, and music. State expresses presentation, not evidence. A warning avatar may
 only be selected automatically from a verified warning source, and decorative
 mood changes must never imply an unobserved system condition.
 
@@ -243,6 +281,13 @@ The Wiki route keeps the same shell and typography. Category tabs form a
 compact sub-navigation row, article titles form a narrow index, and Markdown
 blocks render as native Eww labels, lists, code surfaces, tables, and internal
 navigation buttons. It is documentation inside Insights, not a browser clone.
+
+The Notifications route uses a compact history ledger rather than imitating
+transient popup cards. Each entry keeps application, urgency, age, title, and
+bounded body hierarchy readable; critical state uses semantic colour without
+turning ordinary notifications into alarms. Provider, DND, retention, privacy,
+empty, and capture-not-connected states remain visible. Clearing history is a
+two-step action.
 
 ## Motion
 

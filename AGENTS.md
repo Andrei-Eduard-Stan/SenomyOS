@@ -78,17 +78,27 @@ The approved surface model is:
 
 - **Main bar:** based on the compact "Obsidian Rail" direction.
 - **Control Centre:** compact contextual panel for Overview, Network, Audio,
-  Power, Calendar, Input, Device Management, Applications, and Settings.
+  Power, Calendar, Input, Device Management, Applications, Appearance, and
+  Settings.
 - **Performance Dashboard:** a separate, expanded system-management surface
   based on the "Cathedral Deck" direction. It opens from the CPU/MEM/UP
   telemetry labels, not from a Control Centre Performance tab.
 - **Senomy Insights:** a separate, first-class system briefing opened from the
   Senomy identity/message area. It must not be omitted or treated as a generic
-  chatbot.
+  chatbot. Its stable routes are Briefing, Notifications, Timeline, Updates,
+  Diagnostics, Console, Reports, and Wiki.
+- **Senomy companion:** a non-primary edge overlay opened from the Rail avatar.
+  The avatar is a separate control immediately beside the Insights dialogue,
+  so the pair still reads as one profile-and-message unit. Primary panel
+  headers and content cards do not reserve duplicate character artwork.
 
 Only one primary surface should be active at a time:
 
 `none`, `control`, `performance`, or `insights`.
+
+The companion is not a fifth primary surface. Its `closed`, `expanded`, and
+`compact` modes may coexist with one primary surface; pinning applies only to
+the current companion session and prevents its timed collapse.
 
 Device Management replaces Performance in the Control Centre. It covers
 connected monitors, audio endpoints, input devices, batteries, network
@@ -145,6 +155,9 @@ commit.
 - Provide hover, active, disabled, loading, empty, warning, and error states.
 - Icon-only controls need tooltips or accessible labels and useful click
   targets.
+- Senomy avatar assets may be SVG, PNG, JPG/JPEG, or GIF. Animated GIFs must be
+  bounded and rendered through context-sized cached variants rather than
+  decoded at unbounded source size.
 - Make primary controls usable by pointer, keyboard, and touch. Gesture-only
   behavior must have a visible alternative.
 

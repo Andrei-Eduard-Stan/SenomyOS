@@ -41,21 +41,23 @@
     (box
       :class "performance-kpi-head"
       :space-evenly false
-      (label :class "performance-kpi-code" :text code)
+      (label :class "performance-kpi-code" :show-truncated false :text code)
       (label
         :class "performance-kpi-label"
         :xalign 1
         :hexpand true
+        :show-truncated false
         :text label))
     (label
       :class "performance-kpi-value"
       :xalign 0
+      :show-truncated false
       :text value)
     (label
       :class "performance-kpi-detail"
       :xalign 0
-      :limit-width 34
-      :show-truncated true
+      :wrap true
+      :show-truncated false
       :text detail)))
 
 (defwidget performance-meter [label value value_text tone]

@@ -38,7 +38,7 @@ mkdir -p "$RUNTIME_ROOT" || fail "Unable to create runtime directory"
 exec 9>"$LOCK_FILE" || fail "Unable to open screenshot lock"
 flock -n 9 || exit 0
 
-if "$EWW_BIN" --config "$EWW_CONFIG" --no-daemonize ping >/dev/null 2>&1; then
+if "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" ping >/dev/null 2>&1; then
   "$SURFACE_STATE" dismiss ||
     fail "Unable to close the active SenomyOS surface"
 fi

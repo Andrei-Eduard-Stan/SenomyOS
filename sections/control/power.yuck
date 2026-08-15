@@ -244,12 +244,7 @@
           (box
             :class "power-senomy-brief"
             :space-evenly false
-            :spacing 16
-            (senomy-avatar
-              :variant "chibi"
-              :size 104
-              :context "power"
-              :domain "battery")
+            :spacing 0
             (box
               :orientation "v"
               :space-evenly false

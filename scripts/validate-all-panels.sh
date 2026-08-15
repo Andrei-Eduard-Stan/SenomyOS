@@ -17,8 +17,8 @@ trap cleanup EXIT
 health() {
   local attempt
   for attempt in {1..30}; do
-    if timeout 1s "$EWW_BIN" --config "$CONFIG_DIR" ping >/dev/null 2>&1 \
-      && timeout 1s "$EWW_BIN" --config "$CONFIG_DIR" active-windows 2>/dev/null | grep -q ': main-bar$'; then
+    if timeout 1s "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" ping >/dev/null 2>&1 \
+      && timeout 1s "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" active-windows 2>/dev/null | grep -q ': main-bar$'; then
       return 0
     fi
     sleep 0.1
@@ -30,7 +30,7 @@ expect_window() {
   local window="$1" snapshot attempt
   for attempt in {1..30}; do
     health
-    snapshot="$(timeout 10s "$EWW_BIN" --config "$CONFIG_DIR" active-windows)"
+    snapshot="$(timeout 10s "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" active-windows)"
     grep -qE "^[^:]+: ${window}$" <<<"$snapshot" && return 0
     sleep 0.1
   done
@@ -41,7 +41,7 @@ expect_window_absent() {
   local window="$1" snapshot attempt
   for attempt in {1..30}; do
     health
-    snapshot="$(timeout 10s "$EWW_BIN" --config "$CONFIG_DIR" active-windows)"
+    snapshot="$(timeout 10s "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" active-windows)"
     if ! grep -qE "^[^:]+: ${window}$" <<<"$snapshot"; then
       return 0
     fi
@@ -54,7 +54,7 @@ expect_value() {
   local variable="$1" expected="$2" attempt
   for attempt in {1..30}; do
     health
-    [[ "$(timeout 10s "$EWW_BIN" --config "$CONFIG_DIR" get "$variable")" == "$expected" ]] && return 0
+    [[ "$(timeout 10s "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" get "$variable")" == "$expected" ]] && return 0
     sleep 0.1
   done
   return 1
@@ -77,7 +77,7 @@ done
 "$SURFACE" show-insights briefing
 expect_window insights
 pass "Control -> Insights switch"
-for section in timeline updates diagnostics console reports wiki; do
+for section in notifications timeline updates diagnostics console reports wiki; do
   "$UI" insights-section "$section"
   expect_value insights_section "$section"
   expect_window insights

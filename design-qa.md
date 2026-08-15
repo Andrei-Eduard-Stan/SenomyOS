@@ -1,96 +1,104 @@
-# Performance Dashboard Design QA
+# Primary Surface Masthead Design QA
 
-## Scope
+## Visual source of truth
 
-- Reference images:
-  - `/home/Duku/.codex/attachments/68a8b940-4c30-46b5-a674-68fcf8fb4f5c/image-1.png`
-  - `/home/Duku/.codex/attachments/68a8b940-4c30-46b5-a674-68fcf8fb4f5c/image-2.png`
-- Implemented surface: `performance`
-- Native implementation: Eww/Yuck/SCSS on Hyprland
-- Verification viewport: 1920x1080 on `eDP-1`
-- Implementation screenshot: `/tmp/senomy-performance-dashboard-final-2.png`
-- Final comparison: `/tmp/senomy-performance-final-comparison.png`
+- Canonical masthead reference: `/home/Duku/Downloads/iAalFCH_.jpg`
+  (`1542x2047`, photographed desktop). The Senomy Insights masthead defines the
+  approved avatar, hierarchy, status chips, close target, padding, and spacing.
+- Previous Control Centre problem reference:
+  `/home/Duku/Downloads/DSYdb8Pj.jpg` (`2048x1542`).
+- Previous Performance problem reference:
+  `/home/Duku/Downloads/Bmnq-SBe.jpg` (`2048x1542`).
 
-## Comparison Method
+## Implementation captures
 
-The source panel was normalized from a `1334x430+181+392` crop. The final
-implementation was normalized from a `1613x518+154+505` crop. Both were resized
-to 1500 pixels wide and vertically appended for a direct visual comparison.
+- Control Centre / Overview:
+  `/tmp/senomy-control-overview-20260813.png` (`888x700`).
+- Control Centre / Power, fresh open:
+  `/tmp/senomy-control-power-fresh-20260813.png` (`888x700`).
+- Control Centre / Power, after an in-place Overview-to-Power switch:
+  `/tmp/senomy-control-power-switch-final-20260813.png` (`888x700`).
+- Performance Dashboard:
+  `/tmp/senomy-performance-header-20260813.png` (`1804x885`).
+- Senomy Insights / Wiki:
+  `/tmp/senomy-insights-wiki-20260813.png` (`750x700`).
 
-The implementation was captured with the Performance Dashboard open, the main
-bar visible, and real local telemetry active. The panel was then exercised
-through its live coordinator rather than inspected as a static mock.
+All captures came from the focused `eDP-1` compositor workspace at 1920x1080
+logical pixels and scale 1. They are exact 1:1 window captures rather than
+photographs, so their top masthead regions are already readable at original
+resolution and no additional focused crop is needed.
 
-## Fidelity Review
+## Full-view comparison
 
-- Typography: the existing SenomyOS JetBrains Mono family preserves the
-  reference's narrow terminal character while remaining consistent with the
-  rest of the shell. Header and table labels no longer truncate.
-- Composition: CPU and memory telemetry, process inspection, system health,
-  dual batteries, and the Senomy observer rail reproduce the reference's four
-  primary information regions.
-- Proportions: the first implementation was too tall at 52 percent of the work
-  area. It was reduced to 48 percent to match the reference's broad, low
-  Cathedral Deck silhouette more closely.
-- Color: the shell uses the approved SenomyOS periwinkle accent instead of
-  copying the reference's red accent. Green is reserved for truthful live and
-  battery state rather than general decoration.
-- Content: displayed CPU, memory, processes, host, kernel, packages, storage,
-  temperature, and battery values come from local collectors. Missing data is
-  represented as unavailable; no telemetry is fabricated.
-- Navigation: the reference's Control Centre navigation row is intentionally
-  omitted. The approved product model makes Performance a separate surface
-  opened by CPU/MEM/UP, not a Control Centre tab.
-- Senomy art: the `S` observer mark is an explicitly approved temporary
-  placeholder while the user prepares the final Senomy character asset.
+The canonical Insights reference and all five implementation captures were
+reviewed together, then each implementation was inspected at original
+resolution. The implemented surfaces share:
 
-## Interaction Review
+- a 126px masthead with the same outer padding and border treatment;
+- a 108px identity block containing a bounded 102px context avatar;
+- one eyebrow, one primary title, one wrapping subtitle, and a status-chip row;
+- a consistent 42px close target aligned at the far right;
+- shared compact, narrow, and phone-sized responsive reductions.
 
-- CPU/MEM/UP opens the Performance Dashboard through the shared surface
-  coordinator.
-- The close control dismisses the dashboard through the same coordinator.
-- `INSPECT` transfers to Senomy Insights diagnostics without overlapping
-  primary surfaces.
-- The global non-consuming Escape dispatcher closes Performance, Insights, the
-  Control Centre, and transient flyouts while leaving Escape available to the
-  focused application.
-- Opening any primary surface closes the previous primary surface and any
-  transient flyout.
-- Native runtime checks replaced browser-console checks because this is a GTK
-  desktop shell, not a web application.
+Copy, avatar state, status data, and total window width intentionally remain
+surface-specific. These are product distinctions, not visual drift.
 
-## Iterations
+## Focused findings
 
-- P2: long headings were truncated. Fixed with explicit expansion and
-  `show-truncated false`.
-- P2: the first panel was visibly taller than the reference and the memory
-  graph used semantic green decoratively. Fixed by reducing the panel height
-  from 52 to 48 percent and using the neutral telemetry treatment.
-- Post-fix comparison: no actionable P0, P1, or P2 visual issue remains.
-- Accepted P3 follow-up: replace the temporary `S` observer mark after the
-  final Senomy asset is supplied.
+- P0: none.
+- P1: none.
+- P2: none.
+- P3: the source reference is an angled photo of an earlier Insights state, so
+  exact pixel comparison is not meaningful. Structural spacing and hierarchy
+  were used as the source of truth; current tokens and live data were retained.
 
-## 2026-07-28 Rail, Tray, And History Follow-up
+## Comparison history
 
-- Main-bar capture: `/tmp/senomy-mainbar-icons-svg-crop.png`
-- Tray capture: `/tmp/senomy-tray-popup-crop.png`
-- Retained-history capture: `/tmp/senomy-performance-history-final.png`
-- Final single-bar capture: `/tmp/senomy-single-daemon-bottom.png`
-- Theme-icon images parsed but painted transparently on the installed Eww
-  0.5.0 build. The final rail uses repository-owned SVGs in exact 16x16 image
-  boxes, and arrow, Applications, volume, Wi-Fi, and battery share one vertical
-  centerline.
-- The inline native tray was replaced by one arrow-triggered overflow. Live
-  Flameshot registration was present on first open and after close/reopen.
-- CPU and memory history now comes from a five-minute runtime cache rather than
-  window-local Eww graph state. Forty-seven retained points loaded immediately
-  after opening, and an older sample remained after close/restart/reopen.
-- Initial vertical bars filled downward. `flipped=true` corrected both series
-  to grow upward from their common baseline.
-- One IPC race during QA created a second daemon and duplicated the bar. The
-  older PID was terminated gracefully; final visual and process checks showed
-  one daemon and one bar. Ordinary coordinator calls were then hardened with
-  `--no-daemonize` and a timeout; a post-fix tray transition retained that
-  single-daemon state.
+1. Initial comparison found two P1 issues: Control Centre and Performance used
+   compact, unrelated headers, and Power expanded Control Centre from 751px to
+   888px.
+2. A shared masthead widget and explicit 888px Control Centre geometry were
+   implemented. Fresh-open captures matched the target structure.
+3. The first automated in-place Power capture was taken during Eww's redraw
+   and showed temporary clipping. A later Overview-to-Power switch capture was
+   clean and remained `888x700`, so no persistent defect remained.
 
-final result: passed
+## Primary interaction coverage
+
+- Opened each of the three primary surfaces through the guarded surface-state
+  path and confirmed mutual exclusivity.
+- Switched through all ten Control Centre routes; every route measured
+  `888x700` at the same compositor position.
+- Repeated the important Overview-to-Power in-place switch and confirmed no
+  width jump or lasting clipping.
+- Inspected the current Insights Wiki catalog and article rendering.
+- Confirmed one live Eww daemon and one Obsidian Rail after guarded recovery.
+
+masthead result: passed
+
+# Senomy Companion Design QA
+
+## Selected visual source
+
+- Current desktop reference: `/tmp/senomy-companion-current-desktop.png`
+  (`1920x1080`).
+- Selected edge-sidecar direction:
+  `/home/Duku/.codex/generated_images/019efbe2-8acc-7161-9f04-56c1f4427d98/exec-2c20d8f9-224f-426d-8ac6-2b095e92f6df.png`.
+- Transparent music-state artwork source:
+  `/home/Duku/.codex/generated_images/019efbe2-8acc-7161-9f04-56c1f4427d98/exec-4723fc19-f467-4473-b4d2-1ce231ddf3e8.png`.
+
+The selected direction shows exactly one Rail avatar separated from, but
+visually joined to, the adjacent Insights dialogue. The expanded companion is
+an edge sidecar; compact mode keeps a large transparent character presentation
+without reserving permanent work area.
+
+## Pending live comparison
+
+Static implementation and contract checks must pass before the guarded live
+reload. After reload, capture the Rail identity, expanded companion, compact
+companion, left/right edge states, music reaction where MPRIS is available, and
+coexistence with each primary surface. Compare the captures together with the
+selected source at the same desktop viewport, then record and fix visible
+spacing, clipping, input-region, hierarchy, and responsive issues.
+
+final result: blocked — awaiting user-approved guarded live reload and visual comparison

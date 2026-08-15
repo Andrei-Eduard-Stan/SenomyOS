@@ -28,80 +28,27 @@
     :orientation "v"
     :space-evenly false
 
-    (box
-      :class "performance-header shell-header"
-      :space-evenly false
-      :vexpand false
-      (label :class "performance-header-mark" :text "󰓅")
-      (box
-        :class "shell-heading"
-        :orientation "v"
-        :space-evenly false
-        :hexpand true
-        (box
-          :space-evenly false
-          :spacing 9
-          (label
-            :class "shell-title"
-            :show-truncated false
-            :text "SYSTEM DECK")
-          (label
-            :class "performance-title-divider"
-            :show-truncated false
-            :text "//")
-          (label
-            :class "performance-title-accent"
-            :show-truncated false
-            :text "DEEP PERFORMANCE"))
-        (label
-          :class "shell-subtitle"
-          :xalign 0
-          :text "Synchronized kernel telemetry, retained history and truthful hardware inventory"))
-      (box
-        :class "performance-header-facts"
-        :space-evenly false
-        :spacing 12
-        (box
-          :orientation "v"
-          :space-evenly false
-          (label :class "performance-header-fact-label" :xalign 1 :text "HOST")
-          (label
-            :class "performance-header-fact-value"
-            :xalign 1
-            :text {performance_status?.data?.health?.hostname ?: "--"}))
-        (box
-          :orientation "v"
-          :space-evenly false
-          (label :class "performance-header-fact-label" :xalign 1 :text "UPTIME")
-          (label
-            :class "performance-header-fact-value"
-            :xalign 1
-            :text {system_status?.data?.uptime?.human ?: "--"})))
-      (box
-        :class "performance-live-state"
-        :space-evenly false
-        :spacing 7
-        (label
-          :class {system_status?.ok == true
-            ? "performance-live-dot"
-            : "performance-live-dot error"}
-          :text "●")
-        (box
-          :orientation "v"
-          :space-evenly false
-          (label :class "performance-live-label" :xalign 0 :text "LIVE")
-          (label
-            :class "performance-live-detail"
-            :xalign 0
-            :text {system_status?.ok == true
-              ? "${system_status.data.cpu.sample_seconds}S SAMPLE"
-              : "SOURCE ERROR"})))
-      (button
-        :class "performance-close shell-close"
-        :tooltip "Close Performance Dashboard"
-        :timeout "8s"
-        :onclick "$HOME/.config/eww/scripts/surface-state.sh close performance ${active_surface} ${active_flyout}"
-        ""))
+    (surface-hero-header
+      :surface_class "performance-header"
+      :domain "performance"
+      :eyebrow "SYSTEM DECK // DEEP PERFORMANCE"
+      :title "PERFORMANCE DASHBOARD"
+      :subtitle "Synchronized kernel telemetry, retained history and truthful hardware inventory"
+      :close_tooltip "Close Performance Dashboard"
+      :close_action "$HOME/.config/eww/scripts/surface-state.sh close performance ${active_surface} ${active_flyout}"
+      (label
+        :class {system_status?.ok == true
+          ? "shell-hero-chip ready"
+          : "shell-hero-chip warning"}
+        :text {system_status?.ok == true
+          ? "LIVE // ${system_status.data.cpu.sample_seconds}S SAMPLE"
+          : "SOURCE ERROR"})
+      (label
+        :class "shell-hero-chip secondary"
+        :text "HOST // ${performance_status?.data?.health?.hostname ?: "--"}")
+      (label
+        :class "shell-hero-chip secondary"
+        :text "UP // ${system_status?.data?.uptime?.human ?: "--"}"))
 
     (scroll
       :class "performance-tabs-scroll"

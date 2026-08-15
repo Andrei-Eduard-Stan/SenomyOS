@@ -7,31 +7,57 @@
     :hexpand true
     (box :class "performance-page benchmark-page" :orientation "v" :space-evenly false :spacing 14
       (box :class "performance-card benchmark-hero" :orientation "v" :space-evenly false
-        (performance-section-title :code "B01" :title "BOUNDED SYSTEM BENCHMARK" :subtitle "Local, reproducible workloads with retained evidence")
+        (performance-section-title :code "B01" :title "BOUNDED SYSTEM CONFIDENCE SUITE" :subtitle "Finite local stress, safety telemetry and retained evidence")
         (box :class "benchmark-body" :orientation "v" :space-evenly false :spacing 10
           (label :class "benchmark-copy" :xalign 0 :wrap true
-            :text "Tests CPU hashing, memory buffering, compression, temporary-file I/O and process-launch responsiveness. The run is finite, uses no network or root access, and removes its 128 MiB scratch file.")
+            :text "Exercises sustained single- and multi-worker CPU hashing, native memory writes, compression, bounded temporary storage I/O and process-launch responsiveness. It uses no network, root access or package installation.")
+          (label :class "benchmark-warning" :xalign 0 :wrap true
+            :text "EXPECT HEAT AND FAN NOISE. Each workload is time-bounded and watched against a 95 C thermal stop. Connect power first; the suite refuses to begin below 25% while discharging.")
           (box :class "benchmark-stage-row" :space-evenly false
-            (label :class "benchmark-state ${benchmark_status?.data?.state ?: "idle"}" :xalign 0 :text {benchmark_status?.data?.state_label ?: "READY"})
+            (label :class "benchmark-state ${benchmark_status?.data?.state ?: "idle"}" :xalign 0 :show-truncated false :text {benchmark_status?.data?.state_label ?: "READY"})
             (label :class "benchmark-stage" :xalign 1 :hexpand true :text {benchmark_status?.data?.stage ?: "none"}))
           (progress :class "benchmark-progress" :value {benchmark_status?.data?.progress ?: 0})
           (label :class "benchmark-message" :xalign 0 :wrap true :text {benchmark_status?.data?.message ?: "Benchmark status is loading."})
           (box :class "benchmark-actions" :space-evenly false :spacing 8
-            (button :class {pending_action == "benchmark-start" ? "performance-process-action confirm" : "performance-process-action"}
+            (button :class {pending_action == "benchmark-quick" ? "performance-process-action confirm" : "performance-process-action"}
               :visible {benchmark_status?.data?.state != "running"}
-              :onclick {pending_action == "benchmark-start" ? "$HOME/.config/eww/scripts/benchmark-action.sh start && ${EWW_CMD} update pending_action=none" : "${EWW_CMD} update pending_action=benchmark-start"}
-              {pending_action == "benchmark-start" ? "CONFIRM 30-60S RUN" : "RUN SUITE"})
-            (button :class "performance-process-action quiet" :visible {pending_action == "benchmark-start"} :onclick "${EWW_CMD} update pending_action=none" "CANCEL CONFIRMATION")
-            (button :class "performance-process-action danger" :visible {benchmark_status?.data?.state == "running"} :onclick "$HOME/.config/eww/scripts/benchmark-action.sh cancel" "STOP SAFELY"))))
+              :onclick {pending_action == "benchmark-quick" ? "$HOME/.config/eww/scripts/benchmark-action.sh start quick && ${EWW_CMD} update pending_action=none" : "${EWW_CMD} update pending_action=benchmark-quick"}
+              {pending_action == "benchmark-quick" ? "CONFIRM ~70S QUICK RUN" : "QUICK SUITE"})
+            (button :class {pending_action == "benchmark-standard" ? "performance-process-action confirm" : "performance-process-action"}
+              :visible {benchmark_status?.data?.state != "running"}
+              :onclick {pending_action == "benchmark-standard" ? "$HOME/.config/eww/scripts/benchmark-action.sh start standard && ${EWW_CMD} update pending_action=none" : "${EWW_CMD} update pending_action=benchmark-standard"}
+              {pending_action == "benchmark-standard" ? "CONFIRM ~210S STANDARD RUN" : "STANDARD SUITE"})
+            (button :class "performance-process-action quiet"
+              :visible {pending_action == "benchmark-quick" || pending_action == "benchmark-standard"}
+              :onclick "${EWW_CMD} update pending_action=none" "CANCEL CONFIRMATION")
+            (button :class "performance-process-action danger" :visible {benchmark_status?.data?.state == "running"}
+              :onclick "$HOME/.config/eww/scripts/benchmark-action.sh cancel" "STOP SAFELY"))))
+
+      (box :class "performance-card benchmark-results-card" :orientation "v" :space-evenly false
+        (performance-section-title :code "B02" :title "LATEST RESULTS" :subtitle "Comparable measurements from the most recent completed suite")
+        (box :class "benchmark-results-grid" :orientation "v" :space-evenly false :spacing 3
+          (performance-stat-row :label "Profile / workers" :value {"${benchmark_status?.data?.results?.profile ?: "Not run"} / ${benchmark_status?.data?.results?.workers ?: "--"}"})
+          (performance-stat-row :label "CPU SHA-256 single" :value {(benchmark_status?.data?.results?.cpu?.single_sha256_mib_s ?: -1) >= 0 ? "${benchmark_status.data.results.cpu.single_sha256_mib_s} MiB/s" : "Not measured"})
+          (performance-stat-row :label "CPU SHA-256 multi" :value {(benchmark_status?.data?.results?.cpu?.multi_sha256_mib_s ?: -1) >= 0 ? "${benchmark_status.data.results.cpu.multi_sha256_mib_s} MiB/s" : "Not measured"})
+          (performance-stat-row :label "Native memory write" :value {(benchmark_status?.data?.results?.memory?.native_write_mib_s ?: -1) >= 0 ? "${benchmark_status.data.results.memory.native_write_mib_s} MiB/s" : "Not measured"})
+          (performance-stat-row :label "gzip level 1" :value {(benchmark_status?.data?.results?.compression?.gzip_level1_mib_s ?: -1) >= 0 ? "${benchmark_status.data.results.compression.gzip_level1_mib_s} MiB/s" : "Not measured"})
+          (performance-stat-row :label "Storage write / read" :value {(benchmark_status?.data?.results?.storage?.write_mib_s ?: -1) >= 0 ? "${benchmark_status.data.results.storage.write_mib_s} / ${benchmark_status.data.results.storage.read_mib_s} MiB/s" : "Not measured"})
+          (performance-stat-row :label "Process launch average" :value {(benchmark_status?.data?.results?.responsiveness?.process_launch_ms ?: -1) >= 0 ? "${benchmark_status.data.results.responsiveness.process_launch_ms} ms" : "Not measured"})
+          (performance-stat-row :label "Maximum CPU temperature" :value {(benchmark_status?.data?.results?.telemetry?.temperature?.max_c ?: -1) >= 0 ? "${benchmark_status.data.results.telemetry.temperature.max_c} C" : "Sensor unavailable"})))
+
       (box :class "performance-card benchmark-log-card" :orientation "v" :space-evenly false
-        (performance-section-title :code "B02" :title "LIVE EXECUTION LOG" :subtitle "Timestamped stages and measured results")
+        (performance-section-title :code "B03" :title "LIVE EXECUTION LOG" :subtitle "Timestamped stages, safety stops and measured results")
         (box :class "benchmark-log" :orientation "v" :space-evenly false :spacing 5
           (label :class "benchmark-log-empty" :visible {(benchmark_status?.data?.logs ?: []) == []} :xalign 0 :text "No benchmark log is available yet.")
           (for line in {benchmark_status?.data?.logs ?: []}
-            (label :class "benchmark-log-line" :xalign 0 :text line))))
+            (label :class "benchmark-log-line" :xalign 0 :wrap true :text line))))
+
       (box :class "performance-card benchmark-report-card" :orientation "v" :space-evenly false
-        (performance-section-title :code "B03" :title "RETAINED REPORT" :subtitle "Markdown source and dependency-free PDF export")
+        (performance-section-title :code "B04" :title "TOP-GRADE EVIDENCE REPORT" :subtitle "Results, thermals, topology, devices, storage, platform and methodology")
         (box :class "benchmark-report-body" :orientation "v" :space-evenly false :spacing 7
           (performance-stat-row :label "Markdown" :value {benchmark_status?.data?.markdown_path != "" ? benchmark_status.data.markdown_path : "Not generated"})
           (performance-stat-row :label "PDF" :value {benchmark_status?.data?.pdf_path != "" ? benchmark_status.data.pdf_path : "Not generated"})
-          (label :class "benchmark-copy" :xalign 0 :wrap true :text "Reports are private (mode 600) and persist under XDG state after the dashboard closes or Eww restarts."))))))
+          (label :class "benchmark-copy" :xalign 0 :wrap true
+            :text "Reports are private (mode 600), include checksums, and persist under XDG state. Serial numbers, network addresses, credentials and unrestricted logs are excluded.")
+          (button :class "performance-process-action" :visible {benchmark_status?.data?.markdown_path != ""}
+            :onclick "$HOME/.config/eww/scripts/benchmark-action.sh open-latest" "OPEN REPORT"))))))

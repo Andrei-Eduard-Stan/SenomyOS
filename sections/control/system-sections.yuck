@@ -74,7 +74,6 @@
       (network-metric :label "INTERNET" :value {network_status?.data?.internet?.label ?: "CHECKING"} :detail {network_status?.data?.primary?.connection ?: "No primary route"})
       (network-metric :label "POWER" :value {batt_json.available == true ? "${batt_json.percent_total}%" : "N/A"} :detail {batt_json.available == true ? batt_json.state : (batt_json.error ?: "No battery detected")}))
     (box :class "control-tech-brief" :space-evenly false :spacing 14
-      (senomy-avatar :variant "chibi" :size 74 :context "overview" :domain "ambient")
       (box :orientation "v" :space-evenly false :valign "center" :spacing 4
         (label :class "control-tech-code" :xalign 0 :text "SENOMY // SYSTEM BRIEF")
         (label :class "control-tech-brief-copy" :xalign 0 :wrap true :text "Seno: Workspace ${control_status?.data?.session?.workspace ?: "--"} has ${control_status?.data?.session?.window_count ?: 0} window${(control_status?.data?.session?.window_count ?: 0)==1 ? "" : "s"}. ${network_status?.data?.internet?.online == true ? "Global connectivity is verified." : "Network access needs attention."}")))

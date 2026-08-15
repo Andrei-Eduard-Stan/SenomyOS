@@ -563,10 +563,10 @@ build_once() {
 publish_cached() {
   [[ -n "$cached_json" ]] || return 1
 
-  "$EWW_BIN" --config "$EWW_CONFIG" ping >/dev/null 2>&1 ||
+  "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" ping >/dev/null 2>&1 ||
     return 1
 
-  if "$EWW_BIN" --config "$EWW_CONFIG" update \
+  if "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" update \
     "workspaces=$cached_text" \
     "workspace_state=$cached_json" >/dev/null 2>&1; then
     last_published_text="$cached_text"
@@ -575,7 +575,7 @@ publish_cached() {
   fi
 
   # Preserve the legacy label while Eww is still loading an older config.
-  if "$EWW_BIN" --config "$EWW_CONFIG" update \
+  if "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" update \
     "workspaces=$cached_text" >/dev/null 2>&1; then
     last_published_text="$cached_text"
   fi

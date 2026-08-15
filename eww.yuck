@@ -2,6 +2,7 @@
 
 (include "widgets/bar-icon.yuck")
 (include "widgets/senomy-avatar.yuck")
+(include "widgets/surface-header.yuck")
 (include "widgets/workspace-widget.yuck")
 (include "widgets/system-widget.yuck")
 (include "widgets/volume-widget.yuck")
@@ -15,6 +16,7 @@
 ; Include section content --
 
 (include "sections/insights/briefing.yuck")
+(include "sections/insights/notifications.yuck")
 (include "sections/insights/timeline.yuck")
 (include "sections/insights/updates.yuck")
 (include "sections/insights/diagnostics.yuck")
@@ -43,6 +45,7 @@
 (include "windows/volume-flyout.yuck")
 (include "windows/tray-flyout.yuck")
 (include "windows/performance-dashboard.yuck")
+(include "windows/companion.yuck")
 (include "windows/main-bar.yuck")
 
 ; Variables --
@@ -52,7 +55,7 @@
 (defvar active_flyout "none") ; none|volume|tray
 (defvar dismiss_armed false) ; release guard for the shared outside-click layer
 (defvar control_section "overview") ; overview|network|audio|power|calendar|input|devices|apps|appearance|settings
-(defvar insights_section "briefing") ; briefing|timeline|updates|diagnostics|console|reports|wiki
+(defvar insights_section "briefing") ; briefing|notifications|timeline|updates|diagnostics|console|reports|wiki
 (defvar performance_section "overview") ; overview|cpu|memory|storage|network|processes|benchmarks
 (defvar timeline_source "activity") ; activity|session|system|kernel|eww
 (defvar timeline_follow true)
@@ -65,11 +68,18 @@
 (defvar performance_process_sort "cpu") ; cpu|memory|name
 (defvar performance_process_filter "all") ; all|user|active|heavy
 (defvar selected_process_pid 0)
+(defvar companion_mode "closed") ; closed|expanded|compact
+(defvar companion_dock "right") ; left|right
+(defvar companion_pinned false) ; session pin; prevents timed collapse
 
 (defpoll senomy_avatar_catalog
   :interval "60s"
   :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"default_state\":\"idle\",\"states\":[]},\"error\":{\"code\":\"loading\",\"message\":\"Senomy avatar assets are loading\"}}"
   "/usr/bin/env sh -c 'config=$SENOMY_EWW_CONFIG; if [ -z \"$config\" ]; then base=$XDG_CONFIG_HOME; [ -n \"$base\" ] || base=$HOME/.config; config=$base/eww; fi; exec \"$config/scripts/senomy-avatar.sh\" catalog'")
+(defpoll companion_media
+  :interval "3s"
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"provider_available\":false,\"session_available\":false,\"playing\":false,\"status\":\"stopped\",\"player\":\"\",\"artist\":\"\",\"title\":\"\",\"message\":\"Media status is loading.\"},\"error\":null}"
+  "$HOME/.config/eww/scripts/companion-media.sh")
 (defpoll wiki_catalog
   :interval "3s"
   :run-while {active_surface == "insights" && insights_section == "wiki"}
@@ -175,7 +185,7 @@
 (defpoll benchmark_status
   :interval "500ms"
   :run-while {active_surface == "performance" && performance_section == "benchmarks"}
-  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"progress\":0,\"stage\":\"none\",\"message\":\"Benchmark status is loading.\",\"started_at\":0,\"finished_at\":0,\"markdown_path\":\"\",\"pdf_path\":\"\",\"logs\":[]},\"error\":null}"
+  :initial "{\"schema_version\":2,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"progress\":0,\"stage\":\"none\",\"message\":\"Benchmark status is loading.\",\"profile\":\"none\",\"estimated_seconds\":0,\"thermal_limit_c\":95,\"started_at\":0,\"finished_at\":0,\"markdown_path\":\"\",\"pdf_path\":\"\",\"results\":{},\"logs\":[]},\"error\":null}"
   "$HOME/.config/eww/scripts/benchmark-status.sh")
 (defpoll performance_process_detail
   :interval "2s"
@@ -189,6 +199,11 @@
 (deflisten senomy_rail_message
   :initial "Everything looks steady."
   "$HOME/.config/eww/scripts/senomy-rail-message.sh")
+(defpoll notification_status
+  :interval "1s"
+  :run-while {active_surface == "insights" && insights_section == "notifications"}
+  :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"provider\":\"SwayNotificationCenter\",\"provider_available\":false,\"capture_configured\":false,\"active_count\":0,\"do_not_disturb\":false,\"retained_count\":0,\"retention_limit\":120,\"entries\":[],\"privacy\":{\"local_only\":true,\"file_mode\":\"0600\",\"actions_stored\":false,\"hints_stored\":false,\"automatic_upload\":false}},\"error\":null}"
+  "$HOME/.config/eww/scripts/notification-history.sh read")
 (defpoll timeline_activity_status
   :interval "2s"
   :run-while {active_surface == "insights" && insights_section == "timeline" && timeline_source == "activity" && timeline_follow}

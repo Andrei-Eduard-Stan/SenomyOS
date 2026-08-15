@@ -27,7 +27,7 @@ write_operation() {
       message:$message,exit_code:$exit_code},error:null}' >"$temporary"
   chmod 600 "$temporary"
   mv -f "$temporary" "$OPERATION_FILE"
-  "$EWW_BIN" --config "$CONFIG_ROOT" update "brightness_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
+  "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "brightness_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
 }
 
 read_operation() {
@@ -67,6 +67,6 @@ fi
 if [[ -x "$CONFIG_ROOT/scripts/control-status.sh" ]]; then
   status="$("$CONFIG_ROOT/scripts/control-status.sh" 2>/dev/null || true)"
   jq -e . >/dev/null 2>&1 <<<"$status" &&
-    "$EWW_BIN" --config "$CONFIG_ROOT" update "control_status=$status" >/dev/null 2>&1 || true
+    "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "control_status=$status" >/dev/null 2>&1 || true
 fi
 exit "$exit_code"

@@ -14,18 +14,20 @@ handbook is the place to begin a working session.
 SenomyOS is currently a custom Arch Linux desktop shell using Hyprland and Eww.
 It is being redesigned around a compact bottom bar, a unified Control Centre, a
 separate Performance Dashboard, and a separate Senomy Insights briefing. The
+Rail also owns one optional ambient Senomy companion overlay; it is not a fifth
+primary surface. The
 long-term target is a reproducibly deployable Arch-based system that adapts to
 supported laptops, desktops, mini PCs, touchscreens, and compatible tablet or
 phone-sized Linux devices.
 
-## The four surfaces
+## The four surfaces and companion
 
 ### Main bar
 
 The persistent Obsidian Rail surface:
 
 - workspaces;
-- Senomy identity and briefing;
+- one Senomy avatar companion trigger and adjacent Insights briefing trigger;
 - CPU/MEM/UP telemetry;
 - system controls;
 - clock and dual-battery state.
@@ -63,6 +65,7 @@ The mini console is an allowlisted task runner, not a general shell.
 
 A separate evidence-based system briefing opened from the Senomy identity:
 
+- retained local notification history;
 - updates;
 - maintenance;
 - battery observations;
@@ -72,6 +75,14 @@ A separate evidence-based system briefing opened from the Senomy identity:
 - unavailable/planned states.
 
 Insights never invents a diagnosis or result.
+
+### Senomy companion
+
+The single Rail avatar opens a non-primary edge overlay. Expanded mode shows a
+large evidence-driven character and observation; compact mode keeps a mostly
+transparent avatar form. It can coexist with one primary surface, does not
+reserve work area, and exposes left/right snap, session pin, minimize/expand,
+and close controls.
 
 ## Repository map
 
@@ -416,6 +427,13 @@ Before reload:
 3. show the diff;
 4. warn that a parse failure could briefly remove the bar.
 
+The supported helper parses a copied tree through a separate windowless Eww
+daemon before stopping the live one. You can run that parser gate alone:
+
+```bash
+scripts/validate-eww-config.sh
+```
+
 Run the supported state-preserving reload:
 
 ```bash
@@ -446,6 +464,24 @@ If IPC does not respond, inspect the Eww process tree before recovery. Repeated
 `eww open` attempts can auto-start a second daemon while an orphaned GTK
 process still owns visible layers.
 
+Use the shell doctor for the supported inspection and kill-switch path:
+
+```bash
+scripts/senomy-shellctl.sh doctor
+scripts/senomy-shellctl.sh incident
+scripts/senomy-shellctl.sh restart
+```
+
+`doctor` is read-only. `incident` writes a private bounded diagnostic snapshot.
+`restart` first validates shell, SCSS, JSON, and avatar contracts, then records
+an incident, closes the SenomyOS windows, stops only exact config-matched Eww
+processes, restores exactly one Rail, and resynchronizes workspaces. This also
+catches retained `eww open ...` processes that may own orphaned GTK layers but
+remain invisible to the currently reachable daemon's `active-windows` output.
+The Rail and
+open panels disappear briefly, so warn before running it. Prefer `doctor` before
+`restart` unless the UI is frozen or duplicated.
+
 Then visually verify the bar and panel behavior.
 
 ## Primary-surface behavior to protect
@@ -463,7 +499,8 @@ Opening one primary surface closes the previous one.
 - Same control again → close.
 - Different control → switch section in the existing panel.
 - CPU/MEM/UP → Performance Dashboard.
-- Senomy identity/message → Senomy Insights.
+- Senomy dialogue → Senomy Insights.
+- Adjacent Senomy avatar → independent companion overlay.
 
 ## Senomy avatar workflow
 
@@ -473,13 +510,17 @@ All visible Senomy artwork is selected in one place:
 data/senomy-avatars.json
 ```
 
-Each state has two independent paths:
+Each state has two source paths:
 
-- `chibi` for the 24–34px bar and panel-header contexts;
-- `portrait` for larger observer or briefing contexts.
+- `chibi` for the compact Rail context;
+- `portrait` for larger companion contexts.
 
 Both paths are relative to the Eww configuration directory and must stay under
-`assets/senomy/`. To inspect and switch the manual ambient state:
+`assets/senomy/`. SVG, PNG, JPG/JPEG, and GIF are accepted. GIF sources are
+limited by size, dimensions, and frame count and converted into context-sized
+private cache variants because Eww 0.5 animates them at intrinsic size. Keep
+the source artwork reasonably sized even though the catalog enforces bounds.
+To inspect and switch the manual ambient state:
 
 ```bash
 scripts/senomy-avatar.sh list
@@ -489,22 +530,26 @@ scripts/senomy-avatar.sh reset
 ```
 
 To replace artwork, put the file under `assets/senomy/`, then change only its
-manifest path. The five-second local catalog refresh updates every place that
-uses the shared widget. `chibi_state` controls only the ambient domain used by
-the bar. Battery, Performance, and Insights resolve independent states
-centrally in `widgets/senomy-avatar.yuck`; individual panels declare a domain
-but do not choose an image path or duplicate mood rules.
+manifest path. The local catalog refresh updates the Rail and companion through
+the shared widget. `chibi_state` remains a manual asset-test value; visible
+automatic state is resolved centrally in `widgets/senomy-avatar.yuck`.
 
-Current domains are:
+The visible `companion` domain uses this priority:
 
-- `ambient`: manual state for the bar;
-- `battery`: charging state and combined UPower percentage;
-- `performance`: current CPU, memory, availability, and failed-service data;
-- `insights-header`: fixed browsing identity for the Insights header;
-- `insights`: the active Insights route.
+- verified combined UPower percentage at or below the warning threshold;
+- active MPRIS playback reported by `playerctl`;
+- the ordinary browsing identity.
 
-For example, a low-battery Power avatar may be `warning` while the bar remains
-`idle` and the Insights header remains `focused`.
+Primary mastheads and content cards do not render duplicate character images.
+The Rail avatar is still visually joined to the dialogue so it reads as its
+profile image, even though the two controls open different destinations.
+
+Companion lifecycle checks:
+
+```bash
+scripts/companion-state.sh status
+scripts/companion-media.sh | jq .
+```
 
 To add a new state:
 
@@ -513,6 +558,51 @@ To add a new state:
 3. run `scripts/senomy-avatar.sh catalog | jq -e .`;
 4. run `scripts/senomy-avatar.sh list`;
 5. use the controlled Eww reload only if Yuck or SCSS also changed.
+
+## Notifications history workflow
+
+Senomy Insights / Notifications reads a local history captured from SwayNC.
+Inspect the integration without changing it:
+
+```bash
+scripts/swaync-history-integration.sh status | jq .
+scripts/notification-history.sh read | jq .
+```
+
+Connect the receive hook once on a new installation:
+
+```bash
+scripts/swaync-history-integration.sh install
+swaync-client --reload-config
+```
+
+Installation preserves the rest of SwayNC's JSON and creates a private backup
+when a user config already exists. A reload may briefly interrupt notification
+popups. New entries are stored locally under XDG state with mode 0600, newest
+120 by default. Bodies may contain personal information; do not commit, upload,
+or paste the history indiscriminately. Clear it from the confirmed Insights UI
+or with `scripts/notification-history.sh clear`.
+
+## Performance benchmark workflow
+
+Inspect the exact bounded profiles without creating load:
+
+```bash
+scripts/benchmark-action.sh plan quick | jq .
+scripts/benchmark-action.sh plan standard | jq .
+```
+
+Start through the Performance / Benchmarks confirmation UI. Quick targets
+about 70 seconds and Standard about 210 seconds. Expect sustained CPU load,
+heat, fan noise, up to 1 GiB of bounded memory allocation, and one private
+temporary storage file up to 512 MiB. Connect power first. The runner refuses a
+low discharging battery or dangerously low available memory and stops its
+current workload at the configured thermal limit when a sensor is available.
+
+The visible Stop action performs bounded cancellation. Completed private
+Markdown, PDF, and checksum files live under XDG state and include results,
+thermals, hardware/software inventory, methodology, and explicit limitations.
+Do not treat one successful run as proof of perfect hardware health.
 
 ## Wiki authoring workflow
 

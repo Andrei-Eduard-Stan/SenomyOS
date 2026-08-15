@@ -15,9 +15,21 @@
         :class "senomy-avatar-image"
         :visible {avatar.id == state}
         :tooltip "Senomy // ${avatar.label} // ${avatar.activity}"
-        :path {variant == "portrait"
-          ? avatar.portrait_path
-          : avatar.chibi_path}
+        :path {context == "bar"
+          ? avatar.bar_path
+          : (context == "observer"
+            ? avatar.observer_path
+            : (context == "overview"
+              ? avatar.overview_path
+              : (context == "insights-hero"
+                ? avatar.insights_hero_path
+                : (context == "companion"
+                  ? avatar.companion_path
+                  : (context == "companion-compact"
+                    ? avatar.companion_compact_path
+                    : (context == "power"
+                      ? avatar.power_path
+                      : (variant == "portrait" ? avatar.portrait_path : avatar.chibi_path)))))))}
         :image-width size
         :image-height size))))
 
@@ -27,7 +39,11 @@
     :variant variant
     :size size
     :context context
-    :state {domain == "battery"
+    :state {domain == "companion"
+      ? (batt_json.available == true && batt_json.percent_total <= 20
+        ? "warning"
+        : (companion_media?.data?.playing == true ? "music" : "browsing"))
+      : (domain == "battery"
       ? (batt_json.state == "loading"
         ? "thinking"
         : (batt_json.available != true
@@ -57,4 +73,4 @@
                 || insights_section == "timeline"
                 ? "focused"
                 : "thinking"))
-            : chibi_state)))}))
+            : chibi_state))))}))

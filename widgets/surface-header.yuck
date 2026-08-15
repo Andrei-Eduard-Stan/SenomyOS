@@ -1,0 +1,41 @@
+(defwidget surface-hero-header [surface_class domain eyebrow title subtitle close_tooltip close_action]
+  (box
+    :class "${surface_class} shell-header shell-hero-header"
+    :space-evenly false
+    :vexpand false
+
+    (box
+      :class "shell-heading shell-hero-heading"
+      :orientation "v"
+      :space-evenly false
+      :valign "center"
+      :hexpand true
+      (label
+        :class "shell-hero-eyebrow"
+        :xalign 0
+        :text eyebrow)
+      (label
+        :class "shell-title"
+        :xalign 0
+        :wrap true
+        :show-truncated false
+        :text title)
+      (label
+        :class "shell-subtitle"
+        :xalign 0
+        :wrap true
+        :show-truncated false
+        :text subtitle)
+      (box
+        :class "shell-hero-status"
+        :space-evenly false
+        :spacing 8
+        (children)))
+
+    (button
+      :class "shell-close"
+      :valign "center"
+      :tooltip close_tooltip
+      :timeout "8s"
+      :onclick close_action
+      "")))

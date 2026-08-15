@@ -742,8 +742,9 @@ keyboard confirmation fail with guidance rather than weakening authentication.
 **Date:** 2026-08-01
 **Status:** Accepted
 
-Primary surfaces preserve their approved 750 by 700 desktop proportion when
-space permits, but their Eww open size is capped from the focused monitor's
+Insights preserves its approved 750 by 700 desktop proportion. Control Centre
+uses 888 by 700 so every route shares the Power route's required width instead
+of resizing after a section switch. Both are capped from the focused monitor's
 logical dimensions. Performance uses a bounded percentage of the same work
 area. Narrow profiles stack multi-column controls and metric cards, remove
 fixed text widths, and retain readable text and touch targets rather than
@@ -774,11 +775,14 @@ Eww input callback; source editing remains the deliberate advanced path.
 **Date:** 2026-08-01
 **Status:** Accepted
 
-The surface coordinator compiles SCSS and asks the running daemon to parse the
-configuration before it replaces that daemon. A failed preflight leaves the
-current bar running. After a successful restart and state restoration, the
-validated root configuration and compiled CSS are copied with mode 0600 into
-the SenomyOS recovery state directory as the last-known-good shell snapshot.
+The surface coordinator compiles SCSS and asks a temporary windowless daemon
+at a copied config path to parse the complete configuration before it replaces
+the live daemon. A failed preflight leaves the current bar and its window graph
+untouched. The parser probe must define all seven required windows and must be
+fully terminated afterward. After a successful restart and state restoration,
+the validated root configuration and compiled CSS are copied with mode 0600
+into the SenomyOS recovery state directory as the last-known-good shell
+snapshot.
 
 A missing daemon may be started deliberately, but reload code must not blindly
 kill a healthy shell before proving that replacement definitions include the
@@ -892,7 +896,126 @@ not move controls under the pointer.
 **Status:** Accepted
 
 The Performance benchmark suite requires explicit confirmation, has a visible
-stop path, uses finite local workloads, creates at most one private 128 MiB
-scratch file, and performs no network, privileged, or indefinite stress work.
+stop path, and offers finite Quick and Standard profiles. It caps CPU workers,
+uses at most one private 512 MiB scratch file, refuses unsafe low-power or
+low-memory starts, watches thermal evidence when sensors are available, and
+performs no network, privileged, package-installing, or indefinite stress work.
 Progress and logs are retained independently of the window. Markdown is the
-canonical report; a dependency-free renderer creates a private PDF derivative.
+canonical report; a dependency-free renderer creates a private PDF derivative
+and SHA-256 checksums. Reports exclude hardware serials, network addresses,
+credentials, environment dumps, and unrestricted logs.
+
+## D068 — Retain notification history through a narrow private SwayNC hook
+
+**Date:** 2026-08-10
+**Status:** Accepted
+
+Senomy Insights owns a Notifications route backed by SwayNotificationCenter's
+documented receive-script environment. The hook records a bounded sanitized
+copy of visible notification metadata after a popup disappears without
+replacing SwayNC or changing popup policy. Storage is local and mode 0600;
+actions and opaque hints are excluded; clearing requires confirmation.
+
+## D069 — Pre-size animated avatars at the catalog boundary
+
+**Date:** 2026-08-10
+**Status:** Accepted
+
+Avatar sources may be SVG, PNG, JPG/JPEG, or GIF. Eww 0.5 can animate GIFs but
+does not apply widget dimensions to them reliably, so the avatar catalog
+validates size, dimensions, frame count, MIME, and containment, then produces
+private context-sized animated variants. Surfaces consume only resolved
+catalog paths and never add format-specific logic.
+
+## D070 — Make shell recovery enforce one daemon and one Rail
+
+**Date:** 2026-08-10
+**Status:** Accepted
+
+Both session startup and the manual recovery command verify exactly one
+config-matched Eww daemon and one `main-bar`. Recovery captures bounded private
+incident evidence, preflights shell/SCSS/JSON/avatar contracts, closes the
+owned window set, stops only exact config-matched daemons, restores one Rail,
+and resynchronizes the workspace listener. Force-stop is a bounded fallback
+only after graceful termination fails.
+
+## D071 — Never let an ordinary Eww client bootstrap the shell
+
+**Date:** 2026-08-10
+**Status:** Accepted
+
+Every ordinary Eww query, update, open, close, and kill client uses
+`--no-daemonize`. Only `scripts/start-eww.sh` may deliberately create the
+daemon, after parser preflight and exact process cleanup. Startup and recovery
+count every Eww process whose command line names the exact configuration path,
+not only commands ending in `daemon`: Eww 0.5 can retain an `open` client as a
+second GTK/layer owner after an IPC failure. Hyprland's layer tree is the
+authoritative verification source when Eww IPC and visible windows disagree.
+
+## D072 — Keep Appearance distinct and share one surface masthead
+
+**Date:** 2026-08-13
+**Status:** Accepted
+
+Appearance is the tenth stable Control Centre route. It remains separate from
+Settings so validated presentation controls can grow without mixing decorative
+preferences with recovery and runtime maintenance. The route does not permit
+arbitrary CSS.
+
+Control Centre, Performance, and Senomy Insights use one shared hero-header
+component. Insights defines the identity scale, title hierarchy, description,
+evidence-chip row, close target, spacing, and responsive reductions. Surfaces
+provide only their truthful copy and status. Control Centre has
+one 888px desktop width across every route; section content cannot resize the
+window in place.
+
+## D073 — Give Senomy one Rail identity and one ambient companion
+
+**Date:** 2026-08-15
+**Status:** Accepted
+
+The Obsidian Rail renders one Senomy avatar button immediately beside a
+separate Insights dialogue button. They remain visually joined so the avatar
+reads as the dialogue profile image, while preserving two honest targets: the
+avatar opens the companion and the dialogue opens Insights. Primary mastheads
+and content cards no longer reserve duplicate character artwork; D072's shared
+typographic hierarchy, evidence chips, close target, and stable geometry remain
+in force.
+
+The companion is an ambient overlay rather than a fifth primary surface. One
+window has `closed`, `expanded`, and `compact` modes, snaps to either edge of
+the focused monitor, stays non-exclusive and non-focusable, and may coexist
+with Control Centre, Performance, or Insights. It provides visible edge,
+session-pin, minimize/expand, and close controls. An unpinned expanded session
+may collapse after a bounded quiet interval; pinning is session-only and stale
+timers cannot mutate a later session.
+
+Automatic character reaction is evidence-driven. A verified UPower low-battery
+condition takes priority, active MPRIS playback through `playerctl` selects the
+music state next, and the ordinary browsing identity is the fallback. The
+avatar catalog owns the real bounded artwork and cached GIF variants; panel
+code does not hard-code image paths or invent activity.
+
+## D074 — Use Command Lens for Rofi and keep Thunar a native file workspace
+
+**Date:** 2026-08-15
+**Status:** Accepted
+
+The first generated Rofi/Thunar concept, Command Lens, is the selected visual
+direction. Rofi is a temporary upper-centre launcher with stable Applications,
+Files, Windows, and Actions scopes. Thunar is the persistent file workspace
+behind it, using a conventional Places sidebar, breadcrumb/location controls,
+detailed rows, and an optional preview/metadata inspector.
+
+Rofi may combine native application/window modes with project-owned bounded
+file search and an allowlisted action registry. It is not an arbitrary shell or
+replacement file manager. Thunar retains native file operations, dialogs,
+menus, tabs, split view, and keyboard behavior; custom actions are small,
+validated integrations rather than a dashboard embedded in the file manager.
+
+Rofi themes and GTK 3 themes share semantic tokens but remain separately
+generated because they have different styling systems. A global GTK theme can
+affect applications beyond Thunar and therefore requires wider QA. Repository
+sources are deployed deliberately to live user configuration with backup and
+rollback. The current `Super+R` Wofi binding is not changed until the Rofi
+prototype has passed manual and visual validation.

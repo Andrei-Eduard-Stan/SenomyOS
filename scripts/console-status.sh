@@ -78,7 +78,7 @@ publish_status() {
   [[ -x "$EWW_BIN" ]] || return 0
   local payload
   payload="$(read_status)"
-  "$EWW_BIN" --config "$CONFIG_DIR" update "console_status=$payload" >/dev/null 2>&1 || true
+  "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" update "console_status=$payload" >/dev/null 2>&1 || true
 }
 
 sanitize_output() {

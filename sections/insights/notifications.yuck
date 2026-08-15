@@ -1,0 +1,80 @@
+(defwidget notification-history-entry [entry]
+  (box
+    :class "notification-history-entry ${entry.urgency}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (box
+      :class "notification-history-head"
+      :space-evenly false
+      :spacing 8
+      (label :class "notification-history-app" :xalign 0 :hexpand true :show-truncated false :text {entry.app})
+      (label
+        :class "notification-history-urgency ${entry.urgency}"
+        :text {entry.urgency == "critical" ? "CRITICAL" : (entry.urgency == "low" ? "LOW" : "NORMAL")})
+      (label :class "notification-history-age" :tooltip {entry.received_label} :text {entry.age_label}))
+    (label :class "notification-history-summary" :xalign 0 :wrap true :show-truncated false :text {entry.summary})
+    (label :class "notification-history-body" :visible {entry.body != ""} :xalign 0 :wrap true :show-truncated false :text {entry.body})
+    (label :class "notification-history-category" :visible {entry.category != ""} :xalign 0 :text "CATEGORY  ${entry.category}")))
+
+(defwidget insights-notifications []
+  (box
+    :class "insights-section notifications-section"
+    :orientation "v"
+    :space-evenly false
+    :spacing 13
+    (insights-section-heading
+      :eyebrow "LOCAL EVENT MEMORY"
+      :title "Notifications"
+      :detail "A bounded private record remains here after transient notification popups disappear.")
+    (box
+      :class "notification-history-summary-row"
+      :space-evenly false
+      :spacing 8
+      (label :class "notification-history-chip" :text "RETAINED  ${notification_status?.data?.retained_count ?: 0}/${notification_status?.data?.retention_limit ?: 120}")
+      (label :class "notification-history-chip" :text "SWAYNC ACTIVE  ${notification_status?.data?.active_count ?: 0}")
+      (label
+        :class {notification_status?.data?.do_not_disturb == true ? "notification-history-chip warning" : "notification-history-chip"}
+        :text {notification_status?.data?.do_not_disturb == true ? "DND  ON" : "DND  OFF"})
+      (box :hexpand true)
+      (button
+        :class {pending_action == "clear-notification-history" ? "notification-history-clear confirm" : "notification-history-clear"}
+        :active {(notification_status?.data?.retained_count ?: 0) > 0}
+        :tooltip "Permanently clear Senomy's local notification history"
+        :timeout "8s"
+        :onclick {pending_action == "clear-notification-history"
+          ? "$HOME/.config/eww/scripts/notification-history.sh clear >/dev/null && ${EWW_CMD} update pending_action=none"
+          : "${EWW_CMD} update pending_action=clear-notification-history"}
+        {pending_action == "clear-notification-history" ? "CONFIRM CLEAR" : "CLEAR HISTORY"}))
+    (box
+      :class "notification-history-policy"
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      (label
+        :class "notification-history-policy-title"
+        :xalign 0
+        :text {notification_status?.data?.capture_configured == true ? "CAPTURE ONLINE // LOCAL MODE 0600" : "CAPTURE NOT CONNECTED"})
+      (label
+        :class "notification-history-policy-copy"
+        :xalign 0
+        :wrap true
+        :show-truncated false
+        :text {notification_status?.data?.capture_configured == true
+          ? "Stores bounded app, title, body, urgency and time metadata. Actions, notification hints and automatic uploads are excluded. Notification text may still contain private messages or verification codes."
+          : "SwayNotificationCenter is detected, but its Senomy history hook is not installed. Existing popups continue to work; new entries cannot be retained here yet."}))
+    (box
+      :class "notification-history-empty"
+      :visible {(notification_status?.data?.entries ?: []) == []}
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      (label :class "notification-history-empty-title" :xalign 0 :text "NO RETAINED NOTIFICATIONS")
+      (label :class "notification-history-empty-copy" :xalign 0 :wrap true :text "New notifications will appear here after the capture hook receives them."))
+    (box
+      :class "notification-history-list"
+      :orientation "v"
+      :space-evenly false
+      :spacing 8
+      (for entry in {notification_status?.data?.entries ?: []}
+        (notification-history-entry :entry entry)))))

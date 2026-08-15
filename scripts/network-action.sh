@@ -46,7 +46,7 @@ write_operation() {
       message:$message,exit_code:$exit_code},error:null}' >"$temporary"
   chmod 600 "$temporary"
   mv -f "$temporary" "$OPERATION_FILE"
-  "$EWW_BIN" --config "$CONFIG_ROOT" update "network_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
+  "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "network_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
 }
 
 refresh_network_status() {
@@ -54,7 +54,7 @@ refresh_network_status() {
   [[ -x "$CONFIG_ROOT/scripts/network-status.sh" ]] || return 0
   status="$("$CONFIG_ROOT/scripts/network-status.sh" 2>/dev/null)" || return 0
   jq -e . >/dev/null 2>&1 <<<"$status" || return 0
-  "$EWW_BIN" --config "$CONFIG_ROOT" update "network_status=$status" >/dev/null 2>&1 || true
+  "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "network_status=$status" >/dev/null 2>&1 || true
 }
 
 read_operation() {

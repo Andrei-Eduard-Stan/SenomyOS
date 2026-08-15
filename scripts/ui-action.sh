@@ -11,14 +11,14 @@ readonly EVENT_BIN="$EWW_CONFIG/scripts/senomy-event.sh"
 
 update_and_record() {
   local variable="$1" category="$2" event="$3" outcome=failed
-  "$EWW_BIN" --config "$EWW_CONFIG" update "$variable=$VALUE" && outcome=succeeded
+  "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" update "$variable=$VALUE" && outcome=succeeded
   "$EVENT_BIN" record "$category" "$event" "$VALUE" "$outcome" >/dev/null 2>&1 || true
   [[ "$outcome" == succeeded ]]
 }
 
 case "$ACTION" in
   insights-section)
-    case "$VALUE" in briefing | timeline | updates | diagnostics | console | reports | wiki) ;; *) exit 2 ;; esac
+    case "$VALUE" in briefing | notifications | timeline | updates | diagnostics | console | reports | wiki) ;; *) exit 2 ;; esac
     update_and_record insights_section navigation insights-section ;;
   timeline-source)
     case "$VALUE" in activity | session | system | kernel | eww) ;; *) exit 2 ;; esac

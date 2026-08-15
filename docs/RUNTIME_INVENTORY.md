@@ -1,6 +1,6 @@
 # SenomyOS Runtime Inventory
 
-Last read-only verification: 2026-07-28.
+Last read-only verification: 2026-08-13.
 
 Runtime facts can change. Recheck them before relying on them for a mutation.
 
@@ -313,11 +313,16 @@ Eww previously started `daemon` in the background immediately before `open`,
 which could split the daemon and visible bar into disconnected processes.
 `scripts/start-eww.sh` now waits for `eww ping` before opening the bar.
 
-### Planned UI content
+### Control Centre content
 
-- The Control Centre shell exposes all nine approved sections. Applications,
-  Network, Audio, and Power are implemented; the remaining section bodies stay
-  honest planned placeholders.
+- All ten approved Control Centre routes have connected content. Network,
+  Audio, Power, Applications, and Settings expose bounded allowlisted actions;
+  Overview, Calendar, Input, and Device Management provide truthful live or
+  read-only inventory. Unavailable capabilities remain explicit rather than
+  fabricated.
+- Appearance remains a separate tenth route under decisions D058 and D072. It
+  owns bounded presentation preferences while Settings owns runtime and shell
+  maintenance.
 - Applications is now the first implemented Control Centre section. The Rail
   exposes an overflow arrow; its flyout owns the single native StatusNotifier
   host, while the section shows registry-backed managed application cards.
@@ -562,6 +567,69 @@ which could split the daemon and visible bar into disconnected processes.
   `${XDG_STATE_HOME:-$HOME/.local/state}/senomyos/benchmarks` as Markdown, PDF,
   status JSON, and a bounded current log.
 
+### August 10 recovery, Notifications, avatar, and benchmark worktree
+
+- Static shell validation passes 21 checks and the collector suite passes 20
+  contracts. The new checks use temporary roots and do not run a stress
+  workload or mutate the live notification daemon.
+- SwayNotificationCenter 0.12.6 is the active notification provider. The
+  narrow Senomy receive hook is installed in the user config and SwayNC loaded
+  that path after one user-service restart. A visible SenomyOS test popup was
+  captured as one private retained entry; actions/hints remain excluded.
+- The avatar catalog accepts MIME-validated SVG, PNG, JPG/JPEG, and GIF. Eww's
+  installed runtime can animate GIFs but does not reliably scale their
+  intrinsic size, so context-sized animated variants are cached privately.
+- Performance KPI labels no longer request ellipsis/width limiting. Live visual
+  verification at 1920x1080 showed full `CPU`, `MEM`, `I/O`, and `NET` labels.
+- `scripts/senomy-shellctl.sh` provides read-only doctor/preflight/incident
+  paths and an explicit full restart. Both it and `scripts/start-eww.sh` enforce
+  one exact config-matched Eww process and one main bar. Its restart path was
+  exercised during the parser incident and restored the healthy invariant.
+- A live reload exposed Eww 0.5's unsafe graph-swap behavior when a Yuck parse
+  fails. Recovery retained three incident reports and restored one healthy
+  daemon/Rail. The old live `eww reload` preflight was replaced by
+  `scripts/validate-eww-config.sh`, which parsed a copied tree through a
+  separate windowless daemon while the healthy Rail remained untouched.
+- The reported duplicate-Rail/frozen-Performance failure was reproduced with
+  two exact-config processes: PID 603150 was the reachable explicit daemon and
+  owned the correct Rail plus orphaned Performance/dismiss layers, while PID
+  604970 retained an `eww open ... performance` command and owned a second Rail.
+  Ordinary Eww clients now use `--no-daemonize`, and process cleanup includes
+  every exact-config Eww command. After recovery, opening and X-closing
+  Performance retained one PID (642359); Hyprland showed one 1920x44 Rail at
+  y=1036, the expected Performance/dismiss layers only while open, and only the
+  Rail again after close. Eww state returned to `active_surface=none`.
+- Benchmark schema 2 defines a roughly 70-second Quick profile and roughly
+  210-second Standard profile, sustained CPU/memory/compression load, bounded
+  256/512 MiB storage evidence, thermal/low-power/low-memory stops, safe
+  cancellation, and private rich Markdown/PDF/checksum reports. Only read-only
+  plan/status contracts have been run; no benchmark workload has been started.
+- ImageMagick, OpenSSL, gzip, zstd, sensors, lspci, and lsusb are available.
+  `stress-ng`, `sysbench`, `fio`, `smartctl`, `nvme`, `dmidecode`, and
+  `inotify-tools` remain optional and were not installed automatically.
+
+### August 13 shared masthead and Control Centre geometry
+
+- Control Centre, Performance Dashboard, and Senomy Insights now use one
+  shared primary-surface masthead. Live captures at 1920x1080 confirmed the
+  same avatar block, eyebrow/title/subtitle hierarchy, status-chip row, close
+  target, padding, and spacing while preserving each surface's own identity.
+- Control Centre has ten distinct routes: Overview, Network, Audio, Power,
+  Calendar, Input, Device Management, Applications, Appearance, and Settings.
+  Appearance remains a separate route so it can grow independently.
+- Every Control Centre route was opened in the live compositor and measured at
+  `888x700`. A direct Overview-to-Power in-place switch retained that geometry,
+  removing the earlier Power-only width expansion.
+- The Insights Wiki catalog currently renders seven bounded Markdown articles
+  across four categories with no catalog warnings or errors. It documents the
+  three primary surfaces, ten Control Centre routes, notification retention,
+  benchmark schema 2, avatars, and guarded shell recovery.
+- A guarded shell restart briefly returned a false-negative IPC timeout while
+  the daemon was becoming reachable. Immediate doctor checks confirmed one Eww
+  process, one Obsidian Rail, a healthy workspace listener, and no Hyprland
+  configuration errors. The incident report is retained at
+  `${XDG_STATE_HOME:-$HOME/.local/state}/senomyos/recovery/incidents/shell-20260813-073929.txt`.
+
 ### Helper file modes
 
 ```text
@@ -573,6 +641,7 @@ scripts/bar-status.sh 755
 scripts/background-apps-action.sh 755
 scripts/background-apps-status.sh 755
 scripts/benchmark-action.sh 755
+scripts/benchmark-memory.py 755
 scripts/benchmark-status.sh 755
 scripts/diagnostics-status.sh 755
 scripts/performance-history.sh 755
@@ -584,6 +653,10 @@ scripts/performance-status.sh 755
 scripts/reload-eww.sh  755
 scripts/screenshot-action.sh 755
 scripts/senomy-avatar.sh 755
+scripts/senomy-shellctl.sh 755
+scripts/notification-history.sh 755
+scripts/swaync-history-integration.sh 755
+scripts/validate-eww-config.sh 755
 scripts/senomy-dialogue.sh 755
 scripts/markdown-to-pdf.py 755
 scripts/start-eww.sh   755

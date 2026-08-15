@@ -39,8 +39,8 @@
       "label": "Warning",
       "emotion": "concerned",
       "activity": "alerting",
-      "chibi": "assets/senomy/placeholders/warning.svg",
-      "portrait": "assets/senomy/placeholders/warning.svg"
+      "chibi": "assets/senomy/senomy_chibi_lowbattery-v1.png",
+      "portrait": "assets/senomy/senomy_chibi_lowbattery-v1.png"
     },
     {
       "id": "busy",
@@ -63,8 +63,16 @@
       "label": "Browsing",
       "emotion": "curious",
       "activity": "browsing",
-      "chibi": "assets/senomy/senomy_chibi_browsing.jpg",
-      "portrait": "assets/senomy/senomy_chibi_browsing.jpg"
+      "chibi": "assets/senomy/senomy_chibi_browsing.png",
+      "portrait": "assets/senomy/senomy_chibi_browsing.png"
+    },
+    {
+      "id": "music",
+      "label": "Listening",
+      "emotion": "calm",
+      "activity": "listening to media",
+      "chibi": "assets/senomy/senomy_chibi_listening-v1.png",
+      "portrait": "assets/senomy/senomy_chibi_listening-v1.png"
     }
   ]
 }

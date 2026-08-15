@@ -9,12 +9,14 @@ touch devices, and eventually compatible phone-sized Linux hardware with as
 little manual configuration as practical. The current T480 is reference
 hardware, not the final hardware specification.
 
-The project is being revived around four coordinated surfaces:
+The project is being revived around four coordinated surfaces and one ambient
+companion overlay:
 
 1. A compact bottom system bar.
 2. A unified contextual Control Centre.
 3. A separate full Performance Dashboard.
 4. A separate Senomy Insights system briefing.
+5. A single edge-mounted Senomy companion opened from the Rail avatar.
 
 The approved everyday direction is the compact **Obsidian Rail** design. The
 expanded **Cathedral Deck** direction is reserved for the Performance
@@ -52,10 +54,16 @@ be compared and synchronized deliberately.
 └── docs/                    Product, architecture, design, and workflow docs
 ```
 
-The workspace listener and dual-battery collector are the strongest original
-parts. The current Action Centre is incomplete. The legacy deadlocking update
-loop has been removed from future-session autostart; an old process may remain
-until the development session is logged out or rebooted.
+The original workspace listener and dual-battery collector remain preserved.
+The current shell now connects all ten Control Centre routes, the separate
+Performance Dashboard, the eight-route Senomy Insights surface, responsive
+Rail profiles, the single-avatar companion foundation, guarded recovery, and
+structured data/action contracts. The
+legacy deadlocking update loop is no longer part of startup.
+
+This is still a live configuration, not a finished OS release. Physical
+multi-monitor/touch/non-T480 validation, clean-machine deployment, packaging,
+installer/recovery media, and final avatar artwork remain release work.
 
 ## Documentation
 
@@ -64,6 +72,7 @@ until the development session is logged out or rebooted.
 - [Deployment and platform strategy](docs/PLATFORM_STRATEGY.md)
 - [Architecture and state model](docs/ARCHITECTURE.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
+- [Launcher and file workspace](docs/LAUNCHER_FILE_MANAGER.md)
 - [Data sources and command policy](docs/DATA_SOURCES.md)
 - [Development and validation workflow](docs/DEVELOPMENT.md)
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)

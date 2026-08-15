@@ -64,12 +64,9 @@ eww_call() {
     --kill-after=1s \
     "$EWW_CLIENT_TIMEOUT" \
     "$EWW_BIN" \
+    --no-daemonize \
     --config "$EWW_CONFIG" \
     "$@" 9>&-
-}
-
-eww_start_call() {
-  "$EWW_BIN" --debug --config "$EWW_CONFIG" "$@" 9>&-
 }
 
 eww_open_async() {
@@ -78,7 +75,7 @@ eww_open_async() {
   # one non-idempotent request in its own session and use active-windows as the
   # completion signal instead of blocking the surface controller indefinitely.
   "$SETSID_BIN" --fork \
-    "$EWW_BIN" --config "$EWW_CONFIG" "$@" \
+    "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" "$@" \
     >/dev/null 2>&1 </dev/null 9>&-
 }
 
@@ -168,7 +165,7 @@ is_control_section() {
 
 is_insights_section() {
   case "$1" in
-    briefing | timeline | updates | diagnostics | console | reports | wiki)
+    briefing | notifications | timeline | updates | diagnostics | console | reports | wiki)
       return 0
       ;;
     *)
@@ -297,7 +294,14 @@ window_size() {
   [[ "$width" =~ ^[1-9][0-9]*$ && "$height" =~ ^[1-9][0-9]*$ ]] || return 0
 
   case "$window" in
-    actioncenter | insights)
+    actioncenter)
+      max_width=$((width * 94 / 100)); max_height=$((height * 88 / 100))
+      panel_width=888; panel_height=700
+      ((panel_width > max_width)) && panel_width=$max_width
+      ((panel_height > max_height)) && panel_height=$max_height
+      printf '%sx%s\n' "$panel_width" "$panel_height"
+      ;;
+    insights)
       max_width=$((width * 94 / 100)); max_height=$((height * 88 / 100))
       panel_width=750; panel_height=700
       ((panel_width > max_width)) && panel_width=$max_width
@@ -1473,8 +1477,8 @@ start_reload_windows() {
   local size
 
   screen="$(target_screen)"
-  eww_start_call open --screen "$screen" main-bar >/dev/null 2>&1 ||
-    fail "Unable to start Eww with the main bar"
+  (exec 9>&-; "$EWW_CONFIG/scripts/start-eww.sh") >/dev/null 2>&1 ||
+    fail "Unable to start Eww with the stable daemon and main bar"
   wait_for_daemon
 
   wait_for_window_state main-bar open ||
@@ -1502,7 +1506,7 @@ start_reload_windows() {
 }
 
 preflight_reload() {
-  local attempt compiled error_output status
+  local compiled
   command -v sassc >/dev/null 2>&1 || fail "sassc is required for safe reload validation"
   compiled="$(mktemp "${TMPDIR:-/tmp}/senomyos-eww.XXXXXX.css")" || fail "Unable to create SCSS preflight output"
   if ! sassc -t compressed "$EWW_CONFIG/eww.scss" "$compiled"; then
@@ -1511,17 +1515,8 @@ preflight_reload() {
   fi
   rm -f "$compiled"
 
-  error_output="$(eww_call reload 2>&1 >/dev/null)"
-  status=$?
-  if ((status != 0)); then
-    [[ -z "$error_output" ]] || printf '%s\n' "$error_output" >&2
-    fail "Eww/Yuck preflight failed; the running daemon was not restarted"
-  fi
-  for attempt in {1..30}; do
-    window_is_defined main-bar && return 0
-    sleep 0.10
-  done
-  fail "Preflight configuration does not define main-bar"
+  "$EWW_CONFIG/scripts/validate-eww-config.sh" >/dev/null ||
+    fail "Isolated Eww/Yuck preflight failed; the running daemon was left untouched"
 }
 
 snapshot_last_known_good() {

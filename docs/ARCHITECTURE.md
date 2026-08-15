@@ -106,6 +106,9 @@ Global state should remain small and explicit:
 active_surface = "none"
 active_flyout = "none"
 control_section = "overview"
+companion_mode = "closed"
+companion_dock = "right"
+companion_pinned = false
 pending_action = "none"
 action_status = "idle"
 ```
@@ -138,6 +141,7 @@ calendar
 input
 devices
 apps
+appearance
 settings
 ```
 
@@ -145,6 +149,7 @@ Valid Senomy Insights sections:
 
 ```text
 briefing
+notifications
 timeline
 updates
 diagnostics
@@ -179,6 +184,15 @@ otherwise closes the active primary surface. Hyprland's non-consuming Escape
 binding invokes this action while preserving Escape for the focused
 application.
 
+The Senomy companion is an ambient overlay, not a primary surface or transient
+flyout. `scripts/companion-state.sh` owns its separate `closed`, `expanded`,
+and `compact` lifecycle, discovers the focused monitor, and snaps one
+`companion` window to its left or right edge. The controller uses a generation
+token for its bounded 30-second collapse timer so an old timer cannot mutate a
+new session. Session pinning suppresses that collapse but is not persisted as
+a global desktop preference. Opening or closing the companion does not change
+`active_surface`, invoke the dismiss layer, or close another panel.
+
 Every open primary surface or transient flyout is paired with the shared
 `surface-dismiss` window. It is a transparent `fg` event layer over the usable
 work area, below `overlay` panels and outside the exclusive main-bar area.
@@ -198,6 +212,7 @@ The supported reload path is:
 scripts/reload-eww.sh
   └── scripts/surface-state.sh reload
         ├── capture and validate surface/section state
+        ├── parse a copied tree in a separate windowless Eww daemon
         ├── close all windows and stop the old daemon
         ├── wait until old IPC is unavailable
         ├── open main-bar, then the dismiss layer and remembered surface
@@ -206,7 +221,9 @@ scripts/reload-eww.sh
         └── restore active, section, and Timeline state
 ```
 
-The new Eww process must not inherit the transition lock descriptor.
+`scripts/validate-eww-config.sh` owns the copied-tree parser probe and requires
+all eight window definitions before success. It never sends `reload` to the
+live daemon. The new Eww process must not inherit the transition lock descriptor.
 `scripts/workspaces.sh` pings Eww before publishing, so neither an
 event-triggered update nor its cached recovery heartbeat can bootstrap a
 competing daemon during the intentional restart gap.
@@ -214,13 +231,26 @@ competing daemon during the intentional restart gap.
 Ordinary coordinator calls invoke Eww with `--no-daemonize` under a bounded
 timeout. If IPC disappears after the initial ping, the command fails instead of
 leaving an implicitly bootstrapped daemon behind. Only
-`start_reload_windows`, after the old daemon has been verified stopped, uses
-the separate auto-start call.
+`scripts/start-eww.sh`, after the old daemon has been verified stopped, starts
+a replacement. It detaches an explicit foreground-mode `daemon` process before
+opening `main-bar`; reload does not leave a long-running process whose retained
+command line looks like a one-shot `open` client.
 
-Session startup treats socket, configuration, and window readiness as separate
-gates. `scripts/start-eww.sh` requires a successful ping, a loaded `main-bar`
-definition, and an active `main-bar` window. A pingable daemon with no loaded
-definitions is an explicit failure, not a healthy desktop.
+Session startup treats socket, configuration, process ownership, and window
+readiness as separate gates. `scripts/start-eww.sh` requires a successful ping,
+a loaded `main-bar` definition, exactly one config-matched Eww process, and
+exactly one active `main-bar` window. The process census intentionally includes
+retained one-shot commands such as `eww open performance`, because Eww 0.5 can
+turn one into a second long-running GTK owner after an IPC failure. A pingable
+daemon with no loaded definitions, any extra config-matched process, or a
+duplicate Rail is an explicit recovery condition, not a healthy desktop.
+
+`scripts/senomy-shellctl.sh` is the manual recovery boundary. `doctor` is
+read-only; `preflight` validates shell, SCSS, JSON, and avatar contracts;
+`incident` retains bounded private evidence; `restart` combines those steps
+before stopping only exact config-matched Eww processes, restoring one Rail, and
+resynchronizing workspaces. It escalates from TERM to KILL only after a bounded
+graceful timeout. This is the frozen-panel kill switch, not an ordinary reload.
 
 `scripts/surface-state.sh reconcile` is the recovery operation when window
 instances disagree with `active_surface` or `active_flyout`. An unavailable
@@ -266,6 +296,10 @@ Implemented collectors:
 - `network-status.sh` (visible-only Control Centre poll with nearby and saved
   network catalog)
 - `background-apps-status.sh` (connected while Applications or tray is visible)
+- `notification-history.sh` (private bounded SwayNC receive history, visible
+  only on Insights / Notifications)
+- `benchmark-status.sh` and `benchmark-action.sh` (private bounded Performance
+  confidence-suite status, plan, cancellation, telemetry, and evidence)
 
 Collectors must degrade independently. A network error cannot break the clock,
 bar, or battery display.
@@ -325,6 +359,12 @@ managed-application controls.
 
 Senomy Insights is visually connected to the mascot/status region and may
 anchor above the left or middle-left bar area.
+
+The companion is an edge-snapped overlay with no exclusive reservation or
+full-screen dismiss layer. Expanded mode is a bounded sidecar; compact mode
+uses a transparent visual shell around the avatar and a small observation
+strip. Its GTK input region remains the rectangular Eww window even where the
+background is visually transparent, so the compact geometry must stay tight.
 
 The Performance Dashboard is a broad, separate surface above the bar. It may
 use more width than the Control Centre, but should be sized relative to the
@@ -408,13 +448,30 @@ Insights consumes normalized summaries rather than re-running every source on
 each render. Expensive checks, such as package updates, use manual refresh or a
 long interval.
 
-The Insights window is a stable seven-section shell. Section content remains
+The Insights window is a stable eight-section shell. Section content remains
 modular under `sections/insights/`. Briefing may consume lightweight live
-sources. Timeline uses bounded and redacted readers. Updates caches successful
-checks. Diagnostics invokes only allowlisted tasks. Console combines a bounded
-read-only command palette with capability-detected handoff to a real Kitty PTY.
-Reports assemble profile-based, previewable evidence from approved sources.
-Wiki renders a bounded local Markdown catalog.
+sources. Notifications reads a bounded private history captured by a narrow
+SwayNotificationCenter receive hook. Timeline uses bounded and redacted
+readers. Updates caches successful checks. Diagnostics invokes only allowlisted
+tasks. Console combines a bounded read-only command palette with
+capability-detected handoff to a real Kitty PTY. Reports assemble profile-based,
+previewable evidence from approved sources. Wiki renders a bounded local
+Markdown catalog.
+
+Notification capture is deliberately separate from popup presentation:
+
+```text
+SwayNotificationCenter receives notification
+  └── configured senomy-history receive hook
+        └── scripts/notification-history.sh capture
+              └── private bounded history.jsonl (newest 120)
+                    └── notification_status (only while route is visible)
+                          └── sections/insights/notifications.yuck
+```
+
+The hook does not replace SwayNC or alter whether its popup appears. Content
+may be personal, so the file is mode 0600, entries are truncated and sanitized,
+actions/hints are excluded, and clearing uses a confirmed UI state.
 
 Wiki keeps authoring separate from presentation:
 
@@ -432,7 +489,7 @@ The parser never evaluates Markdown as Yuck, GTK markup, HTML, or shell code.
 External links are labelled but deliberately not launched. The three-second
 poll runs only while the Wiki route is visible.
 
-Senomy identity artwork follows one manifest and domain-aware resolver:
+Senomy identity artwork follows one manifest and one companion-aware resolver:
 
 ```text
 data/senomy-avatars.json
@@ -440,23 +497,30 @@ data/senomy-avatars.json
         └── senomy_avatar_catalog
               └── widgets/senomy-avatar.yuck
 
-state catalog = idle | focused | thinking | happy | warning | busy | sleeping
+state catalog = idle | focused | thinking | happy | warning | busy | sleeping | browsing | music
 ```
 
 Each state maps independently to a compact chibi asset and a larger portrait
-asset. Bar, Power, Insights, and Performance reuse the same widget and catalog
-instead of selecting private image paths. The widget centrally resolves an
-independent state per domain:
+asset. SVG, PNG, JPG/JPEG, and GIF are accepted after MIME, path, dimension,
+size, and animation-frame validation. Because Eww 0.5 renders GIF animations
+at intrinsic size, the catalog creates private context-sized animated cache
+variants instead of decoding an unbounded source in every surface. Character
+art is rendered only by the Rail avatar and its companion window; primary
+mastheads and content cards communicate with typography and truthful status
+instead of reserving duplicate images. The widget resolves one evidence-driven
+domain:
 
 ```text
-ambient     <- manual chibi_state
-battery     <- UPower state + percentage
-performance <- resource and service observations
-insights    <- active Insights route
+companion <- verified UPower warning, then active MPRIS playback, then browsing
 ```
 
-Domain separation means one verified warning does not incorrectly change
-Senomy in unrelated surfaces.
+`scripts/companion-media.sh` provides a bounded three-second `playerctl`
+snapshot. It selects a playing MPRIS session before paused sessions and emits
+explicit provider/session availability; it neither controls playback nor
+fabricates metadata. Verified low-battery evidence takes visual priority over
+music because it is more urgent. The Rail trigger and expanded companion read
+the same resolver, so the identity changes coherently rather than diverging by
+panel.
 
 Updates uses a command/cache split:
 

@@ -30,7 +30,7 @@ resolve_message() {
     printf 'Low battery. Keep a charger nearby.\n'
     return
   fi
-  ambient="$(timeout --foreground 1s "$EWW_BIN" --config "$CONFIG_DIR" --no-daemonize get senomy_ambient 2>/dev/null || printf '{}')"
+  ambient="$(timeout --foreground 1s "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" get senomy_ambient 2>/dev/null || printf '{}')"
   if ! jq -e '.data.text | type == "string"' >/dev/null 2>&1 <<<"$ambient"; then
     ambient="$($DIALOGUE_BIN ambient 2>/dev/null || printf '{}')"
   fi

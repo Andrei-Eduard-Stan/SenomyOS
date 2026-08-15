@@ -20,7 +20,7 @@ write_operation() {
       label:(($action|gsub("-";" ")|ascii_upcase)),message:$message,exit_code:$exit_code},error:null}' >"$temporary"
   chmod 600 "$temporary"
   mv -f "$temporary" "$OPERATION_FILE"
-  "$EWW_BIN" --config "$CONFIG_ROOT" update "performance_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
+  "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "performance_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
 }
 
 read_operation() {

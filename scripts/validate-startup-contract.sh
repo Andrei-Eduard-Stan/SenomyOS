@@ -7,6 +7,8 @@ export LC_ALL=C
 readonly CONFIG_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly TEST_ROOT="$(mktemp -d /tmp/senomy-startup-contract.XXXXXX)"
 trap 'rm -rf "$TEST_ROOT"' EXIT
+export XDG_RUNTIME_DIR="$TEST_ROOT/runtime"
+mkdir -p "$XDG_RUNTIME_DIR"
 
 cat >"$TEST_ROOT/eww" <<'EOF'
 #!/usr/bin/env bash

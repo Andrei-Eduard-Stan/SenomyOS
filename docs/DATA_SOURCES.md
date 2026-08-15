@@ -47,6 +47,7 @@ secrets.
 |---|---|---:|---|
 | Workspaces | Hyprland `.socket2.sock` events plus `hyprctl -j workspaces`, `activeworkspace`, and `clients` snapshots | event-triggered; 10s cached heartbeat; 30s safety resync | Preserve the systemd-owned listener; discover the active runtime instance if inherited session variables are absent |
 | Battery bar summary | UPower DisplayDevice + per-pack UPower | 10s | Energy-weighted aggregate plus compact dual-pack state |
+| Companion media | MPRIS through `playerctl` | 3s | Read-only active-session snapshot; no playback control or history |
 | Detailed Power | UPower + `/sys/class/power_supply` + optional TLP runtime | 5s while visible | Identity, chemistry, energy, health, wear, cycles, electrical values, estimates, thresholds, effective policy, and explicit unavailable fields |
 | Volume/mute | `pamixer` | event or 1–2s while visible | `wpctl`/`pactl` for endpoints |
 | Audio devices | `wpctl`, `pactl` | event or panel-open poll | Handle PipeWire naming changes |
@@ -197,6 +198,32 @@ collector processes.
 It runs every 15 seconds only while Performance is visible. The persistent
 two-second sample remains owned by `performance-live.sh`, while
 `performance-history.sh` retains the bounded five-minute visual history.
+
+### Performance confidence benchmark
+
+`scripts/benchmark-action.sh plan PROFILE` is the read-only contract for the
+Quick and Standard profiles. `start PROFILE` launches one private detached
+runner only after the Performance UI confirmation. Workloads are implemented
+from fixed argument arrays and project-owned helpers: repeated 8 MiB SHA-256
+blocks, bounded native memory writes, gzip level 1, a private direct-I/O
+scratch file with labelled buffered fallback, and fixed-count process launch.
+
+Quick targets approximately 70 seconds with a 256 MiB storage file. Standard
+targets approximately 210 seconds with a 512 MiB storage file. CPU workers are
+capped at eight; memory is capped at 1 GiB and one quarter of currently
+available memory. Starts are refused below 25% while discharging or below 256
+MiB available memory. `performance-live.sh` samples each sustained workload;
+when a numeric CPU temperature reaches the configured 95 C default, the active
+process group is stopped and the run terminates as `thermal-abort`. Missing
+thermal evidence is reported rather than fabricated; finite duration remains
+the fallback safety boundary.
+
+Status, a bounded log, telemetry JSONL, reports, PDFs, and checksums live under
+the private SenomyOS benchmark XDG state directory. The report collects
+non-secret CPU, memory, PCI/USB, block/filesystem, sensor, display, OS, package,
+and dependency evidence. Serial numbers, MAC/IP addresses, credentials,
+environment dumps, unrestricted logs, network traffic, root access, and
+automatic package installation are excluded.
 
 ## Network status collector
 
@@ -375,12 +402,36 @@ It emits absolute resolved paths only after validation. Eww polls this small
 local catalog every five seconds. No image data, state, or path is sent over
 the network.
 
+Accepted source formats are SVG, PNG, JPG/JPEG, and GIF. Every asset is checked
+for a matching image MIME type and remains under `assets/senomy/`. Animated
+GIFs are limited to 32 MiB, 300 frames, and 4096 by 4096 pixels, then converted
+with ImageMagick into private cached variants sized for the Rail, expanded
+companion, and compact companion contexts. The catalog reports both source and
+resolved context paths so Eww does not resize an intrinsic-size animation at
+render time.
+
 The helper also exposes `list`, `set STATE`, `reset`, and `show`. `set`
 independently validates the state before updating the ambient Eww
-`chibi_state`. Automatic battery, performance, and Insights states are
-centrally derived from their existing structured sources and do not overwrite
-that ambient value. Presentation surfaces never execute a path from widget
-text.
+`chibi_state` for backward-compatible/manual testing. The visible Rail and
+companion state is centrally derived from verified UPower and MPRIS sources;
+panel headers and content cards do not instantiate separate avatar domains.
+Presentation surfaces never execute a path from widget text.
+
+## Companion media snapshot
+
+`scripts/companion-media.sh` emits schema-version-1 JSON from MPRIS through
+`playerctl`. It checks command availability, bounds discovery to 24 players,
+prefers an actively playing session, and truncates title, artist, album, and
+player identity to presentation-safe lengths. The envelope distinguishes an
+unavailable provider from no media session, paused playback, stopped playback,
+and active playback.
+
+Eww polls the snapshot every three seconds because the Rail avatar may react
+even while the expanded companion is closed. This collector is read-only: it
+does not control playback, retain listening history, query a network service,
+or infer a track from window titles. In the companion resolver, verified UPower
+low-battery evidence takes priority over music playback; otherwise the normal
+browsing state is used.
 
 ## Insights Wiki collector
 
@@ -408,6 +459,28 @@ Internal targets are normalized and checked against the parsed catalog.
 Missing targets become visible unavailable links. External links are labelled
 but never opened. Images, HTML, scripts, GTK markup, and code execution are not
 supported. Eww polls every three seconds only while Insights Wiki is visible.
+
+## Insights notification-history collector
+
+`scripts/notification-history.sh capture` receives the documented SwayNC
+script environment and appends one normalized JSON object to a private local
+JSONL history. `scripts/swaync-history-integration.sh install` merges only the
+named `senomy-history` receive rule into the user SwayNC configuration; it
+copies the system default when no user configuration exists and backs up an
+existing user file before changing it.
+
+The collector retains the newest 120 entries by default and rejects configured
+limits above 500. Application, title, body, category, and desktop-entry text is
+stripped of markup and control characters and truncated before storage.
+Notification actions and opaque hints are never stored. The state directory
+and files are mode 0700/0600, remain local, and have an explicit confirmed
+clear action.
+
+`read` combines retained entries with bounded SwayNC count and Do Not Disturb
+queries. Those client queries have a 400ms timeout so an unavailable D-Bus
+provider cannot stall Insights. Eww polls once per second only while Insights /
+Notifications is visible. This is notification history, not a guarantee that
+every application or daemon will emit a notification.
 
 ## Insights timeline collector
 

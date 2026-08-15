@@ -32,7 +32,7 @@ write_operation() {
       message:$message,exit_code:$exit_code},error:null}' >"$temporary"
   chmod 600 "$temporary"
   mv -f "$temporary" "$OPERATION_FILE"
-  "$EWW_BIN" --config "$CONFIG_ROOT" update "power_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
+  "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "power_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
 }
 
 read_operation() {
@@ -51,7 +51,7 @@ refresh_power_status() {
   [[ -x "$CONFIG_ROOT/scripts/power-status.sh" ]] || return 0
   status="$("$CONFIG_ROOT/scripts/power-status.sh" 2>/dev/null)" || return 0
   jq -e . >/dev/null 2>&1 <<<"$status" || return 0
-  "$EWW_BIN" --config "$CONFIG_ROOT" update "power_status=$status" >/dev/null 2>&1 || true
+  "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "power_status=$status" >/dev/null 2>&1 || true
 }
 
 command -v jq >/dev/null 2>&1 || fail "jq is unavailable"

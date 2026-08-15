@@ -265,6 +265,107 @@
   padding: 0;
 }
 
+.senomy-identity {
+  padding-left: 8px;
+}
+
+.notification-history-summary-row {
+  min-height: 38px;
+}
+
+.notification-history-chip,
+.notification-history-clear {
+  min-height: 36px;
+  padding: 0 9px;
+  color: #aeb2ba;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.notification-history-chip.warning {
+  color: #d7b47a;
+  border-color: rgba(196, 155, 99, 0.42);
+}
+
+.notification-history-clear:hover {
+  color: #f1f1f4;
+  border-color: rgba(103, 184, 201, 0.40);
+}
+
+.notification-history-clear.confirm {
+  color: #f0b0aa;
+  background-color: rgba(207, 118, 110, 0.10);
+  border-color: rgba(207, 118, 110, 0.62);
+}
+
+.notification-history-policy,
+.notification-history-empty {
+  padding: 11px 12px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border-left: 2px solid rgba(103, 184, 201, 0.48);
+}
+
+.notification-history-policy-title,
+.notification-history-empty-title {
+  color: #9edce6;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.notification-history-policy-copy,
+.notification-history-empty-copy {
+  color: #aeb2ba;
+  font-size: 10px;
+}
+
+.notification-history-entry {
+  padding: 10px 12px;
+  background-color: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 3px solid #59606a;
+}
+
+.notification-history-entry.low { border-left-color: #68717d; }
+.notification-history-entry.normal { border-left-color: #67b8c9; }
+.notification-history-entry.critical {
+  background-color: rgba(207, 118, 110, 0.045);
+  border-left-color: #cf766e;
+}
+
+.notification-history-app,
+.notification-history-summary {
+  color: #e9eaed;
+  font-weight: 700;
+}
+
+.notification-history-urgency,
+.notification-history-age,
+.notification-history-category {
+  color: #747a84;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.notification-history-urgency.critical { color: #cf827b; }
+.notification-history-body { color: #b8bac2; }
+
+.performance-kpi-head {
+  min-width: 0;
+}
+
+.performance-kpi-code {
+  min-width: 34px;
+}
+
+.performance-kpi-label,
+.performance-kpi-value,
+.performance-kpi-detail {
+  min-width: 0;
+}
+
 .senomy-avatar-bar {
   min-width: 28px;
   min-height: 28px;
@@ -4852,12 +4953,23 @@
 .benchmark-report-body { padding: 14px; }
 .benchmark-copy,
 .benchmark-message { color: #b4b8c0; font-size: 10px; font-weight: 600; }
+.benchmark-warning {
+  padding: 10px 12px;
+  color: #e2c18b;
+  background-color: rgba(196, 155, 99, 0.07);
+  border: 1px solid rgba(196, 155, 99, 0.30);
+  font-size: 9px;
+  font-weight: 800;
+}
+.benchmark-results-grid { padding: 12px 14px; }
+.benchmark-results-grid > box { min-width: 0; }
 .benchmark-stage-row { min-height: 26px; }
-.benchmark-state { color: #8ed1dc; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
+.benchmark-state { min-width: 112px; color: #8ed1dc; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
 .benchmark-state.running { color: #e2c18b; }
 .benchmark-state.succeeded { color: #99d9c2; }
 .benchmark-state.failed,
-.benchmark-state.cancelled { color: #cf827b; }
+.benchmark-state.cancelled,
+.benchmark-state.thermal-abort { color: #cf827b; }
 .benchmark-stage { color: #737985; font-size: 9px; font-weight: 700; }
 .benchmark-progress trough { min-height: 7px; background-color: rgba(255,255,255,0.07); }
 .benchmark-progress trough progress { min-height: 7px; background-color: #67b8c9; }
@@ -5078,6 +5190,202 @@
   box-shadow: none;
 }
 
+/* One primary-surface masthead. Senomy Insights is the visual source of truth;
+ * Control Centre and Performance use the same identity scale and rhythm. */
+.shell-hero-header {
+  min-height: 126px;
+  padding: 10px 14px 10px 16px;
+  border-bottom: 1px solid rgba(152, 146, 232, 0.34);
+}
+
+.shell-hero-header .senomy-avatar-insights-hero {
+  min-width: 108px;
+  min-height: 108px;
+  margin-right: 18px;
+  background-color: rgba(3, 5, 8, 0.55);
+  border-radius: 5px;
+}
+
+.shell-hero-header .senomy-avatar-image {
+  min-width: 102px;
+  min-height: 102px;
+  border-radius: 3px;
+}
+
+.shell-hero-heading {
+  min-width: 0;
+}
+
+.shell-hero-eyebrow {
+  margin-bottom: 5px;
+  color: #9edce6;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.shell-hero-header .shell-title {
+  color: #f1f1f4;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.shell-hero-header .shell-subtitle {
+  margin-top: 4px;
+  color: #b8bac2;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.shell-hero-status {
+  min-width: 0;
+  margin-top: 9px;
+}
+
+.shell-hero-chip {
+  padding: 3px 6px;
+  color: #8ebf9a;
+  background-color: rgba(127, 169, 138, 0.07);
+  border: 1px solid rgba(127, 169, 138, 0.24);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.shell-hero-chip.secondary {
+  color: #9edce6;
+  background-color: rgba(103, 184, 201, 0.055);
+  border-color: rgba(103, 184, 201, 0.25);
+}
+
+.shell-hero-chip.loading,
+.shell-hero-chip.warning {
+  color: #d7b47a;
+  background-color: rgba(196, 155, 99, 0.06);
+  border-color: rgba(196, 155, 99, 0.28);
+}
+
+.shell-hero-header .shell-close {
+  min-width: 42px;
+  min-height: 42px;
+  margin-left: 16px;
+}
+
+.control-centre,
+.control-content,
+.control-body,
+.control-power-section,
+.power-page,
+.power-live-content,
+.power-summary-grid,
+.power-battery-vitals,
+.power-plan-grid,
+.brightness-preset-grid {
+  min-width: 0;
+}
+
+.shell-panel.layout-compact .shell-hero-header {
+  min-height: 110px;
+  padding: 8px 12px;
+}
+
+.shell-panel.layout-compact .shell-hero-header .senomy-avatar-insights-hero {
+  min-width: 88px;
+  min-height: 88px;
+  margin-right: 13px;
+}
+
+.shell-panel.layout-compact .shell-hero-header .senomy-avatar-image {
+  min-width: 82px;
+  min-height: 82px;
+}
+
+.shell-panel.layout-compact .shell-hero-header .shell-title {
+  font-size: 16px;
+}
+
+.shell-panel.layout-narrow .shell-hero-header {
+  min-height: 92px;
+  padding: 7px 10px;
+}
+
+.shell-panel.layout-narrow .shell-hero-header .senomy-avatar-insights-hero {
+  min-width: 72px;
+  min-height: 72px;
+  margin-right: 10px;
+}
+
+.shell-panel.layout-narrow .shell-hero-header .senomy-avatar-image {
+  min-width: 66px;
+  min-height: 66px;
+}
+
+.shell-panel.layout-narrow .shell-hero-eyebrow {
+  font-size: 9px;
+}
+
+.shell-panel.layout-narrow .shell-hero-header .shell-title {
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.shell-panel.layout-narrow .shell-hero-header .shell-subtitle {
+  font-size: 10px;
+}
+
+.shell-panel.layout-narrow .shell-hero-status {
+  margin-top: 5px;
+}
+
+.shell-panel.layout-narrow .shell-hero-chip {
+  padding: 2px 4px;
+  font-size: 8px;
+}
+
+.shell-panel.layout-phone .shell-hero-header {
+  min-height: 82px;
+}
+
+.shell-panel.layout-phone .shell-hero-header .senomy-avatar-insights-hero,
+.shell-panel.layout-phone .shell-hero-header .senomy-avatar-image {
+  min-width: 58px;
+  min-height: 58px;
+}
+
+.shell-panel.layout-phone .shell-hero-status {
+  min-height: 0;
+  margin-top: 0;
+  opacity: 0;
+}
+
+.shell-panel.layout-phone .shell-hero-chip {
+  min-height: 0;
+  padding: 0;
+  border: none;
+  font-size: 0;
+}
+
+/* The shared masthead still honors the persisted Appearance typography. */
+@for $size from 9 through 18 {
+  .appearance-body-px-#{$size} .shell-hero-header .shell-subtitle {
+    font-size: #{$size}px;
+  }
+}
+
+@for $size from 12 through 24 {
+  .appearance-title-px-#{$size} .shell-hero-header .shell-title {
+    font-size: #{$size}px;
+  }
+}
+
+@for $size from 8 through 15 {
+  .appearance-meta-px-#{$size} .shell-hero-eyebrow,
+  .appearance-meta-px-#{$size} .shell-hero-chip {
+    font-size: #{$size}px;
+  }
+}
+
 /* Selected controls retain palette-colored text/edges over a neutral overlay. */
 .bar-control.active,
 .system-summary.active,
@@ -5135,3 +5443,252 @@
 }
 .appearance-operation-progress trough progress { background-color: #c49b63; }
 .appearance-operation.succeeded .appearance-operation-progress trough progress { background-color: #78bec3; }
+
+/* Single-character identity: the avatar is the companion trigger while the
+ * adjacent dialogue remains the separate Insights trigger. */
+.senomy-identity-group {
+  min-height: 36px;
+}
+
+.senomy-companion-trigger {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 0 5px;
+  background-color: transparent;
+  border: none;
+  border-right: 1px solid rgba(152, 146, 232, 0.18);
+  border-bottom: 2px solid transparent;
+}
+
+.senomy-companion-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.senomy-companion-trigger.active {
+  background-color: rgba(152, 146, 232, 0.08);
+  border-bottom-color: #9892e8;
+}
+
+.senomy-identity-group .senomy-trigger {
+  min-height: 36px;
+  padding: 0 14px 0 10px;
+  border: none;
+}
+
+.senomy-identity-group .senomy-copy {
+  min-height: 36px;
+}
+
+.bar.compact .senomy-identity-group .senomy-trigger { padding: 0 9px 0 8px; }
+.bar.layout-phone .senomy-companion-trigger { min-width: 38px; padding: 0 4px; }
+
+/* Chibi artwork no longer owns permanent panel layout. Primary headers keep
+ * the established hierarchy but use the reclaimed width for their copy. */
+.insights-header,
+.shell-hero-header {
+  min-height: 100px;
+  padding: 12px 18px;
+}
+
+.insights-header .shell-heading,
+.shell-hero-heading {
+  margin-left: 0;
+}
+
+.shell-panel.layout-compact .insights-header,
+.shell-panel.layout-compact .shell-hero-header {
+  min-height: 92px;
+  padding: 10px 14px;
+}
+
+.shell-panel.layout-narrow .insights-header,
+.shell-panel.layout-narrow .shell-hero-header {
+  min-height: 84px;
+  padding: 8px 11px;
+}
+
+.shell-panel.layout-phone .insights-header,
+.shell-panel.layout-phone .shell-hero-header {
+  min-height: 78px;
+  padding: 7px 9px;
+}
+
+.control-tech-brief,
+.power-senomy-brief,
+.performance-observer-body {
+  min-width: 0;
+}
+
+/* Edge Perch companion. Expanded is a restrained translucent sidecar;
+ * compact keeps the character and one evidence ribbon without a panel wall. */
+.senomy-companion {
+  color: #f1f1f4;
+  background-color: rgba(7, 9, 12, 0.91);
+  border: 1px solid rgba(103, 184, 201, 0.72);
+  border-radius: 6px;
+}
+
+.senomy-companion.compact {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.companion-toolbar {
+  min-height: 44px;
+  padding: 0 6px;
+  background-color: rgba(8, 10, 13, 0.94);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.senomy-companion.compact .companion-toolbar {
+  margin-bottom: 7px;
+  border: 1px solid rgba(103, 184, 201, 0.54);
+  border-radius: 5px;
+}
+
+.companion-toolbar button {
+  min-height: 36px;
+  padding: 0 7px;
+  color: #9ba0aa;
+  background-color: transparent;
+  border: 1px solid transparent;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.companion-toolbar button:hover {
+  color: #f1f1f4;
+  background-color: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.companion-toolbar .companion-pin.active {
+  color: #9edce6;
+  background-color: rgba(103, 184, 201, 0.08);
+  border-color: rgba(103, 184, 201, 0.32);
+}
+
+.companion-toolbar-title {
+  margin-left: 6px;
+  color: #7d828c;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.senomy-companion.compact .companion-toolbar-title {
+  font-size: 0;
+  opacity: 0;
+}
+
+.companion-stage {
+  min-width: 0;
+  padding: 8px 12px 14px;
+}
+
+.senomy-companion.compact .companion-stage {
+  padding: 0;
+}
+
+.companion-art {
+  min-width: 0;
+  min-height: 0;
+}
+
+.companion-art.expanded {
+  margin: 2px 0 6px;
+}
+
+.companion-art.compact {
+  margin: 0;
+}
+
+.senomy-avatar-companion,
+.senomy-avatar-companion-compact {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.senomy-avatar-companion .senomy-avatar-image,
+.senomy-avatar-companion-compact .senomy-avatar-image {
+  margin: 0;
+}
+
+.companion-observation {
+  padding: 12px;
+  background-color: rgba(2, 4, 7, 0.62);
+  border-top: 1px solid rgba(103, 184, 201, 0.32);
+}
+
+.senomy-companion.compact .companion-observation {
+  margin-top: 2px;
+  padding: 9px 11px;
+  background-color: rgba(6, 8, 11, 0.90);
+  border: 1px solid rgba(103, 184, 201, 0.48);
+  border-radius: 5px;
+}
+
+.companion-eyebrow {
+  color: #9edce6;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.companion-headline {
+  color: #e8e9ec;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.companion-source {
+  color: #737983;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.companion-media-detail {
+  margin-top: 8px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.companion-track {
+  color: #f1f1f4;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.companion-artist {
+  color: #92959f;
+  font-size: 9px;
+}
+
+.companion-actions {
+  min-height: 38px;
+  margin-top: 8px;
+}
+
+.companion-action {
+  min-height: 36px;
+  padding: 0 10px;
+  color: #9edce6;
+  background-color: rgba(103, 184, 201, 0.05);
+  border: 1px solid rgba(103, 184, 201, 0.30);
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.companion-action:hover {
+  color: #ffffff;
+  background-color: rgba(103, 184, 201, 0.11);
+  border-color: rgba(103, 184, 201, 0.58);
+}
+
+.companion-session-state {
+  color: #666c76;
+  font-size: 7px;
+  font-weight: 700;
+}

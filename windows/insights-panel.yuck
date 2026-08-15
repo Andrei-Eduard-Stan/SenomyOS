@@ -81,11 +81,6 @@
       :class "insights-header shell-header"
       :space-evenly false
       :vexpand false
-      (senomy-avatar
-        :variant "chibi"
-        :size 102
-        :context "insights-hero"
-        :domain "insights-header")
       (box
         :class "shell-heading"
         :orientation "v"

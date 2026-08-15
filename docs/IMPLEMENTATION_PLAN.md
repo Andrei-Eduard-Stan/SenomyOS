@@ -128,6 +128,11 @@ Progress:
   narrow information density is capability-derived or user-overridden;
 - all Rail routes, native tray overflow, click-again close, cross-surface
   replacement, and accessible status states passed live validation.
+- the Senomy identity is split into one avatar companion trigger and one
+  adjacent Insights dialogue trigger, while remaining one visual Rail unit;
+- the non-primary companion foundation provides closed, expanded, compact,
+  edge-switch, session-pin, and truthful UPower/MPRIS reaction states without
+  reserving work area.
 
 ## Stage 4 — Senomy Insights foundation
 
@@ -149,8 +154,12 @@ Progress:
 - the dedicated Insights window participates in the shared primary-surface
   state and cannot overlap the Control Centre;
 - the first briefing shows live procfs and UPower observations;
-- Insights exposes modular Briefing, Timeline, Updates, Diagnostics, and
-  Reports sections in one shared Obsidian Rail shell;
+- Insights exposes modular Briefing, Notifications, Timeline, Updates,
+  Diagnostics, Console, Reports, and Wiki sections in one shared Obsidian Rail
+  shell;
+- Notifications retains a bounded private SwayNotificationCenter receive
+  history after transient popups close, exposes provider/DND state, and uses a
+  confirmed clear path;
 - sections without safe connected sources show explicit planned, policy, or
   not-connected states;
 - Timeline now reads bounded and sanitized User, System, Kernel, and Eww
@@ -168,8 +177,8 @@ Progress:
   mutating command is connected;
 - package installation remains deliberately disconnected pending a separate
   review and confirmation design;
-- temporary text marks reserve the avatar locations without committing
-  unfinished character artwork.
+- primary mastheads and content cards no longer reserve repeated character
+  artwork; the single Rail avatar and companion own the visible mascot system.
 
 ## Stage 5 — Control Centre shell and core sections
 
@@ -194,7 +203,7 @@ Progress:
   outside click, Escape, repeated trigger, and cross-trigger switching now
   converge on the same serialized lifecycle.
 - Overview, Network, Audio, Power, Calendar, Input, Device Management,
-  Applications, and Settings are connected; collector polling follows the
+  Applications, Appearance, and Settings are connected; collector polling follows the
   visible section rather than leaving Overview or Device Management on initial
   placeholders;
 - Control Centre, Insights, Performance, Volume, and Tray expose visible close
@@ -259,6 +268,10 @@ Progress:
 - process sorting and selection, bounded procfs detail, private report
   generation, confirmed current-user SIGTERM/SIGKILL, and confirmed restart of
   currently failed user units are connected;
+- Benchmarks now offer confirmed Quick and Standard profiles with sustained
+  CPU, native memory, compression, bounded storage, and responsiveness loads;
+  thermal monitoring, low-battery/low-memory refusal, safe cancellation, and a
+  detailed checksummed hardware/software report are connected;
 - system-unit restart and arbitrary shell execution remain excluded.
 
 ## Stage 8 — Advanced Insights
@@ -279,8 +292,11 @@ Progress:
   explicit;
 - a sixth Wiki route renders bounded local Markdown with category tabs,
   article navigation, tables, code blocks, and validated internal links;
-- a central avatar manifest and shared widget replace per-surface text marks
-  and support separate chibi and portrait assets for seven initial states;
+- a central avatar manifest and shared widget serve the single Rail/companion
+  identity, including dedicated browsing, music, and warning artwork without
+  duplicating the character across primary panels;
+- SVG, PNG, JPG/JPEG, and bounded animated GIF sources are supported, with
+  context-sized GIF cache variants for Eww 0.5;
 - automatic schedules and installation are not connected.
 - Briefing now derives maintenance state from successful cached checks instead
   of presenting a disconnected placeholder;
@@ -312,6 +328,27 @@ Progress:
 - Settings writes a versioned mode-0600 user density preference outside
   packaged defaults and applies Auto, Standard, Compact, or Narrow immediately.
 
+## Stage 9A — Command Lens and File Workspace
+
+Goals:
+
+- replace the unthemed Wofi path with the approved Rofi Command Lens only
+  after manual launch and visual validation;
+- connect native Applications and Windows modes, a bounded local Files mode,
+  and an allowlisted Actions mode;
+- give Thunar a coherent SenomyOS GTK 3 presentation without replacing its
+  native file-operation model;
+- add safe custom actions, preview/search/archive/device capabilities only
+  when their providers are installed and validated;
+- expose versioned appearance preferences across Rofi and GTK without
+  confusing a global GTK theme change with a Thunar-only setting;
+- keep repository sources, user preferences, deployment, backup, and rollback
+  separate.
+
+The selected visual direction and implementation contract are recorded in
+`docs/LAUNCHER_FILE_MANAGER.md`. No launcher binding, live GTK setting,
+Thunar configuration, or optional package is changed by the design stage.
+
 ## Stage 10 — Hardening and responsive pass
 
 Goals:
@@ -337,6 +374,13 @@ Progress on the T480 reference system:
 - fixed panel geometry remains an Eww 0.5/profile-stage limitation. Physical
   multi-monitor, portrait, disconnected-device, and non-T480 testing is still
   required before portability claims.
+- startup and manual recovery enforce one exact config-matched Eww process and one
+  main bar; the shell doctor can capture private incident evidence and perform
+  a preflighted full reset when Eww IPC or a primary surface freezes;
+- every ordinary Eww client is fail-closed with `--no-daemonize`, preventing an
+  IPC race from silently creating a second Rail owner;
+- the non-inotify appearance fallback now checks once per second rather than
+  ten times per second while retaining its recovery heartbeat.
 
 ## Stage 11 — Hardware and form-factor profiles
 
@@ -366,8 +410,9 @@ an optional backlog.
 - Performance metrics must identify source, freshness, units, unavailability,
   and retention period; process and service mutations remain confirmed and
   allowlisted.
-- Insights Briefing, Timeline, Updates, Diagnostics, Console, Reports, and Wiki
-  must each have a tested data contract and must not fabricate evidence.
+- Insights Briefing, Notifications, Timeline, Updates, Diagnostics, Console,
+  Reports, and Wiki must each have a tested data contract and must not
+  fabricate evidence.
 - Persistent Rail sources should be event-driven. Expensive detailed collectors
   run only while their owning surface is visible.
 - Trigger-to-visible latency is measured, with a 200ms target for cached

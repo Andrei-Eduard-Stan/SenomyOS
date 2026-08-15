@@ -18,7 +18,7 @@ trap cleanup EXIT
 eww_get() {
   local attempt output
   for attempt in 1 2 3 4 5; do
-    if output="$("$EWW_BIN" --config "$CONFIG_DIR" get "$1" 2>/dev/null)" && [[ -n "$output" ]]; then
+    if output="$("$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" get "$1" 2>/dev/null)" && [[ -n "$output" ]]; then
       printf '%s\n' "$output"
       return 0
     fi
@@ -29,7 +29,7 @@ eww_get() {
 windows() {
   local attempt output
   for attempt in 1 2 3 4 5; do
-    if output="$("$EWW_BIN" --config "$CONFIG_DIR" active-windows 2>/dev/null)"; then
+    if output="$("$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" active-windows 2>/dev/null)"; then
       printf '%s\n' "$output"
       return 0
     fi
@@ -72,7 +72,7 @@ transition() {
   printf 'PASS  %-28s %4dms\n' "$label" "$elapsed"
 }
 
-"$EWW_BIN" --config "$CONFIG_DIR" ping >/dev/null
+"$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" ping >/dev/null
 cleanup
 assert_state none none none none
 

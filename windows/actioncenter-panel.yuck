@@ -15,7 +15,7 @@
   :geometry (geometry
     :x "0px"
     :y "12px"
-    :width "750px"
+    :width "888px"
     :height "700px"
     :anchor "bottom right")
   :stacking "overlay"
@@ -28,32 +28,16 @@
     :space-evenly false
     :spacing 0
 
-    (box
-      :class "control-header shell-header"
-      :space-evenly false
-      :vexpand false
-      (label
-        :class "shell-header-mark"
-        :text "")
-      (box
-        :class "shell-heading"
-        :orientation "v"
-        :space-evenly false
-        :hexpand true
-        (label
-          :class "control-title shell-title"
-          :xalign 0
-          :text "SENOMY CONTROL CENTRE")
-        (label
-          :class "shell-subtitle"
-          :xalign 0
-          :text "Contextual system controls"))
-      (button
-        :class "control-close shell-close"
-        :tooltip "Close Control Centre"
-        :timeout "8s"
-        :onclick "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout}"
-        ""))
+    (surface-hero-header
+      :surface_class "control-header"
+      :domain "ambient"
+      :eyebrow "SENOMY // SYSTEM CONTROL"
+      :title "SENOMY CONTROL CENTRE"
+      :subtitle "Contextual system controls and guarded device actions"
+      :close_tooltip "Close Control Centre"
+      :close_action "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout}"
+      (label :class "shell-hero-chip ready" :text "10 ROUTES ONLINE")
+      (label :class "shell-hero-chip secondary" :text "LOCAL // GUARDED"))
 
     (box
       :class "control-content shell-content"
