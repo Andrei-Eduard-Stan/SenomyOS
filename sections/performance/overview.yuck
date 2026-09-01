@@ -188,31 +188,4 @@
               :class "performance-scope-note"
               :xalign 0
               :wrap true
-              :text "Advanced battery health, charging controls and power policy belong to Control Centre / Power.")))
-
-        (box
-          :class "performance-card performance-overview-observer"
-          :orientation "v"
-          :space-evenly false
-          (performance-section-title
-            :code "S"
-            :title "SENOMY OBSERVER"
-            :subtitle "Read-only system interpretation")
-          (box
-            :class "performance-observer-body"
-            :orientation "v"
-            :space-evenly false
-            :spacing 9
-            (label
-              :class "performance-observer-message"
-              :xalign 0
-              :wrap true
-              :text {performance_status?.data?.services?.failed_total == 0
-                ? "Seno: System services are steady. Deep telemetry is recording locally."
-                : "Seno: A failed service needs inspection. I can open the diagnostic deck."})
-            (button
-              :class "performance-observer-action"
-              :tooltip "Open curated diagnostics in Senomy Insights"
-              :timeout "8s"
-              :onclick "$HOME/.config/eww/scripts/surface-state.sh show-insights diagnostics ${active_surface} ${active_flyout}"
-              "OPEN DIAGNOSTICS")))))))
+              :text "Advanced battery health, charging controls and power policy belong to Control Centre / Power.")))))))

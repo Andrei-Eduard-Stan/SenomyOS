@@ -86,4 +86,44 @@ jq -e --argjson exit_code "$exit_code" '
 printf 'PASS  %-26s exit=%s\n' "brightness rejection" "$exit_code"
 pass=$((pass + 1))
 
+ACTION_LOG="$TEST_ROOT/session-actions.log"
+cat >"$TEST_ROOT/fake-action" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >>"$SENOMY_TEST_ACTION_LOG"
+EOF
+chmod 755 "$TEST_ROOT/fake-action"
+
+for action in lock suspend logout reboot poweroff; do
+  SENOMY_TEST_ACTION_LOG="$ACTION_LOG" \
+  SENOMY_LOCK_BIN="$TEST_ROOT/fake-action" \
+  SENOMY_SYSTEMCTL_BIN="$TEST_ROOT/fake-action" \
+  SENOMY_HYPRCTL_BIN="$TEST_ROOT/fake-action" \
+    "$CONFIG_DIR/scripts/session-action.sh" "$action"
+done
+diff -u <(printf '%s\n' '' 'suspend' 'dispatch exit' 'reboot' 'poweroff') "$ACTION_LOG"
+if SENOMY_TEST_ACTION_LOG="$ACTION_LOG" \
+  SENOMY_LOCK_BIN="$TEST_ROOT/fake-action" \
+  SENOMY_SYSTEMCTL_BIN="$TEST_ROOT/fake-action" \
+  SENOMY_HYPRCTL_BIN="$TEST_ROOT/fake-action" \
+    "$CONFIG_DIR/scripts/session-action.sh" shell >/dev/null 2>&1; then
+  printf 'Session action allowlist unexpectedly accepted shell.\n' >&2
+  exit 1
+fi
+printf 'PASS  %-26s\n' "session action allowlist"
+pass=$((pass + 1))
+
+: >"$ACTION_LOG"
+SENOMY_TEST_ACTION_LOG="$ACTION_LOG" SENOMY_SWAYNC_CLIENT_BIN="$TEST_ROOT/fake-action" \
+  "$CONFIG_DIR/scripts/notification-action.sh" toggle-dnd
+SENOMY_TEST_ACTION_LOG="$ACTION_LOG" SENOMY_SWAYNC_CLIENT_BIN="$TEST_ROOT/fake-action" \
+  "$CONFIG_DIR/scripts/notification-action.sh" close-all
+diff -u <(printf '%s\n' '--toggle-dnd' '--close-all') "$ACTION_LOG"
+if SENOMY_TEST_ACTION_LOG="$ACTION_LOG" SENOMY_SWAYNC_CLIENT_BIN="$TEST_ROOT/fake-action" \
+  "$CONFIG_DIR/scripts/notification-action.sh" execute >/dev/null 2>&1; then
+  printf 'Notification action allowlist unexpectedly accepted execute.\n' >&2
+  exit 1
+fi
+printf 'PASS  %-26s\n' "notification action allowlist"
+pass=$((pass + 1))
+
 printf '\nSenomyOS action contracts: %d rejection paths passed.\n' "$pass"

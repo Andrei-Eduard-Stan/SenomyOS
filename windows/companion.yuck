@@ -1,4 +1,5 @@
 (defwindow companion
+  :namespace "senomy-companion"
   :geometry (geometry
     :x "12px"
     :y "72px"

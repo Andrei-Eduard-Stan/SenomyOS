@@ -1,5 +1,6 @@
 (defwidget battery-button []
   (button
+    :hexpand true
     :class {active_surface == "control" && control_section == "power"
       ? "icon-button bar-control battery-control active"
       : (batt_json.available == true && batt_json.percent_total <= 20 && batt_json.state != "charging"
@@ -23,7 +24,7 @@
       :halign "center"
       :valign "center"
       :space-evenly false
-      :spacing 5
+      :spacing 3
       (bar-icon
         :icon {batt_json.available != true
           ? "battery-50"

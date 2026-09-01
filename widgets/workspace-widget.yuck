@@ -1,31 +1,51 @@
-(defwidget workspace-app-icon [app]
+(defwidget workspace-grid-cell [cell]
   (box
-    :class "workspace-app-icon"
-    :tooltip {app.count > 1
-      ? "${app.name} · ${app.count} windows"
-      : app.name}
+    :class {cell.kind == "overflow"
+      ? "workspace-grid-cell overflow"
+      : "workspace-grid-cell app"}
+    :tooltip {cell.kind == "overflow"
+      ? "${cell.count} additional applications"
+      : (cell.count > 1
+        ? "${cell.name} · ${cell.count} windows"
+        : cell.name)}
     :halign "center"
     :valign "center"
     :space-evenly false
-    :spacing 2
+    :spacing 0
 
-    (image
-      :class "workspace-app-image"
+    (overlay
+      :class "workspace-app-overlay"
+      :visible {cell.kind == "app"}
       :halign "center"
       :valign "center"
-      :path {app.icon_path ?: ""}
-      :image-width 16
-      :image-height 16)
+      (image
+        :class "workspace-app-image"
+        :halign "center"
+        :valign "center"
+        :path {cell.icon_path ?: ""}
+        :image-width 14
+        :image-height 14)
+      (label
+        :class "workspace-app-count"
+        :halign "end"
+        :valign "end"
+        :visible {cell.count > 1}
+        :text {cell.count}))
 
     (label
-      :class "workspace-app-count"
+      :class "workspace-overflow"
+      :halign "center"
       :valign "center"
-      :visible {app.count > 1}
-      :text {app.count})))
+      :visible {cell.kind == "overflow"}
+      :text "+${cell.count}")))
 
 (defwidget workspace-chip [workspace]
   (button
-    :visible {bar_layout?.data?.phone != true || workspace.active}
+    :visible {bar_layout?.data?.phone == true
+      ? workspace.active
+      : (bar_layout?.data?.narrow == true
+        ? (workspace.active || workspace.occupied)
+        : true)}
     :class {workspace.active
       ? "workspace-chip active"
       : (workspace.occupied
@@ -37,44 +57,161 @@
 
     (box
       :class "workspace-chip-content"
+      :orientation "v"
+      :halign "fill"
       :valign "center"
+      :hexpand true
+      :vexpand false
       :space-evenly false
+      :spacing 0
 
-      (label
-        :class "workspace-number"
-        :halign "center"
-        :valign "center"
-        :xalign 0.5
-        :yalign 0.5
-        :text {workspace.id})
-
+      ;; The number is real content in a structural opening. Equal expanding
+      ;; edge segments keep the bay mathematically centred at every chip width;
+      ;; no opaque patch hides a border behind the label.
       (box
-        :class "workspace-apps"
-        :visible {bar_layout?.data?.phone != true && workspace.app_count > 0}
-        :valign "center"
+        :class "workspace-frame-label-bay"
+        :orientation "h"
+        :halign "fill"
+        :valign "start"
+        :hexpand true
+        :vexpand false
         :space-evenly false
-        :spacing 4
+        :spacing 0
 
-        (for app in {workspace.apps}
-          (workspace-app-icon :app app))
+        (box
+          :class "workspace-frame-bay-segment start"
+          :hexpand true
+          :vexpand false)
 
         (label
-          :class "workspace-overflow"
+          :class "workspace-number workspace-number-anchor"
+          :halign "center"
           :valign "center"
-          :visible {workspace.overflow_count > 0}
-          :tooltip {"${workspace.overflow_count} additional applications"}
-          :text "+${workspace.overflow_count}")))))
+          :vexpand false
+          :xalign 0.5
+          :yalign 0.5
+          :text {workspace.id})
 
-(defwidget workspace-indicator []
+        (box
+          :class "workspace-frame-bay-segment end"
+          :hexpand true
+          :vexpand false))
+
+      (box
+        :class "workspace-apps workspace-app-tray"
+        :visible {bar_layout?.data?.narrow != true}
+        :orientation "v"
+        :halign "center"
+        :valign "center"
+        :vexpand false
+        :space-evenly false
+        :spacing 2
+
+        (for row in {workspace.grid_rows ?: []}
+          (box
+            :class "workspace-app-grid-row"
+            :halign "center"
+            :valign "center"
+            :space-evenly false
+            :spacing 3
+            (for cell in {row}
+              (workspace-grid-cell :cell cell)))))
+
+      (box
+        :class "workspace-occupancy-dot"
+        :halign "center"
+        :valign "center"
+        :vexpand false
+        :visible {workspace.occupied}))))
+
+(defwidget workspace-carousel-arrow [direction enabled visible]
+  (button
+    :class {enabled
+      ? "workspace-carousel-nav ${direction}"
+      : "workspace-carousel-nav ${direction} disabled"}
+    :active {enabled}
+    :visible {visible}
+    :halign "center"
+    :valign "center"
+    :tooltip {direction == "previous"
+      ? (enabled ? "Show previous workspaces" : "First workspace group")
+      : (enabled ? "Show next workspaces" : "Last workspace group")}
+    :timeout "1s"
+    :onclick "$HOME/.config/eww/scripts/workspace-carousel.sh ${direction}"
+
+    (transform
+      :rotate {direction == "previous" ? -90 : 90}
+      (image
+        :class "workspace-carousel-nav-icon"
+        :path "${EWW_CONFIG_DIR}/assets/icons/bar/tray-up.svg"
+        :image-width 14
+        :image-height 14))))
+
+(defwidget workspace-carousel-page [page]
   (box
-    :class "workspace-strip"
+    :class "workspace-carousel-page"
     :space-evenly false
-    :spacing 2
+    :spacing 10
 
-    (for workspace in {workspace_state?.data?.workspaces ?: []}
+    (for workspace in {page}
       (workspace-chip :workspace workspace))
 
     (label
       :class "workspace-loading"
-      :visible {(workspace_state?.data?.workspaces ?: []) == []}
+      :visible {arraylength(page) == 0}
       :text "WS --")))
+
+(defwidget workspace-carousel [workspaces capacity]
+  (eventbox
+    :class "workspace-carousel-events"
+    :onscroll "$HOME/.config/eww/scripts/workspace-carousel.sh scroll {}"
+    (box
+      :class {arraylength(workspaces) > capacity
+        ? "workspace-strip workspace-carousel overflowing"
+        : "workspace-strip workspace-carousel"}
+      :orientation "h"
+      :halign "start"
+      :valign "start"
+      :space-evenly false
+      :spacing 8
+
+      (workspace-carousel-arrow
+        :direction "previous"
+        :enabled {workspace_carousel_offset > 0}
+        :visible {arraylength(workspaces) > capacity})
+
+      ;; Eww cannot generate an arbitrary number of direct GtkStack children.
+      ;; Two fixed page buffers therefore alternate: the selected buffer owns
+      ;; the current slice and the inactive one retains the previous slice
+      ;; during the native clipped transition.
+      (stack
+        :class "workspace-carousel-viewport"
+        :halign "start"
+        :valign "start"
+        :same-size true
+        :selected {workspace_carousel_slot}
+        :transition {workspace_carousel_direction == "previous"
+          ? "slideright"
+          : "slideleft"}
+
+        (workspace-carousel-page
+          :page {jq(workspaces,
+            "(${workspace_carousel_slot == 0 ? workspace_carousel_offset : workspace_carousel_previous_offset}) as $requested | (if length <= ${capacity} then 0 elif $requested < 0 then 0 elif $requested > (length - ${capacity}) then (length - ${capacity}) else $requested end) as $offset | .[$offset:($offset + ${capacity})]")})
+
+        (workspace-carousel-page
+          :page {jq(workspaces,
+            "(${workspace_carousel_slot == 1 ? workspace_carousel_offset : workspace_carousel_previous_offset}) as $requested | (if length <= ${capacity} then 0 elif $requested < 0 then 0 elif $requested > (length - ${capacity}) then (length - ${capacity}) else $requested end) as $offset | .[$offset:($offset + ${capacity})]")}))
+
+      (workspace-carousel-arrow
+        :direction "next"
+        :enabled {workspace_carousel_offset < arraylength(workspaces) - capacity}
+        :visible {arraylength(workspaces) > capacity}))))
+
+(defwidget workspace-indicator []
+  (workspace-carousel
+    :capacity {bar_layout?.data?.phone == true ? 1 : 4}
+    :workspaces {bar_layout?.data?.phone == true
+      ? jq((workspace_state?.data?.workspaces ?: []), "map(select(.active == true))")
+      : (bar_layout?.data?.narrow == true
+        ? jq((workspace_state?.data?.workspaces ?: []), "map(select(.active == true or .occupied == true))")
+        : (workspace_state?.data?.workspaces ?: []))}))

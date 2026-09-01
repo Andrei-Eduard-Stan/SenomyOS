@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+export LC_ALL=C
+
+readonly CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprlock.conf"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+if ! command -v hyprlock >/dev/null 2>&1; then
+  printf 'SenomyOS lock: hyprlock is not installed.\n' >&2
+  command -v notify-send >/dev/null 2>&1 &&
+    notify-send --urgency=critical 'SenomyOS lock unavailable' 'Install the hyprlock package, then apply the lock appearance.'
+  exit 69
+fi
+
+[[ -f "$CONFIG" && ! -L "$CONFIG" ]] || {
+  printf 'SenomyOS lock: deployed configuration is unavailable: %s\n' "$CONFIG" >&2
+  exit 78
+}
+
+if pgrep -x hyprlock >/dev/null 2>&1; then
+  exit 0
+fi
+
+exec hyprlock --config "$CONFIG"

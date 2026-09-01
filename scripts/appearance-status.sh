@@ -6,13 +6,18 @@ export LC_ALL=C
 
 readonly HOME_DIR="${HOME:-/nonexistent}"
 readonly PREFERENCES="${SENOMY_PREFERENCES:-${XDG_CONFIG_HOME:-$HOME_DIR/.config}/senomyos/preferences.json}"
+readonly PROFILE="${SENOMY_PROFILE:-${XDG_CONFIG_HOME:-$HOME_DIR/.config}/senomyos/profile.json}"
 printf -v observed_at '%(%s)T' -1
 
 defaults='{"font_family":"jetbrains","font_scale":"standard","heading_scale":"standard","body_scale":"standard","meta_scale":"standard","title_px":16,"body_px":11,"meta_px":9,"nav_px":10,"rail_px":11,"accent":"cyan","gradient":"subtle"}'
 current='{}'
+profile_defaults='{}'
+if [[ -r "$PROFILE" ]] && jq -e '.schema_version == 1 and (.appearance | type == "object")' "$PROFILE" >/dev/null 2>&1; then
+  profile_defaults="$(jq -c '.appearance' "$PROFILE")"
+fi
 if [[ -r "$PREFERENCES" ]] && jq -e 'type == "object"' "$PREFERENCES" >/dev/null 2>&1; then current="$(cat "$PREFERENCES")"; fi
 
-resolved="$(jq -nc --argjson defaults "$defaults" --argjson current "$current" '$defaults + $current')"
+resolved="$(jq -nc --argjson defaults "$defaults" --argjson profile "$profile_defaults" --argjson current "$current" '$defaults + $profile + $current')"
 font_family="$(jq -r '.font_family' <<<"$resolved")"; case "$font_family" in jetbrains | iosevka) ;; *) font_family=jetbrains ;; esac
 font_scale="$(jq -r '.font_scale' <<<"$resolved")"; case "$font_scale" in standard | large | touch) ;; *) font_scale=standard ;; esac
 heading_scale="$(jq -r '.heading_scale' <<<"$resolved")"; case "$heading_scale" in standard | large) ;; *) heading_scale=standard ;; esac

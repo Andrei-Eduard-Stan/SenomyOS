@@ -21,6 +21,22 @@ fail() {
   exit 1
 }
 
+image_identify() {
+  if command -v magick >/dev/null 2>&1; then
+    magick identify "$@"
+  else
+    identify "$@"
+  fi
+}
+
+image_convert() {
+  if command -v magick >/dev/null 2>&1; then
+    magick "$@"
+  else
+    convert "$@"
+  fi
+}
+
 emit_error() {
   local code="$1"
   local message="$2"
@@ -58,6 +74,11 @@ validate_manifest() {
         and (.label | type == "string" and length > 0 and length <= 64)
         and (.emotion | type == "string" and length <= 64)
         and (.activity | type == "string" and length <= 64)
+        and ((.bar // .chibi) | type == "string"
+          and startswith("assets/senomy/")
+          and (contains("..") | not)
+          and test("^[A-Za-z0-9_./-]+$")
+          and test("\\.(svg|png|jpe?g|gif)$"; "i"))
         and (.chibi | type == "string"
           and startswith("assets/senomy/")
           and (contains("..") | not)
@@ -88,8 +109,9 @@ validate_manifest() {
         ;;
     esac
     if [[ "$extension" == gif ]]; then
-      command -v identify >/dev/null 2>&1 && command -v convert >/dev/null 2>&1 || {
-        printf 'Animated GIF avatars require ImageMagick identify and convert\n' >&2
+      command -v magick >/dev/null 2>&1 ||
+        { command -v identify >/dev/null 2>&1 && command -v convert >/dev/null 2>&1; } || {
+        printf 'Animated GIF avatars require ImageMagick\n' >&2
         return 1
       }
       bytes="$(stat -c %s "$CONFIG_DIR/$relative" 2>/dev/null || printf 0)"
@@ -97,7 +119,7 @@ validate_manifest() {
         printf 'Animated GIF avatar exceeds the 32 MiB safety limit: %s\n' "$relative" >&2
         return 1
       }
-      dimensions="$(identify -format '%n %w %h\n' "$CONFIG_DIR/$relative" 2>/dev/null | head -n 1 || true)"
+      dimensions="$(image_identify -format '%n %w %h\n' "$CONFIG_DIR/$relative" 2>/dev/null | head -n 1 || true)"
       read -r frames width height <<<"$dimensions"
       [[ "$frames" =~ ^[1-9][0-9]*$ && "$width" =~ ^[1-9][0-9]*$ && "$height" =~ ^[1-9][0-9]*$ ]] || {
         printf 'Unable to inspect animated GIF avatar: %s\n' "$relative" >&2
@@ -108,12 +130,12 @@ validate_manifest() {
         return 1
       }
     fi
-  done < <(
-    "$JQ_BIN" -r '.states[] | [.id, .chibi, .id, .portrait] | @tsv' "$MANIFEST" |
-      while IFS=$'\t' read -r chibi_id chibi portrait_id portrait; do
-        printf '%s\t%s\n%s\t%s\n' "$chibi_id" "$chibi" "$portrait_id" "$portrait"
-      done
-  )
+  done < <("$JQ_BIN" -r '
+    .states[]
+    | .id as $id
+    | ([$id, (.bar // .chibi)], [$id, .chibi], [$id, .portrait])
+    | @tsv
+  ' "$MANIFEST")
 }
 
 render_asset() {
@@ -131,7 +153,7 @@ render_asset() {
   output="$CACHE_ROOT/${digest}-${size}.gif"
   if [[ ! -s "$output" ]]; then
     temporary="$(mktemp --suffix=.gif "$CACHE_ROOT/.avatar.XXXXXX")" || return 1
-    if ! convert "$source" -coalesce -resize "${size}x${size}" -layers Optimize "$temporary"; then
+    if ! image_convert "$source" -coalesce -resize "${size}x${size}" -layers Optimize "$temporary"; then
       rm -f "$temporary"
       return 1
     fi
@@ -142,7 +164,7 @@ render_asset() {
 }
 
 emit_catalog() {
-  local observed_at render_rows render_path state_id chibi portrait context variant size relative
+  local observed_at render_rows render_path state_id bar chibi portrait context variant size relative
   local renders_json
 
   if ! validate_manifest; then
@@ -155,9 +177,15 @@ emit_catalog() {
     emit_error "cache_unavailable" "Unable to prepare avatar render paths."
     return
   }
-  while IFS=$'\t' read -r state_id chibi portrait; do
+  while IFS=$'\t' read -r state_id bar chibi portrait; do
     while IFS=$'\t' read -r context variant size; do
-      if [[ "$variant" == chibi ]]; then relative="$chibi"; else relative="$portrait"; fi
+      if [[ "$variant" == bar ]]; then
+        relative="$bar"
+      elif [[ "$variant" == chibi ]]; then
+        relative="$chibi"
+      else
+        relative="$portrait"
+      fi
       if ! render_path="$(render_asset "$relative" "$size")"; then
         rm -f "$render_rows"
         emit_error "render_failed" "Unable to prepare an animated avatar render."
@@ -165,7 +193,7 @@ emit_catalog() {
       fi
       printf '%s\t%s\t%s\n' "$state_id" "$context" "$render_path" >>"$render_rows"
     done <<'EOF'
-bar	chibi	24
+bar	bar	48
 observer	portrait	52
 overview	chibi	74
 insights-hero	chibi	102
@@ -173,7 +201,7 @@ power	chibi	104
 companion	chibi	288
 companion-compact	chibi	248
 EOF
-  done < <("$JQ_BIN" -r '.states[] | [.id, .chibi, .portrait] | @tsv' "$MANIFEST")
+  done < <("$JQ_BIN" -r '.states[] | [.id, (.bar // .chibi), .chibi, .portrait] | @tsv' "$MANIFEST")
   renders_json="$("$JQ_BIN" -Rsc '
     split("\n")
     | map(select(length > 0) | split("\t") | {state:.[0],context:.[1],path:.[2]})

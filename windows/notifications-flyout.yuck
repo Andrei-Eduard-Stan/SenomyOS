@@ -1,0 +1,129 @@
+(defwidget notifications-flyout-content []
+  (box
+    :class "utility-flyout-content notifications-flyout-content"
+    :orientation "v"
+    :space-evenly false
+    :vexpand true
+    :spacing 11
+
+    (box
+      :class "utility-flyout-header"
+      :space-evenly false
+      :spacing 10
+      (box
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        :spacing 3
+        (label :class "utility-flyout-eyebrow" :xalign 0 :text "NOTIFICATIONS // LOCAL")
+        (label :class "utility-flyout-title" :xalign 0 :text "Event inbox"))
+      (label
+        :class {notification_status?.data?.do_not_disturb == true ? "utility-flyout-state warning" : "utility-flyout-state ready"}
+        :text {notification_status?.data?.do_not_disturb == true ? "DND ON" : "DND OFF"})
+      (button
+        :class "flyout-close"
+        :tooltip "Close notifications"
+        :timeout "4s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh dismiss ${active_surface} ${active_flyout}"
+        ""))
+
+    (box
+      :class "notification-flyout-actions"
+      :space-evenly false
+      :spacing 8
+      (button
+        :class {notification_status?.data?.do_not_disturb == true ? "notification-flyout-action active" : "notification-flyout-action"}
+        :active {notification_status?.data?.provider_available == true}
+        :tooltip "Toggle Do Not Disturb"
+        :timeout "4s"
+        :onclick "$HOME/.config/eww/scripts/notification-action.sh toggle-dnd"
+        (box :space-evenly false :spacing 7
+          (label :class "notification-flyout-action-icon" :text "󰂛")
+          (label :text "DO NOT DISTURB")))
+      (button
+        :class "notification-flyout-action"
+        :active {(notification_status?.data?.active_count ?: 0) > 0}
+        :tooltip "Dismiss every active popup"
+        :timeout "4s"
+        :onclick "$HOME/.config/eww/scripts/notification-action.sh close-all"
+        "DISMISS LIVE"))
+
+    (box
+      :class "notification-flyout-summary"
+      :space-evenly false
+      :spacing 8
+      (label :class "notification-history-chip" :text "LIVE  ${notification_status?.data?.active_count ?: 0}")
+      (label :class "notification-history-chip" :text "RETAINED  ${notification_status?.data?.retained_count ?: 0}")
+      (box :hexpand true)
+      (button
+        :class {pending_action == "clear-notification-history" ? "notification-history-clear confirm" : "notification-history-clear"}
+        :active {(notification_status?.data?.retained_count ?: 0) > 0}
+        :tooltip "Permanently clear the private local notification history"
+        :timeout "8s"
+        :onclick {pending_action == "clear-notification-history"
+          ? "$HOME/.config/eww/scripts/notification-history.sh clear >/dev/null && ${EWW_CMD} update pending_action=none"
+          : "${EWW_CMD} update pending_action=clear-notification-history"}
+        {pending_action == "clear-notification-history" ? "CONFIRM CLEAR" : "CLEAR HISTORY"}))
+
+    (box
+      :class "notification-flyout-empty"
+      :visible {(notification_status?.data?.entries ?: []) == []}
+      :orientation "v"
+      :space-evenly false
+      :vexpand true
+      :spacing 5
+      (label :class "notification-history-empty-title" :xalign 0 :text "INBOX QUIET")
+      (label
+        :class "notification-history-empty-copy"
+        :xalign 0
+        :wrap true
+        :text {notification_status?.data?.capture_configured == true
+          ? "No retained notifications. New events will appear here without opening Senomy Insights."
+          : "The local history hook is not configured. Live count and Do Not Disturb controls remain available."}))
+
+    (scroll
+      :class "notification-flyout-scroll"
+      :visible {(notification_status?.data?.entries ?: []) != []}
+      :vscroll true
+      :hscroll false
+      :vexpand true
+      (box
+        :class "notification-flyout-list"
+        :orientation "v"
+        :space-evenly false
+        :spacing 8
+        (for entry in {notification_status?.data?.entries ?: []}
+          (notification-history-entry :entry entry))))
+
+    (box
+      :class "utility-flyout-footer"
+      :space-evenly false
+      (label
+        :class "utility-flyout-meta"
+        :xalign 0
+        :hexpand true
+        :text {notification_status?.data?.capture_configured == true ? "PRIVATE CACHE // MODE 0600" : "HISTORY HOOK OFFLINE"})
+      (button
+        :class "utility-flyout-cancel"
+        :visible {pending_action == "clear-notification-history"}
+        :onclick "${EWW_CMD} update pending_action=none"
+        "CANCEL"))))
+
+(defwindow notifications-flyout
+  :namespace "senomy-flyout"
+  :geometry (geometry
+    :x "74px"
+    :y "10px"
+    :width "480px"
+    :height "560px"
+    :anchor "bottom right")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "notifications-flyout utility-flyout shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+    :orientation "v"
+    :space-evenly false
+    :vexpand true
+    (notifications-flyout-content)))

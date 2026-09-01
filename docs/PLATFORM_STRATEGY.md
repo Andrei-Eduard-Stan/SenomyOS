@@ -106,6 +106,12 @@ portable defaults
 
 Profiles should contain only necessary differences.
 
+The first implemented profile set is `automatic`, `desktop`, `touch`, and
+`narrow` under `deploy/profiles/`. `automatic` is the fallback for unknown or
+mixed hardware. These profiles do not claim device compatibility; they only
+select bounded presentation and density defaults, and explicit user
+preferences remain higher priority.
+
 Avoid embedding:
 
 - usernames or fixed home paths;
@@ -134,6 +140,12 @@ Avoid embedding:
 - enable required user/system services;
 - select a profile during first boot;
 - retain logs and rollback information.
+
+Current progress: package and service manifests, transactional user/system
+deployment, profile selection, a confirmed already-installed-Arch bootstrap,
+and isolated clean-home/clean-root acceptance are implemented. A clean-root
+stage is not a clean virtual-machine cold boot, so the Phase B portability gate
+remains open.
 
 ### Phase C — Packaged SenomyOS components
 
@@ -217,6 +229,13 @@ safe suspend/power actions
 
 Profiles must have a portable fallback. Unknown hardware should boot into a
 safe generic layout with unsupported features marked unavailable.
+
+The current profile contract implements that fallback and validates an
+explicit display scale, density, font scale, wallpaper mode, layout mode, and
+feature flags. `automatic` and desktop-class profiles use scale 1 rather than
+PPI-derived compositor scaling; touch may explicitly select 1.25. Runtime
+capability detection and physical multi-form-factor evidence remain separate
+work.
 
 ## Testing strategy
 

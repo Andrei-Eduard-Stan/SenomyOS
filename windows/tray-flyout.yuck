@@ -60,11 +60,12 @@
       "MANAGE APPLICATIONS")))
 
 (defwindow tray-flyout
+  :namespace "senomy-flyout"
   :geometry (geometry
     :x "286px"
     :y "10px"
-    :width "260px"
-    :height "112px"
+    :width "340px"
+    :height "150px"
     :anchor "bottom right")
   :stacking "overlay"
   :focusable false

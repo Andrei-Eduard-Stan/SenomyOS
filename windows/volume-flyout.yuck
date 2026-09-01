@@ -79,11 +79,12 @@
       "")))
 
 (defwindow volume-flyout
+  :namespace "senomy-flyout"
   :geometry (geometry
     :x "128px"
     :y "10px"
-    :width "350px"
-    :height "62px"
+    :width "420px"
+    :height "96px"
     :anchor "bottom right")
   :stacking "overlay"
   :focusable false

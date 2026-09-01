@@ -202,6 +202,25 @@ toggle_dock() {
   [[ "$mode" == closed ]] || open_mode "$mode"
 }
 
+suspend_for_capture() {
+  # Preserve companion_mode/dock/pin while releasing the layer-shell input
+  # region above Flameshot's frozen image.
+  cancel_expiry
+  if window_is_open; then
+    eww_call close "$WINDOW" >/dev/null 2>&1 || true
+    wait_for_window closed || fail "Unable to suspend the companion for capture"
+  fi
+}
+
+restore_after_capture() {
+  local mode
+  mode="$(get_value companion_mode closed)"
+  is_mode "$mode" || mode=closed
+  if [[ "$mode" != closed ]] && ! window_is_open; then
+    open_mode "$mode"
+  fi
+}
+
 mkdir -p "$RUNTIME_ROOT" || fail "Unable to create the runtime directory"
 if [[ "$ACTION" != status ]]; then
   command -v flock >/dev/null 2>&1 || fail "flock is unavailable"
@@ -218,6 +237,8 @@ case "$ACTION" in
   close) close_window || fail "Unable to close the companion" ;;
   pin) toggle_pin ;;
   dock) toggle_dock ;;
+  capture-suspend) suspend_for_capture ;;
+  capture-restore) restore_after_capture ;;
   expire)
     [[ -n "$VALUE" && "$(cat "$EXPIRY_FILE" 2>/dev/null)" == "$VALUE" ]] || exit 0
     [[ "$(get_value companion_pinned false)" == false ]] || exit 0
@@ -230,5 +251,5 @@ case "$ACTION" in
     printf 'pinned=%s\n' "$(get_value companion_pinned false)"
     if window_is_open; then printf 'window=open\n'; else printf 'window=closed\n'; fi
     ;;
-  *) fail "Usage: companion-state.sh {toggle|open|expand|collapse|close|pin|dock|status}" ;;
+  *) fail "Usage: companion-state.sh {toggle|open|expand|collapse|close|pin|dock|capture-suspend|capture-restore|status}" ;;
 esac

@@ -60,12 +60,29 @@ expect_value() {
   return 1
 }
 
+expect_layer_size() {
+  local expected="$1" namespace="$2" width height attempt
+  width="${expected%x*}"
+  height="${expected#*x}"
+  for attempt in {1..30}; do
+    if hyprctl layers -j 2>/dev/null | jq -e --arg namespace "$namespace" --argjson width "$width" --argjson height "$height" '
+      any(to_entries[].value.levels["3"][]?;
+        .namespace == $namespace and .w == $width and .h == $height)
+    ' >/dev/null; then
+      return 0
+    fi
+    sleep 0.1
+  done
+  return 1
+}
+
 pass() { tests=$((tests + 1)); printf 'PASS  %s\n' "$1"; sleep "$SETTLE"; }
 
 health
 cleanup
 "$SURFACE" show-control overview
 expect_window actioncenter
+expect_layer_size "$("$SURFACE" size actioncenter)" senomy-control
 pass "Control / overview opens"
 for section in network audio power calendar input devices apps appearance settings; do
   "$UI" control-section "$section"
@@ -76,6 +93,7 @@ done
 
 "$SURFACE" show-insights briefing
 expect_window insights
+expect_layer_size "$("$SURFACE" size insights)" senomy-insights
 pass "Control -> Insights switch"
 for section in notifications timeline updates diagnostics console reports wiki; do
   "$UI" insights-section "$section"
@@ -86,11 +104,14 @@ done
 
 "$SURFACE" show-performance
 expect_window performance
+performance_size="$("$SURFACE" size performance)"
+expect_layer_size "$performance_size" senomy-performance
 pass "Insights -> Performance switch"
 for section in cpu memory storage network processes benchmarks overview; do
   "$UI" performance-section "$section"
   expect_value performance_section "$section"
   expect_window performance
+  expect_layer_size "$performance_size" senomy-performance
   pass "Performance / $section"
 done
 
@@ -99,16 +120,39 @@ health
 pass "Performance dismiss"
 "$SURFACE" toggle-volume
 expect_window volume-flyout
+expect_layer_size "$("$SURFACE" size volume-flyout)" senomy-flyout
 pass "Volume flyout opens"
 "$SURFACE" toggle-volume
 health
 pass "Volume repeat-toggle closes"
 "$SURFACE" toggle-tray
 expect_window tray-flyout
+expect_layer_size "$("$SURFACE" size tray-flyout)" senomy-flyout
 pass "Tray flyout opens"
 "$SURFACE" toggle-tray
 health
 pass "Tray repeat-toggle closes"
+"$SURFACE" toggle-calendar
+expect_window calendar-flyout
+expect_layer_size "$("$SURFACE" size calendar-flyout)" senomy-flyout
+pass "Calendar flyout opens"
+"$SURFACE" toggle-calendar
+health
+pass "Calendar repeat-toggle closes"
+"$SURFACE" toggle-notifications
+expect_window notifications-flyout
+expect_layer_size "$("$SURFACE" size notifications-flyout)" senomy-flyout
+pass "Notifications flyout opens"
+"$SURFACE" toggle-notifications
+health
+pass "Notifications repeat-toggle closes"
+"$SURFACE" toggle-power
+expect_window power-flyout
+expect_layer_size "$("$SURFACE" size power-flyout)" senomy-flyout
+pass "Power flyout opens"
+"$SURFACE" toggle-power
+health
+pass "Power repeat-toggle closes"
 
 "$SURFACE" show-control settings
 expect_window actioncenter

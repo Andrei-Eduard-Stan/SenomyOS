@@ -68,7 +68,7 @@
 
 (defwidget control-overview-section []
   (control-page-shell :section "overview" :eyebrow "OVERVIEW // LIVE SYSTEM SUMMARY" :title "Command overview" :detail "The most useful current state and direct routes into specialist controls."
-    (box :class "control-tech-grid" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly true :spacing 8
+    (box :class "control-tech-grid control-overview-spine" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly true :spacing 8
       (network-metric :label "CPU" :value "${round(rail_system_status?.data?.cpu?.percent ?: 0, 0)}%" :detail "${rail_system_status?.data?.cpu?.logical_count ?: 0} logical threads")
       (network-metric :label "MEMORY" :value "${round(rail_system_status?.data?.memory?.percent ?: 0, 0)}%" :detail "${round((rail_system_status?.data?.memory?.used_bytes ?: 0)/1073741824,1)} GiB used")
       (network-metric :label "INTERNET" :value {network_status?.data?.internet?.label ?: "CHECKING"} :detail {network_status?.data?.primary?.connection ?: "No primary route"})
@@ -141,6 +141,17 @@
         (label :class "appearance-choice-state" :text {available ? (current == value ? "ACTIVE" : "SELECT") : "MISSING"}))
       (label :class "appearance-choice-detail" :xalign 0 :wrap true :text detail))))
 
+(defwidget appearance-accent-choice [value current title detail]
+  (button
+    :class {current == value ? "appearance-choice appearance-accent-choice active" : "appearance-choice appearance-accent-choice"}
+    :onclick "$HOME/.config/eww/scripts/settings-action.sh set-accent ${value}"
+    (box :orientation "v" :space-evenly false :spacing 4
+      (box :space-evenly false :spacing 7
+        (box :class "appearance-accent-swatch ${value}")
+        (label :class "appearance-choice-title" :xalign 0 :hexpand true :text title)
+        (label :class "appearance-choice-state" :text {current == value ? "ACTIVE" : "SELECT"}))
+      (label :class "appearance-choice-detail" :xalign 0 :wrap true :text detail))))
+
 (defwidget appearance-pixel-control [action title detail value minimum maximum]
   (box :class "appearance-pixel-control" :space-evenly false :spacing 10
     (box :orientation "v" :space-evenly false :hexpand true :spacing 2
@@ -197,9 +208,9 @@
     (box :class "appearance-group" :orientation "v" :space-evenly false :spacing 7
       (label :class "appearance-group-title" :xalign 0 :text "04 // ACCENT + EDGE TREATMENT")
       (box :space-evenly false :spacing 7
-        (appearance-choice :action "set-accent" :value "cyan" :current {appearance_status?.data?.accent ?: "cyan"} :title "Signal cyan" :detail "Technical clarity." :available true)
-        (appearance-choice :action "set-accent" :value "violet" :current {appearance_status?.data?.accent ?: "cyan"} :title "Senomy violet" :detail "Identity emphasis." :available true)
-        (appearance-choice :action "set-accent" :value "amber" :current {appearance_status?.data?.accent ?: "cyan"} :title "Terminal amber" :detail "Warm operations." :available true))
+        (appearance-accent-choice :value "cyan" :current {appearance_status?.data?.accent ?: "cyan"} :title "Signal cyan" :detail "Technical clarity.")
+        (appearance-accent-choice :value "violet" :current {appearance_status?.data?.accent ?: "cyan"} :title "Senomy violet" :detail "Identity emphasis.")
+        (appearance-accent-choice :value "amber" :current {appearance_status?.data?.accent ?: "cyan"} :title "Terminal amber" :detail "Warm operations."))
       (box :space-evenly false :spacing 7
         (appearance-choice :action "set-gradient" :value "off" :current {appearance_status?.data?.gradient ?: "subtle"} :title "Flat edge" :detail "Solid palette border." :available true)
         (appearance-choice :action "set-gradient" :value "subtle" :current {appearance_status?.data?.gradient ?: "subtle"} :title "Soft blend" :detail "Low-opacity edge blend only." :available true)

@@ -41,11 +41,16 @@ Actions:
   toggle-performance      Toggle the Performance Dashboard
   toggle-volume           Toggle the compact volume flyout
   toggle-tray             Toggle the native tray overflow
+  toggle-calendar         Toggle the dedicated calendar flyout
+  toggle-notifications    Toggle the dedicated notifications flyout
+  toggle-power            Toggle the guarded power/session flyout
   show-control SECTION    Open a specific Control Centre section
   show-insights [SECTION] Open Insights, optionally on a specific section
   show-performance        Open the Performance Dashboard
   close SURFACE           Close control, insights, or performance
   dismiss                 Close the active flyout or primary surface
+  capture-suspend         Unmap context windows without clearing their state
+  capture-restore         Restore context windows after screenshot selection
   reconcile               Make windows match the current active_surface
   reload                  Reload Eww and restore validated surface state
   status                  Print current state and active windows
@@ -143,7 +148,7 @@ is_surface() {
 
 is_flyout() {
   case "$1" in
-    none | volume | tray)
+    none | volume | tray | calendar | notifications | power)
       return 0
       ;;
     *)
@@ -295,32 +300,57 @@ window_size() {
 
   case "$window" in
     actioncenter)
-      max_width=$((width * 94 / 100)); max_height=$((height * 88 / 100))
-      panel_width=888; panel_height=700
+      max_width=$((width * 90 / 100)); max_height=$((height * 82 / 100))
+      panel_width=960; panel_height=760
       ((panel_width > max_width)) && panel_width=$max_width
       ((panel_height > max_height)) && panel_height=$max_height
       printf '%sx%s\n' "$panel_width" "$panel_height"
       ;;
     insights)
-      max_width=$((width * 94 / 100)); max_height=$((height * 88 / 100))
-      panel_width=750; panel_height=700
+      max_width=$((width * 90 / 100)); max_height=$((height * 82 / 100))
+      panel_width=960; panel_height=760
       ((panel_width > max_width)) && panel_width=$max_width
       ((panel_height > max_height)) && panel_height=$max_height
       printf '%sx%s\n' "$panel_width" "$panel_height"
       ;;
     performance)
-      printf '%sx%s\n' "$((width * 94 / 100))" "$((height * 82 / 100))"
+      max_width=$((width * 90 / 100)); max_height=$((height * 82 / 100))
+      panel_width=1480; panel_height=760
+      ((panel_width > max_width)) && panel_width=$max_width
+      ((panel_height > max_height)) && panel_height=$max_height
+      printf '%sx%s\n' "$panel_width" "$panel_height"
       ;;
     volume-flyout)
-      max_width=$((width * 94 / 100)); panel_width=350; panel_height=62
+      max_width=$((width * 94 / 100)); panel_width=420; panel_height=96
       ((panel_width > max_width)) && panel_width=$max_width
       ((width < 600)) && panel_height=232
       printf '%sx%s\n' "$panel_width" "$panel_height"
       ;;
     tray-flyout)
-      max_width=$((width * 90 / 100)); panel_width=260
+      max_width=$((width * 90 / 100)); panel_width=340
       ((panel_width > max_width)) && panel_width=$max_width
-      ((width < 480)) && printf '%sx154\n' "$panel_width" || printf '%sx112\n' "$panel_width"
+      ((width < 480)) && printf '%sx176\n' "$panel_width" || printf '%sx150\n' "$panel_width"
+      ;;
+    calendar-flyout)
+      max_width=$((width * 94 / 100)); max_height=$((height * 80 / 100))
+      panel_width=430; panel_height=470
+      ((panel_width > max_width)) && panel_width=$max_width
+      ((panel_height > max_height)) && panel_height=$max_height
+      printf '%sx%s\n' "$panel_width" "$panel_height"
+      ;;
+    notifications-flyout)
+      max_width=$((width * 94 / 100)); max_height=$((height * 82 / 100))
+      panel_width=480; panel_height=560
+      ((panel_width > max_width)) && panel_width=$max_width
+      ((panel_height > max_height)) && panel_height=$max_height
+      printf '%sx%s\n' "$panel_width" "$panel_height"
+      ;;
+    power-flyout)
+      max_width=$((width * 94 / 100)); max_height=$((height * 80 / 100))
+      panel_width=440; panel_height=560
+      ((panel_width > max_width)) && panel_width=$max_width
+      ((panel_height > max_height)) && panel_height=$max_height
+      printf '%sx%s\n' "$panel_width" "$panel_height"
       ;;
   esac
 }
@@ -337,6 +367,9 @@ window_position() {
   case "$window" in
     volume-flyout) ((width < 600)) && printf '10x10\n' || printf '128x10\n' ;;
     tray-flyout) ((width < 600)) && printf '10x10\n' || printf '286x10\n' ;;
+    calendar-flyout) ((width < 600)) && printf '10x10\n' || printf '86x10\n' ;;
+    notifications-flyout) ((width < 600)) && printf '10x10\n' || printf '74x10\n' ;;
+    power-flyout) printf '10x10\n' ;;
   esac
 }
 
@@ -347,6 +380,15 @@ window_for_flyout() {
       ;;
     tray)
       printf 'tray-flyout\n'
+      ;;
+    calendar)
+      printf 'calendar-flyout\n'
+      ;;
+    notifications)
+      printf 'notifications-flyout\n'
+      ;;
+    power)
+      printf 'power-flyout\n'
       ;;
     *)
       return 1
@@ -541,7 +583,7 @@ context_window_is_open() {
     ((status == 2)) && return 2
   done
 
-  for flyout in volume tray; do
+  for flyout in volume tray calendar notifications power; do
     window="$(window_for_flyout "$flyout")"
     window_is_open "$window"
     status=$?
@@ -647,19 +689,6 @@ arm_dismiss() {
   ) >/dev/null 2>&1 &
 }
 
-current_context_window() {
-  local surface="$1"
-  local flyout="$2"
-
-  if [[ "$flyout" != "none" ]]; then
-    window_for_flyout "$flyout"
-  elif [[ "$surface" != "none" ]]; then
-    window_for_surface "$surface"
-  else
-    return 1
-  fi
-}
-
 verify_context_open() {
   local target="$1"
   local window
@@ -668,7 +697,7 @@ verify_context_open() {
   snapshot_has_window "$DISMISS_WINDOW" || return 1
   snapshot_has_window "$target" || return 1
 
-  for window in actioncenter performance insights volume-flyout tray-flyout; do
+  for window in actioncenter performance insights volume-flyout tray-flyout calendar-flyout notifications-flyout power-flyout; do
     [[ "$window" == "$target" ]] && continue
     snapshot_has_window "$window" && return 1
   done
@@ -700,7 +729,10 @@ verify_context_closed() {
     performance \
     insights \
     volume-flyout \
-    tray-flyout; do
+    tray-flyout \
+    calendar-flyout \
+    notifications-flyout \
+    power-flyout; do
     snapshot_has_window "$window" && return 1
   done
 
@@ -726,7 +758,9 @@ fast_activate_context() {
   local current_surface="$4"
   local current_flyout="$5"
   local section_mapping="${6:-}"
-  local current_window=""
+  local window
+  local target_is_open=false
+  local dismiss_is_open=false
   local close_status=0
   local open_status=0
   local expected_name="active_surface"
@@ -734,6 +768,7 @@ fast_activate_context() {
   local screen
   local size
   local position
+  local -a stale_windows=()
 
   is_surface "$desired_surface" ||
     fail "Desired surface is not allowlisted: $desired_surface"
@@ -749,44 +784,51 @@ fast_activate_context() {
   size="$(window_size "$target")"
   position="$(window_position "$target")"
 
+  snapshot_active_windows ||
+    fail "Unable to query contextual windows before switching"
+  snapshot_has_window "$target" && target_is_open=true
+  snapshot_has_window "$DISMISS_WINDOW" && dismiss_is_open=true
+
+  for window in \
+    actioncenter \
+    performance \
+    insights \
+    volume-flyout \
+    tray-flyout \
+    calendar-flyout \
+    notifications-flyout \
+    power-flyout; do
+    [[ "$window" == "$target" ]] && continue
+    snapshot_has_window "$window" && stale_windows+=("$window")
+  done
+
   if [[ "$desired_surface" == "none" ]]; then
     expected_name="active_flyout"
     expected_value="$desired_flyout"
   fi
 
-  current_window="$(current_context_window "$current_surface" "$current_flyout" 2>/dev/null || true)"
-
-  if [[ -n "$current_window" && "$current_window" != "$target" ]]; then
-    fast_mutate_windows close "$current_window" || close_status=$?
+  if ((${#stale_windows[@]} > 0)); then
+    fast_mutate_windows close "${stale_windows[@]}" || close_status=$?
     # GTK/Eww can drop its application channel when a window is destroyed and
     # its replacement is constructed in the same scheduling slice.
     sleep "${EWW_SURFACE_SWITCH_SETTLE:-0.18}"
   fi
 
-  if [[ "$current_window" != "$target" ]]; then
-    if [[ -z "$current_window" ]]; then
-      fast_mutate_windows open --screen "$screen" "$DISMISS_WINDOW" || open_status=$?
-      if ((open_status == 0)); then
-        if [[ -n "$size" && -n "$position" ]]; then
-          fast_mutate_windows open --screen "$screen" --size "$size" --pos "$position" "$target" || open_status=$?
-        elif [[ -n "$size" ]]; then
-          fast_mutate_windows open --screen "$screen" --size "$size" "$target" || open_status=$?
-        else
-          fast_mutate_windows open --screen "$screen" "$target" || open_status=$?
-        fi
-      fi
+  if [[ "$dismiss_is_open" == false ]]; then
+    fast_mutate_windows open --screen "$screen" "$DISMISS_WINDOW" || open_status=$?
+  fi
+
+  if ((open_status == 0)) && [[ "$target_is_open" == false ]]; then
+    if [[ -n "$size" && -n "$position" ]]; then
+      fast_mutate_windows open --screen "$screen" --size "$size" --pos "$position" "$target" || open_status=$?
+    elif [[ -n "$size" ]]; then
+      fast_mutate_windows open --screen "$screen" --size "$size" "$target" || open_status=$?
     else
-      if [[ -n "$size" && -n "$position" ]]; then
-        fast_mutate_windows open --screen "$screen" --size "$size" --pos "$position" "$target" || open_status=$?
-      elif [[ -n "$size" ]]; then
-        fast_mutate_windows open --screen "$screen" --size "$size" "$target" || open_status=$?
-      else
-        fast_mutate_windows open --screen "$screen" "$target" || open_status=$?
-      fi
+      fast_mutate_windows open --screen "$screen" "$target" || open_status=$?
     fi
   fi
 
-  if ((open_status == 0)) && [[ "$current_window" != "$target" ]]; then
+  if ((open_status == 0)) && [[ "$target_is_open" == false ]]; then
     wait_for_window_state "$target" open || open_status=$?
     ((open_status == 0)) && sleep "${EWW_WINDOW_CONSTRUCTION_SETTLE:-0.15}"
   fi
@@ -819,34 +861,12 @@ fast_activate_context() {
 }
 
 fast_close_context() {
-  local target="$1"
-  local state_name="$2"
   local current_surface="$3"
   local current_flyout="$4"
-  local close_status=0
 
-  is_surface "$current_surface" ||
-    fail "Current surface is not allowlisted: $current_surface"
-  is_flyout "$current_flyout" ||
-    fail "Current flyout is not allowlisted: $current_flyout"
-
-  disarm_dismiss
-  fast_mutate_windows close "$target" "$DISMISS_WINDOW" || close_status=$?
-  fast_publish "$state_name" none \
-    active_surface=none \
-    active_flyout=none \
-    pending_action=none ||
-    return 1
-
-  if wait_for_context_closed; then
-    return 0
-  fi
-
-  ((close_status == 0)) ||
-    [[ -z "${FAST_MUTATION_ERROR:-}" ]] ||
-    printf '%s\n' "$FAST_MUTATION_ERROR" >&2
-
-  set_none
+  # A close action means "leave no contextual surface behind", even if a
+  # stale state publication or interrupted switch mapped an unexpected peer.
+  fast_dismiss_active "$current_surface" "$current_flyout"
 }
 
 fast_toggle_control() {
@@ -854,15 +874,21 @@ fast_toggle_control() {
   local current_surface="$2"
   local current_flyout="$3"
   local current_section="$4"
+  local open_status
 
   is_control_section "$requested" ||
     fail "Control Centre section is not allowlisted: $requested"
   is_control_section "$current_section" ||
     fail "Current Control Centre section is not allowlisted: $current_section"
 
-  if [[ "$current_surface" == "control" && "$current_section" == "$requested" ]]; then
+  window_is_open actioncenter
+  open_status=$?
+  ((open_status == 2)) &&
+    fail "Unable to query the Control Centre window state"
+
+  if ((open_status == 0)) && [[ "$current_section" == "$requested" ]]; then
     fast_close_context actioncenter active_surface "$current_surface" "$current_flyout"
-  elif [[ "$current_surface" == "control" && "$current_flyout" == "none" ]]; then
+  elif ((open_status == 0)) && verify_context_open actioncenter; then
     fast_publish active_surface control \
       active_surface=control \
       active_flyout=none \
@@ -879,11 +905,17 @@ fast_toggle_insights() {
   local current_surface="$1"
   local current_flyout="$2"
   local section="$3"
+  local open_status
 
   is_insights_section "$section" ||
     fail "Insights section is not allowlisted: $section"
 
-  if [[ "$current_surface" == "insights" ]]; then
+  window_is_open insights
+  open_status=$?
+  ((open_status == 2)) &&
+    fail "Unable to query the Senomy Insights window state"
+
+  if ((open_status == 0)); then
     fast_close_context insights active_surface "$current_surface" "$current_flyout"
   else
     fast_activate_context \
@@ -895,8 +927,14 @@ fast_toggle_insights() {
 fast_toggle_performance() {
   local current_surface="$1"
   local current_flyout="$2"
+  local open_status
 
-  if [[ "$current_surface" == "performance" ]]; then
+  window_is_open performance
+  open_status=$?
+  ((open_status == 2)) &&
+    fail "Unable to query the Performance Dashboard window state"
+
+  if ((open_status == 0)); then
     fast_close_context performance active_surface "$current_surface" "$current_flyout"
   else
     fast_activate_context \
@@ -909,13 +947,19 @@ fast_toggle_flyout() {
   local current_surface="$2"
   local current_flyout="$3"
   local target
+  local open_status
 
   is_flyout "$requested" && [[ "$requested" != "none" ]] ||
     fail "Flyout is not allowlisted: $requested"
 
   target="$(window_for_flyout "$requested")"
 
-  if [[ "$current_flyout" == "$requested" ]]; then
+  window_is_open "$target"
+  open_status=$?
+  ((open_status == 2)) &&
+    fail "Unable to query the $requested flyout window state"
+
+  if ((open_status == 0)); then
     fast_close_context "$target" active_flyout "$current_surface" "$current_flyout"
   else
     fast_activate_context \
@@ -945,6 +989,9 @@ fast_dismiss_active() {
     insights \
     volume-flyout \
     tray-flyout \
+    calendar-flyout \
+    notifications-flyout \
+    power-flyout \
     "$DISMISS_WINDOW"; do
     snapshot_has_window "$window" && windows+=("$window")
   done
@@ -970,6 +1017,46 @@ fast_dismiss_active() {
   set_none
 }
 
+suspend_context_for_capture() {
+  local window
+  local -a windows=()
+  local close_status=0
+
+  # Keep active_surface/active_flyout unchanged. Flameshot has already frozen
+  # the pixels; this only releases Eww's layer-shell input regions so the user
+  # can drag across the captured panel like any other part of the image.
+  disarm_dismiss
+  snapshot_active_windows ||
+    fail "Unable to query contextual windows for screenshot capture"
+
+  for window in \
+    actioncenter \
+    performance \
+    insights \
+    volume-flyout \
+    tray-flyout \
+    calendar-flyout \
+    notifications-flyout \
+    power-flyout \
+    "$DISMISS_WINDOW"; do
+    snapshot_has_window "$window" && windows+=("$window")
+  done
+
+  if ((${#windows[@]} > 0)); then
+    fast_mutate_windows close "${windows[@]}" || close_status=$?
+  fi
+
+  wait_for_context_closed && return 0
+  ((close_status == 0)) ||
+    [[ -z "${FAST_MUTATION_ERROR:-}" ]] ||
+    printf '%s\n' "$FAST_MUTATION_ERROR" >&2
+  return 1
+}
+
+restore_context_after_capture() {
+  reconcile_surface
+}
+
 close_other_surfaces() {
   local keep="$1"
   local surface
@@ -990,7 +1077,7 @@ close_all_flyouts() {
   local flyout
   local window
 
-  for flyout in volume tray; do
+  for flyout in volume tray calendar notifications power; do
     window="$(window_for_flyout "$flyout")"
     close_window "$window" || return 1
   done
@@ -1301,6 +1388,51 @@ toggle_tray() {
   fi
 }
 
+toggle_calendar() {
+  local open_status
+
+  window_is_open calendar-flyout
+  open_status=$?
+  ((open_status == 2)) &&
+    fail "Unable to query the calendar flyout window state"
+
+  if ((open_status == 0)); then
+    close_flyout calendar
+  else
+    activate_flyout calendar
+  fi
+}
+
+toggle_notifications() {
+  local open_status
+
+  window_is_open notifications-flyout
+  open_status=$?
+  ((open_status == 2)) &&
+    fail "Unable to query the notifications flyout window state"
+
+  if ((open_status == 0)); then
+    close_flyout notifications
+  else
+    activate_flyout notifications
+  fi
+}
+
+toggle_power() {
+  local open_status
+
+  window_is_open power-flyout
+  open_status=$?
+  ((open_status == 2)) &&
+    fail "Unable to query the power flyout window state"
+
+  if ((open_status == 0)); then
+    close_flyout power
+  else
+    activate_flyout power
+  fi
+}
+
 dismiss_active() {
   local active
   local flyout
@@ -1315,7 +1447,7 @@ dismiss_active() {
     return
   fi
 
-  for flyout in volume tray; do
+  for flyout in volume tray calendar notifications power; do
     window="$(window_for_flyout "$flyout")"
     window_is_open "$window"
     status=$?
@@ -1621,7 +1753,11 @@ record_surface_transition() {
     toggle-performance | show-performance) target="performance" ;;
     toggle-volume) target="volume" ;;
     toggle-tray) target="tray" ;;
+    toggle-calendar) target="calendar" ;;
+    toggle-notifications) target="notifications" ;;
+    toggle-power) target="power" ;;
     dismiss) target="active" ;;
+    capture-suspend | capture-restore) target="screenshot" ;;
     reload) target="eww" ;;
     *) return 0 ;;
   esac
@@ -1649,7 +1785,7 @@ case "$ACTION" in
     ;;
   size)
     [[ $# -eq 2 ]] || fail "size requires one window"
-    case "$2" in actioncenter | insights | performance | volume-flyout | tray-flyout) ;; *) fail "Window is not allowlisted: $2" ;; esac
+    case "$2" in actioncenter | insights | performance | volume-flyout | tray-flyout | calendar-flyout | notifications-flyout | power-flyout) ;; *) fail "Window is not allowlisted: $2" ;; esac
     window_size "$2"
     ;;
   toggle-control)
@@ -1705,6 +1841,39 @@ case "$ACTION" in
       fast_toggle_flyout tray "$2" "$3"
     else
       toggle_tray
+    fi
+    ;;
+  toggle-calendar)
+    [[ $# -eq 1 || $# -eq 3 ]] ||
+      fail "toggle-calendar accepts optional current state"
+    if [[ $# -eq 3 ]]; then require_client; else require_daemon; fi
+    acquire_lock
+    if [[ $# -eq 3 ]]; then
+      fast_toggle_flyout calendar "$2" "$3"
+    else
+      toggle_calendar
+    fi
+    ;;
+  toggle-notifications)
+    [[ $# -eq 1 || $# -eq 3 ]] ||
+      fail "toggle-notifications accepts optional current state"
+    if [[ $# -eq 3 ]]; then require_client; else require_daemon; fi
+    acquire_lock
+    if [[ $# -eq 3 ]]; then
+      fast_toggle_flyout notifications "$2" "$3"
+    else
+      toggle_notifications
+    fi
+    ;;
+  toggle-power)
+    [[ $# -eq 1 || $# -eq 3 ]] ||
+      fail "toggle-power accepts optional current state"
+    if [[ $# -eq 3 ]]; then require_client; else require_daemon; fi
+    acquire_lock
+    if [[ $# -eq 3 ]]; then
+      fast_toggle_flyout power "$2" "$3"
+    else
+      toggle_power
     fi
     ;;
   show-control)
@@ -1773,6 +1942,18 @@ case "$ACTION" in
     require_client
     acquire_lock
     fast_dismiss_active "${2:-none}" "${3:-none}"
+    ;;
+  capture-suspend)
+    [[ $# -eq 1 ]] || fail "capture-suspend accepts no value"
+    require_daemon
+    acquire_lock
+    suspend_context_for_capture
+    ;;
+  capture-restore)
+    [[ $# -eq 1 ]] || fail "capture-restore accepts no value"
+    require_daemon
+    acquire_lock
+    restore_context_after_capture
     ;;
   reconcile)
     [[ $# -eq 1 ]] || fail "reconcile accepts no value"

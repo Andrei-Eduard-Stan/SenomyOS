@@ -55,7 +55,7 @@ check_contract "Avatar catalog" "$STANDARD
     and (.companion_path | type == \"string\")
     and (.companion_compact_path | type == \"string\"))
   and any(.data.states[]; .id == \"browsing\" and (.chibi_path | endswith(\"/assets/senomy/senomy_chibi_browsing.png\")))
-  and any(.data.states[]; .id == \"music\" and (.chibi_path | endswith(\"/assets/senomy/senomy_chibi_listening-v1.png\")))" "$CONFIG_DIR/scripts/senomy-avatar.sh" catalog
+  and any(.data.states[]; .id == \"music\" and (.chibi_path | endswith(\"/assets/senomy/senomy_chibi_listening-v1.gif\")))" "$CONFIG_DIR/scripts/senomy-avatar.sh" catalog
 check_contract "Companion media" "$STANDARD
   and (.data.provider_available | type == \"boolean\")
   and (.data.session_available | type == \"boolean\")

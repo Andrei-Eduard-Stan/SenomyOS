@@ -45,7 +45,7 @@ secrets.
 
 | Domain | Preferred source | Suggested cadence | Notes |
 |---|---|---:|---|
-| Workspaces | Hyprland `.socket2.sock` events plus `hyprctl -j workspaces`, `activeworkspace`, and `clients` snapshots | event-triggered; 10s cached heartbeat; 30s safety resync | Preserve the systemd-owned listener; discover the active runtime instance if inherited session variables are absent |
+| Workspaces | Hyprland `.socket2.sock` events plus `hyprctl -j workspaces`, `activeworkspace`, `monitors`, and `clients` snapshots | event-triggered; 10s cached heartbeat; 5m safety resync | Preserve the systemd-owned listener; publish only reported positive IDs plus the active positive ID, exclude special workspaces from the Rail, and discover the runtime instance if inherited session variables are absent |
 | Battery bar summary | UPower DisplayDevice + per-pack UPower | 10s | Energy-weighted aggregate plus compact dual-pack state |
 | Companion media | MPRIS through `playerctl` | 3s | Read-only active-session snapshot; no playback control or history |
 | Detailed Power | UPower + `/sys/class/power_supply` + optional TLP runtime | 5s while visible | Identity, chemistry, energy, health, wear, cycles, electrical values, estimates, thresholds, effective policy, and explicit unavailable fields |
@@ -65,6 +65,7 @@ secrets.
 | AUR packages | `paru -Qua --nodevel` | explicit manual action | Sends installed foreign package names to AUR |
 | User services | `systemctl --user` | panel open / manual | Allowlist restart targets |
 | Background applications | user systemd, session D-Bus, StatusNotifierWatcher | 2s while Applications is visible | Registry is metadata; actions remain hard-coded |
+| Rail notification state | `swaync-client --subscribe` | event-triggered; reconnect on provider loss | Count, DND, visibility, and inhibition; retained content is available in the dedicated flyout and Insights |
 | Logs | `journalctl --user` | manual | Limit lines and redact sensitive data |
 | Display geometry | `hyprctl -j monitors` | events / surface open | Drives responsive work area |
 | Input capabilities | `hyprctl -j devices`, optional libinput/udev data | login / device events | Prefer capabilities over model names |
@@ -87,6 +88,28 @@ orientation_supported
 ```
 
 Detection must tolerate devices appearing and disappearing at runtime.
+
+## Authentication and recovery sources
+
+- SDDM owns pre-session username/password authentication, session selection,
+  and guarded power/reboot callbacks. Theme QML does not execute arbitrary
+  processes.
+- Hyprlock owns in-session PAM unlock and captures the authenticated desktop
+  locally for blur. It is not a password-reset surface.
+- Password recovery uses a separate PAM-authenticated `senomy-recovery`
+  account. Root-owned SDDM session wrappers confine it to one recovery
+  launcher; its login shell is `/usr/bin/nologin`.
+- The recovery UI sends the new password and confirmation only over standard
+  input to an exact no-argument sudo helper. Passwords never appear in process
+  arguments, Eww state, configuration, deployment receipts, or logs.
+- The helper reads one root-owned target-account record, accepts only an
+  ordinary UID of at least 1000 with a login-capable shell, and logs only the
+  successful target account name.
+
+Required runtime packages are `sddm`, Qt 6 SDDM greeter components, Hyprland,
+GTK 3 Python bindings, `sudo`, and `hyprlock` for the in-session lock surface.
+Missing Hyprlock is a truthful deployment precondition rather than an
+automatic package installation.
 
 ## Existing verified commands
 
@@ -155,6 +178,25 @@ The persistent Rail instead consumes `scripts/bar-audio-listener.sh`. It emits
 one cheap default-sink summary at startup and refreshes it from
 `pactl subscribe` sink, server, and card events. It does not enumerate audio
 hardware continuously.
+
+## Rail notification status
+
+`scripts/bar-notification-listener.sh` consumes SwayNotificationCenter's
+subscription stream and emits schema-version-1 JSON containing availability,
+count, DND, centre visibility, and inhibition state. It does not copy
+notification bodies, application payloads, or history into the persistent
+Rail state. Missing `swaync-client`, malformed frames, and provider exit are
+truthful unavailable states; the listener reconnects after a bounded delay.
+
+The compact badge routes to the existing Insights Notifications section.
+Clearing notifications and changing DND remain owned by the existing guarded
+notification action paths rather than this read-only listener.
+
+`scripts/rail-notification-ack.sh` changes only the session-local Eww
+`rail_notification_ack_at` value. Opening the Notifications route records the
+current listener observation so the Rail badge disappears immediately without
+marking provider notifications read, clearing them, or changing the truthful
+count. A newer listener observation makes the badge eligible to appear again.
 
 ## Performance Dashboard collectors
 
@@ -324,6 +366,85 @@ Action state is private mode-0600 cache data and contains no pairing secrets.
 preference under `${XDG_CONFIG_HOME}/senomyos/preferences.json` and publishes a
 fresh `bar-layout.sh` result. Packaged defaults remain untouched.
 
+## Command Lens providers
+
+Rofi supplies installed desktop applications through `drun` and real managed
+windows through its native `window` mode. The project does not duplicate or
+fabricate either catalog.
+
+`senomy-rofi-files` builds a transient, local result set from standard user
+folders or schema-1 `${XDG_CONFIG_HOME}/senomyos/file-search.json`. Configured
+roots must be relative, contain no control or parent-traversal segments, resolve
+beneath the real home directory, and number at most sixteen. Depth is limited
+to 1–8, result count to 1–800, and per-root traversal time to 1–5 seconds;
+portable defaults are depth 5, 500 results, and two seconds. Hidden paths and
+cross-filesystem traversal are excluded. A selected path is returned in
+`ROFI_INFO`, resolved again inside an allowed root, and passed as one quoted
+argument to GIO or `senomy-file-workspace`. The wrapper uses GIO to derive a
+local file URI and the typed `org.freedesktop.FileManager1.ShowItems` D-Bus
+method to reveal a file. It never treats a result label or path as shell text.
+
+`senomy-rofi-actions` emits a fixed registry of Control Centre, Performance,
+Insights, Diagnostics, Appearance, Settings, screenshot, and Thunar entry
+points. Missing controllers appear unavailable. Custom Rofi input, arbitrary
+command text, and direct destructive session actions are refused.
+
+## Thunar custom-action registry
+
+`components/file-manager/thunar/actions.json` is the bounded source for
+SenomyOS-owned Thunar actions. Each entry declares a stable unique ID, one
+allowlisted helper verb, a Thunar selection placeholder, a finite selection
+range, file-type conditions, and required commands. Deployment detects those
+requirements and omits unavailable actions rather than presenting a control
+that cannot work.
+
+`scripts/thunar-uca-merge.py` treats the current `uca.xml` as user-owned input.
+It preserves actions outside the registered SenomyOS unique-ID set, replaces
+known managed actions, and emits a deterministic mode-0600 XML candidate.
+`senomy-thunar-action` accepts only `copy-path` and `copy-sha256`, validates a
+bounded list of existing absolute local paths, and passes them as arguments;
+it never evaluates selected names as shell syntax. Clipboard and notification
+providers remain capability-checked.
+
+`senomy-file-workspace` accepts only an existing absolute local path, with an
+optional fixed `--select` operation. For a fresh session it starts Thunar in
+daemon mode through a collected transient user service, sets `GTK_THEME` on
+that daemon only when the selected installed theme exists, waits for the
+`org.xfce.Thunar` name, and then opens a window or reveals through
+FileManager1. A detached `nohup` daemon is the fallback when `systemd-run`
+cannot start the transient service. An already running Thunar session is
+reused and is never stopped merely to change its appearance.
+
+File-workspace density accepts only `auto`, `standard`, or `touch`. `auto`
+resolves the selected portable profile first and then the private SenomyOS
+appearance preference. It selects `SenomyOS-Touch` only when the resulting
+density/font-scale contract is touch; missing or malformed data degrades to
+standard. The touch theme imports the canonical GTK 3 theme and changes
+geometry rather than creating a second colour system.
+
+## Deployment and profile sources
+
+`deploy/packages.json` and `deploy/services.json` are declarative bootstrap
+inputs, not live telemetry. `senomy-bootstrap.sh audit` compares the package
+manifest with the local pacman database and service enablement with systemd;
+it reports missing required dependencies without installing or enabling
+anything. External Eww installation remains an explicit AUR review boundary.
+
+`${XDG_CONFIG_HOME:-$HOME/.config}/senomyos/profile.json` is a complete
+schema-validated selection from `deploy/profiles/`. `profile-status.sh`
+normalizes the deployed file into a schema-1 envelope and falls back to
+`automatic` when it is absent or invalid. Profile defaults never contain a
+username, home path, monitor name, interface, battery ID, or secret.
+
+The selected desktop artwork is
+`appearance/shared/backgrounds/cathedral-reliquary-v1.png`. The appearance
+generator performs a deterministic 1920x1080 cover projection and derives the
+blurred/private variants consumed by the desktop and pre-login surfaces.
+`appearance/shared/backgrounds/desktop.svg.in` remains the portable vector
+fallback. No personal desktop capture or runtime user data enters the SDDM,
+Plymouth, or GRUB image. Hyprlock is the distinct authenticated-session path
+and uses a live local screenshot only inside the lock process.
+
 ## Polling budget
 
 Persistent bar:
@@ -332,7 +453,7 @@ Persistent bar:
 - battery: 10–30s;
 - telemetry summary: 2–5s;
 - workspaces: refresh after relevant Hyprland workspace/window events, republish
-  cached state every 10 seconds, and take a safety snapshot every 30 seconds;
+  cached state every 10 seconds, and take a safety snapshot every 5 minutes;
 - ambient Senomy dialogue: select from the local catalog every 15 minutes;
   verified warnings override ambient dialogue in the presentation layer.
 
@@ -342,6 +463,21 @@ stale, it selects the newest valid entry from `hyprctl instances -j`, exports
 that instance and Wayland socket for its child commands, and then connects to
 `.socket2.sock`. Failure remains explicit; systemd retries after two seconds
 without a permanent start-limit lockout.
+
+Workspace presentation consumes the listener's sorted real positive IDs rather
+than deriving a range from the largest ID. The state includes a centred
+two-column `grid_rows` projection: four cells for the active workspace, two for
+inactive workspaces, and a same-size overflow cell when the real application
+count exceeds the visible capacity. `app_count`, the full text summary, and the
+underlying client snapshot remain truthful even when presentation is collapsed.
+
+`scripts/workspace-carousel.sh` does not collect or duplicate workspace data.
+It reads `workspace_state` and `bar_layout` from the running Eww daemon and owns
+only the transient viewport offset, previous offset, transition direction, and
+two-buffer selector. `previous`, `next`, and wheel actions never call Hyprland.
+After a successful authoritative workspace publication, `workspaces.sh` invokes
+`reconcile` so active-item visibility, end clamping, runtime removal, and the
+return to a non-overflow count are corrected atomically.
 
 Control Centre:
 

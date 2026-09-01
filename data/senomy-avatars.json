@@ -71,8 +71,8 @@
       "label": "Listening",
       "emotion": "calm",
       "activity": "listening to media",
-      "chibi": "assets/senomy/senomy_chibi_listening-v1.png",
-      "portrait": "assets/senomy/senomy_chibi_listening-v1.png"
+      "chibi": "assets/senomy/senomy_chibi_listening-v1.gif",
+      "portrait": "assets/senomy/senomy_chibi_listening-v1.gif"
     }
   ]
 }

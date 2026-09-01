@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "backup_root": "/var/lib/senomyos/deployments",
+  "components": [
+    {
+      "id": "sddm",
+      "description": "Install and select the SenomyOS Obsidian Threshold SDDM theme.",
+      "scope": "system",
+      "readiness": "ready",
+      "reason": "The Qt 6 theme, static privacy-safe background, and guarded SDDM callbacks are implemented.",
+      "warning": "This writes system SDDM files. It does not restart SDDM, log out, or interrupt the current desktop; selection takes effect at the next greeter start.",
+      "post_apply": [
+        "sddm-theme"
+      ],
+      "entries": [
+        {"id":"config","source":"appearance/login/sddm/sddm.conf","target":{"root":"sddm_config","path":"20-senomyos-theme.conf"},"mode":"0644"},
+        {"id":"wayland-guard","source":"components/login/sddm/senomy-sddm-wayland-session","target":{"root":"local_libexec","path":"senomy-sddm-wayland-session"},"mode":"0755"},
+        {"id":"x11-guard","source":"components/login/sddm/senomy-sddm-x11-session","target":{"root":"local_libexec","path":"senomy-sddm-x11-session"},"mode":"0755"},
+        {"id":"main","source":"appearance/login/sddm/senomyos/Main.qml","target":{"root":"sddm_themes","path":"senomyos/Main.qml"},"mode":"0644"},
+        {"id":"frame-surface","source":"appearance/login/sddm/senomyos/FrameSurface.qml","target":{"root":"sddm_themes","path":"senomyos/FrameSurface.qml"},"mode":"0644"},
+        {"id":"theme-js","source":"appearance/login/sddm/senomyos/Theme.js","target":{"root":"sddm_themes","path":"senomyos/Theme.js"},"mode":"0644"},
+        {"id":"metadata","source":"appearance/login/sddm/senomyos/metadata.desktop","target":{"root":"sddm_themes","path":"senomyos/metadata.desktop"},"mode":"0644"},
+        {"id":"theme-conf","source":"appearance/login/sddm/senomyos/theme.conf","target":{"root":"sddm_themes","path":"senomyos/theme.conf"},"mode":"0644"},
+        {"id":"background","source":"appearance/login/sddm/senomyos/assets/background.png","target":{"root":"sddm_themes","path":"senomyos/assets/background.png"},"mode":"0644"},
+        {"id":"avatar","source":"appearance/login/sddm/senomyos/assets/avatar.png","target":{"root":"sddm_themes","path":"senomyos/assets/avatar.png"},"mode":"0644"},
+        {"id":"icon-accessibility","source":"appearance/login/sddm/senomyos/assets/icons/accessibility.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/accessibility.svg"},"mode":"0644"},
+        {"id":"icon-keyboard","source":"appearance/login/sddm/senomyos/assets/icons/keyboard.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/keyboard.svg"},"mode":"0644"},
+        {"id":"icon-next","source":"appearance/login/sddm/senomyos/assets/icons/next.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/next.svg"},"mode":"0644"},
+        {"id":"icon-password","source":"appearance/login/sddm/senomyos/assets/icons/password-hidden.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/password-hidden.svg"},"mode":"0644"},
+        {"id":"icon-power","source":"appearance/login/sddm/senomyos/assets/icons/power.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/power.svg"},"mode":"0644"},
+        {"id":"icon-recovery","source":"appearance/login/sddm/senomyos/assets/icons/recovery.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/recovery.svg"},"mode":"0644"},
+        {"id":"icon-restart","source":"appearance/login/sddm/senomyos/assets/icons/restart.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/restart.svg"},"mode":"0644"},
+        {"id":"icon-session","source":"appearance/login/sddm/senomyos/assets/icons/session.svg","target":{"root":"sddm_themes","path":"senomyos/assets/icons/session.svg"},"mode":"0644"},
+        {"id":"frame-corner-tl","source":"appearance/login/sddm/senomyos/assets/frames/compact/corner-tl.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/corner-tl.svg"},"mode":"0644"},
+        {"id":"frame-corner-tr","source":"appearance/login/sddm/senomyos/assets/frames/compact/corner-tr.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/corner-tr.svg"},"mode":"0644"},
+        {"id":"frame-corner-bl","source":"appearance/login/sddm/senomyos/assets/frames/compact/corner-bl.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/corner-bl.svg"},"mode":"0644"},
+        {"id":"frame-corner-br","source":"appearance/login/sddm/senomyos/assets/frames/compact/corner-br.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/corner-br.svg"},"mode":"0644"},
+        {"id":"frame-edge-top","source":"appearance/login/sddm/senomyos/assets/frames/compact/edge-top.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/edge-top.svg"},"mode":"0644"},
+        {"id":"frame-edge-bottom","source":"appearance/login/sddm/senomyos/assets/frames/compact/edge-bottom.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/edge-bottom.svg"},"mode":"0644"},
+        {"id":"frame-edge-left","source":"appearance/login/sddm/senomyos/assets/frames/compact/edge-left.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/edge-left.svg"},"mode":"0644"},
+        {"id":"frame-edge-right","source":"appearance/login/sddm/senomyos/assets/frames/compact/edge-right.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/compact/edge-right.svg"},"mode":"0644"},
+        {"id":"frame-motif-controls","source":"appearance/login/sddm/senomyos/assets/frames/motifs/controls.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/motifs/controls.svg"},"mode":"0644"},
+        {"id":"frame-motif-identity","source":"appearance/login/sddm/senomyos/assets/frames/motifs/identity.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/motifs/identity.svg"},"mode":"0644"},
+        {"id":"frame-motif-junction","source":"appearance/login/sddm/senomyos/assets/frames/motifs/junction.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/motifs/junction.svg"},"mode":"0644"},
+        {"id":"frame-motif-diagnostic-tick","source":"appearance/login/sddm/senomyos/assets/frames/motifs/diagnostic-tick.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/motifs/diagnostic-tick.svg"},"mode":"0644"},
+        {"id":"frame-motif-clock-notification","source":"appearance/login/sddm/senomyos/assets/frames/motifs/clock-notification.svg","target":{"root":"sddm_themes","path":"senomyos/assets/frames/motifs/clock-notification.svg"},"mode":"0644"}
+      ]
+    },
+    {
+      "id": "recovery",
+      "description": "Install the restricted authenticated SenomyOS password-recovery runtime.",
+      "scope": "system",
+      "readiness": "ready",
+      "reason": "The recovery session, constrained compositor, UI, hard-coded reset helper, and exact sudo rule are implemented.",
+      "warning": "File deployment does not create or unlock the recovery account. Provision it separately and choose a strong independent credential.",
+      "post_apply": [
+        "recovery-runtime"
+      ],
+      "entries": [
+        {"id":"session-entry","source":"components/recovery/senomy-recovery.desktop","target":{"root":"wayland_sessions","path":"senomy-recovery.desktop"},"mode":"0644"},
+        {"id":"session-launcher","source":"components/recovery/senomy-recovery-session","target":{"root":"local_libexec","path":"senomy-recovery-session"},"mode":"0755"},
+        {"id":"recovery-ui","source":"components/recovery/senomy-recovery-ui","target":{"root":"local_libexec","path":"senomy-recovery-ui"},"mode":"0755"},
+        {"id":"reset-helper","source":"components/recovery/senomy-password-reset-helper","target":{"root":"local_libexec","path":"senomy-password-reset-helper"},"mode":"0755"},
+        {"id":"hyprland-config","source":"components/recovery/recovery-hyprland.lua","target":{"root":"senomy_etc","path":"recovery-hyprland.lua"},"mode":"0644"},
+        {"id":"sudo-rule","source":"components/recovery/senomy-recovery.sudoers","target":{"root":"sudoers","path":"senomy-recovery"},"mode":"0440"},
+        {"id":"recovery-control","source":"scripts/senomy-recoveryctl","target":{"root":"local_sbin","path":"senomy-recoveryctl"},"mode":"0755"}
+      ]
+    },
+    {
+      "id": "plymouth-staged",
+      "description": "Stage the SenomyOS Plymouth theme without selecting it or rebuilding initramfs.",
+      "scope": "system",
+      "readiness": "ready",
+      "reason": "Static theme files can be deployed independently of the boot-path activation gate.",
+      "warning": "This installs theme files only. It never changes mkinitcpio/dracut configuration or regenerates an initramfs.",
+      "post_apply": [],
+      "entries": [
+        {"id":"descriptor","source":"appearance/boot/plymouth/senomyos/senomyos.plymouth","target":{"root":"plymouth_themes","path":"senomyos/senomyos.plymouth"},"mode":"0644"},
+        {"id":"script","source":"appearance/boot/plymouth/senomyos/senomyos.script","target":{"root":"plymouth_themes","path":"senomyos/senomyos.script"},"mode":"0644"},
+        {"id":"logo","source":"appearance/boot/assets/senomyos-mark.png","target":{"root":"plymouth_themes","path":"senomyos/logo.png"},"mode":"0644"},
+        {"id":"background","source":"appearance/shared/backgrounds/desktop.png","target":{"root":"plymouth_themes","path":"senomyos/background.png"},"mode":"0644"}
+      ]
+    },
+    {
+      "id": "grub-staged",
+      "description": "Stage the SenomyOS GRUB theme without selecting it or regenerating grub.cfg.",
+      "scope": "system",
+      "readiness": "ready",
+      "reason": "The theme follows the documented GRUB theme format and remains isolated from boot configuration.",
+      "warning": "This installs theme files only. It never edits /etc/default/grub, runs grub-mkconfig, or writes a boot sector.",
+      "post_apply": [],
+      "entries": [
+        {"id":"theme","source":"appearance/boot/grub/senomyos/theme.txt","target":{"root":"grub_themes","path":"senomyos/theme.txt"},"mode":"0644"},
+        {"id":"logo","source":"appearance/boot/assets/senomyos-mark.png","target":{"root":"grub_themes","path":"senomyos/logo.png"},"mode":"0644"},
+        {"id":"background","source":"appearance/shared/backgrounds/desktop.png","target":{"root":"grub_themes","path":"senomyos/background.png"},"mode":"0644"}
+      ]
+    }
+  ]
+}

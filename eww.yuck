@@ -44,6 +44,9 @@
 (include "windows/insights-panel.yuck")
 (include "windows/volume-flyout.yuck")
 (include "windows/tray-flyout.yuck")
+(include "windows/calendar-flyout.yuck")
+(include "windows/notifications-flyout.yuck")
+(include "windows/power-flyout.yuck")
 (include "windows/performance-dashboard.yuck")
 (include "windows/companion.yuck")
 (include "windows/main-bar.yuck")
@@ -51,11 +54,16 @@
 ; Variables --
 (defvar workspaces "")
 (defvar workspace_state "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"active_id\":0,\"max_id\":0,\"workspaces\":[]},\"error\":{\"code\":\"loading\",\"message\":\"Workspace state is loading\"}}")
+(defvar workspace_carousel_offset 0) ; presentation-only index; Hyprland still owns workspace truth
+(defvar workspace_carousel_previous_offset 0) ; inactive GtkStack page retained during slide
+(defvar workspace_carousel_slot 0) ; 0|1 double-buffer selection for native animation
+(defvar workspace_carousel_direction "next") ; previous|next, drives the native stack transition
 (defvar active_surface "none") ; none|control|performance|insights
-(defvar active_flyout "none") ; none|volume|tray
+(defvar active_flyout "none") ; none|volume|tray|calendar|notifications|power
 (defvar dismiss_armed false) ; release guard for the shared outside-click layer
 (defvar control_section "overview") ; overview|network|audio|power|calendar|input|devices|apps|appearance|settings
 (defvar insights_section "briefing") ; briefing|notifications|timeline|updates|diagnostics|console|reports|wiki
+(defvar rail_notification_ack_at 0) ; session-local badge acknowledgement
 (defvar performance_section "overview") ; overview|cpu|memory|storage|network|processes|benchmarks
 (defvar timeline_source "activity") ; activity|session|system|kernel|eww
 (defvar timeline_follow true)
@@ -93,6 +101,9 @@
 (deflisten bar_network_status
   :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"available\":false,\"networking_enabled\":false,\"wifi_enabled\":false,\"connected\":false,\"connectivity\":\"unknown\",\"connection_name\":\"Loading\",\"signal_percent\":0},\"error\":{\"code\":\"loading\",\"message\":\"Network state is loading\"}}"
   "$HOME/.config/eww/scripts/bar-network-listener.sh")
+(deflisten bar_notification_status
+  :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"available\":false,\"count\":0,\"dnd\":false,\"visible\":false,\"inhibited\":false},\"error\":{\"code\":\"loading\",\"message\":\"Notification state is loading\"}}"
+  "$HOME/.config/eww/scripts/bar-notification-listener.sh")
 (defpoll bar_layout
   :interval "15s"
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"monitor_id\":0,\"width\":1920,\"height\":1080,\"scale\":1,\"preferred_density\":\"auto\",\"density\":\"standard\",\"compact\":false,\"narrow\":false},\"error\":null}"
@@ -111,17 +122,17 @@
   "~/.config/eww/scripts/battery.sh")
 (defpoll power_status
   :interval "5s"
-  :run-while {active_surface == "control" && control_section == "power"}
+  :run-while {active_flyout == "power" || (active_surface == "control" && control_section == "power")}
   :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":null,\"error\":{\"code\":\"loading\",\"message\":\"Detailed power telemetry is loading\"}}"
   "$HOME/.config/eww/scripts/power-status.sh")
 (defpoll power_operation_status
   :interval "500ms"
-  :run-while {active_surface == "control" && control_section == "power"}
+  :run-while {active_flyout == "power" || (active_surface == "control" && control_section == "power")}
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"action\":\"none\",\"label\":\"Power control ready\",\"message\":\"No power profile operation has run in this session.\",\"exit_code\":null},\"error\":null}"
   "$HOME/.config/eww/scripts/power-action.sh status")
 (defpoll brightness_operation_status
   :interval "500ms"
-  :run-while {active_surface == "control" && control_section == "power"}
+  :run-while {active_flyout == "power" || (active_surface == "control" && control_section == "power")}
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"state\":\"idle\",\"state_label\":\"READY\",\"action\":\"none\",\"label\":\"DISPLAY BRIGHTNESS\",\"message\":\"No brightness operation has run in this session.\",\"exit_code\":null},\"error\":null}"
   "$HOME/.config/eww/scripts/brightness-action.sh status")
 (defpoll system_status
@@ -159,7 +170,7 @@
   "$HOME/.config/eww/scripts/network-action.sh status")
 (defpoll control_status
   :interval "5s"
-  :run-while {active_surface == "control" && (control_section == "overview" || control_section == "calendar" || control_section == "input" || control_section == "devices" || control_section == "appearance" || control_section == "settings")}
+  :run-while {active_flyout == "calendar" || (active_surface == "control" && (control_section == "overview" || control_section == "calendar" || control_section == "input" || control_section == "devices" || control_section == "appearance" || control_section == "settings"))}
   :initial "{\"schema_version\":1,\"ok\":false,\"source\":\"initial\",\"observed_at\":0,\"data\":null,\"error\":{\"code\":\"loading\",\"message\":\"Control Centre inventory is loading\"}}"
   "$HOME/.config/eww/scripts/control-status.sh")
 (defpoll bluetooth_status
@@ -201,7 +212,7 @@
   "$HOME/.config/eww/scripts/senomy-rail-message.sh")
 (defpoll notification_status
   :interval "1s"
-  :run-while {active_surface == "insights" && insights_section == "notifications"}
+  :run-while {active_flyout == "notifications" || (active_surface == "insights" && insights_section == "notifications")}
   :initial "{\"schema_version\":1,\"ok\":true,\"source\":\"initial\",\"observed_at\":0,\"data\":{\"provider\":\"SwayNotificationCenter\",\"provider_available\":false,\"capture_configured\":false,\"active_count\":0,\"do_not_disturb\":false,\"retained_count\":0,\"retention_limit\":120,\"entries\":[],\"privacy\":{\"local_only\":true,\"file_mode\":\"0600\",\"actions_stored\":false,\"hints_stored\":false,\"automatic_upload\":false}},\"error\":null}"
   "$HOME/.config/eww/scripts/notification-history.sh read")
 (defpoll timeline_activity_status

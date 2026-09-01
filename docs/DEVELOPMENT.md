@@ -29,25 +29,30 @@ chosen.
 Editing files under `/home/Duku/.config/eww` changes files used by the live Eww
 daemon, but does not necessarily reload the daemon.
 
-The live Hyprland file is outside the repository:
+The current legacy-session Hyprland file is outside the repository:
 
 ```text
 /home/Duku/.config/hypr/hyprland.conf
 ```
 
-The tracked mirror is:
+The tracked migration reference is:
 
 ```text
 /home/Duku/.config/eww/hyprland.conf
 ```
 
+The reviewed next-session source is
+`/home/Duku/.config/eww/hyprland.lua`; its user deployment target is
+`${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.lua`. Applying that component
+does not reload the running legacy `.conf` session.
+
 When a Hyprland change is required:
 
-1. show the proposed tracked-file diff;
+1. show the proposed repository-source diff;
 2. explain why Hyprland must change;
-3. edit both files deliberately after approval;
-4. compare them;
-5. run `hyprctl configerrors`;
+3. use the transactional `hyprland` component for the Lua deployment target;
+4. run `Hyprland --verify-config --config hyprland.lua` before apply;
+5. run `hyprctl configerrors` when the current session is affected;
 6. report whether a reload or next-login effect is expected.
 
 Do not modify the secondary clone at `/home/Duku/Projects/SenomyOS`.
@@ -107,6 +112,134 @@ path until the user approves the action.
 
 Check executable modes deliberately. A script invoked directly requires an
 executable bit; a script invoked through `bash` does not.
+
+For the Command Lens, validate the repository source without opening Rofi:
+
+```bash
+./scripts/validate-command-lens.sh
+./scripts/senomy-deploy.sh plan rofi
+```
+
+The validator uses a temporary home, mocked application launchers, hostile
+filenames, and Rofi's dump-only parser paths. A successful source check does
+not authorize deployment, a manual launch, or a `Super+R` binding change.
+
+For deployment/profile/boot work, run the isolated acceptance paths before a
+privileged apply:
+
+```bash
+./scripts/validate-profile-contract.sh
+./scripts/validate-deployment.sh
+./scripts/validate-bootstrap.sh
+./scripts/validate-boot-themes.sh
+```
+
+The clean-root test is not a virtual-machine cold boot. Never convert its
+success into a Plymouth or GRUB activation receipt.
+
+For the Thunar action layer, validate the source and inspect the generated live
+candidate without writing it:
+
+```bash
+./scripts/validate-thunar-contract.sh
+./scripts/senomy-deploy.sh plan thunar
+```
+
+The contract uses temporary XML, fake clipboard/notification providers, and a
+temporary deployment home. It verifies deterministic merging, preservation of
+unrelated actions, fixed helper verbs, path validation, the Thunar-process
+precondition, scoped workspace launches, FileManager1 reveal arguments,
+single-window fresh selection, the user desktop entry, standard/touch density
+selection, and exact rollback. Do not use `thunar
+--select`: it is not supported by the installed Thunar 4.20 command line.
+Never edit or replace live `uca.xml` while a Thunar process is running; it may
+write its older in-memory state when exiting.
+
+Validate the portable appearance registry and the namespaced GTK 3 source
+without launching an application:
+
+```bash
+./scripts/validate-theme-contract.sh
+./scripts/senomy-deploy.sh plan gtk3
+```
+
+The validator checks the Eww/Rofi/GTK token projections and asks GTK 3 to parse
+the complete provider, including its Adwaita resource inheritance. Visual QA
+still uses a temporary home and `GTK_THEME=SenomyOS`; do not write a global GTK
+preference merely to test the source. GTK 3 and GTK 4 are separate theme
+stacks, so record which toolkit each test application actually uses.
+
+The standard and touch GTK providers must both parse. The touch provider
+imports the canonical standard theme and changes only density-related values;
+keep frequently used targets at least 44px and prefer the 48px token.
+
+Test the deployed file-workspace entry point with a harmless temporary folder
+or file. A fresh launch should put the selected namespaced `GTK_THEME` in the
+daemon environment, expose the owned D-Bus name, and open one visible client;
+a reveal should create one Thunar client, and closing it must not alter the
+deployed `uca.xml`. If a user already has Thunar open, preserve that session
+and its existing theme.
+Also resolve `thunar.desktop` through Gio with a PATH that excludes
+`~/.local/bin`. The user entry must remain eligible and must resolve ahead of
+the distribution entry; do not add a PATH-dependent `TryExec` field.
+
+## Unified appearance workflow
+
+Edit visual sources under `appearance/` and use the single entry point from
+the repository root:
+
+```bash
+./scripts/senomy-appearance.sh build
+./scripts/senomy-appearance.sh check
+./scripts/senomy-appearance.sh plan all
+```
+
+The generator owns the shared-token projections for SCSS, Rofi, GTK, QML, and
+Hyprlock, the three-tier Luminous Reliquary SVG frame system, plus the boot mark
+used by GRUB and Plymouth. Toolkit-specific layout remains in its native
+source. User targets are applied through `senomy-deploy.sh`; SDDM and recovery
+use the root-owned system manifest. Both deployers create backups and receipts
+before mutation.
+
+Frame-system work also runs:
+
+```bash
+python3 scripts/validate-frame-system.py \
+  --artifacts-dir docs/design/frame-system/harness
+```
+
+This validates all 35 native-vector assets and renders the actual fixed-corner,
+neutral-edge composition at Compact 68/120/200/280/397x44, Standard
+160x88/240x120/420x180, and Large 240x120/480x320/1480x760. It also renders
+the adaptive workspace bay and 1/2/3/4/+N app states. It rejects embedded
+raster content, verifies fixed optical geometry and transparent safe centres,
+and checks stable neutral-edge profiles. `validate-rail-frame-svg.py` remains a
+compatibility wrapper for the same validator.
+
+Preview SDDM without a real login or power action using:
+
+```bash
+./scripts/senomy-appearance.sh preview login
+```
+
+Before applying login or recovery, run
+`./scripts/validate-sddm-contract.sh`. SDDM apply never restarts the display
+manager, logs out, or reboots. Recovery provisioning is separate because it
+creates an independently authenticated account and prompts interactively for
+its credential. Never put a password-reset command, browser, URL handler,
+terminal, or arbitrary process launcher in the greeter theme.
+
+Boot appearance is sourced under `appearance/boot/` and documented in
+`docs/BOOT_SEQUENCE.md`. The shared entry point can build, validate, plan, and
+stage it:
+
+```bash
+./scripts/senomy-appearance.sh plan boot
+./scripts/senomy-appearance.sh apply boot
+```
+
+The apply action stages isolated GRUB/Plymouth files only. It does not select a
+theme, rebuild initramfs, regenerate `grub.cfg`, modify firmware, or reboot.
 
 ## Eww validation
 
@@ -168,15 +301,16 @@ After an approved live Hyprland change:
 hyprctl configerrors
 ```
 
-When the tracked and live copies are intended to match:
+For the current next-session source and deployment target:
 
 ```bash
-cmp -s /home/Duku/.config/eww/hyprland.conf \
-  /home/Duku/.config/hypr/hyprland.conf
+Hyprland --verify-config --config /home/Duku/.config/eww/hyprland.lua
+./scripts/senomy-deploy.sh plan hyprland
 ```
 
 An empty `hyprctl configerrors` response means no reported configuration
-errors.
+errors in the running session. The legacy `.conf` comparison remains relevant
+only when deliberately maintaining that migration reference.
 
 ## Diff and commit gate
 

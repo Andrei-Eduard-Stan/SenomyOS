@@ -133,6 +133,13 @@ Progress:
 - the non-primary companion foundation provides closed, expanded, compact,
   edge-switch, session-pin, and truthful UPower/MPRIS reaction states without
   reserving work area.
+- the 2026-08-26 Luminous Reliquary visual pass now runs live as a 142px
+  standard window with a 120px obsidian Rail, stable five-workspace floor,
+  distinct identity/telemetry/system/calendar-notification/Power regions, and
+  event-driven real notification count/DND state;
+- native 1920x1080 full and focused comparisons against the normalized visual
+  target found no remaining P0/P1/P2 mismatch, and twelve live coordinator
+  transitions plus a workspace switch-and-restore passed without overlap.
 
 ## Stage 4 — Senomy Insights foundation
 
@@ -349,6 +356,48 @@ The selected visual direction and implementation contract are recorded in
 `docs/LAUNCHER_FILE_MANAGER.md`. No launcher binding, live GTK setting,
 Thunar configuration, or optional package is changed by the design stage.
 
+Progress:
+
+- the repository now owns a parsed 800px upper-centre Rofi configuration and
+  responsive Command Lens theme;
+- native Applications and Windows modes are registered by one stable wrapper;
+- Files mode searches only bounded relative roots beneath the resolved home,
+  excludes hidden paths, caps depth/results/time, and revalidates opaque paths
+  before the scoped file-workspace wrapper receives them;
+- Actions mode exposes fixed non-destructive SenomyOS surface, capture, and
+  file-workspace actions without a free-form command path;
+- isolated fixtures cover spaces, quotes, leading dashes, non-ASCII names,
+  hidden-file exclusion, root escape refusal, wrapper arguments, and the Rofi
+  2.0 config/theme parser;
+- Rofi is deployed through recorded transactions and has passed manual visual
+  and functional checks for Applications, Files, Windows, and Actions;
+- the reviewed Hyprland transaction now routes `Super+R` to Command Lens and
+  `Super+E` to the file-workspace wrapper;
+- the Thunar workspace/action layer is deployed as a scoped launcher, a
+  deterministic `uca.xml` merge, and a fixed helper, with isolated
+  preservation, FileManager1 reveal, safety, and rollback fixtures;
+- `appearance/tokens.json` now defines the portable core appearance
+  contract and validation keeps Eww, Rofi, and GTK 3 projections synchronized;
+- a namespaced GTK 3 theme inherits native Adwaita mechanics, parses headlessly,
+  and passed isolated Network Connection Editor and Thunar visual checks after
+  inherited light action-bar states were corrected;
+- the live Thunar transaction is deployed and idempotent, and the namespaced
+  GTK theme is installed for scoped launches; no accelerator, Xfconf, or
+  global GTK preference has changed.
+- a user desktop-entry override routes normal Thunar application launches
+  through the wrapper, while a canonical-importing `SenomyOS-Touch` theme
+  supplies 48px controls without changing the global GTK preference;
+- screenshot-led dialog QA exposed light page backgrounds behind pale text;
+  explicit notebook stack/page styling corrects the source and both GTK
+  variants pass headless parsing;
+- live first-launch QA exposed D-Bus activation dropping the client-only theme
+  environment, so the wrapper now owns a collected transient themed daemon,
+  waits for its D-Bus name, and explicitly opens one window;
+- clean post-deployment captures passed for the standard main window,
+  Preferences, Properties, a 640px narrow layout, the 48px touch main window,
+  and the touch Preferences dialog after its effective target geometry was
+  bounded to fit a 1080px screen.
+
 ## Stage 10 — Hardening and responsive pass
 
 Goals:
@@ -441,6 +490,19 @@ Goals:
 - add desktop, laptop, touch, portrait, and narrow layout profiles;
 - test hot-plugged devices and missing hardware.
 
+Progress:
+
+- schema-validated `automatic`, `desktop`, `touch`, and `narrow` profiles now
+  provide a portable fallback plus minimal shell, appearance, wallpaper, and
+  file-workspace density overrides;
+- profile values are deployed as one complete XDG file and remain below
+  bounded user preferences in the configuration hierarchy;
+- the next-session compositor uses one `swaybg` wallpaper launcher and a
+  generated project-owned asset rather than a username, Downloads path, or
+  multiple competing providers;
+- physical portrait, phone-sized, hot-plug, and multi-scale acceptance remains
+  outstanding and no compatibility claim is inferred from profile existence.
+
 ## Stage 12 — Touch and convertible support
 
 Goals:
@@ -462,6 +524,55 @@ Goals:
 - create first-boot hardware/profile selection;
 - define configuration migrations and rollback;
 - verify deployment in a clean virtual machine before new hardware.
+
+Progress:
+
+- `deploy/manifest.json` now records ready, in-place, and planned components
+  without presenting unavailable deployment paths as functional;
+- `scripts/senomy-deploy.sh` provides read-only list/plan/history plus
+  confirmed transactional apply and rollback for complete files and one
+  explicit deterministic Thunar action merge in allowlisted user roots;
+- every apply creates private checksummed backups and a lifecycle receipt
+  before mutation, verifies the installed mode and content, and attempts an
+  automatic restore on ordinary failures;
+- manual rollback refuses unrecorded target drift and restores both existing
+  files and the prior absence of newly created files;
+- an isolated fake-home contract covers plan, guarded Thunar merge, apply,
+  receipt, history, drift refusal, automatic and manual rollback,
+  planned-component refusal, and path-traversal rejection;
+- the Rofi component, scoped Thunar wrapper/action merge, and namespaced GTK 3
+  theme have been applied through recoverable live receipts and now plan as
+  unchanged;
+- a separate privileged manifest and deployer now cover the SDDM theme,
+  root-owned session guards, and restricted recovery runtime without restarting
+  the display manager;
+- Hyprlock is installed and the repository-owned lock source is deployed;
+- the normal desktop and recovery compositor now have parser-verified Hyprland
+  Lua sources, and the normal desktop Lua config is deployed transactionally
+  for selection at the next session start;
+- Arch package and service manifests now distinguish required official,
+  optional, and explicitly reviewed external dependencies;
+- `senomy-bootstrap.sh` provides audit, plan, confirmed package installation,
+  profile selection, user/system deployment, user-service enablement, and an
+  interactive recovery-provisioning boundary without restarting the display
+  manager or regenerating boot files;
+- clean-home and clean-root acceptance applies the real manifests into isolated
+  roots and runs their native parsers; it is intentionally not described as a
+  cold-boot virtual-machine test;
+- recovery runtime files are transactionally deployed; account credential
+  provisioning remains the explicit human-secret step;
+- Plymouth and GRUB theme sources are transactionally stageable, while
+  activation is blocked until disposable-machine cold-boot and recovery-boot
+  evidence exists;
+- `appearance/boot/sequence.json`, one generated OS mark, a GRUB projection,
+  a Plymouth projection, and `docs/BOOT_SEQUENCE.md` now centralize the owned
+  visual sequence and state firmware/video limitations explicitly;
+- profile-controlled compositor scale replaces PPI-derived `auto` scaling;
+  wide surfaces use bounded logical geometry, and live route QA proves the
+  Performance Dashboard remains 1480x760 across every page on the reference
+  display;
+- clean-VM cold boot, versioned package artifacts/migrations, and a reviewed
+  boot activation path remain incomplete.
 
 ## Stage 14 — Bootable release and compatibility tiers
 

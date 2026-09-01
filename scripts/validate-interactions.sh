@@ -56,6 +56,9 @@ assert_state() {
   [[ "$(window_count_in "$window_snapshot" performance)" -eq "$([[ "$primary_window" == performance ]] && printf 1 || printf 0)" ]] || return 1
   [[ "$(window_count_in "$window_snapshot" volume-flyout)" -eq "$([[ "$flyout_window" == volume-flyout ]] && printf 1 || printf 0)" ]] || return 1
   [[ "$(window_count_in "$window_snapshot" tray-flyout)" -eq "$([[ "$flyout_window" == tray-flyout ]] && printf 1 || printf 0)" ]] || return 1
+  [[ "$(window_count_in "$window_snapshot" calendar-flyout)" -eq "$([[ "$flyout_window" == calendar-flyout ]] && printf 1 || printf 0)" ]] || return 1
+  [[ "$(window_count_in "$window_snapshot" notifications-flyout)" -eq "$([[ "$flyout_window" == notifications-flyout ]] && printf 1 || printf 0)" ]] || return 1
+  [[ "$(window_count_in "$window_snapshot" power-flyout)" -eq "$([[ "$flyout_window" == power-flyout ]] && printf 1 || printf 0)" ]] || return 1
   [[ "$surface" != none || "$flyout" != none ]] && dismiss_expected=1
   [[ "$(window_count_in "$window_snapshot" surface-dismiss)" -eq "$dismiss_expected" ]] || { printf 'dismiss-layer invariant failed\n' >&2; return 1; }
 }
@@ -92,6 +95,25 @@ transition "open Tray" none tray none tray-flyout toggle-tray none none
 transition "switch Tray to Volume" none volume none volume-flyout toggle-volume none tray
 transition "Volume to Audio" control none actioncenter none show-control audio none volume
 transition "dismiss Control" none none none none dismiss control none
+transition "open Calendar" none calendar none calendar-flyout toggle-calendar none none
+transition "Calendar to Notifications" none notifications none notifications-flyout toggle-notifications none calendar
+transition "Notifications to Power" none power none power-flyout toggle-power none notifications
+transition "repeat-close Power" none none none none toggle-power none power
+
+# Complete the remaining trigger semantics and both directions between primary
+# surfaces and transient flyouts. `dismiss` is the shared outside-click and
+# Escape path; visible X controls route through the same close coordinator.
+transition "open Control for repeat" control none actioncenter none toggle-control overview none none overview
+transition "repeat-close Control" none none none none toggle-control overview control none overview
+transition "open Insights for repeat" insights none insights none toggle-insights none none briefing
+transition "repeat-close Insights" none none none none toggle-insights insights none briefing
+transition "open Performance repeat" performance none performance none toggle-performance none none
+transition "repeat-close Performance" none none none none toggle-performance performance none
+transition "open Control for switch" control none actioncenter none show-control overview none none
+transition "Control to Tray" none tray none tray-flyout toggle-tray control none
+transition "Tray to Performance" performance none performance none show-performance none tray
+transition "Performance to Notifications" none notifications none notifications-flyout toggle-notifications performance none
+transition "outside-dismiss Notifications" none none none none dismiss none notifications
 
 trap - EXIT
 cleanup

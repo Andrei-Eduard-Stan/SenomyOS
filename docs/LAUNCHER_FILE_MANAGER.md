@@ -4,7 +4,9 @@
 
 **Selected direction:** Command Lens  
 **Selected:** 2026-08-15  
-**Implementation state:** design approved; no live configuration deployed
+**Implementation state:** Command Lens, scoped Thunar workspace/action layer,
+and namespaced GTK 3 theme are deployed and manually verified; the launcher
+binding and global GTK selection remain separate approval stages
 
 The selected visual source is:
 
@@ -27,11 +29,15 @@ feel like parts of one desktop without hiding their native roles.
 
 Read-only inventory on 2026-08-15 found:
 
-- `Super+R` still launches `wofi --show drun` from Hyprland;
+- `Super+R` now launches Command Lens and `Super+E` launches the scoped Thunar
+  workspace through synchronized tracked/live Hyprland configuration;
 - Rofi 2.0.0, Wofi 1.5.3, Thunar 4.20.9, and GTK 3.24 are installed;
-- neither Rofi nor Wofi has a user theme/configuration tree;
-- Thunar currently has `accels.scm` and one `Open Terminal Here` custom action;
-- the GTK theme, icon theme, and UI font are effectively stock Adwaita;
+- Rofi originally had no user configuration tree; the reviewed Command Lens
+  files are now deployed through recorded transactions;
+- Thunar retains `accels.scm` and the unrelated `Open Terminal Here` action;
+  the deployed merge adds `Copy Path` and `Copy SHA-256`;
+- the default GTK preference, icon theme, and UI font remain stock Adwaita;
+  SenomyOS is installed as a namespaced GTK 3 theme for scoped launches;
 - thumbnailing, GVFS integration, archive integration, removable-device
   helpers, and Catfish are not currently installed;
 - the real live files are outside this repository and must be deployed
@@ -225,7 +231,7 @@ must not be presented as Thunar-only.
 
 ## Repository and deployment boundaries
 
-The planned repository-owned sources are:
+The repository-owned source shape is:
 
 ```text
 components/
@@ -234,13 +240,16 @@ components/
     themes/command-lens.rasi
     scripts/
   file-manager/thunar/
-    uca.xml
-    accels.scm
-    defaults/
+    actions.json
+    thunar.desktop
+    scripts/senomy-file-workspace
+    scripts/senomy-thunar-action
   themes/gtk3/SenomyOS/
+  themes/gtk3/SenomyOS-Touch/
   themes/icons/SenomyOS/        # only if a complete maintained icon layer exists
 deploy/
-  user/
+  manifest.json
+  README.md
 profiles/
 ```
 
@@ -254,28 +263,112 @@ the user Xfconf database
 $XDG_CONFIG_HOME/hypr/hyprland.conf
 ```
 
-Deployment must back up user-owned live files, merge rather than blindly
-overwrite Thunar actions/bookmarks, validate generated Rasi/XML/CSS, and retain
-a rollback path. The tracked and live Hyprland files are synchronized only in
-a separate reviewed step.
+`scripts/senomy-deploy.sh` owns plan, private checksummed backup, prepared
+receipt, atomic install, verification, and drift-aware rollback. Rofi is a
+deployed complete-file component and passes isolated parser, mode, path-safety,
+wrapper, and live visual checks. Thunar uses the one supported deterministic
+merge strategy: unrelated custom actions are preserved and only registered
+SenomyOS IDs are replaced. It does not replace `accels.scm` or write Xfconf or
+GTK preferences. The tracked and live Hyprland files are synchronized only as
+a separate reviewed component. A user `thunar.desktop` override makes normal
+application-menu launches use the wrapper without editing the distribution
+desktop entry.
+
+The implemented Rofi source contains:
+
+```text
+components/launcher/rofi/
+  config.rasi
+  themes/command-lens.rasi
+  scripts/senomy-command-lens
+  scripts/senomy-rofi-files
+  scripts/senomy-rofi-actions
+```
+
+`senomy-command-lens` registers native `drun` and `window` modes beside the
+project-owned Files and Actions adapters, asks Rofi to use the monitor that
+contains the focused window, and computes an explicit 800px or narrow-safe
+width from that focused monitor. This avoids Rofi 2.0 media-query behavior that
+expanded an 800px window as a percentage of the full monitor. The default Files policy searches only existing
+standard user folders to depth five, for at most 500 results and two seconds
+per root. An optional
+`${XDG_CONFIG_HOME:-$HOME/.config}/senomyos/file-search.json` may replace those
+roots with at most sixteen relative paths beneath the real home directory and
+may lower or raise only documented bounded limits.
+
+Files mode excludes hidden paths and remote traversal, carries the original
+path in `ROFI_INFO`, revalidates its real path on activation, and hands opens
+and `Ctrl+Shift+Enter` reveals to `senomy-file-workspace`. The wrapper uses the
+supported FileManager1 interface for reveal rather than an unsupported Thunar
+`--select` option. Actions mode maps opaque
+IDs to existing SenomyOS surface, capture, and file-workspace entry points. It
+does not accept custom input and does not expose logout, reboot, shutdown, or
+arbitrary commands.
+
+The implemented Thunar action source contains:
+
+```text
+components/file-manager/thunar/
+  actions.json
+  thunar.desktop
+  scripts/senomy-file-workspace
+  scripts/senomy-thunar-action
+scripts/thunar-uca-merge.py
+```
+
+The registry currently provides Copy Path and Copy SHA-256. Deployment builds
+and validates a candidate from the current live `uca.xml`, retains unrelated
+actions such as the existing Open Terminal Here action, and records the exact
+prior file for rollback. The helper accepts only those two verbs and bounded
+absolute paths. Apply and rollback refuse to continue while Thunar is running.
+The workspace wrapper applies the selected `GTK_THEME` only to a fresh Thunar
+daemon. It starts that daemon in a collected transient user service so D-Bus
+activation cannot discard the theme environment, with a detached `nohup`
+fallback when the user manager is unavailable. It waits for the service before
+opening one explicit window or sending one FileManager1 reveal request. An
+existing session is reused without restart or theme mutation.
+The user `thunar.desktop` override calls the installed wrapper through
+`~/.local/bin` explicitly and has no PATH-dependent `TryExec`; this keeps the
+override eligible in display-manager sessions whose PATH contains only system
+binary directories.
+Automatic density uses the standard theme unless the bounded appearance
+preference reports a touch font scale. The separately installed touch variant
+imports the same canonical theme and raises primary controls and rows to 48px;
+notebook-dialog controls retain an effective approximately 48px target while
+using a smaller content minimum so native dialogs fit a 1080px screen.
 
 ## Implementation stages
 
 ### A. Launcher prototype
 
-1. Add repository-owned Rofi config, Command Lens theme, and a wrapper.
-2. Implement APPS and WINDOWS with native Rofi modes.
-3. Add bounded FILES and allowlisted ACTIONS scripts with fixtures.
-4. Open it manually without changing `Super+R`.
-5. Capture and compare it with the selected design.
+1. **Complete:** add repository-owned Rofi config, Command Lens theme, and a
+   wrapper.
+2. **Complete:** implement APPS and WINDOWS with native Rofi modes.
+3. **Complete:** add bounded FILES and allowlisted ACTIONS scripts with
+   hostile-path fixtures.
+4. **Complete:** deploy and open it manually without changing `Super+R`.
+5. **Complete:** capture and compare it with the selected design; the first
+   live capture exposed inherited Adwaita rows and incorrect percentage width,
+   which were corrected before binding integration.
 
 ### B. Thunar appearance prototype
 
-1. Build the GTK 3 theme in a repository staging path.
-2. Launch a test Thunar process with the staged theme where possible.
-3. Verify toolbar, sidebar, rows, preview, menus, dialogs, destructive states,
-   narrow width, and touch density.
-4. Add custom actions separately from styling.
+1. **Complete:** build the namespaced GTK 3 theme in a repository staging path
+   with the shared portable token contract.
+2. **Complete:** launch an isolated test Thunar process with the staged theme.
+   A separate GTK 3 application also passed visual QA; a GTK 4 control proved
+   the toolkit boundary remains separate.
+3. **Complete:** standard toolbar, sidebar, rows, native
+   Preferences/Properties dialogs, and a 640px narrow layout passed clean
+   post-deployment captures. The audit exposed and corrected unreadable native
+   notebook pages, a first-launch D-Bus theme-environment loss, and a touch
+   Preferences dialog taller than the 1080px screen. A later ordinary
+   application-menu launch exposed a PATH-dependent `TryExec` that invalidated
+   the user desktop override; the corrected entry now resolves ahead of the
+   system entry. Standard and touch main windows and dialogs now pass the final
+   visual check.
+4. **Complete:** add the first bounded custom actions separately from styling,
+   using a deterministic preserve-and-replace merge.
 5. Review optional package installation before installing anything.
 
 ### C. Appearance integration
@@ -287,12 +380,15 @@ a separate reviewed step.
 
 ### D. Deployment
 
-1. Show the complete source and deployment diff.
-2. Back up live user configuration.
-3. Deploy Rofi and test it manually.
-4. Change `Super+R` from Wofi to the verified Rofi wrapper in tracked and live
-   Hyprland configs, then run `hyprctl configerrors`.
-5. Deploy the GTK/Thunar layer only after visual and functional QA.
+1. **Complete for Rofi:** show the complete source and deployment diff.
+2. **Complete for Rofi:** back up live user configuration through receipts.
+3. **Complete:** deploy Rofi and test all four scopes manually.
+4. **Complete:** change `Super+R` from Wofi to the verified Rofi wrapper and
+   `Super+E` to the file-workspace wrapper in tracked and live Hyprland files;
+   the deployment post-check reported no configuration errors.
+5. **Complete:** deploy the Thunar wrapper/action layer only while Thunar is
+   closed, install the namespaced GTK 3 theme without selecting it globally,
+   and verify a single themed live window plus the custom-action submenu.
 
 ## Acceptance criteria
 

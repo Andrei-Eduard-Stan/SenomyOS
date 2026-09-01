@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+# Fixed action registry for the SenomyOS Rofi Command Lens. This deliberately
+# has no free-form command path and exposes no destructive session actions.
+set -euo pipefail
+
+readonly FIELD_SEPARATOR=$'\x1f'
+readonly EWW_CONFIG="${SENOMY_EWW_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/eww}"
+
+markup_escape() {
+  local value="$1"
+  value="${value//&/\&amp;}"
+  value="${value//</\&lt;}"
+  value="${value//>/\&gt;}"
+  printf '%s' "$value"
+}
+
+emit_headers() {
+  local message="${1:-Allowlisted SenomyOS controls · destructive session actions are excluded}"
+  printf '\0prompt%sACTIONS\n' "$FIELD_SEPARATOR"
+  printf '\0markup-rows%strue\n' "$FIELD_SEPARATOR"
+  printf '\0no-custom%strue\n' "$FIELD_SEPARATOR"
+  printf '\0message%s%s\n' "$FIELD_SEPARATOR" "$message"
+}
+
+emit_row() {
+  local id="$1" title="$2" detail="$3" icon="$4" selectable="${5:-true}"
+  local display
+  display="<span weight=\"bold\">$(markup_escape "$title")</span>  ·  <span size=\"small\" foreground=\"#9ea1ae\">$(markup_escape "$detail")</span>"
+  printf '%s\0display%s%s' "$title $detail" "$FIELD_SEPARATOR" "$display"
+  printf '%sicon%s%s' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$icon"
+  printf '%sinfo%s%s' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$id"
+  if [[ "$selectable" != true ]]; then
+    printf '%snonselectable%strue' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+    printf '%spermanent%strue' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+  fi
+  printf '\n'
+}
+
+emit_failure() {
+  local detail="$1"
+  emit_headers "$detail"
+  emit_row unavailable "Action unavailable" "$detail" dialog-warning false
+}
+
+surface_script() {
+  printf '%s/scripts/surface-state.sh' "$EWW_CONFIG"
+}
+
+screenshot_script() {
+  printf '%s/scripts/screenshot-action.sh' "$EWW_CONFIG"
+}
+
+resolve_command() {
+  local candidate="$1"
+  command -v "$candidate" 2>/dev/null
+}
+
+resolve_file_workspace() {
+  local wrapper="${SENOMY_FILE_WORKSPACE_BIN:-$HOME/.local/bin/senomy-file-workspace}"
+  if [[ -x "$wrapper" ]]; then
+    printf '%s\n' "$wrapper"
+  else
+    resolve_command "${SENOMY_THUNAR_BIN:-thunar}"
+  fi
+}
+
+launch_detached() {
+  local setsid_bin
+  setsid_bin="$(resolve_command "${SENOMY_SETSID_BIN:-setsid}")" || return 1
+  "$setsid_bin" --fork "$@" >/dev/null 2>&1
+}
+
+run_surface() {
+  local script
+  script="$(surface_script)"
+  [[ -x "$script" ]] || { emit_failure "The SenomyOS surface controller is unavailable."; return; }
+  "$script" "$@" >/dev/null 2>&1 || emit_failure "The requested SenomyOS surface could not be opened."
+}
+
+list_actions() {
+  local surface screenshot thunar
+  surface="$(surface_script)"
+  screenshot="$(screenshot_script)"
+  thunar="$(resolve_file_workspace || true)"
+
+  emit_headers
+  if [[ -x "$surface" ]]; then
+    emit_row control "Control Centre" "Overview and contextual system controls" preferences-system
+    emit_row performance "Performance Dashboard" "Expanded live system telemetry" utilities-system-monitor
+    emit_row insights "Senomy Insights" "Briefing, notifications, timeline, and reports" dialog-information
+    emit_row diagnostics "Diagnostics" "Open the curated Insights diagnostics route" system-search
+    emit_row appearance "Appearance" "Open validated presentation controls" preferences-desktop-theme
+    emit_row settings "Settings" "Open the safe SenomyOS settings route" applications-system
+  else
+    emit_row surface-unavailable "SenomyOS surfaces unavailable" "The Eww surface controller was not found" dialog-warning false
+  fi
+  if [[ -x "$screenshot" ]]; then
+    emit_row screenshot "Capture Screenshot" "Start the existing interactive capture workflow" camera-photo
+  else
+    emit_row screenshot-unavailable "Screenshot unavailable" "The capture controller was not found" dialog-warning false
+  fi
+  if [[ -n "$thunar" ]]; then
+    emit_row files "Open File Workspace" "Open the SenomyOS Thunar workspace" system-file-manager
+  else
+    emit_row files-unavailable "File workspace unavailable" "Thunar is not installed" dialog-warning false
+  fi
+}
+
+handle_selection() {
+  local action="${ROFI_INFO:-}" script thunar
+  case "$action" in
+    control) run_surface show-control overview ;;
+    performance) run_surface show-performance ;;
+    insights) run_surface show-insights briefing ;;
+    diagnostics) run_surface show-insights diagnostics ;;
+    appearance) run_surface show-control appearance ;;
+    settings) run_surface show-control settings ;;
+    screenshot)
+      script="$(screenshot_script)"
+      [[ -x "$script" ]] || { emit_failure "The screenshot controller is unavailable."; return; }
+      launch_detached "$script" capture || emit_failure "The screenshot workflow could not be started."
+      ;;
+    files)
+      thunar="$(resolve_file_workspace)" || { emit_failure "The file workspace is not installed."; return; }
+      launch_detached "$thunar" -- "$HOME" || emit_failure "Thunar could not be started."
+      ;;
+    *) emit_failure "Only listed, non-destructive actions are accepted." ;;
+  esac
+}
+
+case "${ROFI_RETV:-0}" in
+  0) list_actions ;;
+  1) handle_selection ;;
+  *) emit_failure "Only listed, non-destructive actions are accepted." ;;
+esac

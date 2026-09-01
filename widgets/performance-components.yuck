@@ -11,11 +11,15 @@
       (label
         :class "performance-section-label"
         :xalign 0
+        :show-truncated true
+        :limit-width 36
         :text title)
       (label
         :class "performance-section-subtitle"
         :xalign 0
         :visible {subtitle != ""}
+        :show-truncated true
+        :limit-width 48
         :text subtitle))))
 
 (defwidget performance-stat-row [label value]
@@ -26,10 +30,15 @@
       :class "performance-stat-label"
       :xalign 0
       :hexpand true
+      :show-truncated true
+      :limit-width 24
       :text label)
     (label
       :class "performance-stat-value"
       :xalign 1
+      :show-truncated true
+      :limit-width 32
+      :tooltip value
       :text value)))
 
 (defwidget performance-kpi [code label value detail tone]
@@ -46,18 +55,21 @@
         :class "performance-kpi-label"
         :xalign 1
         :hexpand true
-        :show-truncated false
+        :show-truncated true
+        :limit-width 20
         :text label))
     (label
       :class "performance-kpi-value"
       :xalign 0
-      :show-truncated false
+      :show-truncated true
+      :limit-width 24
       :text value)
     (label
       :class "performance-kpi-detail"
       :xalign 0
       :wrap true
       :show-truncated false
+      :limit-width 42
       :text detail)))
 
 (defwidget performance-meter [label value value_text tone]
@@ -142,12 +154,12 @@
         :space-evenly false
         :hexpand true
         (label :class "performance-history-code" :xalign 0 :text code)
-        (label :class "performance-history-title" :xalign 0 :text title))
+        (label :class "performance-history-title" :xalign 0 :show-truncated true :limit-width 28 :text title))
       (box
         :orientation "v"
         :space-evenly false
         (label :class "performance-history-value" :xalign 1 :text value)
-        (label :class "performance-history-meta" :xalign 1 :text meta)))
+        (label :class "performance-history-meta" :xalign 1 :show-truncated true :limit-width 30 :text meta)))
 
     (performance-history-bars :metric metric :tone tone)
 

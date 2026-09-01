@@ -1,5 +1,6 @@
 (defwidget wifi-button []
   (button
+    :hexpand true
     :class {active_surface == "control" && control_section == "network"
       ? "icon-button bar-control mainbar-wifi-button active"
       : (bar_network_status?.data?.wifi_enabled != true

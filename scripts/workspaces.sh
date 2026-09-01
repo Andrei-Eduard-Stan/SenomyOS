@@ -14,6 +14,7 @@ readonly JQ_BIN="${SENOMY_JQ_BIN:-/usr/bin/jq}"
 readonly SOCAT_BIN="${SENOMY_SOCAT_BIN:-/usr/bin/socat}"
 readonly EWW_CONFIG="${SENOMY_EWW_CONFIG:-${XDG_CONFIG_HOME:-"$HOME/.config"}/eww}"
 readonly ICON_MAP="${SENOMY_ICON_MAP:-$EWW_CONFIG/data/app-icons.json}"
+readonly CAROUSEL_BIN="${SENOMY_WORKSPACE_CAROUSEL_BIN:-$EWW_CONFIG/scripts/workspace-carousel.sh}"
 
 readonly HEARTBEAT_SECONDS=10
 readonly FULL_RESYNC_SECONDS=300
@@ -22,6 +23,7 @@ readonly EVENT_DRAIN_SECONDS="0.01"
 readonly MAX_DRAINED_EVENTS=100
 readonly ACTIVE_APP_LIMIT=4
 readonly INACTIVE_APP_LIMIT=2
+readonly SNAPSHOT_FIXTURE="${SENOMY_WORKSPACE_SNAPSHOT_JSON:-}"
 
 next_text=""
 next_json=""
@@ -339,36 +341,55 @@ build_once() {
   local normalized_output
   local -a normalized_lines
 
-  snapshot_json="$(
-    "$HYPRCTL_BIN" --batch \
-      'j/workspaces;j/activeworkspace;j/clients' 2>/dev/null
-  )" || {
-    log "hyprctl workspace batch query failed"
-    return 1
-  }
-
-  snapshot_json="$(
-    "$JQ_BIN" -sc \
-      '
+  if [[ -n "$SNAPSHOT_FIXTURE" ]]; then
+    snapshot_json="$(
+      "$JQ_BIN" -ce '
         if (
-          length == 3
-          and (.[0] | type) == "array"
-          and (.[1] | type) == "object"
-          and (.[2] | type) == "array"
+          (.workspaces | type) == "array"
+          and (.active_workspace | type) == "object"
+          and (.clients | type) == "array"
         ) then
-          {
-            workspaces: .[0],
-            active_workspace: .[1],
-            clients: .[2]
-          }
+          .
         else
-          error("invalid Hyprland workspace batch")
+          error("invalid workspace fixture")
         end
-      ' <<< "$snapshot_json"
-  )" || {
-    log "hyprctl workspace batch returned invalid JSON"
-    return 1
-  }
+      ' <<< "$SNAPSHOT_FIXTURE"
+    )" || {
+      log "workspace fixture returned invalid JSON"
+      return 1
+    }
+  else
+    snapshot_json="$(
+      "$HYPRCTL_BIN" --batch \
+        'j/workspaces;j/activeworkspace;j/clients' 2>/dev/null
+    )" || {
+      log "hyprctl workspace batch query failed"
+      return 1
+    }
+
+    snapshot_json="$(
+      "$JQ_BIN" -sc \
+        '
+          if (
+            length == 3
+            and (.[0] | type) == "array"
+            and (.[1] | type) == "object"
+            and (.[2] | type) == "array"
+          ) then
+            {
+              workspaces: .[0],
+              active_workspace: .[1],
+              clients: .[2]
+            }
+          else
+            error("invalid Hyprland workspace batch")
+          end
+        ' <<< "$snapshot_json"
+    )" || {
+      log "hyprctl workspace batch returned invalid JSON"
+      return 1
+    }
+  fi
 
   load_icon_map || {
     log "failed to resolve the application icon map"
@@ -451,7 +472,16 @@ build_once() {
                 }
             );
 
-        ($snapshot.active_workspace.id // 1) as $active_candidate
+        (
+          [
+            $snapshot.workspaces[]
+            | .id
+            | select(type == "number" and . > 0)
+          ]
+          | unique
+          | sort
+        ) as $reported_workspace_ids
+        | ($snapshot.active_workspace.id // null) as $active_candidate
         | (
             if (
               ($active_candidate | type) == "number"
@@ -459,27 +489,29 @@ build_once() {
             ) then
               $active_candidate
             else
-              1
+              $reported_workspace_ids[0]
+              // error("no positive Hyprland workspace is available")
             end
           ) as $active_id
         | (
-            [
-              $snapshot.workspaces[]
-              | .id
-              | select(type == "number" and . > 0)
-            ] + [$active_id]
-            | max // 1
+            $reported_workspace_ids + [$active_id]
+            | unique
+            | sort
+          ) as $workspace_ids
+        | (
+            $workspace_ids
+            | max // $active_id
           ) as $max_id
         | (
-            [
-              range(1; $max_id + 1)
-              | . as $workspace_id
+            $workspace_ids
+            | map(
+                . as $workspace_id
               | if $workspace_id == $active_id then
                   "[\($workspace_id)]"
                 else
                   "\($workspace_id)"
                 end
-            ]
+              )
             | join(" ")
           ) as $legacy_text
         | ({
@@ -491,7 +523,7 @@ build_once() {
               active_id: $active_id,
               max_id: $max_id,
               workspaces: [
-                range(1; $max_id + 1) as $workspace_id
+                $workspace_ids[] as $workspace_id
                 | workspace_apps($workspace_id; $snapshot.clients) as $all_apps
                 | (
                     if $workspace_id == $active_id then
@@ -500,18 +532,42 @@ build_once() {
                       $inactive_app_limit
                     end
                   ) as $display_limit
+                | ($all_apps | length) as $app_count
+                | (
+                    if $app_count > $display_limit then
+                      (
+                        $all_apps[0:($display_limit - 1)]
+                        | map(. + {kind: "app"})
+                      ) + [{
+                        kind: "overflow",
+                        count: ($app_count - $display_limit + 1),
+                        name: "Additional applications"
+                      }]
+                    else
+                      $all_apps[0:$display_limit]
+                      | map(. + {kind: "app"})
+                    end
+                  ) as $cells
                 | {
                     id: $workspace_id,
                     active: ($workspace_id == $active_id),
-                    occupied: (($all_apps | length) > 0),
-                    app_count: ($all_apps | length),
-                    apps: $all_apps[0:$display_limit],
+                    occupied: ($app_count > 0),
+                    app_count: $app_count,
+                    apps: [
+                      $cells[]
+                      | select(.kind == "app")
+                      | del(.kind)
+                    ],
                     overflow_count: (
                       [
-                        (($all_apps | length) - $display_limit),
-                        0
-                      ]
-                      | max
+                        $cells[]
+                        | select(.kind == "overflow")
+                        | .count
+                      ][0] // 0
+                    ),
+                    grid_rows: (
+                      [$cells[0:2], $cells[2:4]]
+                      | map(select(length > 0))
                     ),
                     summary: (
                       $all_apps
@@ -583,6 +639,14 @@ publish_cached() {
   return 1
 }
 
+reconcile_carousel() {
+  [[ -x "$CAROUSEL_BIN" ]] || return 0
+
+  # The listener still publishes the only workspace data model. The helper
+  # reconciles only the presentation offset after that authoritative update.
+  "$CAROUSEL_BIN" reconcile >/dev/null 2>&1 || true
+}
+
 refresh_snapshot() {
   local force="${1:-false}"
 
@@ -599,7 +663,12 @@ refresh_snapshot() {
     return 0
   fi
 
-  publish_cached
+  if publish_cached; then
+    reconcile_carousel
+    return 0
+  fi
+
+  return 1
 }
 
 event_requires_refresh() {
@@ -707,7 +776,9 @@ main() {
     --print-once)
       [[ $# -eq 1 ]] || usage
       snapshot_commands_available || return 1
-      resolve_hyprland_session || return 1
+      if [[ -z "$SNAPSHOT_FIXTURE" ]]; then
+        resolve_hyprland_session || return 1
+      fi
       build_once || return 1
       printf '%s\n' "$next_json"
       return

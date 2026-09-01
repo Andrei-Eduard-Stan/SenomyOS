@@ -6,10 +6,17 @@ set -u
 export LC_ALL=C
 printf -v observed_at '%(%s)T' -1
 preferences="${SENOMY_PREFERENCES:-${XDG_CONFIG_HOME:-$HOME/.config}/senomyos/preferences.json}"
+profile="${SENOMY_PROFILE:-${XDG_CONFIG_HOME:-$HOME/.config}/senomyos/profile.json}"
 preferred_density="auto"
 
+if [[ -r "$profile" ]] && command -v jq >/dev/null 2>&1; then
+  candidate="$(jq -r '.shell.density // "auto"' "$profile" 2>/dev/null || printf auto)"
+  [[ "$candidate" == auto || "$candidate" == standard || "$candidate" == compact || "$candidate" == narrow ]] &&
+    preferred_density="$candidate"
+fi
+
 if [[ -r "$preferences" ]] && command -v jq >/dev/null 2>&1; then
-  candidate="$(jq -r '.density // "auto"' "$preferences" 2>/dev/null || printf auto)"
+  candidate="$(jq -r '.density // empty' "$preferences" 2>/dev/null || true)"
   [[ "$candidate" == auto || "$candidate" == standard || "$candidate" == compact || "$candidate" == narrow ]] &&
     preferred_density="$candidate"
 fi

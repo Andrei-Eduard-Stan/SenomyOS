@@ -1018,4 +1018,791 @@ generated because they have different styling systems. A global GTK theme can
 affect applications beyond Thunar and therefore requires wider QA. Repository
 sources are deployed deliberately to live user configuration with backup and
 rollback. The current `Super+R` Wofi binding is not changed until the Rofi
-prototype has passed manual and visual validation.
+prototype has passed manual and visual validation. That gate later passed;
+activation is recorded in D080.
+
+## D075 — Deploy user configuration through recorded transactions
+
+**Date:** 2026-08-16
+**Status:** Accepted
+
+The live Eww repository is the development source and the source of truth for
+SenomyOS configuration deployed elsewhere. Developers do not maintain separate
+editable copies under each application's live configuration directory.
+
+A versioned manifest allowlists every component, repository source, target
+root, relative destination, strategy, and mode. User apply operations show a
+plan, require confirmation, back up every affected target before mutation,
+write a private prepared receipt, install complete files through an atomic
+rename, and verify content and permissions. Rollback restores the recorded
+file or recorded absence and refuses to overwrite unrecorded drift.
+
+The first deployer supports only complete SenomyOS-owned regular files inside
+allowlisted user roots. It does not replace user-owned Thunar XML, deploy
+directory trees, reload applications, or write privileged locations. Thunar
+requires deterministic merge semantics; GTK requires isolated and cross-app
+QA. SDDM now uses a separate privileged transaction and recovery boundary;
+Plymouth, initramfs, and GRUB still require boot-specific recovery work.
+
+## D076 — Bound Command Lens providers and keep activation data-only
+
+**Date:** 2026-08-16
+**Status:** Accepted
+
+The first Command Lens uses Rofi's native `drun` and `window` modes and exactly
+two project-owned script providers. Files mode searches a finite set of
+relative roots that resolve beneath the real user home. Root count, traversal
+depth, per-root time, and result count are bounded; hidden paths and
+cross-filesystem traversal are excluded. The original path travels through
+Rofi's opaque `info` field, is resolved and checked again at activation, and
+is passed as one quoted argument to GIO or the scoped file-workspace wrapper.
+Result text is never shell syntax.
+
+Actions mode is a finite mapping from opaque IDs to existing SenomyOS surface,
+capture, and file-workspace entry points. It rejects custom input and does not
+offer direct logout, reboot, shutdown, recovery restart, or arbitrary command
+execution. Disruptive actions may be added only through a visible confirmation
+surface.
+
+The Rofi config, theme, wrapper, and adapters are complete-file user deployment
+entries with isolated parser and hostile-path fixtures. Deployment, manual
+visual QA, and the later `Super+R` Hyprland switch are separate reviewed
+actions. All three were completed in that order.
+
+## D077 — Merge only registered Thunar actions and block live-process writes
+
+**Date:** 2026-08-16
+**Status:** Accepted
+
+Thunar `uca.xml` is user-owned state and is never replaced wholesale by the
+repository. SenomyOS stores a bounded action registry and a fixed helper in the
+repository. During plan and apply, the deployer parses the existing XML,
+preserves unrelated actions, removes only registered SenomyOS unique IDs,
+capability-detects dependencies, and generates a deterministic validated
+candidate. The exact prior XML and mode are still covered by the normal
+receipt and rollback transaction.
+
+The first managed actions are Copy Path and Copy SHA-256. They accept only a
+bounded set of existing absolute local paths and never evaluate selected text
+as a command. Actions with missing dependencies are omitted truthfully.
+
+Apply and rollback fail closed while a Thunar process is running because it may
+rewrite custom-action state on exit. The deployer does not stop Thunar itself.
+Accelerators, Xfconf preferences, GTK appearance, and native file operations
+remain outside this action-layer transaction.
+
+## D078 — Share tokens by contract and inherit GTK mechanics
+
+**Date:** 2026-08-16
+**Status:** Accepted
+
+`appearance/tokens.json` is the portable machine-readable appearance
+registry. Eww, Rofi, and GTK 3 retain syntax-specific projections rather than
+sharing a fragile runtime include. Validation enforces their core colour and
+font values and loads the full GTK provider through GTK's own CSS parser.
+
+The SenomyOS GTK 3 theme is namespaced and imports GTK's built-in Adwaita
+contained stylesheet before applying Obsidian overrides. This preserves native
+widget mechanics, accessibility states, menus, dialogs, and application
+behavior while changing visual tokens. Toolkit scope is explicit: a GTK 3
+theme does not style GTK 4 applications.
+
+Theme installation and global theme selection are separate decisions. The
+source must pass isolated Thunar and multiple GTK 3 application checks before
+deployment becomes ready, and a global preference requires its own review and
+rollback path.
+
+## D079 — Scope Thunar appearance and use its supported reveal interface
+
+**Date:** 2026-08-16
+**Status:** Accepted
+
+SenomyOS installs `senomy-file-workspace` as the stable Thunar entry point for
+Command Lens and other project surfaces. When no Thunar session exists, the
+wrapper starts one with the installed namespaced SenomyOS GTK 3 theme. When a
+session already exists, the wrapper reuses it without quitting or restarting
+it. This gives SenomyOS-owned launches a coherent appearance while leaving the
+global GTK preference and unrelated GTK applications unchanged.
+
+Thunar 4.20 does not provide the assumed `--select` command-line option. File
+reveal therefore uses GIO to obtain a safe URI and calls the supported
+`org.freedesktop.FileManager1.ShowItems` method with typed arguments. A fresh
+selection launch starts the themed daemon first and sends exactly one reveal
+request, preventing the duplicate windows found during live acceptance. Paths
+remain data throughout; no command string is evaluated.
+
+## D080 — Activate Command Lens and scope normal Thunar launches
+
+**Date:** 2026-08-16
+**Status:** Accepted
+
+After isolated contracts and manual visual acceptance passed, the tracked and
+live Hyprland configurations route `Super+R` to `senomy-command-lens` and
+`Super+E` to `senomy-file-workspace`. A user-level `thunar.desktop` override
+routes normal application-menu launches through the same wrapper while leaving
+the distribution desktop file untouched and recoverable through deployment
+rollback.
+
+The global GTK preference remains unchanged. Standard file-workspace launches
+use `SenomyOS`; touch launches use the separately namespaced
+`SenomyOS-Touch` projection with 48px primary targets. Automatic density reads
+only the bounded SenomyOS appearance preference and falls back to standard.
+
+## D081 — Own the fresh Thunar daemon environment
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+Launching a client with `GTK_THEME` is insufficient when D-Bus activates
+`/usr/bin/Thunar --daemon` independently: the activated daemon does not inherit
+the client-only theme environment and falls back to the global GTK preference.
+For a fresh file-workspace session, `senomy-file-workspace` therefore starts
+the daemon through a collected transient user service with the selected
+namespaced theme, waits for the owned `org.xfce.Thunar` name, and then opens an
+explicit window or sends one typed FileManager1 reveal. A detached `nohup`
+daemon is the bounded fallback when the user manager cannot start the transient
+service.
+
+The wrapper never restarts an existing Thunar session merely to change its
+appearance. Existing sessions retain their environment and are reused. This
+preserves user work while making fresh `Super+E`, desktop-entry, and Command
+Lens launches deterministic. Clean live QA verified the daemon environment,
+standard Preferences and Properties, a 640px narrow window, and the touch main
+and Preferences states without changing the global Adwaita preference.
+
+The user desktop entry must also remain eligible when the display-manager
+session PATH omits `~/.local/bin`. It therefore invokes the installed wrapper
+through an explicit shell-expanded `~/.local/bin` path and does not use a
+PATH-dependent `TryExec`. Gio resolution with a system-only PATH is part of the
+Thunar contract.
+
+## D082 — Centralize appearance sources and separate login from lock
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+`appearance/` is the single editable visual source tree for Eww, Rofi, the
+namespaced GTK 3 file-manager themes, SDDM, and Hyprlock. One generator maps
+the shared token registry into native toolkit syntax, while the appearance
+entry point routes preview, validation, transactional deployment, and rollback
+to the correct user or privileged boundary. Applications continue reading
+their required XDG or system paths; those paths are deployment targets rather
+than development copies.
+
+SDDM runs before an authenticated desktop exists and therefore uses a static,
+privacy-safe blurred wallpaper. Hyprlock runs inside the user session and
+captures and blurs the real desktop at lock time. Both implement the approved
+lower authentication rail without pretending these trust boundaries are the
+same.
+
+## D083 — Authenticate recovery separately and confine its session
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+Password reset is not an unauthenticated SDDM/QML action. `RECOVER` selects a
+separate `senomy-recovery` account and one dedicated Wayland session. The
+account has its own credential and `/usr/bin/nologin`; root-owned SDDM session
+guards deny it all X11 sessions and any Wayland command other than the exact
+recovery launcher. Its minimal Hyprland configuration defines no launcher,
+browser, terminal, or general command binding.
+
+The full-screen GTK recovery UI can only return to SDDM or pass two password
+lines over standard input to one exact, root-owned helper. The sudo rule names
+that helper with no arguments; the helper revalidates caller identity,
+root-owned configuration, target UID and shell, password match, and length
+before calling `chpasswd`. System deployment and account provisioning remain
+separate confirmed operations with backups and validation.
+
+This boundary does not claim physical-device security. Protecting offline
+system and user data requires a separately designed data-at-rest encryption
+and boot-integrity strategy.
+
+## D084 — Make Super+L a visible session lock, not logout
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+`Super+L` invokes the deployed `senomy-lock` wrapper and preserves the active
+Hyprland session. SDDM remains the pre-session login and recovery boundary;
+ending the compositor merely to show SDDM would discard application state and
+is not a lock operation.
+
+The Hyprlock rail reproduces the approved SDDM rail geometry, zones, typography,
+iconography, avatar, password underline, action treatment, and clock placement
+at the 1920x1080 reference size. The only intentional trust-boundary changes
+are its live blurred desktop capture and the honest `PRESS ENTER` action label:
+Hyprlock does not expose SDDM's session or power callbacks. The pointer remains
+visible, authentication stays keyboard-driven, and no arbitrary command-
+launching click target is introduced.
+
+## D085 — Move Hyprland and recovery to verified Lua sources
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+Hyprland 0.56 warns that legacy `.conf` support will be removed in 0.57. The
+portable desktop and constrained recovery compositor therefore use repository-
+owned Lua sources validated by `Hyprland --verify-config` before deployment.
+The user deployer creates `~/.config/hypr/hyprland.lua` transactionally without
+reloading the current compositor; Hyprland selects it on the next session
+start. The older tracked `.conf` remains a migration reference rather than the
+deployment source.
+
+The desktop Lua config discovers connected outputs, derives user paths from
+`HOME`, and exposes an explicit nested-QA guard that suppresses autostart during
+safe runtime tests. The recovery launcher points only to the root-owned Lua
+config, whose source still defines no application or command bindings. LuaLS
+uses Hyprland's installed API stubs so later maintenance can be type-aware.
+
+## D086 — Separate live shell palettes from reviewed system projection
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+Cyan, Violet, and Amber are explicit, unique palette records in
+`appearance/tokens.json`. Their generated SCSS variables are applied after
+component refinements so a fixed legacy literal cannot silently override the
+selected live Eww palette. Swatches and palette-aware edges make the choices
+visibly distinguishable in the Rail and every primary shell surface.
+
+The live Control Centre selector changes Eww only. Rofi, GTK, SDDM, and
+Hyprlock continue to project the stable `colors.accent` value until a reviewed
+system-wide palette promotion is built and deployed. This prevents an instant
+shell preview from unexpectedly rewriting pre-login or toolkit configuration.
+
+## D087 — Make profiles and one generated wallpaper portable defaults
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+`automatic`, `desktop`, `touch`, and `narrow` are complete, schema-validated
+profile files deployed beneath the user's XDG configuration root. They express
+only shell density, appearance defaults, wallpaper mode, and file-workspace
+density. Explicit bounded user preferences retain higher precedence, and
+unknown hardware resolves to `automatic` rather than a model-name branch.
+
+The editable wallpaper master is a tokenized SVG in `appearance/`; generation
+produces deterministic desktop and privacy-safe login PNGs. The next-session
+Hyprland source starts one bounded `senomy-wallpaper` wrapper backed by
+`swaybg`. Shared configuration no longer contains a username, Downloads path,
+monitor name, or competing wallpaper daemons.
+
+## D088 — Treat package, service, and bootstrap manifests as release inputs
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+The Arch package manifest distinguishes required official dependencies,
+optional capabilities, development validators, system integration, and the
+explicitly reviewed external Eww package. The service manifest records
+required enablement separately from package-managed presets. The bootstrap
+coordinates these contracts, profile selection, transactional deployment,
+workspace-unit enablement, and interactive recovery provisioning without
+restarting SDDM, reloading Hyprland, regenerating boot files, logging out, or
+rebooting.
+
+Clean-home and clean-root acceptance use the real manifests and native parsers.
+They prove deterministic staging and configuration integrity, not a successful
+kernel, display-manager, recovery, or boot-loader cold boot. Compatibility
+claims still require a disposable VM or representative physical hardware.
+
+## D089 — Stage boot appearance separately from boot-path activation
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+Plymouth and GRUB theme files are ready root-owned deployment components with
+checksummed receipts and rollback. Staging only writes isolated theme
+directories. It never selects a theme, edits mkinitcpio/dracut or GRUB
+configuration, rebuilds an initramfs, regenerates `grub.cfg`, or writes a boot
+sector.
+
+Activation stays unavailable until a real disposable-machine acceptance record
+proves both a cold boot and recovery boot. Even after that evidence exists,
+`senomy-bootctl` reports review-required rather than mutating the boot path;
+activation needs its own implementation, recovery instructions, and approval.
+
+## D090 — Make compositor scale explicit and bound every primary surface
+
+**Date:** 2026-08-21
+**Status:** Accepted
+
+Hyprland's PPI-derived `scale = "auto"` selected 1.5 on the 1920x1080
+reference panel, reducing the logical work area to 1280x720 and unexpectedly
+enlarging Rofi, Eww, and ordinary applications. Display scale is therefore an
+explicit validated profile value. Automatic, desktop, and narrow default to
+1; touch may deliberately select 1.25. Unknown or invalid profile data falls
+back to 1 rather than inferring a machine-specific scale.
+
+Control Centre and Insights retain fixed wide-desktop targets capped to 90%
+of monitor width and 82% of height. Performance targets 1480x760 under the
+same caps. Route labels truncate or wrap inside the allocation so GPU names,
+sensors, or other runtime strings cannot change the outer window size. Live
+compositor QA must compare all Performance routes, not only verify that the
+window remains open.
+
+## D091 — Centralize owned boot visuals without claiming firmware or video control
+
+**Date:** 2026-08-21
+**Status:** Accepted
+
+`appearance/boot/sequence.json` is the canonical stage/capability record for
+the owned pre-login sequence. A tokenized OS mark generates one SVG/PNG family
+for GRUB and Plymouth; their native layouts remain beside it and are staged
+through the same appearance entry point. Firmware remains device-owned, GRUB
+is treated as a static boot-menu renderer, and Plymouth as a constrained
+early-userspace image/text renderer. Arbitrary video playback is not presented
+as supported in any of those stages.
+
+ASCII/text animation and optimized short image sequences are future Plymouth
+options with bounded frame rate and initramfs size. Device variants are based
+on graphics/text capabilities rather than BIOS or model names. Activation is
+still blocked by D089 and requires disposable cold-boot and recovery evidence;
+centralizing source does not expand permission to mutate a live boot path.
+
+## D092 — Give the OS mark one shared editable geometry source
+
+**Date:** 2026-08-25
+**Status:** Accepted
+
+The August 25 visual references converge on a narrow three-lancet mark but
+contain inconsistent raster approximations and repeated placements. SenomyOS
+therefore defines the mark once at
+`appearance/shared/brand/senomyos-mark.svg.in`: a monochrome full-height centre
+spire flanked by two shorter balanced spires. Generated SVG and 64px, 128px,
+and 256px PNG projections may be copied into toolkit-owned locations, but they
+are not editable artwork.
+
+GRUB and Plymouth retain their existing `appearance/boot/assets/` filenames as
+generated regular-file compatibility projections. This preserves their
+transactional manifests and existing rollback history while moving authority
+out of the boot-specific directory. Symlinks are not used because both
+deployers deliberately reject them. Adding the shared asset to Eww, Rofi,
+SDDM, or Hyprlock remains a separate consumer change with native validation;
+Thunar is not structurally modified merely to force OS branding into a native
+file-manager window.
+
+## D093 — Lock the Rail to the Luminous Reliquary composition
+
+**Date:** 2026-08-26
+**Status:** Accepted
+
+The persistent Obsidian Rail adopts the selected Luminous Reliquary reference
+as its visual composition: stable unboxed workspaces, a joined but separately
+interactive Senomy avatar/dialogue unit, a distinct CPU/MEM/UP island, grouped
+system controls, a compact calendar/notification island, and an isolated Power
+entry. The standard reference profile uses a 142px exclusive window and a
+120px visible Rail; compact, narrow, and phone variants remain capability- or
+profile-derived rather than hard-coded to the T480 model.
+
+Rail structure is neutral silver/obsidian with violet restricted to active,
+focus, selected, and Senomy identity traces. Semantic warning, critical, and
+success colors remain truthful and are not recolored by the decorative
+palette. Larger surfaces retain the existing user-selectable palette system;
+the Rail-specific final projection does not create a second appearance source.
+
+Standard and compact workspace data keeps a five-slot visual floor while every
+slot continues to consume the real Hyprland client array and may show several
+real application icons. Empty slots remain empty. The notification badge is
+fed by an event-driven SwayNotificationCenter subscription that exposes only
+count and provider state; notification content and mutations remain in the
+existing guarded Insights paths. The mock's illustrative values and large
+bottom gap are not copied over live data, exclusive-work-area behavior, or the
+accepted single-primary-surface coordinator.
+
+## D094 — Make the Rail window invisible and workspace content authoritative
+
+**Date:** 2026-08-26
+**Status:** Accepted; supersedes D093's five-slot visual floor
+
+The exclusive Eww window remains responsible for layout and reserved work area,
+but it has no visible background, border, radius, or shadow. Workspaces are
+unboxed content followed by separately bounded Senomy, telemetry, system,
+calendar/notification, and Power instruments. The individual instruments use
+low-opacity smoked surfaces and quiet silver edges; violet remains restricted
+to focus, selected state, Senomy identity, and notification energy.
+
+The systemd-owned Hyprland listener is the only workspace authority. Its
+normalized state contains only existing positive workspace IDs plus the active
+positive workspace, sorted numerically; special workspaces and fabricated
+numeric gaps are excluded. Each workspace owns a centred two-column application
+grid below its number. Active workspaces expose up to four cells and inactive
+workspaces up to two. When the real application count exceeds that capacity,
+the final cell is a same-size `+N` overflow entry rather than loose text.
+
+## D095 — Restore the enclosed compositor-glass Rail and visible workspace floor
+
+**Date:** 2026-08-26
+**Status:** Accepted; supersedes D094 where the final reviewed reference and live feedback conflict
+
+The persistent Rail again exposes one quiet rounded outer enclosure around the
+unboxed workspace strip and the five bounded instruments. The enclosure and
+islands use translucent GTK surfaces, while a namespace-specific Hyprland
+layer rule supplies the actual desktop backdrop blur. Silver borders use
+restrained multi-radius bloom; violet remains a focus, identity, selection,
+and notification trace. The Rail does not use an opaque GTK approximation of
+blur, and its hover states do not paint large rectangular fills.
+
+The standard workspace strip keeps visible anchors 1 through 5 and extends
+when Hyprland reports a higher positive workspace. Empty anchors contain no
+fabricated application data. Special workspaces remain excluded from the
+strip, but a Rail click closes a currently visible special-workspace overlay
+before focusing the requested normal workspace so the visible application and
+the active underline cannot disagree.
+
+The approved Senomy Rail identity restores the existing browsing chibi rather
+than the generated composition-study avatar. Avatar and dialogue remain
+separate controls without a decorative divider between them. The notification
+badge uses the truthful SwayNotificationCenter count and is positioned over
+the bell's upper-right corner. The selected cathedral raster is the editable
+desktop-art source; deterministic generated projections remain deployment
+outputs, and the earlier SVG remains the portable fallback.
+
+## D096 — Keep the glass instruments but remove the enclosing Rail frame
+
+**Date:** 2026-08-26
+**Status:** Accepted; supersedes D095's enclosing frame and five-slot floor
+
+The Eww layer remains 142px high for stable exclusive work-area behavior, but
+its top-level `.bar` is visually transparent and contributes no horizontal
+margin, padding, border, radius, background, or shadow. Only the individual
+glass instruments remain visible. They stay packed as one right-aligned group,
+leaving the unboxed workspace region free to grow.
+
+The workspace listener publishes only real positive Hyprland IDs plus the
+active positive ID. It does not synthesize empty 1–5 anchors. Hoverable Rail
+controls avoid padded rectangular hover fills; hover feedback is color-only,
+while selected and semantic states remain truthful. The visible Senomy message
+does not open an overlapping GTK tooltip; icon-only controls retain tooltips.
+
+## D097 — Compact the Rail and make each live workspace an island
+
+**Date:** 2026-08-27
+**Status:** Accepted; supersedes D096's 142px geometry and unboxed workspace presentation
+
+The standard exclusive Rail layer is 104px high and its visible islands are
+80px high. The top-level layer stays transparent and frameless; only a minimal
+internal top reserve and bottom safe inset remain. This returns 38 vertical
+pixels to the compositor work area while preserving the existing chibi,
+telemetry, clock, notification, and system-control content.
+
+Each real positive workspace published by the Hyprland listener is presented
+as its own glass island with the same neutral border, radius, translucent fill,
+and restrained bloom as the instrument islands. There is no enclosing
+workspace box and no synthetic numeric floor. Active and hover states may add
+violet emphasis without changing allocation.
+
+The standard system-control island is a 320px five-column group. Applications,
+volume, Wi-Fi, battery, and tray each own one equal 64px column and expand with
+the parent allocation. Internal padding and inter-control gaps stay at zero so
+the hover surface reaches its complete column.
+
+## D098 — Make the standard Rail genuinely 44px tall
+
+**Date:** 2026-08-27
+**Status:** Accepted; supersedes D097's 104px layer and 80px island geometry
+
+Changing only a container minimum does not compact GTK content whose children
+retain larger minimums. The standard Rail therefore uses one coordinated
+allocation chain: a 56px exclusive layer, 44px island surfaces, and 42px
+interactive children. Workspace grids, avatar artwork, icons, telemetry,
+clock text, badge geometry, and internal spacing scale with that chain so no
+descendant silently restores the former height.
+
+Notification-badge acknowledgement is session-local presentation state, not a
+provider mutation. Clicking the notification control records the listener's
+current observation before opening Insights and hides the numeric badge. The
+truthful SwayNotificationCenter count remains unchanged; a newer listener
+observation may show the badge again. Clearing, dismissing, and Do Not Disturb
+remain in the existing guarded notification action paths.
+
+## D099 — Align 56px Rail islands to compositor geometry
+
+**Date:** 2026-08-27
+**Status:** Accepted; supersedes D098's 44px island geometry
+
+The standard Rail uses a 64px exclusive layer with 56px visible workspace and
+instrument islands. A shared 22px gap separates adjacent islands; no edge
+wrapper adds a second component-specific margin. The Rail content is inset
+20px from the monitor's left and right edges so its outer limits follow the
+same line as tiled-window outer gaps.
+
+Hyprland preserves 20px top, right, and left outer gaps but reduces the bottom
+gap to 6px. This is represented as a four-sided `css_gaps` value in both the
+canonical Lua configuration and the compatibility `.conf` mirror. The smaller
+bottom value reduces dead space above the Rail without changing the desktop's
+side alignment or inter-window rhythm.
+
+## D100 — Build Gothic Rail borders from fixed vector modules
+
+**Date:** 2026-08-27
+**Status:** Accepted
+
+The five supplied ornamental PNG sheets are art direction only. Compact Rail
+borders are authored as native SVG geometry from one editable template and
+projected through the existing appearance-token generator. Runtime and QA
+assets do not embed, crop, auto-trace, or nine-slice those raster studies.
+
+The compact grammar uses a 44px optical canvas, a continuous rail loop, four
+fixed 12px corner modules mirrored without scaling, and fixed-size edge
+ornaments. Exact-width projections absorb width only in straight edge
+geometry, keeping corner shape and stroke weight stable. The optical 44px
+canvas is independent from D099's 56px visible widget allocation.
+
+The initial production validation set is 68x44, 200x44, and 397x44. A dedicated
+validator rejects raster or foreign SVG content, verifies intrinsic geometry
+and centre transparency, renders through librsvg, and pixel-compares corner
+and straight-edge crops across all widths. Adding a new consumer width means
+generating a new exact projection rather than stretching an existing asset.
+
+## D101 — Apply exact Gothic SVG projections to the standard Rail
+
+**Date:** 2026-08-27
+**Status:** Accepted
+
+The standard-density Rail consumes D100's frame grammar as background artwork
+at the exact width of each live island: 68px for workspace and Power, 188px for
+Calendar/Notifications, 320px for system controls, 392px for telemetry, and
+397px for Senomy. The generator owns every width; CSS does not stretch one
+projection to impersonate another.
+
+The ornament remains 44px high and is optically centered inside D099's 56px
+widget allocation. This preserves interaction height, internal control
+centres, 22px inter-island gaps, and monitor-edge alignment. The previous
+generic one-pixel border is removed on standard islands so it cannot compete
+with the vector frame; glass fill and child hover surfaces remain functional.
+
+Compact, narrow, and phone densities retain their existing CSS border until
+their allocated widths are measured and receive exact projections. This is a
+deliberate no-distortion fallback rather than permission to scale the standard
+assets.
+
+## D102 — Compose fluid Rail frames from fixed SVG modules
+
+**Date:** 2026-08-27
+**Status:** Accepted; supersedes D101's exact-width runtime selection
+
+Every Rail density now consumes one CSS-fluid vector composition instead of
+selecting a complete SVG by island width. CSS places fixed 12x44 left and right
+caps and a fixed 10x44 centre jewel above one straight-edge SVG stretched to
+the island's computed width. Only that straight segment scales, so changing a
+panel or island width in CSS requires no new runtime asset and does not distort
+corner geometry or jewel stroke weight.
+
+D100's exact 68x44, 200x44, and 397x44 projections remain required QA fixtures;
+the additional live-width projections remain deterministic comparison assets.
+The vector validator also constructs the CSS-equivalent modular frame at all
+three required widths and pixel-compares its fixed corners and edge samples.
+A single complete frame with `background-size: 100%` remains prohibited because
+it visibly scales corners and ornaments.
+
+## D103 — Adopt the three-tier Luminous Reliquary frame system
+
+**Date:** 2026-08-28
+**Status:** Accepted; supersedes D100–D102's Compact-only asset architecture
+
+The August 28 production sheet is visual direction, not a runtime bitmap.
+SenomyOS now owns one canonical JSON manifest, one token-driven standalone SVG
+module template, separately authored Compact/Standard/Large path geometry,
+eight component motifs, and three optional crests. The generator emits 35
+transparent native-vector assets. Fixed corners, motifs, and crests preserve
+aspect ratio and optical dimensions; only neutral straight-edge modules may
+stretch into the CSS allocation.
+
+Compact remains the only deployed tier in this stage. The Obsidian Rail
+composes its independent Workspace, Senomy, Telemetry, System Controls,
+Clock/Notifications, and Power frames from those production modules. It does
+not acquire a master frame. Each real Hyprland workspace has an adaptive,
+structurally open top-centre number bay; the existing app grid, overflow,
+actions, and listener data remain authoritative.
+
+Standard and Large are complete reusable asset families and are proven by the
+frame harness, but no Control Centre, Performance, Insights, Command Lens,
+GTK, Thunar, SDDM, Hyprlock, or boot surface consumes them yet. Migrating those
+surfaces requires its own layout and interaction pass rather than a bulk theme
+replacement.
+
+The canonical validation matrix is Compact 68/120/200/280/397x44, Standard
+160x88/240x120/420x180, and Large 240x120/480x320/1480x760. Validation must
+also parse the fully compiled Eww stylesheet through GTK 3 so an unsupported
+property cannot silently degrade the live Rail to toolkit fallback styling.
+
+## D104 — Bound workspace growth with a presentation-only carousel
+
+**Date:** 2026-08-28
+**Status:** Accepted
+
+The standard Rail preserves its established workspace layout while four or
+fewer real workspace islands fit. At five or more, the workspace region becomes
+a fixed four-item viewport with allocated previous/next controls. Individual
+workspace geometry, the 22px inter-workspace rhythm, and every neighbouring
+Rail island remain unchanged. Boundary controls disable without collapsing, so
+the containing width does not move between the first, middle, and final views.
+
+Eww uses two fixed, same-size GtkStack page buffers because generated `for`
+children cannot be direct stack pages. The selected buffer receives the current
+slice and the inactive buffer retains the previous slice for native clipped
+slide motion. `scripts/workspace-carousel.sh` serializes short input bursts and
+owns only presentation offset/direction state. It never calls Hyprland.
+`workspaces.service` remains the sole workspace publisher and reconciles the
+viewport after authoritative creation, removal, focus, and client events.
+
+Manual arrows and wheel/touchpad scrolling change only which indicators are
+visible. Workspace buttons continue to focus their actual positive Hyprland ID;
+no synthetic numeric range or UI-owned workspace list is introduced. Active
+workspaces outside the current view are brought into view, invalid end offsets
+are clamped after removal, and non-overflow state resets to offset zero.
+
+## D105 — Make SDDM a Standard-tier frame consumer and isolate Recovery selection
+
+**Date:** 2026-08-29
+**Status:** Accepted
+
+The SDDM login surface now composes independent Standard-tier frame modules for
+system utilities, identity, authentication, session, and clock/keyboard
+instruments. The generator projects the approved shared SVG modules into the
+self-contained SDDM theme; fixed corners and motifs preserve optical size while
+only neutral edge centres stretch. There is no enclosing master frame.
+
+Normal authentication must never submit the `Senomy Recovery` session. The
+greeter ignores a remembered Recovery index, prefers the ordinary `Hyprland`
+session when it must recover from an unsafe selection, excludes Recovery from
+normal session cycling, and revalidates the index immediately before login.
+Recovery remains reachable only through the explicit `RECOVER` mode and its
+separate account credential; the session guards remain unchanged.
+
+## D106 — Make Insights the first Large-tier desktop consumer
+
+**Date:** 2026-08-29
+**Status:** Accepted
+
+Senomy Insights uses one Large-tier evidence chamber at 960x760 on the
+reference display and one independent Standard-tier route instrument. The
+outer identity motif, route junction, section diagnostic tick, fixed corners,
+and neutral extensible edges come from the canonical frame manifest. Content
+keeps open reading planes and local state rails instead of framing every row.
+
+The eight stable routes, data collectors, allowlisted actions, and primary-
+surface coordinator remain authoritative. Briefing gains ranked evidence;
+ledger, event-rail, runbook, docket, and two-pane reader treatments are
+presentation changes only. Because Eww 0.5 rejects the `@charset` emitted for
+non-ASCII SCSS, the appearance generator projects the canonical shell source
+as one ASCII, self-contained runtime `eww.scss`.
+
+## D107 — Make Performance the Large-tier telemetry chamber
+
+**Date:** 2026-08-29
+**Status:** Accepted
+
+The Performance Dashboard uses one Large-tier telemetry chamber at 1480x760
+and one Standard-tier route instrument. KPI readouts and major diagnostic
+groups use Standard frame modules; retained-history plots stay open and
+separator-led so the overview preserves the Cathedral Deck telemetry nave.
+
+The seven routes, synchronized collectors, runtime history, process controls,
+benchmark safeguards, and primary-surface coordinator remain authoritative.
+The duplicate Senomy Observer card is removed from Overview; System State and
+Power Snapshot reclaim that row without adding a replacement mascot or dead
+allocation.
+
+## D108 — Make Control Centre the Large-tier operational switchboard
+
+**Date:** 2026-08-29
+**Status:** Accepted
+
+The Control Centre uses one 960x760 Large controls chamber and one independent
+Standard route spine. Route summaries use connected metric buses; major
+endpoint, power, calendar, and settings instruments use Standard frames;
+inventory and lifecycle collections remain open ledgers with local state rails.
+
+All ten routes, deep links, live collectors, confirmations, polkit handoffs,
+and system-action boundaries remain authoritative. The migration changes
+geometry and presentation only and keeps the panel bottom-right with a 12px
+gap above the Rail.
+
+## D109 — Use one translucent frame hierarchy across shell and compositor
+
+**Date:** 2026-08-30
+**Status:** Accepted
+
+Compact Rail islands, Standard utility flyouts, and Large primary surfaces use
+one semi-opaque glass hierarchy and clip their painted backgrounds to the
+fixed 16px, 32px, and 48px frame corners. Control, Performance, Insights,
+flyouts, and the companion publish explicit Senomy namespaces so Hyprland can
+blur only their translucent pixels. The Rail keeps its dedicated rule.
+
+The volume and background-application trays become 420x96 and 340x150
+Standard controls instruments. Existing audio, tray-host, close, outside-click,
+Escape, and deep-link behavior is unchanged. The notification badge remains an
+overlay on a fixed 64px stage so it cannot displace the bell from the centre of
+its Rail button.
+
+Ordinary Hyprland clients remain opacity 1.0. Their decoration adopts 18px,
+power-2.4 rounding, silver-to-violet active structure, a muted inactive border,
+and a broader soft shadow; application content is never made translucent.
+
+## D110 — Give time, notifications, and session power dedicated Rail flyouts
+
+**Date:** 2026-08-30
+**Status:** Accepted
+
+The clock/date, notification bell, and power button open separate Standard-tier
+flyouts through the existing `active_flyout` coordinator. They no longer route
+directly into Control Centre or Insights. Calendar stays read-only;
+Notifications owns DND, live dismissal, and confirmed local-history clearing;
+Power exposes lock, suspend, logout, reboot, and poweroff behind a visible
+two-step confirmation state.
+
+The deployed true-fullscreen helper closes transient shell surfaces and the
+exclusive Rail before entering Hyprland fullscreen mode 2, then restores the
+Rail after exit. Its original Super+V shortcut is superseded by D112.
+
+## D111 — Freeze context before releasing it for Flameshot selection
+
+**Date:** 2026-08-31
+**Status:** Accepted
+
+Print Screen must preserve visible SenomyOS panels, flyouts, and the companion
+in the screenshot. Flameshot therefore takes and maps its frozen screencopy
+before SenomyOS unmaps any layer-shell context. Once the capture client is
+authoritatively visible, the primary coordinator and companion controller
+release their live input regions without clearing route, dock, pin, or active
+state. The user selects against Flameshot's frozen image; accepting or closing
+the capture reconciles the exact prior context.
+
+This ordering avoids both known failures: dismissing before capture erased the
+surface from the screenshot, while leaving Eww overlay input regions mapped
+prevented Flameshot from receiving drag selection. All utility flyouts remain
+non-focusable, the exact Flameshot float/fullscreen rule stays narrow, and the
+screenshot helper restores state from an EXIT trap if capture is interrupted.
+
+## D112 — Keep floating, true fullscreen, and maximized modes explicit
+
+**Date:** 2026-08-31
+**Status:** Accepted
+
+Super+V again toggles the focused client between tiled and floating. Super+F
+invokes SenomyOS true fullscreen, including yielding the exclusive Rail.
+Super+Shift+F toggles immersive compositor fullscreen: SenomyOS yields the
+Rail, Hyprland fills the monitor, and the client remains non-fullscreen so its
+own menu, tabs, and toolbar remain visible. Separate reversible shortcuts keep
+each result predictable instead of hiding three different states behind one
+cycle.
+
+## D113 — Align Thunar's ornamental and compositor frames
+
+**Date:** 2026-08-31
+**Status:** Accepted
+
+Thunar uses a dedicated 20px Reliquary window projection matched to its
+Hyprland rounding. The SVG projection owns the visible structural edge; GTK
+and Hyprland provide clipping and a restrained native border without drawing a
+second ornamental outline. Toolbar, sidebar, content, and status surfaces use
+responsive internal spacing rather than fixed application-wide geometry.
+
+On a fresh Thunar daemon, the workspace wrapper preserves a reasonable saved
+sidebar width and clamps stale extremes to 220px in Standard density or 260px
+in Touch density. It never mutates an already-running daemon. Rail workspace
+indicators use 54px Standard islands and 10px gaps so their 2x2 application
+grid determines the footprint instead of legacy empty padding.

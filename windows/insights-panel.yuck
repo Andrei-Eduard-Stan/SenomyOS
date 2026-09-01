@@ -1,19 +1,30 @@
-(defwidget insight-row [state title detail source]
+(defwidget insight-row [rank state title detail source]
   (box
     :class "insight-row"
-    :orientation "v"
     :space-evenly false
-    :spacing 5
-    (label :class "insight-state" :xalign 0 :text state)
-    (label :class "insight-title" :xalign 0 :text title)
-    (label
-      :class "insight-detail"
-      :xalign 0
+    :spacing 18
+    (box
+      :class "insight-rank-column"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      (label :class "insight-rank" :xalign 0 :text rank)
+      (label :class "insight-state" :xalign 0 :wrap true :text state))
+    (box
+      :class "insight-copy"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
       :hexpand true
-      :wrap true
-      :show-truncated false
-      :text detail)
-    (label :class "insight-source" :xalign 0 :text source)))
+      (label :class "insight-title" :xalign 0 :text title)
+      (label
+        :class "insight-detail"
+        :xalign 0
+        :hexpand true
+        :wrap true
+        :show-truncated false
+        :text detail)
+      (label :class "insight-source" :xalign 0 :text source))))
 
 (defwidget insights-section-heading [eyebrow title detail]
   (box
@@ -62,11 +73,12 @@
       (label :class "shell-tab-label" :xalign 0 :text text))))
 
 (defwindow insights
+  :namespace "senomy-insights"
   :geometry (geometry
     :x "0px"
     :y "12px"
-    :width "750px"
-    :height "700px"
+    :width "960px"
+    :height "760px"
     :anchor "bottom center")
   :stacking "overlay"
   :focusable false
@@ -76,46 +88,30 @@
     :class "insights-panel shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-nav-px-${appearance_status?.data?.nav_px ?: 10} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
     :orientation "v"
     :space-evenly false
+    :spacing 22
+    :vexpand true
+    :hexpand true
 
-    (box
-      :class "insights-header shell-header"
-      :space-evenly false
-      :vexpand false
-      (box
-        :class "shell-heading"
-        :orientation "v"
-        :space-evenly false
-        :hexpand true
-        (label
-          :class "insights-hero-eyebrow"
-          :xalign 0
-          :text "SENOMY // LIVE OBSERVER")
-        (label
-          :class "shell-title"
-          :xalign 0
-          :text "SENOMY INSIGHTS")
-        (label
-          :class "shell-subtitle"
-          :xalign 0
-          :wrap true
-          :text "Evidence, diagnostics, maintenance and local system memory")
-        (box
-          :class "insights-hero-status"
-          :space-evenly false
-          :spacing 8
-          (label :text {rail_system_status?.ok == true ? "TELEMETRY ONLINE" : "TELEMETRY LOADING"})
-          (label :text "LOCAL // PRIVATE")))
-      (button
-        :class "insights-close shell-close"
-        :tooltip "Close Senomy Insights"
-        :timeout "8s"
-        :onclick "$HOME/.config/eww/scripts/surface-state.sh close insights ${active_surface} ${active_flyout}"
-        ""))
+    (surface-hero-header
+      :surface_class "insights-header"
+      :domain "insights"
+      :eyebrow "SENOMY // LIVE OBSERVER"
+      :title "SENOMY INSIGHTS"
+      :subtitle "Evidence, diagnostics, maintenance and local system memory"
+      :close_tooltip "Close Senomy Insights"
+      :close_action "$HOME/.config/eww/scripts/surface-state.sh close insights ${active_surface} ${active_flyout}"
+      (label
+        :class {rail_system_status?.ok == true
+          ? "shell-hero-chip ready"
+          : "shell-hero-chip loading"}
+        :text {rail_system_status?.ok == true ? "TELEMETRY ONLINE" : "TELEMETRY LOADING"})
+      (label :class "shell-hero-chip secondary" :text "LOCAL // PRIVATE"))
 
     (box
       :class "insights-content shell-content"
       :orientation {(bar_layout?.data?.phone ?: false) ? "v" : "h"}
       :space-evenly false
+      :spacing 22
       :vexpand true
 
       (scroll
@@ -129,6 +125,7 @@
           :space-evenly false
           :spacing 4
           (insights-tab :section "briefing" :icon "" :text "Briefing")
+          (insights-tab :section "notifications" :icon "󰂚" :text "Notifications")
           (insights-tab :section "timeline" :icon "󰋚" :text "Timeline")
           (insights-tab :section "updates" :icon "󰚰" :text "Updates")
           (insights-tab :section "diagnostics" :icon "" :text "Diagnostics")
@@ -147,6 +144,7 @@
           :vexpand true
           :hexpand true
           (box :visible {insights_section == "briefing"} (insights-briefing))
+          (box :visible {insights_section == "notifications"} (insights-notifications))
           (box :visible {insights_section == "timeline"} (insights-timeline))
           (box :visible {insights_section == "updates"} (insights-updates))
           (box :visible {insights_section == "diagnostics"} (insights-diagnostics))

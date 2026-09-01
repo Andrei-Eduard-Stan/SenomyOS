@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "obsidian-threshold",
+  "label": "SenomyOS Obsidian Threshold",
+  "branding": {
+    "name": "SenomyOS",
+    "mark_source": "appearance/shared/brand/senomyos-mark.svg.in",
+    "mark_generated": "appearance/shared/brand/senomyos-mark-256.png",
+    "mark_boot_projection": "appearance/boot/assets/senomyos-mark.png",
+    "background": "appearance/shared/backgrounds/desktop.png"
+  },
+  "stages": {
+    "firmware": {
+      "owner": "device-firmware",
+      "managed_by_senomyos": false,
+      "mode": "preserve"
+    },
+    "bootloader": {
+      "renderer": "grub",
+      "theme": "appearance/boot/grub/senomyos/theme.txt",
+      "supports_static_images": true,
+      "supports_video": false
+    },
+    "early_userspace": {
+      "renderer": "plymouth",
+      "theme": "appearance/boot/plymouth/senomyos/senomyos.plymouth",
+      "animation": "scripted",
+      "max_frame_rate": 12,
+      "supports_video": false,
+      "messages": [
+        "SYSTEM STARTING",
+        "PREPARING SYSTEM STATE",
+        "STARTING SESSION"
+      ]
+    },
+    "greeter": {
+      "renderer": "sddm",
+      "theme": "senomyos"
+    },
+    "session_lock": {
+      "renderer": "hyprlock",
+      "background": "live-screenshot-blur"
+    }
+  },
+  "profiles": {
+    "automatic": "graphics-safe",
+    "desktop": "graphics-safe",
+    "touch": "graphics-safe",
+    "narrow": "graphics-safe"
+  },
+  "activation": {
+    "requires_disposable_cold_boot": true,
+    "requires_recovery_boot": true,
+    "enabled": false
+  }
+}

@@ -11,6 +11,16 @@ readonly EWW_BIN="${EWW_BIN:-/usr/bin/eww}"
 readonly TIMEOUT_BIN="${SENOMY_TIMEOUT_BIN:-/usr/bin/timeout}"
 readonly SETSID_BIN="${SENOMY_SETSID_BIN:-/usr/bin/setsid}"
 readonly RUNTIME_PARENT="${SENOMY_EWW_PREFLIGHT_ROOT:-${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}}"
+readonly INSIGHTS_PANEL="$CONFIG_DIR/windows/insights-panel.yuck"
+
+grep -qF '(insights-tab :section "notifications"' "$INSIGHTS_PANEL" || {
+  printf 'Senomy Insights is missing its Notifications navigation target.\n' >&2
+  exit 1
+}
+grep -qF '(box :visible {insights_section == "notifications"} (insights-notifications))' "$INSIGHTS_PANEL" || {
+  printf 'Senomy Insights is missing its Notifications route body.\n' >&2
+  exit 1
+}
 
 mkdir -p "$RUNTIME_PARENT"
 TEST_ROOT="$(mktemp -d "$RUNTIME_PARENT/senomy-eww-preflight.XXXXXX")"
@@ -48,6 +58,7 @@ cp -a \
   "$CONFIG_DIR/scripts" \
   "$CONFIG_DIR/data" \
   "$CONFIG_DIR/assets" \
+  "$CONFIG_DIR/appearance" \
   "$CONFIG_DIR/wiki" \
   "$CONFIG_DIR/systemd" \
   "$PROBE_CONFIG/"
@@ -78,7 +89,7 @@ if ! windows="$(probe_call list-windows 2>&1)"; then
   exit 1
 fi
 
-for expected in main-bar surface-dismiss actioncenter insights performance volume-flyout tray-flyout companion; do
+for expected in main-bar surface-dismiss actioncenter insights performance volume-flyout tray-flyout calendar-flyout notifications-flyout power-flyout companion; do
   if ! grep -qx "$expected" <<<"$windows"; then
     printf 'Isolated Eww parse did not define %s.\n' "$expected" >&2
     sed -n '1,160p' "$PROBE_LOG" >&2
@@ -86,4 +97,4 @@ for expected in main-bar surface-dismiss actioncenter insights performance volum
   fi
 done
 
-printf 'Isolated Eww parse passed: eight required windows are defined.\n'
+printf 'Isolated Eww parse passed: eleven required windows are defined.\n'

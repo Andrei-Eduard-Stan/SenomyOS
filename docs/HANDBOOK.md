@@ -9,6 +9,10 @@ on the live desktop, and how the project grows into a deployable system.
 Detailed specifications live in the other documents under `docs/`. This
 handbook is the place to begin a working session.
 
+Bootloader, early-userspace splash, greeter, and lock ownership are mapped in
+`docs/BOOT_SEQUENCE.md`; read it before changing any boot-path source or
+staging a GRUB/Plymouth projection.
+
 ## Project in one paragraph
 
 SenomyOS is currently a custom Arch Linux desktop shell using Hyprland and Eww.
@@ -93,11 +97,14 @@ and close controls.
 ├── docs/
 ├── eww.yuck
 ├── eww.scss
+├── appearance/
+├── deploy/
 ├── windows/
 ├── widgets/
 ├── scripts/
 ├── systemd/
-└── hyprland.conf
+├── hyprland.lua
+└── hyprland.conf  # legacy migration reference
 ```
 
 The actual live Hyprland file is:
@@ -108,6 +115,11 @@ The actual live Hyprland file is:
 
 Changing the tracked copy does not change the live copy. Changing the live copy
 may cause Hyprland to reload its configuration automatically.
+
+The reviewed next-session source is `hyprland.lua`, deployed transactionally
+to `~/.config/hypr/hyprland.lua`. It does not reload the current legacy
+`.conf` session. New compositor development belongs in the Lua source; the
+manual `.conf` workflow below is retained as completed historical context.
 
 Do not use the secondary clone:
 
@@ -181,7 +193,10 @@ revival/live
 
 ## Stage 1 tutorial: preserve and stabilize Hyprland
 
-This tutorial is intentionally manual. Read a whole step before running it.
+This tutorial records the completed 0.55 stabilization and must not be rerun
+as the current deployment workflow. For current work, validate `hyprland.lua`
+and use `./scripts/senomy-deploy.sh plan hyprland` followed by the confirmed
+transactional apply.
 
 ### Step 1 — Inspect the current change
 
@@ -656,11 +671,13 @@ Print Screen and the Applications capture action both route through:
 scripts/screenshot-action.sh capture
 ```
 
-The helper serializes capture, dismisses any SenomyOS context layer, waits for
-the compositor to repaint, ensures `flameshot.service` is active, and launches
-`flameshot gui`. The exact capture client is floated before Hyprland forces it
-fullscreen, so it cannot resize the underlying tile. Do not restore direct
-`flameshot gui` bindings or broad Flameshot window rules.
+The helper serializes capture, ensures `flameshot.service` is active, and lets
+Flameshot freeze the visible desktop with the current panel, flyout, or
+companion still mapped. After the capture client appears, SenomyOS temporarily
+unmaps only its live context/input layers without clearing their state. The
+frozen Flameshot image still contains those surfaces and can be selected
+normally. Closing or accepting the capture restores the exact context route.
+Do not restore direct `flameshot gui` bindings or broad Flameshot window rules.
 
 ## Destructive-action policy
 
@@ -690,6 +707,79 @@ Ask these questions for every feature:
 - Will a future package/installer know about the dependency?
 
 ## Deployment path
+
+Repository sources that belong in another user configuration directory are
+managed from this repository. Do not edit a deployed Rofi, Thunar, GTK, or
+Hyprland copy as a second source of truth.
+
+Read-only discovery and comparison:
+
+```bash
+./scripts/senomy-deploy.sh list
+./scripts/senomy-deploy.sh plan COMPONENT
+./scripts/senomy-deploy.sh history
+```
+
+`apply COMPONENT` automatically creates a private backup and prepared receipt
+before changing any target. `rollback DEPLOYMENT_ID` restores that recorded
+state. Both commands show their scope and require an exact confirmation; they
+do not issue an explicit Eww/compositor reload, restart an application, or
+regenerate boot configuration. The Hyprland component installs the reviewed
+Lua source and wallpaper path for the next compositor start; it does not
+replace or reload the current legacy `.conf` session.
+Run `./scripts/validate-deployment.sh` to exercise the full lifecycle under a
+temporary fake home without touching live configuration.
+
+`hyprland`, `rofi`, the scoped Thunar workspace/action layer, and the
+namespaced GTK 3 theme files are ready user components. Hyprland must still
+follow the live-compositor warning and review workflow. Rofi can be validated
+and compared with its deployed copy through:
+
+```bash
+./scripts/validate-command-lens.sh
+./scripts/senomy-deploy.sh plan rofi
+```
+
+Rofi is deployed through recorded receipts and has passed manual APPS, FILES,
+WINDOWS, and ACTIONS checks. The reviewed Hyprland transaction now launches it
+from `Super+R`; `Super+E` launches the scoped Thunar workspace.
+
+The Thunar action layer can be inspected with:
+
+```bash
+./scripts/validate-thunar-contract.sh
+./scripts/senomy-deploy.sh plan thunar
+```
+
+The Thunar plan installs a scoped workspace wrapper and fixed action helper,
+then merges only SenomyOS-owned action IDs into the existing `uca.xml`. It
+preserves unrelated custom actions and leaves `accels.scm`, Xfconf, and global
+GTK settings untouched. Apply and rollback fail closed while Thunar is
+running; close every Thunar window first so it cannot overwrite the deployed
+XML on exit. Fresh wrapper launches can use the installed namespaced theme;
+existing Thunar sessions are reused without a restart. The `gtk3` component
+installs standard and touch-density namespaced themes beneath the user data
+root and does not select either globally. The user `thunar.desktop` override
+routes application-menu launches through the wrapper without modifying the
+distribution desktop file.
+Eww remains managed in place. SDDM and its separately authenticated recovery
+runtime use the root-owned system manifest, while Hyprlock remains a user
+component gated on the installed package. Plymouth and GRUB theme files can be
+staged transactionally, but selection and boot-file regeneration remain
+blocked until disposable-machine cold-boot and recovery-boot evidence exists.
+
+The already-installed-Arch bootstrap surface is:
+
+```bash
+./scripts/senomy-bootstrap.sh audit
+./scripts/senomy-bootstrap.sh plan automatic
+./scripts/validate-bootstrap.sh
+```
+
+Package and service manifests live under `deploy/`, alongside the portable
+`automatic`, `desktop`, `touch`, and `narrow` profiles. The clean-root
+acceptance harness is not a virtual-machine cold boot and does not unlock the
+boot activation gate.
 
 The project evolves through:
 

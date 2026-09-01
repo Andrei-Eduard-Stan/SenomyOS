@@ -1,5 +1,6 @@
 (defwidget volume-button []
   (button
+    :hexpand true
     :class {active_flyout == "volume"
         || (active_surface == "control" && control_section == "audio")
       ? "icon-button bar-control mainbar-volume-button active"

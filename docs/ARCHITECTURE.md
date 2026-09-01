@@ -2,12 +2,15 @@
 
 ## Current runtime
 
-Hyprland starts:
+The current authenticated session was started from the legacy tracked `.conf`
+and still reflects its original wallpaper startup commands. The deployed
+next-session `hyprland.lua` starts:
 
 - the workspace listener service;
 - the Eww daemon and `main-bar`;
 - a legacy `update-loop.sh`;
-- both Hyprpaper and swww wallpaper paths.
+- one bounded `senomy-wallpaper` entry point backed by `swaybg` and a
+  project-owned generated wallpaper.
 
 The stable data flows are:
 
@@ -19,7 +22,9 @@ Hyprland .socket2.sock events
               ├── debounce related workspace/window events
               ├── query workspaces, activeworkspace, and clients
               ├── normalize workspace/application JSON
-              └── eww ping, then update workspaces and workspace_state
+              ├── eww ping, then update workspaces and workspace_state
+              └── scripts/workspace-carousel.sh reconcile
+                    └── update presentation-only viewport state when required
 
 Eww batt_json poll
   └── scripts/battery.sh
@@ -104,8 +109,12 @@ Global state should remain small and explicit:
 
 ```text
 active_surface = "none"
-active_flyout = "none"
+active_flyout = "none" | "volume" | "tray" | "calendar" | "notifications" | "power"
 control_section = "overview"
+workspace_carousel_offset = 0
+workspace_carousel_previous_offset = 0
+workspace_carousel_slot = 0 | 1
+workspace_carousel_direction = "previous" | "next"
 companion_mode = "closed"
 companion_dock = "right"
 companion_pinned = false
@@ -176,13 +185,13 @@ only if a bounded authoritative query proves the requested window or state
 postcondition. Repeated toggles also close a verified open target even if its
 state publication was briefly delayed.
 
-The volume and tray flyouts are transient, not additional primary surfaces.
-Opening either closes primary surfaces and the other flyout; opening any
-primary surface closes both. Reload deliberately does not restore transient
-flyouts. The generic `dismiss` action closes the open flyout first and
-otherwise closes the active primary surface. Hyprland's non-consuming Escape
-binding invokes this action while preserving Escape for the focused
-application.
+Volume, tray, calendar, notifications, and power are transient flyouts, not
+additional primary surfaces. Opening one closes primary surfaces and every
+other flyout; opening any primary surface closes all flyouts. Reload
+deliberately does not restore transient flyouts. The generic `dismiss` action
+closes the open flyout first and otherwise closes the active primary surface.
+Hyprland's non-consuming Escape binding invokes this action while preserving
+Escape for the focused application.
 
 The Senomy companion is an ambient overlay, not a primary surface or transient
 flyout. `scripts/companion-state.sh` owns its separate `closed`, `expanded`,
@@ -205,6 +214,13 @@ collector scope, while the coordinator makes the actual open window set match
 that state. Do not bind `defwindow :visible` to `active_surface`; mixing dynamic
 visibility with explicit `eww open`/`eww close` creates two competing lifecycle
 mechanisms.
+
+Screenshot selection is the one deliberate temporary divergence. Flameshot
+first freezes the fully rendered desktop; `capture-suspend` then unmaps the
+context and dismiss layers without clearing `active_surface`/`active_flyout`,
+so they cannot intercept selection on the frozen image. `capture-restore`
+reconciles the same state after the capture client closes. The companion uses
+parallel preserve-state hooks because it is outside primary mutual exclusion.
 
 The supported reload path is:
 
@@ -604,9 +620,101 @@ The implementation should not assume the bar always has 1920 pixels.
 
 ## Deployment architecture
 
-The current repository is the live development source. It should eventually
-produce installable artifacts rather than being copied directly into a fixed
-home directory.
+The current repository is the live Eww development source and the source of
+truth for configuration that is deployed elsewhere. Developers edit the
+repository rather than moving between live Rofi, Thunar, GTK, and Hyprland
+configuration directories.
+
+`deploy/manifest.json` is the versioned deployment allowlist.
+`scripts/senomy-deploy.sh` resolves its portable user targets, shows a
+read-only plan, creates a private timestamped backup and receipt, installs
+prepared files atomically, verifies the result, and can restore a recorded
+deployment. Applying and rolling back require exact confirmation. The command
+does not reload Eww, restart applications, or write privileged paths.
+
+The transaction format supports complete files owned by SenomyOS beneath
+allowlisted XDG user roots and one explicit deterministic Thunar `uca.xml`
+merge. Hyprland and the repository-owned Rofi Command Lens files are ready
+components; neither is applied implicitly. Rofi is deployed, and the reviewed
+Hyprland component routes `Super+R` to Command Lens and `Super+E` to the scoped
+file workspace.
+
+The Thunar component installs a scoped `senomy-file-workspace` entry point and
+merges registered custom actions. The merge parses the live XML into a
+candidate, preserves unrelated actions, replaces only registered SenomyOS
+unique IDs, excludes actions whose dependencies are unavailable, and validates
+XML before any target changes. Both apply and rollback require Thunar to be
+stopped. Accelerator state and Xfconf preferences remain separate user-owned
+layers. For a fresh session, the wrapper starts the Thunar daemon in a
+collected transient user service with the selected namespaced theme in the
+daemon environment, waits for its D-Bus name, and then opens a window or sends
+one reveal request. A detached `nohup` launch is the bounded fallback when a
+user systemd manager is unavailable. An existing session is reused without
+restart or theme mutation. File reveal goes through
+`org.freedesktop.FileManager1.ShowItems` with a URI produced by GIO instead of
+relying on a nonexistent Thunar `--select` option.
+The user desktop entry overrides the distribution `thunar.desktop` launch
+without replacing the system file. Its Exec command expands
+`~/.local/bin/senomy-file-workspace` through a bounded shell instead of relying
+on the desktop session PATH, and it intentionally omits `TryExec` because
+desktop sessions may exclude the user bin directory. Application menus and the
+compositor shortcut therefore share one recoverable entry point.
+The GTK 3 source lives under `appearance/file-manager/gtk3/SenomyOS` and inherits
+GTK's built-in Adwaita mechanics before applying validated SenomyOS token
+overrides. It is installed as a namespaced complete-file component after
+isolated Thunar and Network Connection Editor visual QA. Theme installation
+and global theme selection remain separate; no GTK preference is part of
+deployment.
+`SenomyOS-Touch` imports the canonical theme and raises primary widgets,
+sidebar/menu rows, tabs, entries, and scrollbars to touch-oriented dimensions.
+Notebook-dialog controls use a smaller content minimum plus padding and borders
+to preserve an effective approximately 48px target without exceeding a 1080px
+work area. The wrapper selects the touch theme when file-workspace density is
+`touch` or the bounded SenomyOS appearance preference reports a touch font
+scale.
+SDDM, its restricted recovery runtime, and inert Plymouth/GRUB theme files use
+the separate privileged manifest and transactional system deployer. Boot-theme
+selection, initramfs regeneration, and GRUB configuration remain behind a
+disposable-machine cold-boot and recovery-boot evidence gate and are rejected
+by the user deployer.
+
+The Command Lens wrapper composes Rofi's native application/window providers
+with two finite script modes. Files mode resolves only configured relative
+roots beneath the user's real home, bounds traversal by root, depth, time, and
+result count, skips hidden paths, and treats every selected path as opaque
+metadata. Actions mode dispatches only fixed IDs to existing safe controllers;
+it cannot interpolate an entered command. File results hand directory opens
+and file reveals to `senomy-file-workspace`; the adapters do not need to live
+inside Thunar's configuration directory. The Rofi files deploy to user XDG
+configuration and `$HOME/.local/bin`. The reviewed shortcut integration is
+tracked and deployed through the Hyprland rollback component.
+
+Deployment state is separate from source and preferences:
+
+```text
+repository source
+  -> plan
+  -> private backup + prepared receipt
+  -> staged install + checksum verification
+  -> applied receipt
+
+applied receipt
+  -> drift check
+  -> restore prior file or remove a newly created file
+  -> rolled-back receipt
+```
+
+Receipts live under
+`${XDG_STATE_HOME:-$HOME/.local/state}/senomyos/deployments`. They record the
+component, source and target identities, modes, checksums, prior existence,
+manifest checksum, and lifecycle state. Rollback fails closed when a live file
+has changed to an unrecorded version.
+
+The current repository now exposes package/service manifests, portable
+profiles, a confirmed already-installed-Arch bootstrap, transactional user and
+system deployment, and an isolated clean-home/clean-root acceptance harness.
+It should still evolve into versioned installable artifacts rather than depend
+permanently on a live checkout.
 
 Target artifact classes:
 
@@ -621,5 +729,5 @@ The shell should follow XDG paths and resolve the active configuration at
 runtime. User-owned preferences must remain separate from packaged defaults so
 updates do not overwrite personal state.
 
-See `PLATFORM_STRATEGY.md` for the staged delivery model and compatibility
-tiers.
+See `deploy/README.md` for the current transaction contract and
+`PLATFORM_STRATEGY.md` for the staged delivery model and compatibility tiers.

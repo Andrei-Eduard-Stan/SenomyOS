@@ -26,7 +26,11 @@ check() {
 
 check "Bash syntax" bash -c 'for file in "$1"/scripts/*.sh; do bash -n "$file" || exit; done' _ "$CONFIG_DIR"
 check "SCSS compilation" sassc -t compressed "$CONFIG_DIR/eww.scss" /tmp/senomyos-eww-validation.css
-check "Tracked JSON syntax" bash -c 'for file in "$1"/data/*.json; do jq -e . "$file" >/dev/null || exit; done' _ "$CONFIG_DIR"
+check "Tracked JSON syntax" bash -c '
+  for file in "$1"/data/*.json "$1"/deploy/manifest.json; do
+    jq -e . "$file" >/dev/null || exit
+  done
+' _ "$CONFIG_DIR"
 check "Wiki catalog contract" bash -c '"$1/scripts/wiki-status.py" catalog | jq -e ".schema_version >= 1 and (.ok|type == \"boolean\") and (.data.articles|type == \"array\")" >/dev/null' _ "$CONFIG_DIR"
 check "Appearance contract" bash -c '"$1/scripts/appearance-status.sh" | jq -e ".ok == true and (.data.title_px|type == \"number\") and (.data.accent|IN(\"cyan\",\"violet\",\"amber\"))" >/dev/null' _ "$CONFIG_DIR"
 check "Responsive layout fixtures" bash -c '
@@ -43,7 +47,8 @@ check "Responsive layout fixtures" bash -c '
 ' _ "$CONFIG_DIR"
 check "Console catalog contract" bash -c '"$1/scripts/console-status.sh" catalog | jq -e ".ok == true and (.data.tasks|length > 0) and (.data.shells|length > 0)" >/dev/null' _ "$CONFIG_DIR"
 check "Diagnostics catalog contract" bash -c '"$1/scripts/diagnostics-status.sh" catalog | jq -e ".ok == true and (.data.tasks|length > 0)" >/dev/null' _ "$CONFIG_DIR"
-check "Tracked Escape dispatcher" grep -qF "bindn = , Escape, exec, /usr/bin/env sh -c '\$HOME/.config/eww/scripts/surface-state.sh dismiss'" "$CONFIG_DIR/hyprland.conf"
+check "Hyprland Lua migration" "$CONFIG_DIR/scripts/validate-hyprland-contract.sh"
+check "Portable profile contract" "$CONFIG_DIR/scripts/validate-profile-contract.sh"
 check "Workspace event contract" bash -c '
   grep -q "^readonly FULL_RESYNC_SECONDS=300$" "$1/scripts/workspaces.sh" &&
     grep -q "openwindow>>" "$1/scripts/workspaces.sh" &&
@@ -62,7 +67,7 @@ check "Eww client no-autostart contract" bash -c '
     start-eww.sh surface-state.sh ui-action.sh workspaces.sh \
     audio-action.sh brightness-action.sh console-status.sh network-action.sh \
     performance-action.sh power-action.sh senomy-avatar.sh \
-    senomy-rail-message.sh companion-state.sh screenshot-action.sh senomy-shellctl.sh \
+    senomy-rail-message.sh rail-notification-ack.sh companion-state.sh screenshot-action.sh senomy-shellctl.sh \
     validate-all-panels.sh validate-interactions.sh validate-eww-config.sh; do
     grep -q -- "--no-daemonize" "$1/scripts/$file" || exit 1
   done
@@ -71,10 +76,18 @@ check "Eww client no-autostart contract" bash -c '
 check "Rail behavior contracts" "$CONFIG_DIR/scripts/validate-rail-contracts.sh"
 check "Companion behavior contract" "$CONFIG_DIR/scripts/validate-companion-contract.sh"
 check "Action failure contracts" "$CONFIG_DIR/scripts/validate-action-contracts.sh"
+check "Screenshot lifecycle contract" "$CONFIG_DIR/scripts/validate-screenshot-contract.sh"
 check "Surface data contracts" "$CONFIG_DIR/scripts/validate-data-contracts.sh"
 check "Insights action contracts" "$CONFIG_DIR/scripts/validate-insights-actions.sh"
 check "Report lifecycle contracts" "$CONFIG_DIR/scripts/validate-report-contracts.sh"
 check "Appearance action contracts" "$CONFIG_DIR/scripts/validate-appearance-actions.sh"
+check "Deployment lifecycle contract" "$CONFIG_DIR/scripts/validate-deployment.sh"
+check "Bootstrap clean-root contract" "$CONFIG_DIR/scripts/validate-bootstrap.sh"
+check "Boot staging contract" "$CONFIG_DIR/scripts/validate-boot-themes.sh"
+check "Command Lens contracts" "$CONFIG_DIR/scripts/validate-command-lens.sh"
+check "Thunar action contracts" "$CONFIG_DIR/scripts/validate-thunar-contract.sh"
+check "Shared theme contracts" "$CONFIG_DIR/scripts/validate-theme-contract.sh"
+check "Login and recovery contracts" "$CONFIG_DIR/scripts/validate-sddm-contract.sh"
 check "Git whitespace" git -C "$CONFIG_DIR" diff --check
 
 if [[ "$MODE" == --live ]]; then
@@ -86,7 +99,7 @@ if [[ "$MODE" == --live ]]; then
   check "Surface state contract" bash -c '
     payload="$("$1/scripts/surface-state.sh" status)"
     grep -qE "^active_surface=(none|control|performance|insights)$" <<<"$payload" &&
-      grep -qE "^active_flyout=(none|volume|tray)$" <<<"$payload"
+      grep -qE "^active_flyout=(none|volume|tray|calendar|notifications|power)$" <<<"$payload"
   ' _ "$CONFIG_DIR"
 fi
 

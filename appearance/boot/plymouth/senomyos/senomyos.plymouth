@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=SenomyOS Obsidian Transition
+Description=Static staged SenomyOS boot transition; activation requires a validated initramfs path.
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/senomyos
+ScriptFile=/usr/share/plymouth/themes/senomyos/senomyos.script
