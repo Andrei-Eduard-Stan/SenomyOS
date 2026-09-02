@@ -6,6 +6,8 @@ SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd -P)}"
 QS_BIN="${SENOMY_QS_BIN:-/usr/bin/qs}"
 SHELL_ROOT="$SOURCE_ROOT/shell/quickshell"
+STATE_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/senomyos"
+NOTIFICATION_STORE="$STATE_ROOT/quickshell-notifications.json"
 
 fail() {
   printf 'senomy-quickshell: %s\n' "$*" >&2
@@ -17,7 +19,21 @@ fail() {
 [[ -n "${WAYLAND_DISPLAY:-}" ]] || fail "WAYLAND_DISPLAY is not available to the user service"
 [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || fail "HYPRLAND_INSTANCE_SIGNATURE is not available to the user service"
 
+mkdir -p "$STATE_ROOT"
+chmod 700 "$STATE_ROOT"
+if [[ ! -e "$NOTIFICATION_STORE" ]]; then
+  printf '{"schemaVersion":1,"dnd":false,"history":[]}\n' >"$NOTIFICATION_STORE"
+fi
+chmod 600 "$NOTIFICATION_STORE"
+
 export SENOMY_SOURCE_ROOT="$SOURCE_ROOT"
 export SENOMY_SESSION_ACTION="$SOURCE_ROOT/scripts/senomy-session-action"
+export SENOMY_NOTIFICATION_STORE="$NOTIFICATION_STORE"
+if /usr/bin/busctl --system --no-pager --no-legend list 2>/dev/null |
+  /usr/bin/grep -q '^org\.freedesktop\.UPower\.PowerProfiles'; then
+  export SENOMY_POWER_PROFILES_AVAILABLE=1
+else
+  export SENOMY_POWER_PROFILES_AVAILABLE=0
+fi
 
 exec "$QS_BIN" --path "$SHELL_ROOT" --no-color

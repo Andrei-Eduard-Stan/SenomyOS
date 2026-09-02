@@ -15,6 +15,13 @@ Scope {
     readonly property var wifiDevices: devices.filter(device => device.type === DeviceType.Wifi)
     readonly property var wifiNetworks: wifiDevices.reduce((networks, device) =>
         networks.concat(device.networks.values), [])
+    readonly property var sortedWifiNetworks: wifiNetworks.slice().sort((left, right) => {
+        if (left.connected !== right.connected)
+            return left.connected ? -1 : 1;
+        if (left.known !== right.known)
+            return left.known ? -1 : 1;
+        return right.signalStrength - left.signalStrength;
+    })
     readonly property var connectedWifi: wifiNetworks.find(network => network.connected) || null
     readonly property var connectedDevice: devices.find(device => device.connected) || null
     readonly property string activeConnection: connectedWifi ? connectedWifi.name
@@ -42,5 +49,46 @@ Scope {
         if (!networkingEnabled)
             return "Networking unavailable or no managed devices";
         return wifiEnabled ? "No active connection" : "Wi-Fi disabled";
+    }
+
+    property bool scanning: false
+
+    function setScanning(enabled) {
+        scanning = enabled && wifiEnabled;
+        for (const device of wifiDevices)
+            device.scannerEnabled = scanning;
+    }
+
+    function toggleWifi() {
+        if (!available || !wifiHardwareEnabled)
+            return false;
+        Networking.wifiEnabled = !Networking.wifiEnabled;
+        if (!Networking.wifiEnabled)
+            setScanning(false);
+        return true;
+    }
+
+    function activate(network) {
+        if (!network || network.stateChanging)
+            return false;
+        if (network.connected)
+            network.disconnect();
+        else if (network.known || network.security === WifiSecurityType.Open)
+            network.connect();
+        else
+            return false;
+        return true;
+    }
+
+    function openSecurePrompt(network) {
+        if (!network || !network.name)
+            return false;
+        // Direct argv execution keeps the SSID out of shell interpolation;
+        // NetworkManager owns the prompt and secret storage policy.
+        Quickshell.execDetached([
+            "kitty", "--title", "SenomyOS Wi-Fi authentication",
+            "nmcli", "--ask", "device", "wifi", "connect", network.name
+        ]);
+        return true;
     }
 }

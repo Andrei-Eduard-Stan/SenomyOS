@@ -11,6 +11,11 @@ Scope {
     property real cpuPercent: 0
     property real memoryPercent: 0
     property double uptimeSeconds: 0
+    property real networkRxKib: 0
+    property real networkTxKib: 0
+    property double previousNetworkRx: 0
+    property double previousNetworkTx: 0
+    property double previousNetworkAt: 0
     property bool ready: false
 
     property double previousCpuTotal: 0
@@ -68,10 +73,32 @@ Scope {
             uptimeSeconds = value;
     }
 
+    function parseNetwork() {
+        let rx = 0;
+        let tx = 0;
+        for (const line of networkFile.text().split("\n")) {
+            const match = line.match(/^\s*([^:]+):\s*(\d+)(?:\s+\d+){7}\s+(\d+)/);
+            if (!match || match[1].trim() === "lo")
+                continue;
+            rx += Number(match[2]);
+            tx += Number(match[3]);
+        }
+        const now = Date.now() / 1000;
+        if (previousNetworkAt > 0 && now > previousNetworkAt) {
+            const seconds = now - previousNetworkAt;
+            networkRxKib = Math.max(0, (rx - previousNetworkRx) / seconds / 1024);
+            networkTxKib = Math.max(0, (tx - previousNetworkTx) / seconds / 1024);
+        }
+        previousNetworkRx = rx;
+        previousNetworkTx = tx;
+        previousNetworkAt = now;
+    }
+
     function refresh() {
         cpuFile.reload();
         memoryFile.reload();
         uptimeFile.reload();
+        networkFile.reload();
     }
 
     FileView {
@@ -80,6 +107,14 @@ Scope {
         blockLoading: true
         printErrors: true
         onLoaded: root.parseCpu()
+    }
+
+    FileView {
+        id: networkFile
+        path: "/proc/net/dev"
+        blockLoading: true
+        printErrors: true
+        onLoaded: root.parseNetwork()
     }
 
     FileView {

@@ -15,11 +15,24 @@ ShellRoot {
     Services.BatteryService { id: batteryService }
     Services.AudioService { id: audioService }
     Services.NetworkService { id: networkService }
+    Services.BluetoothService { id: bluetoothService }
+    Services.MediaService { id: mediaService }
+    Services.NotificationService { id: notificationService }
     Services.PowerService { id: powerService }
-
-    QtObject {
-        id: sharedUiState
-        property string activePopup: ""
+    Services.ShellState { id: shellState }
+    Services.PerformanceService {
+        id: performanceService
+        metrics: metricsService
+        active: shellState.dashboardActive
+    }
+    Services.SenomyState {
+        id: senomyState
+        shellState: shellState
+        media: mediaService
+        battery: batteryService
+        network: networkService
+        metrics: metricsService
+        notifications: notificationService
     }
 
     IpcHandler {
@@ -28,17 +41,17 @@ ShellRoot {
         function popup(token: string): string {
             if (token !== "" && !/^(calendar|tray):[^:]+$/.test(token))
                 return "invalid popup token";
-            sharedUiState.activePopup = token;
-            return sharedUiState.activePopup;
+            shellState.activePopup = token;
+            return shellState.activePopup;
         }
 
         function closePopups(): string {
-            sharedUiState.activePopup = "";
+            shellState.closePopups();
             return "closed";
         }
 
         function popupState(): string {
-            return sharedUiState.activePopup;
+            return shellState.activePopup;
         }
 
         function networkState(): string {
@@ -63,6 +76,51 @@ ShellRoot {
                 allowedActions: powerService.allowedActions
             });
         }
+
+        function shellStateJson(): string {
+            return JSON.stringify({
+                activePrimary: shellState.activePrimary,
+                primaryScreen: shellState.primaryScreen,
+                activePopup: shellState.activePopup,
+                companionMode: shellState.companionMode,
+                companionScreen: shellState.companionScreen
+            });
+        }
+
+        function bluetoothState(): string {
+            return JSON.stringify({
+                available: bluetoothService.available,
+                enabled: bluetoothService.enabled,
+                discovering: bluetoothService.discovering,
+                deviceCount: bluetoothService.devices.length,
+                connectedCount: bluetoothService.connectedDevices.length
+            });
+        }
+
+        function mediaState(): string {
+            return JSON.stringify({
+                available: mediaService.available,
+                identity: mediaService.identity,
+                title: mediaService.title,
+                artist: mediaService.artist,
+                playing: mediaService.playing,
+                playerCount: mediaService.players.length
+            });
+        }
+
+        function notificationState(): string {
+            return JSON.stringify({
+                serverEnabled: notificationService.serverEnabled,
+                activeCount: notificationService.activeCount,
+                unreadCount: notificationService.unreadCount,
+                dnd: notificationService.dnd,
+                historyCount: notificationService.history.length
+            });
+        }
+
+        function senomyStateJson(): string {
+            return JSON.stringify({state: senomyState.state, message: senomyState.message});
+        }
     }
 
     Variants {
@@ -74,7 +132,7 @@ ShellRoot {
             audio: audioService
             network: networkService
             power: powerService
-            uiState: sharedUiState
+            uiState: shellState
         }
     }
 }
