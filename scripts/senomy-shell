@@ -64,11 +64,13 @@ wait_until() {
 quickshell_ready() {
   systemctl --user is-active --quiet "$QS_UNIT" &&
     reserve_ready quickshell "$QS_NAMESPACE" &&
-    /usr/bin/qs ipc --path "$SOURCE_ROOT/shell/quickshell" show 2>/dev/null | grep -q '^target shell$'
+    /usr/bin/qs ipc --path "$SOURCE_ROOT/shell/quickshell" show 2>/dev/null | grep -q '^target shell$' &&
+    quickshell_notifications_ready
 }
 
 eww_ready() {
-  "$SOURCE_ROOT/scripts/senomy-eww-legacy" status >/dev/null 2>&1 && reserve_ready eww "$EWW_NAMESPACE"
+  "$SOURCE_ROOT/scripts/senomy-eww-legacy" status >/dev/null 2>&1 &&
+    reserve_ready eww "$EWW_NAMESPACE" && legacy_notifications_ready
 }
 
 selected_mode() {
@@ -116,6 +118,54 @@ notification_owner() {
   printf '%s\n' "${owner:-unowned}"
 }
 
+notification_owner_pid() {
+  local owner pid
+  owner="$(notification_owner)"
+  [[ "$owner" != unowned ]] || { printf '0\n'; return; }
+  pid="$(
+    /usr/bin/busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
+      org.freedesktop.DBus GetConnectionUnixProcessID s "$owner" 2>/dev/null |
+      /usr/bin/awk '$1 == "u" {print $2}' || true
+  )"
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] && printf '%s\n' "$pid" || printf '0\n'
+}
+
+unit_main_pid() {
+  local unit="$1" pid
+  pid="$(systemctl --user show "$unit" --property MainPID --value 2>/dev/null || true)"
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] && printf '%s\n' "$pid" || printf '0\n'
+}
+
+notification_provider() {
+  local owner_pid qs_pid swaync_pid
+  owner_pid="$(notification_owner_pid)"
+  qs_pid="$(unit_main_pid "$QS_UNIT")"
+  swaync_pid="$(unit_main_pid "$NOTIFICATION_UNIT")"
+  if [[ "$owner_pid" -gt 0 && "$owner_pid" -eq "$qs_pid" ]]; then
+    printf 'quickshell\n'
+  elif [[ "$owner_pid" -gt 0 && "$owner_pid" -eq "$swaync_pid" ]]; then
+    printf 'swaync\n'
+  elif [[ "$owner_pid" -gt 0 ]]; then
+    printf 'external\n'
+  else
+    printf 'unowned\n'
+  fi
+}
+
+quickshell_notifications_ready() {
+  ! systemctl --user is-active --quiet "$NOTIFICATION_UNIT" &&
+    [[ "$(notification_provider)" == quickshell ]]
+}
+
+legacy_notifications_ready() {
+  systemctl --user is-active --quiet "$NOTIFICATION_UNIT" &&
+    [[ "$(notification_provider)" == swaync ]]
+}
+
+notifications_unowned() {
+  [[ "$(notification_owner)" == unowned ]]
+}
+
 preflight() {
   require_command jq
   require_command hyprctl
@@ -143,6 +193,8 @@ adopt_and_stop_eww_rail() {
 
 restore_eww() {
   systemctl --user reset-failed "$WORKSPACE_UNIT" "$EWW_UNIT" >/dev/null 2>&1 || true
+  systemctl --user start "$NOTIFICATION_UNIT"
+  wait_until "SwayNC did not regain notification ownership" legacy_notifications_ready
   systemctl --user start "$WORKSPACE_UNIT"
   systemctl --user start "$EWW_UNIT"
   wait_until "Eww did not regain sole Rail reserve ownership" eww_ready
@@ -151,16 +203,19 @@ restore_eww() {
 use_quickshell() {
   preflight
   if quickshell_ready; then
-    systemctl --user start "$NOTIFICATION_UNIT"
     systemctl --user stop "$WORKSPACE_UNIT" >/dev/null 2>&1 || true
     write_mode quickshell
     printf 'Quickshell already owns the Rail reserve.\n'
     return 0
   fi
   # Keep the Eww workspace listener alive until Quickshell is ready. Its
-  # dependency pins graphical-session.target, so PartOf services such as the
-  # transitional SwayNC provider do not disappear between Rail owners.
+  # dependency pins graphical-session.target through the controlled
+  # notification handoff.
+  systemctl --user start "$WORKSPACE_UNIT"
   adopt_and_stop_eww_rail
+  systemctl --user stop "$QS_UNIT" >/dev/null 2>&1 || true
+  systemctl --user stop "$NOTIFICATION_UNIT"
+  wait_until "SwayNC did not release notification ownership" notifications_unowned
   systemctl --user reset-failed "$QS_UNIT" >/dev/null 2>&1 || true
   if ! systemctl --user start "$QS_UNIT"; then
     restore_eww
@@ -182,6 +237,7 @@ use_eww() {
   preflight
   if eww_ready && ! systemctl --user is-active --quiet "$QS_UNIT"; then
     systemctl --user start "$NOTIFICATION_UNIT"
+    wait_until "SwayNC did not retain notification ownership" legacy_notifications_ready
     write_mode eww
     printf 'Eww already owns the Rail reserve.\n'
     return 0
@@ -190,6 +246,8 @@ use_eww() {
   # and portal services are not coupled to the Rail handoff.
   systemctl --user start "$WORKSPACE_UNIT"
   systemctl --user stop "$QS_UNIT" >/dev/null 2>&1 || true
+  systemctl --user start "$NOTIFICATION_UNIT"
+  wait_until "SwayNC did not regain notification ownership" legacy_notifications_ready
   if ! restore_eww; then
     systemctl --user stop "$EWW_UNIT" "$WORKSPACE_UNIT" >/dev/null 2>&1 || true
     systemctl --user reset-failed "$QS_UNIT" >/dev/null 2>&1 || true
@@ -212,7 +270,7 @@ recover_eww() {
 }
 
 show_status() {
-  local detected selected qs_active eww_active workspace_active notification_active notification_bus_owner qs_layers eww_layers
+  local detected selected qs_active eww_active workspace_active notification_active notification_bus_owner notification_bus_pid notification_provider_name qs_layers eww_layers
   detected="$(detected_mode)"
   selected="$(selected_mode)"
   qs_active="$(systemctl --user is-active "$QS_UNIT" 2>/dev/null || true)"
@@ -220,16 +278,19 @@ show_status() {
   workspace_active="$(systemctl --user is-active "$WORKSPACE_UNIT" 2>/dev/null || true)"
   notification_active="$(systemctl --user is-active "$NOTIFICATION_UNIT" 2>/dev/null || true)"
   notification_bus_owner="$(notification_owner)"
+  notification_bus_pid="$(notification_owner_pid)"
+  notification_provider_name="$(notification_provider)"
   qs_layers="$(layer_count "$QS_NAMESPACE")"
   eww_layers="$(layer_count "$EWW_NAMESPACE")"
   /usr/bin/jq -n \
     --arg selected "$selected" --arg detected "$detected" \
     --arg quickshell_service "$qs_active" --arg eww_service "$eww_active" \
     --arg workspace_service "$workspace_active" --arg notification_service "$notification_active" \
-    --arg notification_owner "$notification_bus_owner" --arg login_default eww \
+    --arg notification_owner "$notification_bus_owner" --argjson notification_pid "$notification_bus_pid" \
+    --arg notification_provider "$notification_provider_name" --arg login_default eww \
     --arg source_root "$SOURCE_ROOT" --argjson quickshell_layers "$qs_layers" \
     --argjson eww_layers "$eww_layers" \
-    '{selected_backend:$selected,detected_backend:$detected,login_default:$login_default,services:{quickshell:$quickshell_service,eww:$eww_service,workspaces:$workspace_service,notifications:$notification_service},notifications:{dbus_name:"org.freedesktop.Notifications",owner:$notification_owner},layers:{quickshell:$quickshell_layers,eww:$eww_layers},source_root:$source_root}'
+    '{selected_backend:$selected,detected_backend:$detected,login_default:$login_default,services:{quickshell:$quickshell_service,eww:$eww_service,workspaces:$workspace_service,notifications:$notification_service},notifications:{dbus_name:"org.freedesktop.Notifications",owner:$notification_owner,owner_pid:$notification_pid,provider:$notification_provider},layers:{quickshell:$quickshell_layers,eww:$eww_layers},source_root:$source_root}'
 }
 
 doctor() {
@@ -240,8 +301,9 @@ doctor() {
   printf 'Quickshell: %s\n' "$(/usr/bin/qs --version 2>/dev/null || printf unavailable)"
   printf 'Hyprland monitors: %s\n' "$(monitor_count)"
   printf 'Rail layers: quickshell=%s eww=%s\n' "$(layer_count "$QS_NAMESPACE")" "$(layer_count "$EWW_NAMESPACE")"
-  printf 'Notifications: service=%s owner=%s\n' \
-    "$(systemctl --user is-active "$NOTIFICATION_UNIT" 2>/dev/null || true)" "$(notification_owner)"
+  printf 'Notifications: service=%s owner=%s pid=%s provider=%s\n' \
+    "$(systemctl --user is-active "$NOTIFICATION_UNIT" 2>/dev/null || true)" \
+    "$(notification_owner)" "$(notification_owner_pid)" "$(notification_provider)"
   for unit in "$QS_UNIT" "$EWW_UNIT" "$FALLBACK_UNIT" "$NOTIFICATION_UNIT"; do
     if systemctl --user cat "$unit" >/dev/null 2>&1; then
       printf 'unit %-31s installed\n' "$unit"
@@ -254,10 +316,26 @@ doctor() {
     printf 'ERROR: both Rail namespaces are present\n' >&2
     failed=1
   fi
-  if ! systemctl --user is-active --quiet "$NOTIFICATION_UNIT" || [[ "$(notification_owner)" == unowned ]]; then
-    printf 'ERROR: the transitional SwayNC notification provider is unavailable\n' >&2
-    failed=1
-  fi
+  case "$(detected_mode)" in
+    quickshell)
+      if ! quickshell_notifications_ready; then
+        printf 'ERROR: Quickshell does not exclusively own notifications\n' >&2
+        failed=1
+      fi
+      ;;
+    eww)
+      if ! legacy_notifications_ready; then
+        printf 'ERROR: SwayNC does not exclusively own notifications\n' >&2
+        failed=1
+      fi
+      ;;
+    *)
+      if [[ "$(notification_owner)" == unowned ]]; then
+        printf 'ERROR: notifications are unowned\n' >&2
+        failed=1
+      fi
+      ;;
+  esac
   return "$failed"
 }
 

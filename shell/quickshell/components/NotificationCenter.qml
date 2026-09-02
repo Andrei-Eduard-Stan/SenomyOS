@@ -148,7 +148,7 @@ PopupWindow {
                                 elide: Text.ElideRight
                             }
                             Row {
-                                visible: modelData.actions && modelData.actions.length > 0
+                                visible: Boolean(modelData.actions && modelData.actions.length > 0)
                                 spacing: 6
                                 Repeater {
                                     model: modelData.actions || []

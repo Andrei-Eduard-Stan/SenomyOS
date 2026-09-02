@@ -46,9 +46,8 @@ Scope {
         store.setText(JSON.stringify({schemaVersion: 1, dnd: dnd, history: records}));
     }
 
-    function receive(notification) {
-        notification.tracked = true;
-        const record = {
+    function recordFor(notification, receivedAt) {
+        return {
             id: notification.id,
             appName: notification.appName || "Unknown application",
             appIcon: notification.appIcon || "",
@@ -60,11 +59,16 @@ Scope {
             desktopEntry: notification.desktopEntry || "",
             image: notification.image || "",
             actions: notification.actions,
-            receivedAt: Date.now(),
+            receivedAt: receivedAt,
             unread: !notification.transient,
             closeReason: "",
             object: notification
         };
+    }
+
+    function receive(notification) {
+        notification.tracked = true;
+        const record = recordFor(notification, Date.now());
         latest = record;
         if (!notification.transient) {
             const next = history.filter(existing => existing.id !== record.id);
@@ -76,10 +80,26 @@ Scope {
             toastGeneration += 1;
     }
 
-    function recordClosed(id, reason) {
+    function synchronize(notification) {
+        // Quickshell applies a replacement ID by mutating the current tracked
+        // object. Consolidate its property-change burst into one new record.
+        const record = recordFor(notification, Date.now());
+        latest = record;
+        const next = history.filter(existing => existing.id !== record.id);
+        if (!record.transient)
+            next.unshift(record);
+        history = next.slice(0, 120);
+        persist();
+        if (!dnd)
+            toastGeneration += 1;
+    }
+
+    function recordClosed(notification, reason) {
         const reasonName = NotificationCloseReason.toString(reason);
         history = history.map(record => {
-            if (record.id !== id)
+            // Replacement generations reuse an ID. Object identity prevents
+            // an old generation's close event from marking its replacement.
+            if (record.object !== notification)
                 return record;
             const updated = serializable(record);
             updated.unread = record.unread;
@@ -103,6 +123,8 @@ Scope {
         if (!record || !record.object || !action)
             return false;
         action.invoke();
+        if (!record.resident)
+            record.object.dismiss();
         return true;
     }
 
@@ -116,7 +138,7 @@ Scope {
     }
 
     function clearAll() {
-        for (const notification of activeNotifications)
+        for (const notification of activeNotifications.slice())
             notification.dismiss();
         history = [];
         latest = null;
@@ -157,8 +179,24 @@ Scope {
             Connections {
                 target: tracker.modelData
                 function onClosed(reason) {
-                    root.recordClosed(tracker.modelData.id, reason);
+                    root.recordClosed(tracker.modelData, reason);
                 }
+                function onAppNameChanged() { replacementSync.restart(); }
+                function onAppIconChanged() { replacementSync.restart(); }
+                function onSummaryChanged() { replacementSync.restart(); }
+                function onBodyChanged() { replacementSync.restart(); }
+                function onUrgencyChanged() { replacementSync.restart(); }
+                function onActionsChanged() { replacementSync.restart(); }
+                function onResidentChanged() { replacementSync.restart(); }
+                function onTransientChanged() { replacementSync.restart(); }
+                function onDesktopEntryChanged() { replacementSync.restart(); }
+                function onImageChanged() { replacementSync.restart(); }
+            }
+
+            Timer {
+                id: replacementSync
+                interval: 1
+                onTriggered: root.synchronize(tracker.modelData)
             }
 
             Timer {
@@ -166,6 +204,7 @@ Scope {
                     ? Math.max(1000, tracker.modelData.expireTimeout) : 5000
                 running: tracker.modelData.urgency !== NotificationUrgency.Critical
                     && !tracker.modelData.resident
+                    && tracker.modelData.expireTimeout !== 0
                 onTriggered: tracker.modelData.expire()
             }
         }

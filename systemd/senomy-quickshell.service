@@ -1,13 +1,15 @@
 [Unit]
 Description=SenomyOS Quickshell V2 development shell
-Wants=graphical-session.target swaync.service
-After=graphical-session.target swaync.service
+Wants=graphical-session.target
+After=graphical-session.target
+Conflicts=swaync.service
 OnFailure=senomy-shell-fallback.service
 StartLimitIntervalSec=20
 StartLimitBurst=3
 
 [Service]
 Type=simple
+Environment=SENOMY_NOTIFICATION_OWNER=quickshell
 ExecStart=%h/.local/bin/senomy-quickshell-run
 Restart=on-failure
 RestartMode=direct
