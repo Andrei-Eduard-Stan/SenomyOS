@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "system": [
+    {"unit":"NetworkManager.service","policy":"enable","required":true,"reason":"Network provider"},
+    {"unit":"sddm.service","policy":"enable","required":true,"reason":"Graphical login manager"},
+    {"unit":"bluetooth.service","policy":"optional","required":false,"reason":"Only required when Bluetooth is supported and enabled"}
+  ],
+  "user": [
+    {"unit":"workspaces.service","policy":"enable","required":true,"managed":true,"reason":"Event-driven workspace publication"},
+    {"unit":"pipewire.socket","policy":"preset","required":true,"managed":false,"reason":"Package-managed audio activation"},
+    {"unit":"pipewire-pulse.socket","policy":"preset","required":true,"managed":false,"reason":"Package-managed Pulse compatibility activation"},
+    {"unit":"wireplumber.service","policy":"preset","required":true,"managed":false,"reason":"Package-managed audio policy"}
+  ]
+}

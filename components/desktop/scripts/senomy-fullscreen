@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+# Toggle a full-monitor window mode while temporarily yielding the Rail.
+# "fullscreen" tells both Hyprland and the client to enter fullscreen.
+# "immersive" makes Hyprland cover the monitor while leaving the client in its
+# ordinary state, preserving application menus, tabs, and toolbars.
+
+set -euo pipefail
+export LC_ALL=C
+
+readonly HYPRCTL_BIN="${SENOMY_HYPRCTL_BIN:-/usr/bin/hyprctl}"
+readonly EWW_BIN="${SENOMY_EWW_BIN:-/usr/bin/eww}"
+readonly TIMEOUT_BIN="${SENOMY_TIMEOUT_BIN:-/usr/bin/timeout}"
+readonly JQ_BIN="${SENOMY_JQ_BIN:-/usr/bin/jq}"
+readonly EWW_CONFIG="${SENOMY_EWW_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/eww}"
+readonly SURFACE_BIN="$EWW_CONFIG/scripts/surface-state.sh"
+readonly REQUESTED_MODE="${1:-fullscreen}"
+
+fail() {
+  printf 'SenomyOS fullscreen: %s\n' "$*" >&2
+  exit 1
+}
+
+eww_call() {
+  "$TIMEOUT_BIN" --foreground --kill-after=1s 4s \
+    "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" "$@"
+}
+
+focused_screen() {
+  "$HYPRCTL_BIN" -j monitors 2>/dev/null |
+    "$JQ_BIN" -r '[.[]? | select(.focused == true) | .id][0] // 0'
+}
+
+toggle_state() {
+  local internal="$1"
+  local client="$2"
+
+  if "$HYPRCTL_BIN" binds -j 2>/dev/null |
+    "$JQ_BIN" -e 'any(.[]; .dispatcher == "__lua")' >/dev/null; then
+    "$HYPRCTL_BIN" dispatch \
+      "hl.dsp.window.fullscreen_state({internal=$internal,client=$client,action=\"toggle\"})"
+  else
+    "$HYPRCTL_BIN" dispatch fullscreenstate "$internal" "$client"
+  fi
+}
+
+restore_rail() {
+  local screen
+  screen="$(focused_screen 2>/dev/null || printf 0)"
+  [[ "$screen" =~ ^[0-9]+$ ]] || screen=0
+  eww_call open --screen "$screen" main-bar >/dev/null 2>&1 || true
+}
+
+[[ -x "$HYPRCTL_BIN" ]] || fail "hyprctl is unavailable"
+[[ -x "$EWW_BIN" ]] || fail "Eww is unavailable"
+[[ -x "$TIMEOUT_BIN" ]] || fail "timeout is unavailable"
+[[ -x "$JQ_BIN" ]] || fail "jq is unavailable"
+
+case "$REQUESTED_MODE" in
+  fullscreen)
+    target_internal=2
+    target_client=2
+    ;;
+  immersive)
+    target_internal=2
+    target_client=0
+    ;;
+  *)
+    fail "unknown mode: $REQUESTED_MODE"
+    ;;
+esac
+
+client="$($HYPRCTL_BIN -j activewindow 2>/dev/null)" || fail "unable to query the focused window"
+address="$("$JQ_BIN" -r '.address // ""' <<<"$client")"
+current_internal="$("$JQ_BIN" -r '.fullscreen // 0' <<<"$client")"
+current_client="$("$JQ_BIN" -r '.fullscreenClient // .fullscreen_client // 0' <<<"$client")"
+[[ -n "$address" && "$address" != "0x0" ]] || fail "no focused window"
+[[ "$current_internal" =~ ^[0-9]+$ ]] || current_internal=0
+[[ "$current_client" =~ ^[0-9]+$ ]] || current_client=0
+
+if ((current_internal != 0 || current_client != 0)); then
+  toggle_state "$current_internal" "$current_client" >/dev/null || fail "unable to leave fullscreen"
+  restore_rail
+  exit 0
+fi
+
+[[ -x "$SURFACE_BIN" ]] && "$SURFACE_BIN" dismiss >/dev/null 2>&1 || true
+eww_call close main-bar >/dev/null 2>&1 || true
+
+if ! toggle_state "$target_internal" "$target_client" >/dev/null; then
+  restore_rail
+  fail "unable to enter fullscreen"
+fi

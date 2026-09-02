@@ -1,5 +1,17 @@
 (defwidget volume-button []
   (button
-  :class "icon-button"
-  :onclick "eww open volume-popup"
-  "")) ;; FontAwesome icon
+    :hexpand true
+    :class {active_flyout == "volume"
+        || (active_surface == "control" && control_section == "audio")
+      ? "icon-button bar-control mainbar-volume-button active"
+      : (bar_audio_status?.data?.muted == true
+        ? "icon-button bar-control mainbar-volume-button muted"
+        : "icon-button bar-control mainbar-volume-button")}
+    :tooltip {bar_audio_status?.data?.available == true
+      ? (bar_audio_status.data.muted
+        ? "Audio muted · ${bar_audio_status.data.name}"
+        : "Volume ${bar_audio_status.data.volume_percent}% · ${bar_audio_status.data.name}")
+      : "Audio unavailable"}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-volume ${active_surface} ${active_flyout}"
+    (bar-icon :icon {bar_audio_status?.data?.muted == true ? "volume-muted" : "volume"})))

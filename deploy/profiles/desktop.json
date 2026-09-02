@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "desktop",
+  "label": "Desktop pointer",
+  "form_factor": "desktop",
+  "display": {
+    "scale": 1.0
+  },
+  "shell": {
+    "density": "standard"
+  },
+  "appearance": {
+    "font_scale": "standard"
+  },
+  "file_manager": {
+    "density": "standard"
+  },
+  "wallpaper": {
+    "asset": "obsidian-default",
+    "mode": "fill"
+  },
+  "capabilities": {
+    "touch_preferred": false,
+    "orientation": "landscape"
+  }
+}

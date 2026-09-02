@@ -1,0 +1,238 @@
+(defwidget updates-package-row [package]
+  (box
+    :class "updates-package-row"
+    :space-evenly false
+    :spacing 10
+    (label
+      :class "updates-package-name"
+      :xalign 0
+      :hexpand true
+      :limit-width 22
+      :tooltip {package.name}
+      :text {package.name})
+    (box
+      :class "updates-version-transition"
+      :space-evenly false
+      :spacing 7
+      (label
+        :class "updates-version current"
+        :limit-width 16
+        :tooltip {package.current}
+        :text {package.current})
+      (label
+        :class "updates-version-arrow"
+        :text "→")
+      (label
+        :class "updates-version available"
+        :limit-width 16
+        :tooltip {package.available}
+        :text {package.available}))))
+
+(defwidget updates-source [title detail empty-text status]
+  (box
+    :class "updates-source"
+    :orientation "v"
+    :space-evenly false
+    :spacing 7
+
+    (box
+      :class "updates-source-header"
+      :space-evenly false
+      :spacing 10
+      (label
+        :class "updates-source-title"
+        :xalign 0
+        :hexpand true
+        :text title)
+      (label
+        :class "updates-source-count"
+        :visible {status?.state == "ready"}
+        :text "${status.count} AVAILABLE")
+      (label
+        :class "updates-source-state ${status.state}"
+        :text {status.state_label}))
+
+    (label
+      :class "updates-source-detail"
+      :xalign 0
+      :hexpand true
+      :wrap true
+      :show-truncated false
+      :text detail)
+
+    (label
+      :class "updates-source-meta"
+      :xalign 0
+      :text {status?.state == "never_checked"
+        ? "SOURCE // NOT YET QUERIED"
+        : "SOURCE // ${status.source} // ATTEMPT ${status.checked_at_label}"})
+
+    (label
+      :class "updates-source-meta"
+      :xalign 0
+      :visible {status?.source == "pacman-local-db"}
+      :text "LOCAL DATABASE // ${status.database_updated_label}")
+
+    (box
+      :class "updates-source-progress"
+      :visible {status?.state == "checking"}
+      (label
+        :class "updates-progress-copy"
+        :xalign 0
+        :text "CHECK IN PROGRESS // waiting for a bounded source response"))
+
+    (box
+      :class "updates-source-warning"
+      :visible {(status?.warning ?: "") != ""}
+      (label
+        :xalign 0
+        :hexpand true
+        :wrap true
+        :show-truncated false
+        :text {status?.warning ?: ""}))
+
+    (box
+      :class "updates-source-error"
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      :visible {(status?.error?.code ?: "") != ""}
+      (label
+        :class "updates-error-code"
+        :xalign 0
+        :text "ERROR // ${status?.error?.code ?: "UNKNOWN"}")
+      (label
+        :class "updates-error-copy"
+        :xalign 0
+        :hexpand true
+        :wrap true
+        :show-truncated false
+        :text {status?.error?.message ?: "The package source is unavailable."}))
+
+    (label
+      :class "updates-empty"
+      :xalign 0
+      :visible {status?.state == "ready" && status?.count == 0}
+      :text empty-text)
+
+    (box
+      :class "updates-package-list"
+      :orientation "v"
+      :space-evenly false
+      :visible {status?.state == "ready" && status?.count > 0}
+      (for package in {status?.packages ?: []}
+        (updates-package-row :package package)))
+
+    (label
+      :class "updates-truncated"
+      :xalign 0
+      :visible {status?.state == "ready" && status?.truncated == true}
+      :text "SHOWING ${status.shown_count} OF ${status.count} // output is bounded")))
+
+(defwidget insights-updates []
+  (box
+    :class "insights-section"
+    :orientation "v"
+    :space-evenly false
+
+    (insights-section-heading
+      :eyebrow "MAINTENANCE"
+      :title "Updates"
+      :detail "Manual, read-only package discovery. Results are cached; no refresh installs or removes software.")
+
+    (box
+      :class "updates-toolbar"
+      :orientation "v"
+      :space-evenly false
+      :spacing 10
+
+      (box
+        :class "updates-overview"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 10
+        (box
+          :orientation "v"
+          :space-evenly false
+          :spacing 3
+          :hexpand true
+          (label
+            :class "updates-overall-state ${updates_status.data.state}"
+            :xalign 0
+            :text {updates_status?.data?.state == "checking"
+              ? "CHECKING // ${updates_status.data.active_check}"
+              : updates_status?.data?.state == "never_checked"
+                ? "NO CACHED CHECKS"
+                : updates_status?.data?.state == "error"
+                  ? "SOURCES UNAVAILABLE"
+                  : updates_status?.data?.state == "partial"
+                    ? "${updates_status.data.known_total_count} KNOWN // PARTIAL"
+                    : "${updates_status.data.known_total_count} KNOWN UPDATES"})
+          (label
+            :class "updates-last-attempt"
+            :xalign 0
+            :text "LAST ATTEMPT // ${updates_status.data.last_attempt_label}"))
+
+        (button
+          :class {updates_status?.data?.active_check == "none"
+            ? "updates-check-button"
+            : "updates-check-button disabled"}
+          :tooltip "Use checkupdates when available; otherwise read the local pacman sync databases."
+          :onclick {updates_status?.data?.active_check == "none"
+            ? "$HOME/.config/eww/scripts/update-status.sh check-official >/dev/null 2>&1 &"
+            : "true"}
+          "CHECK OFFICIAL")
+
+        (button
+          :class {updates_status?.data?.active_check == "none"
+            ? "updates-check-button aur"
+            : "updates-check-button aur disabled"}
+          :tooltip "Query aur.archlinux.org with the names of installed foreign packages. No packages are changed."
+          :onclick {updates_status?.data?.active_check == "none"
+            ? "$HOME/.config/eww/scripts/update-status.sh check-aur >/dev/null 2>&1 &"
+            : "true"}
+          "CHECK AUR"))
+
+      (label
+        :class "updates-cache-note"
+        :xalign 0
+        :hexpand true
+        :wrap true
+        :show-truncated false
+        :text "The interface polls only this local result cache. Package commands run once, only when you choose a check."))
+
+    (box
+      :class "updates-global-error"
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      :visible {(updates_status?.error?.code ?: "") != ""}
+      (label
+        :class "updates-error-code"
+        :xalign 0
+        :text "COLLECTOR // ${updates_status?.error?.code ?: "UNKNOWN"}")
+      (label
+        :class "updates-error-copy"
+        :xalign 0
+        :hexpand true
+        :wrap true
+        :show-truncated false
+        :text {updates_status?.error?.message ?: "The update cache is unavailable."}))
+
+    (updates-source
+      :title "Official Arch packages"
+      :detail "Prefers a fresh checkupdates query. If unavailable, reads only the existing pacman sync databases and labels that result as potentially stale."
+      :empty-text "No official updates are recorded by this source."
+      :status {updates_status.data.official})
+
+    (updates-source
+      :title "AUR packages"
+      :detail "Runs paru -Qua --nodevel only after the dedicated button is pressed. This contacts aur.archlinux.org with installed foreign package names, without probing VCS remotes."
+      :empty-text "No AUR updates were returned by Paru."
+      :status {updates_status.data.aur})
+
+    (insights-status-row
+      :state "POLICY"
+      :title "Installation remains locked"
+      :detail "This stage discovers availability only. A later review flow must show scope and exact operations before any confirmed installation."
+      :meta "ACTION // no install command connected")))

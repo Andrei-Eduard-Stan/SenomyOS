@@ -1,0 +1,307 @@
+(defwidget performance-cpu-page []
+  (scroll
+    :class "performance-page-scroll"
+    :vscroll true
+    :hscroll false
+    :vexpand true
+    :hexpand true
+
+    (box
+      :class "performance-page performance-cpu-page"
+      :orientation "v"
+      :space-evenly false
+      :spacing 14
+
+      (box
+        :class "performance-kpi-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 10
+        (performance-kpi
+          :code "UTIL"
+          :label "TOTAL CPU"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.cpu.percent, 1)}%"
+            : "--%"}
+          :detail {performance_status?.data?.cpu_inventory?.model ?: "CPU inventory unavailable"}
+          :tone "cpu")
+        (performance-kpi
+          :code "FREQ"
+          :label "AVERAGE CLOCK"
+          :value {system_status?.data?.cpu?.frequency?.available == true
+            ? "${system_status.data.cpu.frequency.current_mhz} MHz"
+            : "UNAVAILABLE"}
+          :detail {system_status?.data?.cpu?.frequency?.available == true
+            ? "${system_status.data.cpu.frequency.min_mhz}-${system_status.data.cpu.frequency.max_mhz} MHz"
+            : "No cpufreq policy"}
+          :tone "cpu")
+        (performance-kpi
+          :code "TEMP"
+          :label "CPU PACKAGE"
+          :value {system_status?.data?.thermal?.cpu?.available == true
+            ? "${round(system_status.data.thermal.cpu.celsius, 1)} C"
+            : "UNAVAILABLE"}
+          :detail {system_status?.data?.thermal?.fan?.available == true
+            ? "Fan ${system_status.data.thermal.fan.rpm} RPM"
+            : "Fan sensor unavailable"}
+          :tone "thermal")
+        (performance-kpi
+          :code "LOAD"
+          :label "1 MIN / THREADS"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.load.one, 2)}"
+            : "--"}
+          :detail {system_status?.ok == true
+            ? "${round(system_status.data.load.normalized_one_percent, 1)}% of ${system_status.data.cpu.logical_cpus} logical CPUs"
+            : "Load source unavailable"}
+          :tone "load"))
+
+      (box
+        :class "performance-chart-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+        (performance-history-panel
+          :code "01"
+          :title "CPU UTILIZATION"
+          :metric "cpu"
+          :tone "cpu"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.cpu.percent, 1)}%"
+            : "--%"}
+          :meta "${system_status?.data?.cpu?.logical_cpus ?: 0} LOGICAL THREADS"
+          :scale "0 - 100%")
+        (performance-history-panel
+          :code "02"
+          :title "NORMALIZED LOAD"
+          :metric "load"
+          :tone "load"
+          :value {system_status?.ok == true
+            ? "${round(system_status.data.load.normalized_one_percent, 1)}%"
+            : "--%"}
+          :meta {system_status?.ok == true
+            ? "${system_status.data.load.one} / ${system_status.data.load.five} / ${system_status.data.load.fifteen}"
+            : "-- / -- / --"}
+          :scale "1M LOAD / CAPACITY"))
+
+      (box
+        :class "performance-card performance-core-card"
+        :orientation "v"
+        :space-evenly false
+        (performance-section-title
+          :code "03"
+          :title "LOGICAL THREAD TELEMETRY"
+          :subtitle "${system_status?.data?.cpu?.logical_cpus ?: 0} threads; Linux IDs begin at CPU0")
+        (box
+          :class "performance-core-grid"
+          :space-evenly false
+          :spacing 8
+          (for core in {system_status?.data?.cpu?.cores ?: []}
+            (box
+              :class {core.percent >= 80
+                ? "performance-core hot"
+                : core.percent >= 45
+                  ? "performance-core warm"
+                  : "performance-core"}
+              :orientation "v"
+              :space-evenly false
+              :hexpand true
+              :spacing 7
+              (box
+                :space-evenly false
+                (label
+                  :class "performance-core-id"
+                  :hexpand true
+                  :xalign 0
+                  :tooltip "Linux logical processor CPU${core.id}"
+                  :text "THREAD ${core.id + 1}")
+                (label
+                  :class "performance-core-value"
+                  :xalign 1
+                  :text "${round(core.percent, 1)}%"))
+              (progress
+                :class "performance-meter-track cpu"
+                :value {core.percent})
+              (label
+                :class "performance-core-frequency"
+                :xalign 0
+                :text {(core.frequency_mhz ?: -1) >= 0
+                  ? "CPU${core.id} // ${core.frequency_mhz} MHz"
+                  : "CPU${core.id} // FREQ --"})))))
+
+      (box
+        :class "performance-detail-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "04"
+            :title "TIME DISTRIBUTION"
+            :subtitle "Share of sampled scheduler ticks")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 10
+            (performance-meter
+              :label "User + nice"
+              :value {system_status?.data?.cpu?.breakdown?.user_percent ?: 0}
+              :value_text "${round(system_status?.data?.cpu?.breakdown?.user_percent ?: 0, 1)}%"
+              :tone "cpu")
+            (performance-meter
+              :label "Kernel"
+              :value {system_status?.data?.cpu?.breakdown?.system_percent ?: 0}
+              :value_text "${round(system_status?.data?.cpu?.breakdown?.system_percent ?: 0, 1)}%"
+              :tone "system")
+            (performance-meter
+              :label "I/O wait"
+              :value {system_status?.data?.cpu?.breakdown?.iowait_percent ?: 0}
+              :value_text "${round(system_status?.data?.cpu?.breakdown?.iowait_percent ?: 0, 1)}%"
+              :tone "storage")
+            (performance-meter
+              :label "IRQ + soft IRQ"
+              :value {system_status?.data?.cpu?.breakdown?.irq_percent ?: 0}
+              :value_text "${round(system_status?.data?.cpu?.breakdown?.irq_percent ?: 0, 1)}%"
+              :tone "warning")
+            (performance-meter
+              :label "Virtualization steal"
+              :value {system_status?.data?.cpu?.breakdown?.steal_percent ?: 0}
+              :value_text "${round(system_status?.data?.cpu?.breakdown?.steal_percent ?: 0, 1)}%"
+              :tone "muted")))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "05"
+            :title "SCHEDULER"
+            :subtitle "Rates are measured across the live sample")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Context switches / s"
+              :value "${round(system_status?.data?.cpu?.scheduler?.context_switches_per_second ?: 0, 1)}")
+            (performance-stat-row
+              :label "Interrupts / s"
+              :value "${round(system_status?.data?.cpu?.scheduler?.interrupts_per_second ?: 0, 1)}")
+            (performance-stat-row
+              :label "Forks / s"
+              :value "${round(system_status?.data?.cpu?.scheduler?.forks_per_second ?: 0, 1)}")
+            (performance-stat-row
+              :label "Runnable tasks"
+              :value "${system_status?.data?.cpu?.scheduler?.running ?: 0}")
+            (performance-stat-row
+              :label "Blocked tasks"
+              :value "${system_status?.data?.cpu?.scheduler?.blocked ?: 0}")
+            (performance-stat-row
+              :label "Total tasks / threads"
+              :value "${system_status?.data?.cpu?.scheduler?.tasks_total ?: 0}")
+            (performance-stat-row
+              :label "CPU PSI some / 10s"
+              :value "${round(system_status?.data?.pressure?.cpu?.some_avg10 ?: 0, 2)}%")
+            (performance-stat-row
+              :label "IRQ PSI full / 10s"
+              :value "${round(system_status?.data?.pressure?.irq?.full_avg10 ?: 0, 2)}%")))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "06"
+            :title "TOPOLOGY + POLICY"
+            :subtitle "Kernel and cpufreq inventory")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Physical / logical"
+              :value "${performance_status?.data?.cpu_inventory?.physical_cores ?: "--"} / ${performance_status?.data?.cpu_inventory?.logical_cpus ?: "--"}")
+            (performance-stat-row
+              :label "Threads per core"
+              :value "${performance_status?.data?.cpu_inventory?.threads_per_core ?: "--"}")
+            (performance-stat-row
+              :label "Governor"
+              :value {system_status?.data?.cpu?.frequency?.governor ?: "--"})
+            (performance-stat-row
+              :label "Driver"
+              :value {system_status?.data?.cpu?.frequency?.driver ?: "--"})
+            (performance-stat-row
+              :label "Energy preference"
+              :value {system_status?.data?.cpu?.frequency?.preference ?: "--"})
+            (performance-stat-row
+              :label "L2 / L3 cache"
+              :value "${performance_status?.data?.cpu_inventory?.caches?.l2 ?: "--"} / ${performance_status?.data?.cpu_inventory?.caches?.l3 ?: "--"}")
+            (performance-stat-row
+              :label "Virtualization"
+              :value {performance_status?.data?.cpu_inventory?.virtualization ?: "--"}))))
+
+      (box
+        :class "performance-detail-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+        (box
+          :class "performance-card performance-graphics-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "07"
+            :title "GRAPHICS"
+            :subtitle "Optional DRM telemetry, shown only when exposed")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Device"
+              :value {performance_status?.data?.graphics?.device ?: "--"})
+            (performance-stat-row
+              :label "Driver / DRM card"
+              :value "${performance_status?.data?.graphics?.driver ?: "--"} / ${performance_status?.data?.graphics?.card ?: "--"}")
+            (performance-stat-row
+              :label "Current clock"
+              :value {(system_status?.data?.graphics?.current_mhz ?: -1) >= 0
+                ? "${system_status.data.graphics.current_mhz} MHz"
+                : "UNAVAILABLE"})
+            (performance-stat-row
+              :label "Clock range"
+              :value {(system_status?.data?.graphics?.min_mhz ?: -1) >= 0
+                ? "${system_status.data.graphics.min_mhz}-${system_status.data.graphics.max_mhz} MHz"
+                : "UNAVAILABLE"})
+            (performance-stat-row
+              :label "Engine utilization"
+              :value {(system_status?.data?.graphics?.busy_percent ?: -1) >= 0
+                ? "${system_status.data.graphics.busy_percent}%"
+                : "NOT EXPOSED BY DRIVER"})))
+
+        (box
+          :class "performance-card performance-sensors-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "08"
+            :title "THERMAL CHANNELS"
+            :subtitle "Available hwmon sensors, no fabricated values")
+          (box
+            :class "performance-card-body performance-sensor-list"
+            :orientation "v"
+            :space-evenly false
+            (for sensor in {performance_status?.data?.sensors?.temperatures ?: []}
+              (performance-stat-row
+                :label "${sensor.source} / ${sensor.label}"
+                :value "${round(sensor.celsius, 1)} C"))))))))

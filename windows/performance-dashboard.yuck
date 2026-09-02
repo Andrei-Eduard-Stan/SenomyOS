@@ -1,0 +1,129 @@
+(defwidget performance-tab [section code title]
+  (button
+    :class {performance_section == section
+      ? "performance-tab active"
+      : "performance-tab"}
+    :tooltip "Open ${title} telemetry"
+    :timeout "2s"
+    :onclick "$HOME/.config/eww/scripts/ui-action.sh performance-section ${section}"
+    (box
+      :space-evenly false
+      :spacing 9
+      (label :class "performance-tab-code" :text code)
+      (label :class "performance-tab-label" :text title))))
+
+(defwindow performance
+  :namespace "senomy-performance"
+  :geometry (geometry
+    :x "0px"
+    :y "12px"
+    :width "94%"
+    :height "80%"
+    :anchor "bottom center")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "performance-dashboard shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-nav-px-${appearance_status?.data?.nav_px ?: 10} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 12
+    :vexpand true
+    :hexpand true
+
+    (surface-hero-header
+      :surface_class "performance-header"
+      :domain "performance"
+      :eyebrow "SYSTEM DECK // DEEP PERFORMANCE"
+      :title "PERFORMANCE DASHBOARD"
+      :subtitle "Synchronized kernel telemetry, retained history and truthful hardware inventory"
+      :close_tooltip "Close Performance Dashboard"
+      :close_action "$HOME/.config/eww/scripts/surface-state.sh close performance ${active_surface} ${active_flyout}"
+      (label
+        :class {system_status?.ok == true
+          ? "shell-hero-chip ready"
+          : "shell-hero-chip warning"}
+        :text {system_status?.ok == true
+          ? "LIVE // ${system_status.data.cpu.sample_seconds}S SAMPLE"
+          : "SOURCE ERROR"})
+      (label
+        :class "shell-hero-chip secondary"
+        :text "HOST // ${performance_status?.data?.health?.hostname ?: "--"}")
+      (label
+        :class "shell-hero-chip secondary"
+        :text "UP // ${system_status?.data?.uptime?.human ?: "--"}"))
+
+    (scroll
+      :class "performance-tabs-scroll"
+      :hscroll true
+      :vscroll false
+      (box
+        :class "performance-tabs"
+        :space-evenly false
+        (performance-tab :section "overview" :code "00" :title "OVERVIEW")
+        (performance-tab :section "cpu" :code "01" :title "CPU + GPU")
+        (performance-tab :section "memory" :code "02" :title "MEMORY")
+        (performance-tab :section "storage" :code "03" :title "STORAGE")
+        (performance-tab :section "network" :code "04" :title "NETWORK")
+        (performance-tab :section "processes" :code "05" :title "PROCESSES")
+        (performance-tab :section "benchmarks" :code "06" :title "BENCHMARKS")))
+
+    (box
+      :class "performance-pages"
+      :orientation "v"
+      :space-evenly false
+      :vexpand true
+      :hexpand true
+      (box
+        :visible {performance_section == "overview"}
+        :vexpand true
+        :hexpand true
+        (performance-overview-page))
+      (box
+        :visible {performance_section == "cpu"}
+        :vexpand true
+        :hexpand true
+        (performance-cpu-page))
+      (box
+        :visible {performance_section == "memory"}
+        :vexpand true
+        :hexpand true
+        (performance-memory-page))
+      (box
+        :visible {performance_section == "storage"}
+        :vexpand true
+        :hexpand true
+        (performance-storage-page))
+      (box
+        :visible {performance_section == "network"}
+        :vexpand true
+        :hexpand true
+        (performance-network-page))
+      (box
+        :visible {performance_section == "processes"}
+        :vexpand true
+        :hexpand true
+        (performance-processes-page))
+      (box
+        :visible {performance_section == "benchmarks"}
+        :vexpand true
+        :hexpand true
+        (performance-benchmark-page)))
+
+    (box
+      :class "performance-footer"
+      :space-evenly false
+      (label
+        :class "performance-footer-source"
+        :xalign 0
+        :hexpand true
+        :text {system_status?.ok == true
+          ? "SOURCE  ${system_status.source}  //  rates derived from synchronized deltas"
+          : "SOURCE  unavailable"})
+      (label
+        :class "performance-footer-retention"
+        :text "HISTORY  ${performance_history?.window_seconds ?: 300}S RUNTIME-ONLY")
+      (label
+        :class "performance-footer-state"
+        :text {performance_section == "processes" || performance_section == "benchmarks" ? "MODE  GUARDED CONTROL" : "MODE  READ-ONLY"}))))

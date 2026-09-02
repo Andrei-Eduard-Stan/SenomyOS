@@ -1,0 +1,48 @@
+(defwidget senomy-status []
+  (box
+    :class "senomy-identity-group"
+    :hexpand true
+    :space-evenly false
+
+    (button
+      :class {companion_mode != "closed"
+        ? "senomy-companion-trigger active"
+        : "senomy-companion-trigger"}
+      :tooltip {companion_mode == "closed"
+        ? "Open Senomy companion"
+        : "Close Senomy companion"}
+      :timeout "8s"
+      :onclick "$HOME/.config/eww/scripts/companion-state.sh toggle"
+      (senomy-avatar
+        :variant "chibi"
+        :size 36
+        :context "bar"
+        :domain "companion"))
+
+    (button
+      :hexpand true
+      :visible {bar_layout?.data?.compact != true}
+      :class {active_surface == "insights"
+        ? "senomy-trigger bar-control active"
+        : "senomy-trigger bar-control"}
+      :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-insights ${active_surface} ${active_flyout} ${insights_section}"
+
+      (box
+        :class "senomy-copy"
+        :hexpand true
+        :space-evenly false
+        :spacing 4
+        (label
+          :class "senomy-speaker"
+          :xalign 0
+          :text "Seno:")
+        (label
+          :class {batt_json.available == true && batt_json.percent_total <= 10
+            ? "senomy-dialogue critical"
+            : (batt_json.available == true && batt_json.percent_total <= 20
+              ? "senomy-dialogue warning"
+              : "senomy-dialogue")}
+          :xalign 0
+          :limit-width {bar_layout?.data?.narrow == true ? 22 : (bar_layout?.data?.compact == true ? 28 : 34)}
+          :show-truncated false
+          :text {senomy_rail_message})))))

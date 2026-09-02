@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+action="${2:-}"
+
+usage() {
+  printf 'usage: senomy-session-action {check|dry-run|run} {lock|suspend|logout|reboot|poweroff} [--confirm ACTION]\n' >&2
+  exit 64
+}
+
+command_for() {
+  case "$1" in
+    lock)
+      [[ -n "${XDG_SESSION_ID:-}" ]] || return 1
+      ACTION_COMMAND=(/usr/bin/loginctl lock-session "$XDG_SESSION_ID")
+      ;;
+    suspend) ACTION_COMMAND=(/usr/bin/systemctl suspend) ;;
+    logout) ACTION_COMMAND=(/usr/bin/hyprctl dispatch exit) ;;
+    reboot) ACTION_COMMAND=(/usr/bin/systemctl reboot) ;;
+    poweroff) ACTION_COMMAND=(/usr/bin/systemctl poweroff) ;;
+    *) return 1 ;;
+  esac
+  [[ -x "${ACTION_COMMAND[0]}" ]]
+}
+
+[[ $# -ge 2 ]] || usage
+command_for "$action" || {
+  printf 'senomy-session-action: %s is unavailable in this session\n' "$action" >&2
+  exit 69
+}
+
+case "$1" in
+  check)
+    printf '{"action":"%s","available":true}\n' "$action"
+    ;;
+  dry-run)
+    printf '{"action":"%s","available":true,"command":[' "$action"
+    separator=
+    for argument in "${ACTION_COMMAND[@]}"; do
+      printf '%s"%s"' "$separator" "${argument//\"/\\\"}"
+      separator=,
+    done
+    printf ']}\n'
+    ;;
+  run)
+    [[ "${3:-}" == --confirm && "${4:-}" == "$action" ]] || {
+      printf 'senomy-session-action: confirmation token must exactly match %s\n' "$action" >&2
+      exit 77
+    }
+    exec "${ACTION_COMMAND[@]}"
+    ;;
+  *) usage ;;
+esac

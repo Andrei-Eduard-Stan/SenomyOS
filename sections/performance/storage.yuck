@@ -1,0 +1,230 @@
+(defwidget performance-storage-page []
+  (scroll
+    :class "performance-page-scroll"
+    :vscroll true
+    :hscroll false
+    :vexpand true
+    :hexpand true
+
+    (box
+      :class "performance-page performance-storage-page"
+      :orientation "v"
+      :space-evenly false
+      :spacing 14
+
+      (box
+        :class "performance-kpi-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 10
+        (performance-kpi
+          :code "READ"
+          :label "ROOT THROUGHPUT"
+          :value {system_status?.data?.disk?.available == true
+            ? "${round(system_status.data.disk.read_bytes_per_second / 1048576, 2)} MiB/s"
+            : "UNAVAILABLE"}
+          :detail "${round(system_status?.data?.disk?.read_iops ?: 0, 1)} read IOPS"
+          :tone "storage-read")
+        (performance-kpi
+          :code "WRITE"
+          :label "ROOT THROUGHPUT"
+          :value {system_status?.data?.disk?.available == true
+            ? "${round(system_status.data.disk.write_bytes_per_second / 1048576, 2)} MiB/s"
+            : "UNAVAILABLE"}
+          :detail "${round(system_status?.data?.disk?.write_iops ?: 0, 1)} write IOPS"
+          :tone "storage-write")
+        (performance-kpi
+          :code "BUSY"
+          :label "DEVICE ACTIVE"
+          :value {system_status?.data?.disk?.available == true
+            ? "${round(system_status.data.disk.busy_percent, 1)}%"
+            : "UNAVAILABLE"}
+          :detail "${system_status?.data?.disk?.in_flight ?: 0} operations in flight"
+          :tone "storage")
+        (performance-kpi
+          :code "ROOT"
+          :label "FILESYSTEM USE"
+          :value "${performance_status?.data?.storage?.percent ?: 0}%"
+          :detail {(performance_status?.data?.storage?.filesystem ?: "") != ""
+            ? "${performance_status.data.storage.filesystem} / ${performance_status.data.storage.source}"
+            : "Filesystem inventory unavailable"}
+          :tone "storage"))
+
+      (box
+        :class "performance-chart-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+        (performance-history-panel
+          :code "01"
+          :title "READ THROUGHPUT"
+          :metric "disk-read"
+          :tone "storage-read"
+          :value {system_status?.data?.disk?.available == true
+            ? "${round(system_status.data.disk.read_bytes_per_second / 1048576, 2)} MiB/s"
+            : "--"}
+          :meta "${round(system_status?.data?.disk?.read_iops ?: 0, 1)} IOPS"
+          :scale "SCALE ${round((performance_history?.data?.scales?.disk_bytes_per_second ?: 1048576) / 1048576, 1)} MiB/s")
+        (performance-history-panel
+          :code "02"
+          :title "WRITE THROUGHPUT"
+          :metric "disk-write"
+          :tone "storage-write"
+          :value {system_status?.data?.disk?.available == true
+            ? "${round(system_status.data.disk.write_bytes_per_second / 1048576, 2)} MiB/s"
+            : "--"}
+          :meta "${round(system_status?.data?.disk?.write_iops ?: 0, 1)} IOPS"
+          :scale "SCALE ${round((performance_history?.data?.scales?.disk_bytes_per_second ?: 1048576) / 1048576, 1)} MiB/s"))
+
+      (box
+        :class "performance-detail-grid"
+        :orientation {bar_layout?.data?.narrow ? "v" : "h"}
+        :space-evenly false
+        :spacing 12
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "03"
+            :title "ROOT FILESYSTEM"
+            :subtitle "Capacity and mount identity")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 10
+            (performance-meter
+              :label "Used capacity"
+              :value {performance_status?.data?.storage?.percent ?: 0}
+              :value_text "${performance_status?.data?.storage?.percent ?: 0}%"
+              :tone "storage")
+            (performance-stat-row
+              :label "Used"
+              :value {performance_status?.ok == true
+                ? "${round(performance_status.data.storage.used_bytes / 1073741824, 2)} GiB"
+                : "--"})
+            (performance-stat-row
+              :label "Available"
+              :value {performance_status?.ok == true
+                ? "${round(performance_status.data.storage.available_bytes / 1073741824, 2)} GiB"
+                : "--"})
+            (performance-stat-row
+              :label "Filesystem / mount"
+              :value "${performance_status?.data?.storage?.filesystem ?: "--"} / ${performance_status?.data?.storage?.mount ?: "--"}")
+            (performance-stat-row
+              :label "Source"
+              :value {performance_status?.data?.storage?.source ?: "--"})
+            (performance-stat-row
+              :label "Mount options"
+              :value {performance_status?.data?.storage?.options ?: "--"})))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "04"
+            :title "BLOCK DEVICE"
+            :subtitle "Physical backing device and sector geometry")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            (performance-stat-row
+              :label "Root partition"
+              :value {performance_status?.data?.storage?.root_device?.name ?: "--"})
+            (performance-stat-row
+              :label "Parent device"
+              :value {performance_status?.data?.storage?.root_parent?.name ?: "--"})
+            (performance-stat-row
+              :label "Model"
+              :value {performance_status?.data?.storage?.root_parent?.model ?: "--"})
+            (performance-stat-row
+              :label "Transport"
+              :value {performance_status?.data?.storage?.root_parent?.transport ?: "--"})
+            (performance-stat-row
+              :label "Media"
+              :value {performance_status?.data?.storage?.root_parent?.rotational == true
+                ? "ROTATIONAL"
+                : "SOLID STATE"})
+            (performance-stat-row
+              :label "Logical / physical sector"
+              :value "${performance_status?.data?.storage?.root_device?.logical_sector_bytes ?: "--"} / ${performance_status?.data?.storage?.root_device?.physical_sector_bytes ?: "--"} B")
+            (performance-stat-row
+              :label "Reads since boot"
+              :value "${round((system_status?.data?.disk?.total_read_bytes ?: 0) / 1073741824, 2)} GiB")
+            (performance-stat-row
+              :label "Writes since boot"
+              :value "${round((system_status?.data?.disk?.total_written_bytes ?: 0) / 1073741824, 2)} GiB")))
+
+        (box
+          :class "performance-card"
+          :orientation "v"
+          :space-evenly false
+          :hexpand true
+          (performance-section-title
+            :code "05"
+            :title "I/O PRESSURE"
+            :subtitle "Kernel PSI stall accounting")
+          (box
+            :class "performance-card-body"
+            :orientation "v"
+            :space-evenly false
+            :spacing 10
+            (performance-meter
+              :label "Some tasks stalled / 10s"
+              :value {system_status?.data?.pressure?.io?.some_avg10 ?: 0}
+              :value_text "${round(system_status?.data?.pressure?.io?.some_avg10 ?: 0, 2)}%"
+              :tone "pressure")
+            (performance-meter
+              :label "All tasks stalled / 10s"
+              :value {system_status?.data?.pressure?.io?.full_avg10 ?: 0}
+              :value_text "${round(system_status?.data?.pressure?.io?.full_avg10 ?: 0, 2)}%"
+              :tone "warning")
+            (performance-notice
+              :state "READ ONLY"
+              :title "HEALTH BOUNDARY"
+              :detail "SMART health unavailable; no privileged source configured."))))
+
+      (box
+        :class "performance-card performance-device-list-card"
+        :orientation "v"
+        :space-evenly false
+        (performance-section-title
+          :code "06"
+          :title "DISCOVERED BLOCK DEVICES"
+          :subtitle "Physical devices exposed by lsblk")
+        (box
+          :class "performance-device-list"
+          :space-evenly false
+          :spacing 8
+          (for device in {performance_status?.data?.storage?.devices ?: []}
+            (box
+              :class "performance-device"
+              :orientation "v"
+              :space-evenly false
+              :hexpand true
+              (box
+                :space-evenly false
+                (label
+                  :class "performance-device-name"
+                  :xalign 0
+                  :hexpand true
+                  :text {device.name})
+                (label
+                  :class "performance-device-kind"
+                  :text {device.removable ? "REMOVABLE" : "INTERNAL"}))
+              (label
+                :class "performance-device-model"
+                :xalign 0
+                :limit-width 40
+                :show-truncated true
+                :text {device.model ?: "Unknown model"})
+              (label
+                :class "performance-device-meta"
+                :xalign 0
+                :text "${round(device.size_bytes / 1073741824, 1)} GiB / ${device.transport ?: "unknown"} / ${device.partition_count} partitions"))))))))

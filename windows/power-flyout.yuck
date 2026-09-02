@@ -1,0 +1,103 @@
+(defwidget session-power-button [id icon title detail danger]
+  (button
+    :class {pending_action == "session-${id}"
+      ? (danger ? "session-power-action danger confirm" : "session-power-action confirm")
+      : (danger ? "session-power-action danger" : "session-power-action")}
+    :tooltip {pending_action == "session-${id}" ? "Press again to confirm ${title}" : detail}
+    :timeout "8s"
+    :onclick {pending_action == "session-${id}"
+      ? "$HOME/.config/eww/scripts/session-action.sh ${id} >/dev/null 2>&1 &"
+      : "${EWW_CMD} update pending_action=session-${id}"}
+    (box
+      :orientation "v"
+      :space-evenly false
+      :spacing 6
+      (label :class "session-power-icon" :text icon)
+      (label :class "session-power-title" :text {pending_action == "session-${id}" ? "CONFIRM ${title}" : title})
+      (label :class "session-power-detail" :wrap true :text {pending_action == "session-${id}" ? "PRESS AGAIN TO EXECUTE" : detail}))))
+
+(defwidget power-flyout-content []
+  (box
+    :class "utility-flyout-content power-flyout-content"
+    :orientation "v"
+    :space-evenly false
+    :vexpand true
+    :spacing 12
+
+    (box
+      :class "utility-flyout-header"
+      :space-evenly false
+      :spacing 10
+      (box
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        :spacing 3
+        (label :class "utility-flyout-eyebrow" :xalign 0 :text "SESSION // GUARDED")
+        (label :class "utility-flyout-title" :xalign 0 :text "Power and access"))
+      (label
+        :class {batt_json?.available == true && batt_json?.percent_total <= 15 ? "utility-flyout-state warning" : "utility-flyout-state ready"}
+        :text {batt_json?.available == true ? "BAT ${batt_json?.percent_total ?: 0}%" : "AC / UNKNOWN"})
+      (button
+        :class "flyout-close"
+        :tooltip "Close power controls"
+        :timeout "4s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh dismiss ${active_surface} ${active_flyout}"
+        ""))
+
+    (box
+      :class "session-power-grid"
+      :orientation "v"
+      :space-evenly false
+      :spacing 8
+      (box :space-evenly true :spacing 8
+        (session-power-button :id "lock" :icon "" :title "LOCK" :detail "Secure this session" :danger false)
+        (session-power-button :id "suspend" :icon "" :title "SUSPEND" :detail "Sleep until resumed" :danger false))
+      (box :space-evenly true :spacing 8
+        (session-power-button :id "logout" :icon "󰗽" :title "LOG OUT" :detail "End the Hyprland session" :danger true)
+        (session-power-button :id "reboot" :icon "" :title "REBOOT" :detail "Restart the computer" :danger true))
+      (box :space-evenly true :spacing 8
+        (session-power-button :id "poweroff" :icon "" :title "POWER OFF" :detail "Shut down the computer" :danger true)))
+
+    (box
+      :class {pending_action == "none" ? "session-power-confirmation idle" : "session-power-confirmation"}
+      :space-evenly false
+      :spacing 8
+      (label
+        :class "session-power-confirmation-copy"
+        :xalign 0
+        :hexpand true
+        :wrap true
+        :text {pending_action == "none"
+          ? "Select an action to review. Press it again only to confirm."
+          : "Confirmation armed. Select the same action again to continue."})
+      (button
+        :class "utility-flyout-cancel"
+        :visible {pending_action != "none"}
+        :onclick "${EWW_CMD} update pending_action=none"
+        "CANCEL"))
+
+    (box
+      :class "utility-flyout-footer"
+      :space-evenly false
+      (label :class "utility-flyout-meta" :xalign 0 :hexpand true :text "LOCAL SESSION CONTROLS")
+      (label :class "utility-flyout-meta" :text "TWO-STEP ACTIONS"))))
+
+(defwindow power-flyout
+  :namespace "senomy-flyout"
+  :geometry (geometry
+    :x "10px"
+    :y "10px"
+    :width "440px"
+    :height "560px"
+    :anchor "bottom right")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "power-flyout utility-flyout shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+    :orientation "v"
+    :space-evenly false
+    :vexpand true
+    (power-flyout-content)))

@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: senomy-command-lens [--mode apps|files|windows|actions]
+
+Open the SenomyOS Command Lens. Applications is the default scope.
+EOF
+}
+
+mode="apps"
+case "$#" in
+  0) ;;
+  1)
+    case "$1" in
+      -h | --help) usage; exit 0 ;;
+      *) printf 'Unknown argument: %s\n' "$1" >&2; usage >&2; exit 2 ;;
+    esac
+    ;;
+  2)
+    [[ "$1" == --mode ]] || { printf 'Unknown argument: %s\n' "$1" >&2; usage >&2; exit 2; }
+    mode="$2"
+    ;;
+  *) usage >&2; exit 2 ;;
+esac
+
+case "$mode" in
+  apps) rofi_mode="drun" ;;
+  files) rofi_mode="files" ;;
+  windows) rofi_mode="window" ;;
+  actions) rofi_mode="actions" ;;
+  *) printf 'Unknown Command Lens mode: %s\n' "$mode" >&2; exit 2 ;;
+esac
+
+xdg_config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+user_bin_home="${SENOMY_USER_BIN_HOME:-$HOME/.local/bin}"
+config_file="${SENOMY_ROFI_CONFIG:-$xdg_config_home/rofi/config.rasi}"
+files_mode="${SENOMY_ROFI_FILES_MODE:-$user_bin_home/senomy-rofi-files}"
+actions_mode="${SENOMY_ROFI_ACTIONS_MODE:-$user_bin_home/senomy-rofi-actions}"
+rofi_bin="${SENOMY_ROFI_BIN:-rofi}"
+
+[[ -r "$config_file" ]] || { printf 'Command Lens config is unavailable: %s\n' "$config_file" >&2; exit 1; }
+[[ -x "$files_mode" ]] || { printf 'Command Lens Files mode is unavailable: %s\n' "$files_mode" >&2; exit 1; }
+[[ -x "$actions_mode" ]] || { printf 'Command Lens Actions mode is unavailable: %s\n' "$actions_mode" >&2; exit 1; }
+command -v "$rofi_bin" >/dev/null 2>&1 || { printf 'Rofi is unavailable: %s\n' "$rofi_bin" >&2; exit 1; }
+
+theme_dir="$(dirname -- "$config_file")/themes"
+[[ -d "$theme_dir" ]] || { printf 'Command Lens theme directory is unavailable: %s\n' "$theme_dir" >&2; exit 1; }
+
+logical_width="${SENOMY_ROFI_MONITOR_WIDTH:-}"
+if [[ ! "$logical_width" =~ ^[1-9][0-9]*$ ]] && command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && command -v timeout >/dev/null 2>&1; then
+  logical_width="$(
+    timeout 1s hyprctl monitors -j 2>/dev/null |
+      jq -r 'first(.[] | select(.focused == true) | (.width / .scale | floor)) // empty' 2>/dev/null || true
+  )"
+fi
+[[ "$logical_width" =~ ^[1-9][0-9]*$ ]] || logical_width=1920
+
+panel_width=800
+y_offset=48
+result_lines=7
+narrow_layout=false
+if ((logical_width < 900)); then
+  panel_width=$((logical_width - 32))
+  ((panel_width >= 320)) || panel_width=320
+  y_offset=24
+  result_lines=7
+  narrow_layout=true
+fi
+
+theme_override="window { width: ${panel_width}px; y-offset: ${y_offset}px; } listview { lines: ${result_lines}; }"
+if [[ "$narrow_layout" == true ]]; then
+  theme_override+=' inputbar { margin: 0px 10px; padding: 10px 12px; spacing: 8px; } textbox-query-label { enabled: false; } num-filtered-rows { enabled: false; } textbox-num-sep { enabled: false; } num-rows { enabled: false; } mode-switcher { margin: 8px 10px 0px 10px; } button { padding: 8px 5px 7px 5px; } listview { padding: 8px 10px 7px 10px; } element { padding: 9px 8px; spacing: 9px; } textbox-footer { content: "TAB  SCOPES    ENTER  OPEN    ESC  CLOSE"; margin: 0px 10px; padding: 8px; }'
+fi
+if [[ "${SENOMY_ROFI_DENSITY:-standard}" == touch ]]; then
+  theme_override+=" window { font: \"JetBrainsMono Nerd Font 11\"; } button { padding: 12px 7px 11px 7px; } element { padding: 12px 10px; } element-icon { size: 30px; }"
+fi
+
+# Rofi resolves image widget filenames from its current working directory.
+# Enter the deployed theme directory so portable relative frame URLs resolve
+# without embedding the current user's home path in the theme.
+cd -- "$theme_dir"
+
+exec "$rofi_bin" \
+  -config "$config_file" \
+  -modes "drun,files:$files_mode,window,actions:$actions_mode" \
+  -show "$rofi_mode" \
+  -m -4 \
+  -theme-str "$theme_override"

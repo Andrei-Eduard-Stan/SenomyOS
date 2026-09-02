@@ -1,0 +1,265 @@
+/* SenomyOS Command Lens: Standard Luminous Reliquary launcher surface. */
+@import "senomy-tokens.rasi"
+
+* {
+    background-color: transparent;
+    text-color: var(text-primary);
+    spacing: 0px;
+}
+
+window {
+    location: north;
+    anchor: north;
+    y-offset: 48px;
+    width: 800px;
+    padding: 0px;
+    border: 0px;
+    border-radius: 32px;
+    background-color: var(background-base);
+}
+
+mainbox {
+    children: [
+        wrapper-frame-top,
+        inputbar,
+        mode-switcher,
+        listview,
+        message,
+        textbox-footer,
+        wrapper-frame-bottom
+    ];
+    padding: 0px;
+    border: 0px 1px 0px 1px;
+    border-color: var(frame-silver);
+    background-color: transparent;
+}
+
+wrapper-frame-top,
+wrapper-frame-bottom {
+    orientation: horizontal;
+    expand: false;
+    background-color: transparent;
+}
+
+wrapper-frame-top {
+    children: [
+        icon-frame-tl,
+        textbox-frame-top-left,
+        icon-frame-crest,
+        textbox-frame-top-right,
+        icon-frame-tr
+    ];
+}
+
+wrapper-frame-bottom {
+    children: [
+        icon-frame-bl,
+        textbox-frame-bottom-left,
+        icon-frame-diagnostic,
+        textbox-frame-bottom-right,
+        icon-frame-br
+    ];
+}
+
+icon-frame-tl,
+icon-frame-tr,
+icon-frame-bl,
+icon-frame-br {
+    expand: false;
+    size: 32px;
+    background-color: transparent;
+}
+
+icon-frame-tl {
+    filename: "../assets/frame-standard-corner-tl.svg";
+}
+
+icon-frame-tr {
+    filename: "../assets/frame-standard-corner-tr.svg";
+}
+
+icon-frame-bl {
+    filename: "../assets/frame-standard-corner-bl.svg";
+}
+
+icon-frame-br {
+    filename: "../assets/frame-standard-corner-br.svg";
+}
+
+icon-frame-crest,
+icon-frame-diagnostic {
+    expand: false;
+    squared: false;
+    background-color: transparent;
+}
+
+icon-frame-crest {
+    filename: "../assets/frame-crest-medium.svg";
+    size: 96px;
+    height: 28px;
+}
+
+icon-frame-diagnostic {
+    filename: "../assets/frame-motif-diagnostic-tick.svg";
+    size: 28px;
+    height: 8px;
+}
+
+textbox-frame-top-left,
+textbox-frame-top-right,
+textbox-frame-bottom-left,
+textbox-frame-bottom-right {
+    content: "";
+    expand: true;
+    height: 32px;
+    padding: 0px;
+    background-color: transparent;
+}
+
+textbox-frame-top-left,
+textbox-frame-top-right {
+    border: 1px 0px 0px 0px;
+    border-color: var(frame-silver);
+}
+
+textbox-frame-bottom-left,
+textbox-frame-bottom-right {
+    border: 0px 0px 1px 0px;
+    border-color: var(frame-silver);
+}
+
+inputbar {
+    children: [textbox-query-label, entry, num-filtered-rows, textbox-num-sep, num-rows];
+    margin: 0px 14px;
+    padding: 12px 16px 11px 16px;
+    spacing: 12px;
+    border: 1px;
+    border-color: var(border-soft);
+    border-radius: 14px;
+    background-color: var(frame-glass);
+}
+
+textbox-query-label {
+    expand: false;
+    padding: 0px;
+    background-color: transparent;
+    text-color: var(frame-ivory);
+    content: "RUN //";
+}
+
+entry {
+    placeholder: "Search applications, files, windows, or actions";
+    placeholder-color: var(text-muted);
+    background-color: transparent;
+    text-color: var(text-primary);
+    cursor-color: var(frame-violet-light);
+}
+
+num-filtered-rows,
+num-rows,
+textbox-num-sep {
+    expand: false;
+    padding: 0px;
+    background-color: transparent;
+    text-color: var(text-muted);
+}
+
+textbox-num-sep {
+    content: "/";
+}
+
+mode-switcher {
+    margin: 8px 16px 0px 16px;
+    padding: 0px 2px 7px 2px;
+    spacing: 4px;
+    border: 0px 0px 1px 0px;
+    border-color: var(border-muted);
+    background-color: transparent;
+}
+
+button {
+    padding: 8px 12px 7px 12px;
+    border: 1px;
+    border-color: transparent;
+    border-radius: 10px;
+    background-color: transparent;
+    text-color: var(text-muted);
+    cursor: pointer;
+}
+
+button selected {
+    border-color: var(frame-violet);
+    background-color: var(frame-glass-focus);
+    text-color: var(frame-ivory);
+}
+
+listview {
+    lines: 7;
+    columns: 1;
+    fixed-height: false;
+    dynamic: true;
+    scrollbar: false;
+    padding: 10px 16px 8px 16px;
+    spacing: 4px;
+    background-color: transparent;
+}
+
+element {
+    children: [element-icon, element-text];
+    orientation: horizontal;
+    padding: 9px 12px;
+    spacing: 12px;
+    border: 1px 1px 1px 3px;
+    border-color: transparent;
+    border-radius: 11px;
+    background-color: transparent;
+    text-color: var(text-primary);
+    cursor: pointer;
+}
+
+element selected.normal,
+element selected.active,
+element selected.urgent {
+    border-color: var(frame-violet);
+    background-color: var(surface-selected);
+    text-color: var(frame-ivory);
+}
+
+element-icon {
+    size: 25px;
+    background-color: transparent;
+}
+
+element-text {
+    vertical-align: 0.5;
+    background-color: transparent;
+    text-color: inherit;
+    highlight: bold rgba(201, 184, 255, 100%);
+}
+
+message {
+    margin: 0px 16px;
+    padding: 0px 0px 8px 0px;
+    background-color: transparent;
+}
+
+textbox {
+    padding: 9px 12px;
+    border: 1px;
+    border-color: var(border-muted);
+    border-radius: 10px;
+    background-color: var(surface-raised);
+    text-color: var(text-muted);
+}
+
+textbox-footer {
+    expand: false;
+    content: "CTRL+TAB  SCOPES    ENTER  OPEN    ESC  CLOSE";
+    margin: 0px 16px;
+    padding: 9px 12px;
+    border: 1px 0px 0px 0px;
+    border-color: var(border-muted);
+    border-radius: 0px;
+    background-color: transparent;
+    text-color: var(text-muted);
+}

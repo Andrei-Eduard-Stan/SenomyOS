@@ -1,0 +1,51 @@
+(defwidget system-summary []
+  (button
+    :hexpand true
+    :class {active_surface == "performance"
+      ? "system-summary active"
+      : (rail_system_status?.ok != true
+        ? "system-summary unavailable"
+        : (rail_system_status.data.cpu.percent >= 90 || rail_system_status.data.memory.percent >= 90
+          ? "system-summary critical"
+          : (rail_system_status.data.cpu.percent >= 70 || rail_system_status.data.memory.percent >= 80
+            ? "system-summary warning"
+            : "system-summary")))}
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-performance ${active_surface} ${active_flyout}"
+
+    (box
+      :class "system-summary-content"
+      :orientation "h"
+      :halign "center"
+      :valign "center"
+      :spacing 6
+      :space-evenly false
+
+      (label
+        :class "system-summary-metric"
+        :text {rail_system_status?.ok == true
+          ? "CPU ${round(rail_system_status.data.cpu.percent, 0)}%"
+          : "CPU --"})
+
+      (box
+        :class "system-summary-divider"
+        :valign "center"
+        :visible {bar_layout?.data?.phone != true})
+
+      (label
+        :class "system-summary-metric"
+        :visible {bar_layout?.data?.phone != true}
+        :text {rail_system_status?.ok == true
+          ? "MEM ${round(rail_system_status.data.memory.percent, 0)}%"
+          : "MEM --"})
+
+      (box
+        :class "system-summary-divider"
+        :valign "center"
+        :visible {bar_layout?.data?.narrow != true})
+
+      (label
+        :class "system-summary-metric"
+        :visible {bar_layout?.data?.narrow != true}
+        :text {rail_system_status?.ok == true
+          ? "UP ${rail_system_status.data.uptime.human}"
+          : "UP --"}))))

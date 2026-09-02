@@ -1,4 +1,18 @@
 (defwidget clock-button []
   (button
-  :class "icon-button"
-  (label :text {time})))
+    :class {active_flyout == "calendar"
+      ? "icon-button bar-control clock-control active"
+      : "icon-button bar-control clock-control"}
+    :tooltip "Calendar"
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-calendar ${active_surface} ${active_flyout}"
+
+    (box
+      :class "clock-stack"
+      :orientation "v"
+      :halign "center"
+      :valign "center"
+      :space-evenly false
+      :spacing 0
+      (label :class "clock-time" :text {time})
+      (label :class "clock-date" :visible {bar_layout?.data?.compact != true} :text {date}))))

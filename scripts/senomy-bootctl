@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+# Read-only boot-theme readiness gate. Theme files can be staged safely, but
+# activation is refused until a real disposable-machine boot receipt exists.
+
+set -euo pipefail
+export LC_ALL=C
+
+readonly ACTION="${1:-status}"
+readonly REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly ACCEPTANCE=/var/lib/senomyos/acceptance/boot.json
+readonly SEQUENCE="$REPO_ROOT/appearance/boot/sequence.json"
+readonly PLYMOUTH_THEME=/usr/share/plymouth/themes/senomyos/senomyos.plymouth
+readonly GRUB_THEME=/usr/share/grub/themes/senomyos/theme.txt
+
+bootloader=unknown
+[[ -f /boot/grub/grub.cfg ]] && bootloader=grub
+[[ -d /boot/loader/entries || -f /boot/loader/loader.conf ]] && bootloader=systemd-boot
+initramfs=unknown
+[[ -f /etc/mkinitcpio.conf ]] && initramfs=mkinitcpio
+[[ -d /etc/dracut.conf.d || -f /etc/dracut.conf ]] && initramfs=dracut
+
+accepted=false
+if [[ -f "$ACCEPTANCE" && ! -L "$ACCEPTANCE" ]] && jq -e '
+  .schema_version == 1 and .environment == "disposable-machine" and
+  .cold_boot == "passed" and .recovery_boot == "passed" and
+  (.observed_at | type == "string" and length > 0)
+' "$ACCEPTANCE" >/dev/null 2>&1; then
+  accepted=true
+fi
+
+plymouth_runtime=false
+grub_runtime=false
+command -v plymouth-set-default-theme >/dev/null 2>&1 && plymouth_runtime=true
+command -v grub-mkconfig >/dev/null 2>&1 && grub_runtime=true
+
+sequence_valid=false
+if jq -e '
+  .schema_version == 1 and
+  .stages.firmware.managed_by_senomyos == false and
+  .stages.bootloader.renderer == "grub" and
+  .stages.bootloader.supports_video == false and
+  .stages.early_userspace.renderer == "plymouth" and
+  .stages.early_userspace.supports_video == false and
+  .activation.enabled == false
+' "$SEQUENCE" >/dev/null 2>&1; then
+  sequence_valid=true
+fi
+
+status_json() {
+  jq -nc --arg bootloader "$bootloader" --arg initramfs "$initramfs" \
+    --argjson accepted "$accepted" \
+    --argjson plymouth_runtime "$plymouth_runtime" \
+    --argjson grub_runtime "$grub_runtime" \
+    --argjson sequence_valid "$sequence_valid" \
+    --argjson plymouth_staged "$( [[ -f "$PLYMOUTH_THEME" ]] && printf true || printf false )" \
+    --argjson grub_staged "$( [[ -f "$GRUB_THEME" ]] && printf true || printf false )" '
+    {schema_version:1,ok:true,source:"senomy-bootctl",data:{
+      bootloader:$bootloader,initramfs:$initramfs,
+      source:{sequence:"appearance/boot/sequence.json",valid:$sequence_valid},
+      runtimes:{plymouth:$plymouth_runtime,grub:$grub_runtime},
+      themes:{plymouth_staged:$plymouth_staged,grub_staged:$grub_staged},
+      disposable_boot_acceptance:$accepted,
+      activation_ready:($sequence_valid and $accepted and
+        (($plymouth_runtime and $plymouth_staged) or ($grub_runtime and $grub_staged)))
+    },error:null}'
+}
+
+case "$ACTION" in
+  status)
+    [[ $# -eq 1 ]] || { printf 'status takes no arguments\n' >&2; exit 2; }
+    status_json
+    ;;
+  plan)
+    [[ $# -eq 2 && ( "$2" == plymouth || "$2" == grub ) ]] || { printf 'plan requires plymouth or grub\n' >&2; exit 2; }
+    status_json | jq --arg component "$2" '
+      (if $component == "plymouth" then
+        (.data.disposable_boot_acceptance and .data.runtimes.plymouth and .data.themes.plymouth_staged)
+      else
+        (.data.disposable_boot_acceptance and .data.runtimes.grub and .data.themes.grub_staged)
+      end) as $ready
+      | . + {plan:{component:$component,status:(if $ready then "review-required" else "blocked" end),
+        mutates:(if $component == "plymouth" then ["initramfs hooks", "initramfs images"] else ["/etc/default/grub", "/boot/grub/grub.cfg"] end),
+        reason:(if $ready then
+          "Disposable boot evidence and the required runtime exist; activation still requires a separate reviewed implementation."
+        elif (.data.disposable_boot_acceptance | not) then
+          "No disposable-machine cold-boot and recovery-boot acceptance receipt exists."
+        elif $component == "plymouth" and (.data.runtimes.plymouth | not) then
+          "The Plymouth runtime is not installed."
+        elif $component == "grub" and (.data.runtimes.grub | not) then
+          "The GRUB runtime is not installed."
+        else
+          "The selected component theme is not staged."
+        end)}}'
+    ;;
+  activate)
+    printf 'SenomyOS boot activation is deliberately unavailable until disposable-machine cold-boot and recovery-boot acceptance pass.\n' >&2
+    exit 78
+    ;;
+  *) printf 'Usage: senomy-bootctl {status|plan plymouth|plan grub|activate}\n' >&2; exit 2 ;;
+esac

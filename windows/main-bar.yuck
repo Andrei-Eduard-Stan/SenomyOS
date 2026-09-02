@@ -1,20 +1,131 @@
+(defwidget rail-notifications-button []
+  (button
+    :hexpand true
+    :visible {bar_layout?.data?.narrow != true}
+    :class {active_flyout == "notifications"
+      ? "icon-button bar-control notifications-trigger active"
+      : (bar_notification_status?.data?.dnd == true
+        ? "icon-button bar-control notifications-trigger dnd"
+        : "icon-button bar-control notifications-trigger")}
+    :tooltip {active_flyout == "notifications"
+      ? "Close Notifications"
+      : (bar_notification_status?.ok == true
+        ? (bar_notification_status.data.dnd
+          ? "Open Notifications · ${bar_notification_status.data.count} waiting · Do Not Disturb"
+          : "Open Notifications · ${bar_notification_status.data.count} waiting")
+        : "Open Notifications · provider unavailable")}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/rail-notification-ack.sh ${bar_notification_status?.observed_at ?: 0} && $HOME/.config/eww/scripts/surface-state.sh toggle-notifications ${active_surface} ${active_flyout}"
+    (overlay
+      :class "rail-notification-content"
+      :hexpand true
+      :vexpand true
+      :halign "fill"
+      :valign "fill"
+      (box
+        :class "rail-notification-stage"
+        :hexpand true
+        :vexpand true
+        :halign "fill"
+        :valign "fill"
+        (image
+          :class "rail-notification-icon"
+          :halign "center"
+          :valign "center"
+          :path "${EWW_CONFIG_DIR}/assets/icons/bar/notifications.svg"
+          :width 22
+          :height 22
+          :image-width 22
+          :image-height 22))
+      (label
+        :class "rail-notification-badge"
+        :halign "end"
+        :valign "start"
+        :visible {bar_notification_status?.ok == true
+          && (bar_notification_status?.data?.count ?: 0) > 0
+          && (bar_notification_status?.observed_at ?: 0) > rail_notification_ack_at}
+        :text {(bar_notification_status?.data?.count ?: 0) > 99 ? "99+" : "${bar_notification_status?.data?.count ?: 0}"}))))
+
+(defwidget rail-power-button []
+  (button
+    :hexpand true
+    :visible {bar_layout?.data?.phone != true}
+    :class {active_flyout == "power"
+      ? "icon-button bar-control power-trigger active"
+      : "icon-button bar-control power-trigger"}
+    :tooltip {active_flyout == "power"
+      ? "Close Power controls"
+      : "Open Power controls"}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-power ${active_surface} ${active_flyout}"
+    (bar-icon :icon "power")))
+
 (defwindow main-bar
-  :geometry (geometry :x "0" :y "1040" :width "100%" :height "40px")
+  :namespace "senomy-rail"
+  :geometry (geometry :x "0" :y "0" :width "100%" :height "64px" :anchor "bottom center")
   :stacking "fg"
-  :monitor 0
   :exclusive true
-  :anchor "top center"
   :visible true
-  (box :class "bar" :orientation "h" :space-evenly false
-    ;; left
-    (workspace-indicator)
 
-    ;; spacer so right group sticks to the end
-    (box :hexpand true)
+(box
+  :class "bar ${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-nav-px-${appearance_status?.data?.nav_px ?: 10} appearance-rail-px-${appearance_status?.data?.rail_px ?: 11} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+  :orientation "h"
+  :space-evenly false
+  :spacing 0
 
-    ;; right
-    (box :class "mainbar-right" :spacing 10 :halign "end" :hexpand false :space-evenly false
-      (clock-button)
-      (volume-button)
-      (wifi-button)
-    (battery-button))))
+  ;; Left zone
+  (box :class "workspace-rail-zone" :halign "start" :valign "center"
+    (workspace-indicator))
+
+  ;; Workspaces may grow into the flexible interval. Every bounded instrument
+  ;; remains in one right-aligned sequence so no gap opens inside the Rail.
+  (box :class "rail-flex-spacer" :hexpand true)
+
+  (box
+    :class "mainbar-island-groups"
+    :halign "end"
+    :valign "center"
+    :spacing 22
+    :space-evenly false
+    (box
+      :class "bar-island-edge senomy-island-edge"
+      :valign "center"
+      (box
+        :class "senomy-rail-island bar-island-fill"
+        :space-evenly false
+        (senomy-status)))
+    (box
+      :class "bar-island-edge telemetry-island-edge"
+      :valign "center"
+      (box
+        :class "telemetry-rail-island bar-island-fill"
+        :space-evenly false
+        (system-summary)))
+    (box
+      :class "bar-island-edge system-controls-island-edge"
+      :valign "center"
+      (box
+        :class "mainbar-right system-controls-island bar-island-fill"
+        :spacing 0
+        :space-evenly false
+        (applications-button)
+        (volume-button)
+        (wifi-button)
+        (battery-button)
+        (system-tray)))
+    (box
+      :class "bar-island-edge calendar-notification-island-edge"
+      :valign "center"
+      (box
+        :class "calendar-notification-island bar-island-fill"
+        :spacing 0
+        :space-evenly false
+        (clock-button)
+        (rail-notifications-button)))
+    (box
+      :class "bar-island-edge power-island-edge"
+      :valign "center"
+      (box
+        :class "power-island bar-island-fill"
+        :space-evenly false
+        (rail-power-button))))))

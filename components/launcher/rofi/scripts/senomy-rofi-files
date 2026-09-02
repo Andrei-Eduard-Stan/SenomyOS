@@ -1,0 +1,236 @@
+#!/usr/bin/env bash
+
+# Bounded local file search for the SenomyOS Rofi Command Lens. Paths are
+# carried through ROFI_INFO and are never evaluated as shell syntax.
+set -euo pipefail
+export LC_ALL="${LC_ALL:-C.UTF-8}"
+
+readonly FIELD_SEPARATOR=$'\x1f'
+readonly DEFAULT_MAX_DEPTH=5
+readonly DEFAULT_MAX_RESULTS=500
+readonly DEFAULT_TIMEOUT_SECONDS=2
+
+declare -a SEARCH_ROOTS=()
+declare -A ROOT_SEEN=()
+SEARCH_TEMP_FILE=""
+
+cleanup_temp_file() {
+  [[ -z "$SEARCH_TEMP_FILE" ]] || rm -f -- "$SEARCH_TEMP_FILE"
+}
+
+markup_escape() {
+  local value="$1"
+  value="${value//&/\&amp;}"
+  value="${value//</\&lt;}"
+  value="${value//>/\&gt;}"
+  printf '%s' "$value"
+}
+
+emit_headers() {
+  local message="${1:-Bounded local search · Enter opens · Ctrl+Shift+Enter reveals}"
+  printf '\0prompt%sFILES\n' "$FIELD_SEPARATOR"
+  printf '\0markup-rows%strue\n' "$FIELD_SEPARATOR"
+  printf '\0no-custom%strue\n' "$FIELD_SEPARATOR"
+  printf '\0use-hot-keys%strue\n' "$FIELD_SEPARATOR"
+  printf '\0message%s%s\n' "$FIELD_SEPARATOR" "$message"
+}
+
+emit_status_row() {
+  local title="$1" detail="$2" icon="${3:-dialog-warning}"
+  local display
+  display="<span weight=\"bold\">$(markup_escape "$title")</span>  ·  <span size=\"small\" foreground=\"#9ea1ae\">$(markup_escape "$detail")</span>"
+  printf '%s\0display%s%s' "$title" "$FIELD_SEPARATOR" "$display"
+  printf '%sicon%s%s' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$icon"
+  printf '%snonselectable%strue' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+  printf '%spermanent%strue\n' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+}
+
+emit_status() {
+  local title="$1" detail="$2" icon="${3:-dialog-warning}"
+  emit_headers "$detail"
+  emit_status_row "$title" "$detail" "$icon"
+}
+
+path_has_control_character() {
+  local value="$1"
+  [[ "$value" =~ [[:cntrl:]] ]]
+}
+
+load_roots() {
+  local config_file home_real relative candidate resolved
+  local -a relative_roots=()
+
+  command -v jq >/dev/null 2>&1 || return 20
+  command -v realpath >/dev/null 2>&1 || return 20
+  [[ "${HOME:-}" == /* ]] || return 21
+  home_real="$(realpath -e -- "$HOME" 2>/dev/null)" || return 21
+  [[ -d "$home_real" ]] || return 21
+
+  config_file="${SENOMY_FILE_SEARCH_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/senomyos/file-search.json}"
+  if [[ -e "$config_file" ]]; then
+    [[ -f "$config_file" && ! -L "$config_file" ]] || return 22
+    jq -e '
+      type == "object" and
+      .schema_version == 1 and
+      (.roots | type == "array" and length > 0 and length <= 16) and
+      all(.roots[];
+        type == "string" and length > 0 and
+        (startswith("/") | not) and
+        (explode | all(. >= 32 and . != 127)) and
+        (split("/") | all(. != "" and . != "." and . != ".."))) and
+      (.max_depth? == null or (.max_depth | type == "number" and floor == . and . >= 1 and . <= 8)) and
+      (.max_results? == null or (.max_results | type == "number" and floor == . and . >= 1 and . <= 800)) and
+      (.timeout_seconds? == null or (.timeout_seconds | type == "number" and floor == . and . >= 1 and . <= 5))
+    ' "$config_file" >/dev/null 2>&1 || return 22
+    mapfile -t relative_roots < <(jq -r '.roots[]' "$config_file")
+    MAX_DEPTH="$(jq -r '.max_depth // 5' "$config_file")"
+    MAX_RESULTS="$(jq -r '.max_results // 500' "$config_file")"
+    TIMEOUT_SECONDS="$(jq -r '.timeout_seconds // 2' "$config_file")"
+  else
+    relative_roots=(Desktop Documents Downloads Music Pictures Videos)
+    MAX_DEPTH="$DEFAULT_MAX_DEPTH"
+    MAX_RESULTS="$DEFAULT_MAX_RESULTS"
+    TIMEOUT_SECONDS="$DEFAULT_TIMEOUT_SECONDS"
+  fi
+
+  for relative in "${relative_roots[@]}"; do
+    candidate="$home_real/$relative"
+    [[ -e "$candidate" ]] || continue
+    resolved="$(realpath -e -- "$candidate" 2>/dev/null)" || continue
+    [[ -d "$resolved" && "$resolved" == "$home_real/"* ]] || continue
+    if [[ -z "${ROOT_SEEN[$resolved]:-}" ]]; then
+      ROOT_SEEN["$resolved"]=1
+      SEARCH_ROOTS+=("$resolved")
+    fi
+  done
+}
+
+path_is_allowed() {
+  local selected="$1" resolved root
+  path_has_control_character "$selected" && return 1
+  [[ "$selected" == /* ]] || return 1
+  resolved="$(realpath -e -- "$selected" 2>/dev/null)" || return 1
+  [[ -f "$resolved" || -d "$resolved" ]] || return 1
+  for root in "${SEARCH_ROOTS[@]}"; do
+    [[ "$resolved" == "$root" || "$resolved" == "$root/"* ]] && return 0
+  done
+  return 1
+}
+
+resolve_command() {
+  local candidate="$1"
+  command -v "$candidate" 2>/dev/null
+}
+
+resolve_file_workspace() {
+  local wrapper="${SENOMY_FILE_WORKSPACE_BIN:-$HOME/.local/bin/senomy-file-workspace}"
+  if [[ -x "$wrapper" ]]; then
+    printf '%s\n' "$wrapper"
+  else
+    resolve_command "${SENOMY_THUNAR_BIN:-thunar}"
+  fi
+}
+
+launch_detached() {
+  local setsid_bin
+  setsid_bin="$(resolve_command "${SENOMY_SETSID_BIN:-setsid}")" || return 1
+  "$setsid_bin" --fork "$@" >/dev/null 2>&1
+}
+
+handle_selection() {
+  local return_code="$1" selected="${ROFI_INFO:-}" opener
+
+  [[ -n "$selected" ]] || { emit_status "Selection unavailable" "Rofi did not return a file path."; return; }
+  path_is_allowed "$selected" || { emit_status "Selection refused" "The selected path is outside the configured search roots."; return; }
+
+  case "$return_code" in
+    1)
+      opener="$(resolve_command "${SENOMY_GIO_BIN:-gio}")" || { emit_status "Open unavailable" "GIO is not installed."; return; }
+      launch_detached "$opener" open -- "$selected" || emit_status "Open failed" "The desktop opener could not be started."
+      ;;
+    10)
+      opener="$(resolve_file_workspace)" || { emit_status "Reveal unavailable" "The file workspace is not installed."; return; }
+      launch_detached "$opener" --select "$selected" || emit_status "Reveal failed" "Thunar could not be started."
+      ;;
+    *) emit_status "Input refused" "Files mode accepts only listed results." ;;
+  esac
+}
+
+list_results() {
+  local runtime_dir root path name parent display_parent icon display find_status count=0
+  local timed_out=false truncated=false
+  declare -A path_seen=()
+
+  command -v find >/dev/null 2>&1 || { emit_status "File search unavailable" "GNU find is not installed."; return; }
+  command -v sort >/dev/null 2>&1 || { emit_status "File search unavailable" "GNU sort is not installed."; return; }
+  command -v timeout >/dev/null 2>&1 || { emit_status "File search unavailable" "GNU timeout is not installed."; return; }
+  ((${#SEARCH_ROOTS[@]} > 0)) || { emit_status "No search roots" "Create a standard user folder or configure a bounded relative root." "folder"; return; }
+
+  runtime_dir="${XDG_RUNTIME_DIR:-/tmp}"
+  [[ -d "$runtime_dir" && -w "$runtime_dir" ]] || runtime_dir=/tmp
+  SEARCH_TEMP_FILE="$(mktemp -- "$runtime_dir/senomy-rofi-files.XXXXXX")" || { emit_status "File search unavailable" "A private temporary index could not be created."; return; }
+  chmod 600 "$SEARCH_TEMP_FILE"
+  trap cleanup_temp_file EXIT
+
+  emit_headers
+  for root in "${SEARCH_ROOTS[@]}"; do
+    : >"$SEARCH_TEMP_FILE"
+    set +e
+    timeout --signal=TERM "${TIMEOUT_SECONDS}s" find -P "$root" -xdev -mindepth 1 -maxdepth "$MAX_DEPTH" \
+      ! -path '*/.*' \( -type f -o -type d \) -print0 >"$SEARCH_TEMP_FILE" 2>/dev/null
+    find_status=$?
+    set -e
+    [[ "$find_status" -eq 124 ]] && timed_out=true
+    [[ "$find_status" -eq 0 || "$find_status" -eq 124 ]] || continue
+
+    while IFS= read -r -d '' path; do
+      path_has_control_character "$path" && continue
+      [[ -z "${path_seen[$path]:-}" ]] || continue
+      path_seen["$path"]=1
+      name="${path##*/}"
+      parent="${path%/*}"
+      display_parent="$parent"
+      if [[ "$parent" == "$HOME" ]]; then
+        display_parent="~"
+      elif [[ "$parent" == "$HOME/"* ]]; then
+        display_parent="~/${parent#"$HOME/"}"
+      fi
+      [[ -d "$path" ]] && icon="folder" || icon="text-x-generic"
+      display="<span weight=\"bold\">$(markup_escape "$name")</span>  ·  <span size=\"small\" foreground=\"#9ea1ae\">$(markup_escape "$display_parent")</span>"
+      printf '%s\0display%s%s' "$path" "$FIELD_SEPARATOR" "$display"
+      printf '%sicon%s%s' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$icon"
+      printf '%sinfo%s%s\n' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$path"
+      count=$((count + 1))
+      if ((count >= MAX_RESULTS)); then
+        truncated=true
+        break 2
+      fi
+    done < <(sort -z -- "$SEARCH_TEMP_FILE")
+  done
+
+  if ((count == 0)); then
+    emit_status_row "No matching local files" "The configured roots are empty at this depth." "folder"
+  elif [[ "$timed_out" == true || "$truncated" == true ]]; then
+    local notice="Results are bounded; refine the query to narrow this partial index."
+    printf '%s\0display%s<span foreground="#9ea1ae">%s</span>' "Bounded result notice" "$FIELD_SEPARATOR" "$notice"
+    printf '%sicon%sdialog-information' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+    printf '%snonselectable%strue' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+    printf '%spermanent%strue\n' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+  fi
+}
+
+load_status=0
+load_roots || load_status=$?
+case "$load_status" in
+  0) ;;
+  20) emit_status "File search unavailable" "Required JSON or path tools are not installed."; exit 0 ;;
+  21) emit_status "File search unavailable" "The current home directory cannot be resolved safely."; exit 0 ;;
+  22) emit_status "File search unavailable" "The file-search configuration is invalid or unsafe."; exit 0 ;;
+  *) emit_status "File search unavailable" "The search-root policy could not be loaded."; exit 0 ;;
+esac
+
+case "${ROFI_RETV:-0}" in
+  0) list_results ;;
+  1 | 10) handle_selection "${ROFI_RETV}" ;;
+  *) emit_status "Input refused" "Files mode accepts only listed results." ;;
+esac

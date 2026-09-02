@@ -1,0 +1,208 @@
+(defwidget background-app-card [app]
+  (box
+    :class "background-app-card ${app.state}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 12
+
+    (box
+      :class "background-app-header"
+      :space-evenly false
+      :spacing 12
+      (box
+        :class "background-app-icon"
+        (image
+          :icon {app.icon}
+          :icon-size "large-toolbar"))
+      (box
+        :orientation "v"
+        :space-evenly false
+        :spacing 3
+        :hexpand true
+        (label
+          :class "background-app-name"
+          :xalign 0
+          :text {app.name})
+        (label
+          :class "background-app-description"
+          :xalign 0
+          :text {app.description}))
+      (label
+        :class "background-app-state ${app.state}"
+        :text {app.state_label}))
+
+    (box
+      :class "background-app-evidence"
+      :space-evenly false
+      :spacing 8
+      (label
+        :class {app.service.active_state == "active"
+          ? "background-app-chip ready"
+          : "background-app-chip"}
+        :text "SERVICE ${app.service.active_state}")
+      (label
+        :class {app.dbus_ready
+          ? "background-app-chip ready"
+          : "background-app-chip"}
+        :text {app.dbus_ready ? "D-BUS READY" : "D-BUS OFFLINE"})
+      (label
+        :class {app.tray_registered
+          ? "background-app-chip ready"
+          : "background-app-chip"}
+        :text {app.tray_registered ? "TRAY REGISTERED" : "TRAY NOT REGISTERED"}))
+
+    (label
+      :class "background-app-meta"
+      :xalign 0
+      :text "AUTOSTART // ${app.service.autostart_enabled ? "ENABLED" : "DISABLED"}  ·  PID // ${app.service.main_pid > 0 ? app.service.main_pid : "NONE"}")
+
+    (box
+      :class "background-app-actions"
+      :space-evenly false
+      :spacing 8
+
+      (button
+        :class "background-app-action primary"
+        :visible {app.id == "flameshot" && app.state != "unavailable"}
+        :tooltip "Select and annotate a screenshot"
+        :onclick "$HOME/.config/eww/scripts/background-apps-action.sh flameshot capture >/dev/null 2>&1 &"
+        "CAPTURE")
+
+      (button
+        :class "background-app-action"
+        :visible {app.id == "flameshot" && app.state != "unavailable"}
+        :tooltip "Open the Flameshot launcher"
+        :onclick "$HOME/.config/eww/scripts/background-apps-action.sh flameshot launcher >/dev/null 2>&1 &"
+        "LAUNCHER")
+
+      (button
+        :class "background-app-action"
+        :visible {app.id == "flameshot" && app.state != "unavailable"}
+        :tooltip "Open Flameshot configuration"
+        :onclick "$HOME/.config/eww/scripts/background-apps-action.sh flameshot configure >/dev/null 2>&1 &"
+        "CONFIGURE")
+
+      (button
+        :class "background-app-action"
+        :visible {app.id == "flameshot" && app.state == "stopped"}
+        :onclick "$HOME/.config/eww/scripts/background-apps-action.sh flameshot start >/dev/null 2>&1 &"
+        "START")
+
+      (button
+        :class "background-app-action danger"
+        :visible {app.id == "flameshot" && app.state == "running"}
+        :onclick "${EWW_CMD} update pending_action=flameshot-stop"
+        "STOP..."))
+
+    (box
+      :class "background-app-confirm"
+      :orientation "v"
+      :space-evenly false
+      :spacing 10
+      :visible {app.id == "flameshot" && pending_action == "flameshot-stop"}
+      (label
+        :class "background-app-confirm-copy"
+        :xalign 0
+        :wrap true
+        :text "Stop Flameshot? Screenshot shortcuts and its tray menu will remain unavailable until it is started again.")
+      (box
+        :space-evenly false
+        :spacing 8
+        (button
+          :class "background-app-action"
+          :onclick "${EWW_CMD} update pending_action=none"
+          "CANCEL")
+        (button
+          :class "background-app-action danger confirm"
+          :onclick "$HOME/.config/eww/scripts/background-apps-action.sh flameshot stop >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none &"
+          "CONFIRM STOP")))))
+
+(defwidget applications-section []
+  (box
+    :class "applications-section"
+    :orientation "v"
+    :space-evenly false
+    :visible {control_section == "apps"}
+
+    (box
+      :class "section-heading"
+      :orientation "v"
+      :space-evenly false
+      :spacing 6
+      (label
+        :class "section-eyebrow"
+        :xalign 0
+        :text "SESSION")
+      (label
+        :class "section-title"
+        :xalign 0
+        :text "Applications")
+      (label
+        :class "section-detail"
+        :xalign 0
+        :wrap true
+        :text "Native tray activity and explicitly managed background desktop applications."))
+
+    (box
+      :class "applications-tray-summary"
+      :space-evenly false
+      :spacing 12
+      (box
+        :orientation "v"
+        :space-evenly false
+        :spacing 3
+        :hexpand true
+        (label
+          :class "applications-summary-title"
+          :xalign 0
+          :text "System tray host")
+        (label
+          :class "applications-summary-detail"
+          :xalign 0
+          :text "Native StatusNotifier icons stay hidden in the rail flyout until you open them."))
+      (label
+        :class {background_apps_status?.data?.tray?.host_available
+          ? "applications-tray-state ready"
+          : "applications-tray-state unavailable"}
+        :text {background_apps_status?.data?.tray?.host_available
+          ? "ONLINE · ${background_apps_status.data.tray.registered_count} ITEMS"
+          : "UNAVAILABLE"}))
+
+    (box
+      :class "applications-error"
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      :visible {(background_apps_status?.error?.code ?: "") != ""}
+      (label
+        :class "applications-error-code"
+        :xalign 0
+        :text "COLLECTOR // ${background_apps_status?.error?.code ?: "UNKNOWN"}")
+      (label
+        :class "applications-error-copy"
+        :xalign 0
+        :wrap true
+        :text {background_apps_status?.error?.message ?: "Background application status is unavailable."}))
+
+    (box :class "control-operation applications ${background_apps_status?.data?.operation?.state ?: "idle"}" :orientation "v" :space-evenly false :spacing 4
+      :visible {(background_apps_status?.data?.operation?.state ?: "idle") != "idle"}
+      (box :space-evenly false :spacing 8
+        (label :class "control-operation-code" :xalign 0 :hexpand true
+          :text "OPERATION // ${background_apps_status.data.operation.state_label}")
+        (label :class "control-state-badge ${background_apps_status.data.operation.state == "failed" ? "danger" : (background_apps_status.data.operation.state == "succeeded" ? "ready" : "") }"
+          :text {background_apps_status.data.operation.state_label}))
+      (label :class "control-operation-title" :xalign 0 :text {background_apps_status.data.operation.label})
+      (label :class "control-operation-copy" :xalign 0 :wrap true :text {background_apps_status.data.operation.message}))
+
+    (box
+      :class "background-app-list"
+      :orientation "v"
+      :space-evenly false
+      (for app in {background_apps_status?.data?.apps ?: []}
+        (background-app-card :app app)))
+
+    (label
+      :class "applications-empty"
+      :xalign 0
+      :visible {background_apps_status?.ok == true && background_apps_status?.data?.app_count == 0}
+      :text "No managed background applications are registered.")))

@@ -1,0 +1,153 @@
+(defwidget insight-row [rank state title detail source]
+  (box
+    :class "insight-row"
+    :space-evenly false
+    :spacing 18
+    (box
+      :class "insight-rank-column"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      (label :class "insight-rank" :xalign 0 :text rank)
+      (label :class "insight-state" :xalign 0 :wrap true :text state))
+    (box
+      :class "insight-copy"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      :hexpand true
+      (label :class "insight-title" :xalign 0 :text title)
+      (label
+        :class "insight-detail"
+        :xalign 0
+        :hexpand true
+        :wrap true
+        :show-truncated false
+        :text detail)
+      (label :class "insight-source" :xalign 0 :text source))))
+
+(defwidget insights-section-heading [eyebrow title detail]
+  (box
+    :class "section-heading"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (label :class "section-eyebrow" :xalign 0 :text eyebrow)
+    (label :class "section-title" :xalign 0 :text title)
+    (label
+      :class "section-detail"
+      :xalign 0
+      :hexpand true
+      :wrap true
+      :show-truncated false
+      :text detail)))
+
+(defwidget insights-status-row [state title detail meta]
+  (box
+    :class "insights-status-row"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (label :class "insight-state" :xalign 0 :text state)
+    (label :class "insight-title" :xalign 0 :text title)
+    (label
+      :class "insight-detail"
+      :xalign 0
+      :hexpand true
+      :wrap true
+      :show-truncated false
+      :text detail)
+    (label :class "insight-source" :xalign 0 :text meta)))
+
+(defwidget insights-tab [section icon text]
+  (button
+    :halign "fill"
+    :class {insights_section == section
+      ? "insights-tab shell-tab active"
+      : "insights-tab shell-tab"}
+    :onclick "$HOME/.config/eww/scripts/ui-action.sh insights-section ${section}"
+    (box
+      :space-evenly false
+      :spacing 10
+      (label :class "shell-tab-icon" :text icon)
+      (label :class "shell-tab-label" :xalign 0 :text text))))
+
+(defwindow insights
+  :namespace "senomy-insights"
+  :geometry (geometry
+    :x "0px"
+    :y "12px"
+    :width "960px"
+    :height "760px"
+    :anchor "bottom center")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "insights-panel shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-nav-px-${appearance_status?.data?.nav_px ?: 10} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 22
+    :vexpand true
+    :hexpand true
+
+    (surface-hero-header
+      :surface_class "insights-header"
+      :domain "insights"
+      :eyebrow "SENOMY // LIVE OBSERVER"
+      :title "SENOMY INSIGHTS"
+      :subtitle "Evidence, diagnostics, maintenance and local system memory"
+      :close_tooltip "Close Senomy Insights"
+      :close_action "$HOME/.config/eww/scripts/surface-state.sh close insights ${active_surface} ${active_flyout}"
+      (label
+        :class {rail_system_status?.ok == true
+          ? "shell-hero-chip ready"
+          : "shell-hero-chip loading"}
+        :text {rail_system_status?.ok == true ? "TELEMETRY ONLINE" : "TELEMETRY LOADING"})
+      (label :class "shell-hero-chip secondary" :text "LOCAL // PRIVATE"))
+
+    (box
+      :class "insights-content shell-content"
+      :orientation {(bar_layout?.data?.phone ?: false) ? "v" : "h"}
+      :space-evenly false
+      :spacing 22
+      :vexpand true
+
+      (scroll
+        :class "insights-tabs-scroll shell-nav"
+        :vscroll {(bar_layout?.data?.phone ?: false) != true}
+        :hscroll {(bar_layout?.data?.phone ?: false) == true}
+        :vexpand {(bar_layout?.data?.phone ?: false) != true}
+        (box
+          :class "insights-tabs"
+          :orientation {(bar_layout?.data?.phone ?: false) ? "h" : "v"}
+          :space-evenly false
+          :spacing 4
+          (insights-tab :section "briefing" :icon "" :text "Briefing")
+          (insights-tab :section "notifications" :icon "󰂚" :text "Notifications")
+          (insights-tab :section "timeline" :icon "󰋚" :text "Timeline")
+          (insights-tab :section "updates" :icon "󰚰" :text "Updates")
+          (insights-tab :section "diagnostics" :icon "" :text "Diagnostics")
+          (insights-tab :section "console" :icon "󰆍" :text "Console")
+          (insights-tab :section "reports" :icon "󰈙" :text "Reports")
+          (insights-tab :section "wiki" :icon "󰖬" :text "Wiki")))
+
+      (scroll
+        :class "insights-body-scroll"
+        :vscroll true
+        :hscroll false
+        :vexpand true
+        :hexpand true
+        (box
+          :class "insights-body shell-body"
+          :vexpand true
+          :hexpand true
+          (box :visible {insights_section == "briefing"} (insights-briefing))
+          (box :visible {insights_section == "notifications"} (insights-notifications))
+          (box :visible {insights_section == "timeline"} (insights-timeline))
+          (box :visible {insights_section == "updates"} (insights-updates))
+          (box :visible {insights_section == "diagnostics"} (insights-diagnostics))
+          (box :visible {insights_section == "console"} (insights-console))
+          (box :visible {insights_section == "reports"} (insights-reports))
+          (box :visible {insights_section == "wiki"} (insights-wiki)))))))

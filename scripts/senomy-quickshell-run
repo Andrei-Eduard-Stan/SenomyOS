@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd -P)}"
+QS_BIN="${SENOMY_QS_BIN:-/usr/bin/qs}"
+SHELL_ROOT="$SOURCE_ROOT/shell/quickshell"
+
+fail() {
+  printf 'senomy-quickshell: %s\n' "$*" >&2
+  exit 1
+}
+
+[[ -x "$QS_BIN" ]] || fail "Quickshell is not executable at $QS_BIN"
+[[ -f "$SHELL_ROOT/shell.qml" ]] || fail "missing $SHELL_ROOT/shell.qml"
+[[ -n "${WAYLAND_DISPLAY:-}" ]] || fail "WAYLAND_DISPLAY is not available to the user service"
+[[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || fail "HYPRLAND_INSTANCE_SIGNATURE is not available to the user service"
+
+export SENOMY_SOURCE_ROOT="$SOURCE_ROOT"
+export SENOMY_SESSION_ACTION="$SOURCE_ROOT/scripts/senomy-session-action"
+
+exec "$QS_BIN" --path "$SHELL_ROOT" --no-color

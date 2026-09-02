@@ -1,0 +1,8 @@
+[Unit]
+Description=Restore Eww after a Quickshell V2 service failure
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/senomy-shell recover-eww
+TimeoutStartSec=45

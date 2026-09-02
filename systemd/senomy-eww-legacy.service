@@ -1,0 +1,14 @@
+[Unit]
+Description=SenomyOS legacy Eww shell adapter
+Wants=graphical-session.target swaync.service
+After=graphical-session.target swaync.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/senomy-eww-legacy start
+ExecStop=%h/.local/bin/senomy-eww-legacy stop
+RemainAfterExit=yes
+TimeoutStartSec=35
+TimeoutStopSec=8
+
+# Deliberately no [Install] section: Hyprland retains the existing Eww startup.

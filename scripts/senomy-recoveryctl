@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+
+# Provision or disable the independently authenticated SenomyOS recovery user.
+# The account is never deleted automatically; disable locks it and preserves a
+# root-only recovery record.
+
+set -euo pipefail
+export LC_ALL=C
+umask 077
+
+readonly ACTION="${1:-status}"
+readonly RECOVERY_USER=senomy-recovery
+readonly CONFIG=/etc/senomyos/recovery.conf
+readonly HYPRLAND_CONFIG=/etc/senomyos/recovery-hyprland.lua
+readonly STATE_ROOT=/var/lib/senomyos/recovery
+readonly SESSION=/usr/share/wayland-sessions/senomy-recovery.desktop
+readonly HELPER=/usr/local/libexec/senomy-password-reset-helper
+readonly UI=/usr/local/libexec/senomy-recovery-ui
+readonly SUDOERS=/etc/sudoers.d/senomy-recovery
+readonly SDDM_CONFIG=/etc/sddm.conf.d/20-senomyos-theme.conf
+readonly WAYLAND_GUARD=/usr/local/libexec/senomy-sddm-wayland-session
+readonly X11_GUARD=/usr/local/libexec/senomy-sddm-x11-session
+readonly NOLOGIN_SHELL=/usr/bin/nologin
+readonly SHELLS_FILE=/etc/shells
+
+fail() {
+  printf 'SenomyOS recovery: %s\n' "$*" >&2
+  exit 1
+}
+
+require_root() {
+  [[ "$EUID" -eq 0 ]] || fail 'this action must run as root (use sudo)'
+}
+
+validate_target() {
+  local target="$1" record uid shell
+  [[ "$target" =~ ^[A-Za-z_][A-Za-z0-9_.-]{0,31}$ ]] || fail 'target user name is invalid'
+  [[ "$target" != root && "$target" != "$RECOVERY_USER" ]] || fail 'target must be an ordinary non-recovery account'
+  record="$(getent passwd "$target" || true)"
+  [[ -n "$record" ]] || fail "target account does not exist: $target"
+  IFS=: read -r _ _ uid _ _ _ shell <<<"$record"
+  [[ "$uid" =~ ^[0-9]+$ && "$uid" -ge 1000 ]] || fail 'target account is not an ordinary user'
+  [[ "$shell" != */nologin && "$shell" != */false ]] || fail 'target account cannot log in'
+}
+
+validate_runtime() {
+  local file
+  [[ "$(stat -c %a /etc/senomyos 2>/dev/null || true)" == 755 &&
+     "$(stat -c %U:%G /etc/senomyos 2>/dev/null || true)" == root:root ]] ||
+    fail 'recovery configuration directory must be root-owned mode 0755'
+  for file in "$SESSION" "$HELPER" "$UI" "$HYPRLAND_CONFIG" "$SUDOERS" "$SDDM_CONFIG" "$WAYLAND_GUARD" "$X11_GUARD"; do
+    [[ -f "$file" && ! -L "$file" ]] || fail "recovery runtime is not deployed: $file"
+    [[ "$(stat -c %U:%G "$file")" == root:root ]] || fail "recovery runtime owner is invalid: $file"
+  done
+  /usr/bin/visudo -cf "$SUDOERS" >/dev/null || fail 'recovery sudo rule is invalid'
+  grep -qxF 'SessionCommand=/usr/local/libexec/senomy-sddm-wayland-session' "$SDDM_CONFIG" ||
+    fail 'SDDM Wayland recovery guard is not active'
+  grep -qxF 'SessionCommand=/usr/local/libexec/senomy-sddm-x11-session' "$SDDM_CONFIG" ||
+    fail 'SDDM X11 recovery guard is not active'
+}
+
+ensure_nologin_shell_registered() {
+  local backup temporary
+  [[ -x "$NOLOGIN_SHELL" ]] || fail "non-interactive shell is unavailable: $NOLOGIN_SHELL"
+  [[ -f "$SHELLS_FILE" && ! -L "$SHELLS_FILE" ]] || fail 'refusing non-regular /etc/shells'
+  [[ "$(stat -c %U:%G "$SHELLS_FILE")" == root:root ]] || fail '/etc/shells owner is invalid'
+  if grep -qxF "$NOLOGIN_SHELL" "$SHELLS_FILE"; then
+    return
+  fi
+
+  install -d -o root -g root -m 700 -- "$STATE_ROOT"
+  backup="$STATE_ROOT/shells.$(date +%Y%m%d-%H%M%S).bak"
+  install -o root -g root -m 600 -- "$SHELLS_FILE" "$backup"
+  temporary="$(mktemp /etc/.shells.senomy.XXXXXX)"
+  {
+    sed -e '${/^$/d;}' "$SHELLS_FILE"
+    printf '\n%s\n' "$NOLOGIN_SHELL"
+  } >"$temporary"
+  chown root:root "$temporary"
+  chmod "$(stat -c %a "$SHELLS_FILE")" "$temporary"
+  mv -fT -- "$temporary" "$SHELLS_FILE"
+}
+
+account_state() {
+  local shadow_status
+  if ! getent passwd "$RECOVERY_USER" >/dev/null; then
+    printf 'missing\n'
+    return
+  fi
+  if [[ "$EUID" -ne 0 ]]; then
+    printf 'privileged-check-required\n'
+    return
+  fi
+  shadow_status="$(passwd -S "$RECOVERY_USER" 2>/dev/null | awk '{print $2}')"
+  case "$shadow_status" in
+    P) printf 'credential-set\n' ;;
+    L|LK) printf 'locked\n' ;;
+    *) printf 'unknown\n' ;;
+  esac
+}
+
+status() {
+  local target='unprovisioned'
+  if [[ -f "$CONFIG" && ! -L "$CONFIG" ]]; then
+    target="$(sed -n 's/^TARGET_USER=//p' "$CONFIG")"
+  fi
+  printf 'runtime: '
+  if [[ "$(stat -c %a /etc/senomyos 2>/dev/null || true)" == 755 &&
+        "$(stat -c %U:%G /etc/senomyos 2>/dev/null || true)" == root:root &&
+        -f "$SESSION" && -f "$HELPER" && -f "$UI" && -f "$HYPRLAND_CONFIG" && -f "$SUDOERS" &&
+        -f "$SDDM_CONFIG" && -f "$WAYLAND_GUARD" && -f "$X11_GUARD" ]] &&
+     grep -qxF 'SessionCommand=/usr/local/libexec/senomy-sddm-wayland-session' "$SDDM_CONFIG" 2>/dev/null &&
+     grep -qxF 'SessionCommand=/usr/local/libexec/senomy-sddm-x11-session' "$SDDM_CONFIG" 2>/dev/null; then
+    printf 'installed\n'
+  else
+    printf 'incomplete\n'
+  fi
+  printf 'account: %s\n' "$(account_state)"
+  printf 'target: %s\n' "$target"
+}
+
+write_config() {
+  local target="$1" temporary
+  install -d -o root -g root -m 0755 -- /etc/senomyos
+  install -d -o root -g root -m 0700 -- "$STATE_ROOT"
+  if [[ -e "$CONFIG" ]]; then
+    [[ -f "$CONFIG" && ! -L "$CONFIG" ]] || fail 'refusing non-regular recovery configuration'
+    install -o root -g root -m 600 -- "$CONFIG" "$STATE_ROOT/recovery.conf.$(date +%Y%m%d-%H%M%S).bak"
+  fi
+  temporary="$(mktemp /etc/senomyos/.recovery.conf.XXXXXX)"
+  printf 'TARGET_USER=%s\n' "$target" >"$temporary"
+  chmod 0644 "$temporary"
+  chown root:root "$temporary"
+  mv -fT -- "$temporary" "$CONFIG"
+}
+
+provision() {
+  local target="$1" created=false reply
+  require_root
+  [[ -t 0 && -t 1 ]] || fail 'provisioning requires an interactive terminal for the recovery credential'
+  validate_runtime
+  validate_target "$target"
+  printf 'This creates or updates the independently authenticated %s account.\n' "$RECOVERY_USER"
+  printf 'It will be able to reset only %s through the restricted recovery session.\n' "$target"
+  printf 'Type PROVISION RECOVERY FOR %s to continue: ' "$target"
+  IFS= read -r reply
+  [[ "$reply" == "PROVISION RECOVERY FOR $target" ]] || fail 'confirmation did not match; no changes were made'
+
+  ensure_nologin_shell_registered
+
+  if ! getent passwd "$RECOVERY_USER" >/dev/null; then
+    /usr/bin/useradd --system --create-home --home-dir /var/lib/senomy-recovery \
+      --shell "$NOLOGIN_SHELL" --comment 'SenomyOS authenticated recovery' "$RECOVERY_USER"
+    created=true
+  else
+    /usr/bin/usermod --shell "$NOLOGIN_SHELL" "$RECOVERY_USER"
+  fi
+
+  recovery_record="$(getent passwd "$RECOVERY_USER")"
+  IFS=: read -r _ _ recovery_uid _ _ recovery_home recovery_shell <<<"$recovery_record"
+  [[ "$recovery_uid" =~ ^[0-9]+$ && "$recovery_uid" -lt 1000 ]] || fail 'recovery account UID is not a system UID'
+  [[ "$recovery_home" == /var/lib/senomy-recovery ]] || fail 'recovery account home is unexpected'
+  [[ "$recovery_shell" == "$NOLOGIN_SHELL" ]] || fail 'recovery account shell is unexpected'
+
+  write_config "$target"
+  printf 'Set a strong credential that is different from the normal account password.\n'
+  if ! /usr/bin/passwd "$RECOVERY_USER"; then
+    /usr/bin/passwd -l "$RECOVERY_USER" >/dev/null 2>&1 || true
+    [[ "$created" == false ]] || printf 'The newly created recovery account remains locked for inspection.\n' >&2
+    fail 'credential setup failed; recovery account is locked'
+  fi
+  printf 'Recovery provisioned.\n'
+  status
+}
+
+rotate_credential() {
+  require_root
+  validate_runtime
+  getent passwd "$RECOVERY_USER" >/dev/null || fail 'recovery account is not provisioned'
+  [[ -t 0 && -t 1 ]] || fail 'credential rotation requires an interactive terminal'
+  /usr/bin/passwd "$RECOVERY_USER"
+  printf 'Recovery credential updated.\n'
+}
+
+disable() {
+  local reply backup='none'
+  require_root
+  printf 'Type DISABLE SENOMY RECOVERY to lock the recovery account: '
+  IFS= read -r reply
+  [[ "$reply" == 'DISABLE SENOMY RECOVERY' ]] || fail 'confirmation did not match; no changes were made'
+  install -d -o root -g root -m 700 -- "$STATE_ROOT"
+  if [[ -f "$CONFIG" && ! -L "$CONFIG" ]]; then
+    backup="$STATE_ROOT/recovery.conf.$(date +%Y%m%d-%H%M%S).disabled"
+    install -o root -g root -m 600 -- "$CONFIG" "$backup"
+    rm -f -- "$CONFIG"
+  fi
+  if getent passwd "$RECOVERY_USER" >/dev/null; then
+    /usr/bin/passwd -l "$RECOVERY_USER" >/dev/null
+  fi
+  printf 'Recovery disabled. Configuration backup: %s\n' "$backup"
+}
+
+case "$ACTION" in
+  status) [[ $# -eq 1 ]] || fail 'status takes no arguments'; status ;;
+  provision) [[ $# -eq 2 ]] || fail 'provision requires TARGET_USER'; provision "$2" ;;
+  rotate-credential) [[ $# -eq 1 ]] || fail 'rotate-credential takes no arguments'; rotate_credential ;;
+  disable) [[ $# -eq 1 ]] || fail 'disable takes no arguments'; disable ;;
+  *)
+    printf 'Usage: senomy-recoveryctl {status|provision TARGET_USER|rotate-credential|disable}\n' >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,80 @@
+(defwidget calendar-flyout-content []
+  (box
+    :class "utility-flyout-content calendar-flyout-content"
+    :orientation "v"
+    :space-evenly false
+    :spacing 12
+
+    (box
+      :class "utility-flyout-header"
+      :space-evenly false
+      :spacing 10
+      (box
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        :spacing 3
+        (label :class "utility-flyout-eyebrow" :xalign 0 :text "TIMEKEEPING // LOCAL")
+        (label :class "utility-flyout-title" :xalign 0 :text {control_status?.data?.clock?.month ?: "Calendar"}))
+      (label :class "utility-flyout-state ready" :text "${control_status?.data?.clock?.timezone ?: "LOCAL"}")
+      (button
+        :class "flyout-close"
+        :tooltip "Close calendar"
+        :timeout "4s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh dismiss ${active_surface} ${active_flyout}"
+        ""))
+
+    (box
+      :class "calendar-flyout-hero"
+      :space-evenly false
+      :spacing 16
+      (box
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        :spacing 2
+        (label :class "calendar-flyout-day" :xalign 0 :text {control_status?.data?.clock?.day_name ?: "--"})
+        (label :class "calendar-flyout-number" :xalign 0 :text {control_status?.data?.clock?.day_number ?: "--"}))
+      (box
+        :orientation "v"
+        :space-evenly false
+        :halign "end"
+        :valign "center"
+        :spacing 2
+        (label :class "calendar-flyout-time" :text time)
+        (label :class "calendar-flyout-date" :text date)))
+
+    (box
+      :class "calendar-flyout-grid"
+      :orientation "v"
+      :space-evenly false
+      (label
+        :class "calendar-flyout-grid-text"
+        :xalign 0
+        :text {control_status?.data?.clock?.calendar ?: "Calendar unavailable"}))
+
+    (box
+      :class "utility-flyout-footer"
+      :space-evenly false
+      (label :class "utility-flyout-meta" :xalign 0 :hexpand true :text "WEEK  ${control_status?.data?.clock?.week_number ?: "--"}")
+      (label
+        :class {control_status?.data?.clock?.ntp_synchronized ? "utility-flyout-meta ready" : "utility-flyout-meta warning"}
+        :text {control_status?.data?.clock?.ntp_synchronized ? "NTP SYNCHRONIZED" : "NTP NOT SYNCHRONIZED"}))))
+
+(defwindow calendar-flyout
+  :namespace "senomy-flyout"
+  :geometry (geometry
+    :x "86px"
+    :y "10px"
+    :width "430px"
+    :height "470px"
+    :anchor "bottom right")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "calendar-flyout utility-flyout shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+    :orientation "v"
+    :space-evenly false
+    (calendar-flyout-content)))

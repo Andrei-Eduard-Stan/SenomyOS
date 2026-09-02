@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DURATION="${1:-}"
+shift || true
+UNITS=("$@")
+
+case "$DURATION" in
+  *[!0-9]*|'') printf 'usage: benchmark-user-units SECONDS UNIT...\n' >&2; exit 64 ;;
+esac
+((DURATION >= 10 && ${#UNITS[@]} > 0)) || {
+  printf 'usage: benchmark-user-units SECONDS UNIT...\n' >&2
+  exit 64
+}
+
+for unit in "${UNITS[@]}"; do
+  systemctl --user is-active --quiet "$unit" || {
+    printf 'unit is not active: %s\n' "$unit" >&2
+    exit 69
+  }
+done
+
+samples="$(mktemp "${TMPDIR:-/tmp}/senomy-unit-benchmark.XXXXXX")"
+observed_pids="$(mktemp "${TMPDIR:-/tmp}/senomy-unit-pids.XXXXXX")"
+trap 'rm -f "$samples" "$observed_pids"' EXIT
+
+unit_cpu_ns() {
+  local total=0 value unit
+  for unit in "${UNITS[@]}"; do
+    value="$(systemctl --user show -p CPUUsageNSec --value "$unit")"
+    [[ "$value" =~ ^[0-9]+$ ]] || value=0
+    total=$((total + value))
+  done
+  printf '%s\n' "$total"
+}
+
+unit_pids() {
+  local cgroup unit
+  for unit in "${UNITS[@]}"; do
+    cgroup="$(systemctl --user show -p ControlGroup --value "$unit")"
+    [[ -n "$cgroup" && -d "/sys/fs/cgroup$cgroup" ]] || continue
+    find "/sys/fs/cgroup$cgroup" -name cgroup.procs -type f -exec cat {} + 2>/dev/null
+  done | sort -n -u
+}
+
+previous_cpu="$(unit_cpu_ns)"
+previous_time="$(date +%s%N)"
+start_time="$previous_time"
+
+for ((sample = 1; sample <= DURATION; sample++)); do
+  sleep 1
+  current_cpu="$(unit_cpu_ns)"
+  current_time="$(date +%s%N)"
+  elapsed_ns=$((current_time - previous_time))
+  delta_cpu=$((current_cpu - previous_cpu))
+  ((delta_cpu >= 0)) || { printf 'unit accounting reset during benchmark\n' >&2; exit 70; }
+  cpu_percent="$(awk -v cpu="$delta_cpu" -v wall="$elapsed_ns" 'BEGIN { printf "%.4f", cpu / wall * 100 }')"
+
+  mapfile -t pids < <(unit_pids)
+  rss_kib=0
+  pss_kib=0
+  private_kib=0
+  task_count=0
+  process_count=0
+  for pid in "${pids[@]}"; do
+    [[ -r "/proc/$pid/status" && -r "/proc/$pid/smaps_rollup" ]] || continue
+    process_count=$((process_count + 1))
+    printf '%s\n' "$pid" >>"$observed_pids"
+    value="$(awk '/^VmRSS:/{print $2}' "/proc/$pid/status")"
+    rss_kib=$((rss_kib + ${value:-0}))
+    read -r process_pss process_private < <(
+      awk '/^Pss:/{pss=$2} /^Private_Clean:/{private+=$2} /^Private_Dirty:/{private+=$2} END{print pss+0, private+0}' "/proc/$pid/smaps_rollup"
+    )
+    pss_kib=$((pss_kib + process_pss))
+    private_kib=$((private_kib + process_private))
+    value="$(find "/proc/$pid/task" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)"
+    task_count=$((task_count + value))
+  done
+
+  jq -cn \
+    --argjson second "$sample" --argjson cpu "$cpu_percent" \
+    --argjson rss "$rss_kib" --argjson pss "$pss_kib" \
+    --argjson private "$private_kib" --argjson tasks "$task_count" \
+    --argjson processes "$process_count" \
+    '{second:$second,cpu_percent:$cpu,rss_kib:$rss,pss_kib:$pss,private_kib:$private,tasks:$tasks,processes:$processes}' >>"$samples"
+  previous_cpu="$current_cpu"
+  previous_time="$current_time"
+done
+
+finish_time="$(date +%s%N)"
+unique_pids="$(sort -u "$observed_pids" | sed '/^$/d' | wc -l)"
+units_json="$(printf '%s\n' "${UNITS[@]}" | jq -R . | jq -s .)"
+jq -s \
+  --argjson units "$units_json" --argjson requested_seconds "$DURATION" \
+  --argjson elapsed_seconds "$(awk -v ns="$((finish_time - start_time))" 'BEGIN { printf "%.3f", ns / 1000000000 }')" \
+  --argjson observed_unique_pids "$unique_pids" '
+  def mean: add / length;
+  def percentile($p): sort | .[((length * $p | ceil) - 1)];
+  def summary($key):
+    [.[].[$key]] as $values |
+    {mean:($values|mean),median:($values|percentile(0.5)),p95:($values|percentile(0.95)),min:($values|min),max:($values|max),growth:($values[-1]-$values[0])};
+  {
+    schema_version:1,
+    units:$units,
+    requested_seconds:$requested_seconds,
+    elapsed_seconds:$elapsed_seconds,
+    sample_count:length,
+    cpu_percent:summary("cpu_percent"),
+    rss_kib:summary("rss_kib"),
+    pss_kib:summary("pss_kib"),
+    private_kib:summary("private_kib"),
+    processes:summary("processes"),
+    tasks:summary("tasks"),
+    observed_unique_pids:$observed_unique_pids
+  }' "$samples"

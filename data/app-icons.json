@@ -1,0 +1,38 @@
+{
+  "code": {
+    "name": "Visual Studio Code",
+    "icon": "vscode"
+  },
+  "kitty": {
+    "name": "Kitty",
+    "icon": "kitty"
+  },
+  "thunar": {
+    "name": "Thunar",
+    "icon": "org.xfce.thunar"
+  },
+  "firefox": {
+    "name": "Firefox",
+    "icon": "firefox"
+  },
+  "firefox-developer-edition": {
+    "name": "Firefox Developer Edition",
+    "icon": "firefox-developer-edition"
+  },
+  "chromium": {
+    "name": "Chromium",
+    "icon": "chromium"
+  },
+  "google-chrome": {
+    "name": "Google Chrome",
+    "icon": "google-chrome"
+  },
+  "steam": {
+    "name": "Steam",
+    "icon": "steam"
+  },
+  "discord": {
+    "name": "Discord",
+    "icon": "discord"
+  }
+}

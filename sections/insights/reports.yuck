@@ -1,0 +1,67 @@
+(defwidget report-profile-button [id code title detail]
+  (button
+    :class {report_profile == id ? "report-profile active" : "report-profile"}
+    :onclick "${EWW_CMD} update report_profile=${id}"
+    (box :orientation "v" :space-evenly false :spacing 3
+      (box :space-evenly false
+        (label :class "report-profile-code" :xalign 0 :hexpand true :text code)
+        (label :class "report-profile-mark" :text {report_profile == id ? "SELECTED" : "PROFILE"}))
+      (label :class "report-profile-title" :xalign 0 :text title)
+      (label :class "report-profile-detail" :xalign 0 :wrap true :text detail))))
+
+(defwidget report-history-row [report]
+  (box :class "report-history-row" :space-evenly false :spacing 10
+    (label :class "report-history-profile" :text {report.profile_label})
+    (box :orientation "v" :space-evenly false :hexpand true
+      (label :class "report-history-id" :xalign 0 :text {report.id})
+      (label :class "report-history-meta" :xalign 0 :text "${report.section_count} sections // ${report.line_count} lines // ${report.size_bytes} bytes"))
+    (label :class "report-history-time" :text {report.generated_label})))
+
+(defwidget insights-reports []
+  (box
+    :class "insights-section reports-section"
+    :orientation "v"
+    :space-evenly false
+    :spacing 14
+    (insights-section-heading
+      :eyebrow "EVIDENCE STUDIO"
+      :title "Reports"
+      :detail "Build reproducible, profile-based troubleshooting artifacts from fixed local collectors, then review exactly what would be shared.")
+    (box :class "report-policy" :orientation "v" :space-evenly false :spacing 4
+      (label :class "report-policy-title" :xalign 0 :text "LOCAL // PRIVATE // EXPLICIT")
+      (label :class "report-policy-copy" :xalign 0 :wrap true :text "Artifacts use mode 0600 and are never uploaded automatically. Credentials, unrestricted journals, private environment dumps and saved network secrets are excluded."))
+    (box :class "report-profile-grid" :orientation "v" :space-evenly false :spacing 7
+      (label :class "report-section-label" :xalign 0 :text "01 // CHOOSE EVIDENCE PROFILE")
+      (report-profile-button :id "overview" :code "OVR" :title "System overview" :detail "Identity, platform, uptime, memory, storage and failed user services.")
+      (report-profile-button :id "performance" :code "PERF" :title "Performance investigation" :detail "Load, memory, PSI pressure, storage and bounded top-process evidence.")
+      (report-profile-button :id "network" :code "NET" :title "Network investigation" :detail "NetworkManager state, interfaces, routes and resolver configuration.")
+      (report-profile-button :id "power" :code "PWR" :title "Power investigation" :detail "UPower inventory, battery properties, profiles and thermal zones.")
+      (report-profile-button :id "full" :code "FULL" :title "Full system evidence" :detail "All approved report collectors in one larger local artifact."))
+    (box :class "report-build" :orientation "v" :space-evenly false :spacing 8
+      (box :space-evenly false
+        (label :class "report-section-label" :xalign 0 :hexpand true :text "02 // BUILD ARTIFACT")
+        (label :class "report-build-state" :text {report_status?.data?.exists == true ? "LATEST READY" : "NO ARTIFACT"}))
+      (button :class "report-generate primary" :timeout "20s" :onclick "$HOME/.config/eww/scripts/performance-report.sh generate-json ${report_profile} >/dev/null 2>&1 &" "GENERATE ${report_profile} REPORT")
+      (box :class "report-latest" :orientation "v" :space-evenly false :spacing 4 :visible {report_status?.data?.exists == true}
+        (label :class "report-latest-title" :xalign 0 :text "${report_status?.data?.latest?.profile_label ?: "REPORT"} // ${report_status?.data?.latest?.id ?: "--"}")
+        (label :class "report-latest-meta" :xalign 0 :text "${report_status?.data?.latest?.line_count ?: 0} lines // ${report_status?.data?.latest?.size_bytes ?: 0} bytes // ${report_status?.data?.latest?.generated_label ?: "NEVER"}")
+        (label :class "report-latest-path" :xalign 0 :wrap true :text {report_status?.data?.latest?.path ?: ""})
+        (label :class "report-latest-sections" :xalign 0 :wrap true :text "SECTIONS // ${report_status?.data?.latest?.sections_label ?: "--"}")
+        (box :class "report-actions" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly false :spacing 7
+          (button :class "report-generate" :onclick "$HOME/.config/eww/scripts/surface-state.sh close insights ${active_surface} ${active_flyout} && $HOME/.config/eww/scripts/performance-report.sh open-latest" "OPEN IN PAGER")
+          (button :class "report-generate" :active {report_status?.data?.latest?.path != ""} :onclick "$HOME/.config/eww/scripts/performance-report.sh copy-latest-path" "COPY PATH"))))
+    (box :class "report-preview" :orientation "v" :space-evenly false :visible {report_status?.data?.exists == true}
+      (label :class "report-section-label" :xalign 0 :text "03 // REVIEW PREVIEW // FIRST 100 NON-EMPTY LINES")
+      (for line in {report_status?.data?.preview ?: []}
+        (box :class "report-preview-row" :space-evenly false :spacing 8
+          (label :class "report-preview-number" :yalign 0 :text {line.line_no})
+          (label :class "report-preview-line" :xalign 0 :yalign 0 :wrap true :text {line.text}))))
+    (box :class "report-history" :orientation "v" :space-evenly false :spacing 5
+      (label :class "report-section-label" :xalign 0 :text "04 // LOCAL HISTORY // ${report_status?.data?.history_count ?: 0} ARTIFACTS")
+      (for report in {report_status?.data?.history ?: []}
+        (report-history-row :report report)))
+    (box :class "report-danger" :orientation "v" :space-evenly false :spacing 7 :visible {report_status?.data?.exists == true}
+      (label :class "report-danger-copy" :xalign 0 :wrap true :text "Delete removes the latest text artifact and its manifest. Older reports remain in local history.")
+      (button :class {pending_action == "delete-latest-report" ? "report-delete confirm" : "report-delete"}
+        :onclick {pending_action == "delete-latest-report" ? "$HOME/.config/eww/scripts/performance-report.sh delete-latest >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none" : "${EWW_CMD} update pending_action=delete-latest-report"}
+        {pending_action == "delete-latest-report" ? "CONFIRM DELETE LATEST" : "DELETE LATEST"}))))

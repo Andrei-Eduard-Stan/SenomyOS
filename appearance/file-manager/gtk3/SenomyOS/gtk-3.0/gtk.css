@@ -1,0 +1,833 @@
+/*
+ * SenomyOS GTK 3 prototype.
+ *
+ * Keep GTK's built-in Adwaita mechanics and accessibility behavior, then
+ * apply the Obsidian visual tokens. This is a namespaced test theme; it is not
+ * a Thunar-only stylesheet and is not a global preference by itself.
+ */
+@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained.css");
+@import url("senomy-tokens.css");
+
+* {
+  color: @senomy_fg;
+  caret-color: @senomy_accent;
+  -gtk-icon-shadow: none;
+  -gtk-icon-theme: "SenomyOS-Files";
+}
+
+.background,
+window {
+  color: @senomy_fg;
+  background-color: rgba(8, 9, 11, 0.90);
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono", monospace;
+  font-size: 13px;
+}
+
+/* Native Thunar dialogs place their page content in plain GtkStack and
+ * GtkViewport containers. Adwaita's light defaults otherwise remain visible
+ * behind SenomyOS foreground text. Keep those content planes explicit. */
+dialog,
+dialog stack,
+dialog viewport,
+dialog scrolledwindow,
+stack,
+viewport {
+  color: @senomy_fg;
+  background-color: @senomy_bg;
+  background-image: none;
+}
+
+window decoration {
+  border: 2px solid @senomy_frame_silver;
+  border-radius: 18px;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.52);
+}
+
+headerbar,
+.titlebar,
+toolbar,
+.toolbar {
+  color: @senomy_fg;
+  background-color: @senomy_surface;
+  background-image: none;
+  border-color: @senomy_border;
+  box-shadow: none;
+}
+
+headerbar,
+.titlebar {
+  min-height: 38px;
+  padding: 5px 10px;
+  border-bottom: 1px solid @senomy_border;
+  border-radius: 14px 14px 0 0;
+}
+
+toolbar,
+.toolbar {
+  padding: 4px 8px;
+}
+
+actionbar,
+.actionbar,
+.inline-toolbar {
+  padding: 5px 8px;
+  color: @senomy_fg;
+  background-color: @senomy_surface;
+  background-image: none;
+  border-top: 1px solid @senomy_border;
+  box-shadow: none;
+}
+
+actionbar button,
+.actionbar button,
+.inline-toolbar button {
+  background-color: transparent;
+  background-image: none;
+  border-color: @senomy_border;
+}
+
+button,
+modelbutton {
+  min-height: 34px;
+  min-width: 34px;
+  padding: 3px 9px;
+  color: @senomy_fg;
+  background-color: transparent;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+button:hover,
+modelbutton:hover {
+  color: @senomy_fg;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: @senomy_border;
+}
+
+button:active,
+button:checked,
+modelbutton:active,
+modelbutton:checked {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-color: @senomy_accent;
+}
+
+button:focus,
+entry:focus,
+spinbutton:focus,
+combobox:focus,
+treeview.view:focus {
+  border-color: @senomy_accent;
+  box-shadow: inset 0 0 0 1px rgba(152, 146, 232, 0.28);
+}
+
+button:disabled,
+entry:disabled,
+combobox:disabled {
+  color: @senomy_dim;
+  background-color: rgba(255, 255, 255, 0.015);
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+actionbar button:disabled,
+.actionbar button:disabled,
+.inline-toolbar button:disabled,
+.linked button:disabled {
+  color: @senomy_dim;
+  background-color: rgba(255, 255, 255, 0.015);
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+}
+
+toolbar.inline-toolbar toolbutton > button,
+toolbar.inline-toolbar button,
+.inline-toolbar toolbutton > button,
+.inline-toolbar .linked button {
+  color: @senomy_fg;
+  background-color: transparent;
+  background-image: none;
+  border-color: @senomy_border;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+toolbar.inline-toolbar toolbutton > button:disabled,
+toolbar.inline-toolbar button:disabled,
+.inline-toolbar toolbutton > button:disabled,
+.inline-toolbar .linked button:disabled {
+  color: @senomy_dim;
+  background-color: rgba(255, 255, 255, 0.015);
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+entry,
+spinbutton,
+combobox button.combo,
+searchbar entry {
+  min-height: 34px;
+  padding: 3px 10px;
+  color: @senomy_fg;
+  background-color: @senomy_surface_raised;
+  background-image: none;
+  border: 1px solid @senomy_border;
+  border-radius: 11px;
+  box-shadow: none;
+}
+
+entry selection,
+textview text selection,
+treeview.view:selected,
+treeview.view:selected:focus,
+.view:selected,
+.view:selected:focus {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+}
+
+.view,
+iconview,
+textview,
+textview text,
+treeview.view {
+  color: @senomy_fg;
+  background-color: @senomy_bg;
+}
+
+treeview.view {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+treeview.view header button {
+  min-height: 30px;
+  color: @senomy_muted;
+  background-color: @senomy_surface;
+  border-color: @senomy_border;
+  border-radius: 0;
+}
+
+.sidebar,
+placessidebar,
+stacksidebar,
+stackswitcher {
+  color: @senomy_muted;
+  background-color: @senomy_surface;
+  border-color: @senomy_border;
+}
+
+placessidebar row,
+.sidebar row {
+  min-height: 34px;
+  padding: 1px 8px;
+  border-left: 2px solid transparent;
+}
+
+placessidebar row:hover,
+.sidebar row:hover {
+  color: @senomy_fg;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+placessidebar row:selected,
+.sidebar row:selected {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-left-color: @senomy_accent;
+}
+
+notebook,
+notebook > stack,
+notebook > stack:not(:only-child),
+notebook > stack > box {
+  color: @senomy_fg;
+  background-color: @senomy_bg;
+  background-image: none;
+  border-color: @senomy_border;
+}
+
+notebook > header {
+  background-color: @senomy_surface;
+  border-color: @senomy_border;
+}
+
+notebook > header > tabs > tab {
+  min-height: 32px;
+  padding: 2px 10px;
+  color: @senomy_muted;
+  background-color: transparent;
+  border-bottom: 2px solid transparent;
+}
+
+notebook > header > tabs > tab:hover {
+  color: @senomy_fg;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+notebook > header > tabs > tab:checked {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-bottom-color: @senomy_accent;
+}
+
+menubar,
+menu,
+.menu,
+popover,
+popover.background {
+  color: @senomy_fg;
+  background-color: @senomy_surface_raised;
+  border-color: @senomy_border;
+}
+
+menuitem,
+modelbutton.flat {
+  min-height: 30px;
+  padding: 3px 10px;
+}
+
+menuitem:hover,
+modelbutton.flat:hover {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+}
+
+separator {
+  min-width: 1px;
+  min-height: 1px;
+  background-color: @senomy_border;
+}
+
+scrollbar {
+  background-color: transparent;
+}
+
+scrollbar trough {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+scrollbar slider {
+  min-width: 6px;
+  min-height: 28px;
+  background-color: rgba(255, 255, 255, 0.24);
+  border: 2px solid transparent;
+  border-radius: 4px;
+}
+
+scrollbar slider:hover {
+  background-color: rgba(152, 146, 232, 0.62);
+}
+
+scale trough,
+progressbar trough {
+  min-height: 4px;
+  background-color: rgba(255, 255, 255, 0.10);
+  border-radius: 2px;
+}
+
+scale highlight,
+progressbar progress {
+  min-height: 4px;
+  background-color: @senomy_accent;
+  border-radius: 2px;
+}
+
+tooltip,
+tooltip.background {
+  color: @senomy_fg;
+  background-color: @senomy_surface_raised;
+  border: 1px solid @senomy_border_strong;
+  border-radius: 10px;
+}
+
+.dim-label,
+.subtitle,
+label:disabled {
+  color: @senomy_muted;
+}
+
+.error,
+.destructive-action {
+  color: @senomy_danger;
+}
+
+.suggested-action {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-color: @senomy_accent;
+}
+
+/* Thunar-specific precision workspace. Native controls and actions remain
+ * authoritative; this block changes only hierarchy, material, and density. */
+
+/* Thunar is a native GTK workspace inside Hyprland's outer compositor frame.
+ * Its 20px client adapter matches the compositor clip exactly; only neutral
+ * edge centres repeat and the two renderers do not draw competing outlines. */
+window.thunar {
+  padding: 7px;
+  border: 0;
+  border-radius: 20px;
+  background-color: @senomy_glass_surface;
+  background-image:
+    url("assets/frame-window-corner-tl.svg"),
+    url("assets/frame-window-corner-tr.svg"),
+    url("assets/frame-window-corner-bl.svg"),
+    url("assets/frame-window-corner-br.svg"),
+    url("assets/frame-window-edge-top.svg"),
+    url("assets/frame-window-edge-bottom.svg"),
+    url("assets/frame-window-edge-left.svg"),
+    url("assets/frame-window-edge-right.svg"),
+    url("assets/frame-crest-wide.svg"),
+    url("assets/frame-motif-diagnostic-tick.svg");
+  background-repeat:
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    repeat-x,
+    repeat-x,
+    repeat-y,
+    repeat-y,
+    no-repeat,
+    no-repeat;
+  background-position:
+    left top,
+    right top,
+    left bottom,
+    right bottom,
+    center top,
+    center bottom,
+    left center,
+    right center,
+    center top,
+    center bottom;
+}
+
+window.thunar decoration {
+  border: 1px solid rgba(221, 224, 234, 0.38);
+  border-radius: 20px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.58);
+}
+
+/* Adwaita publishes separate light backdrop colors. Keep inactive workspaces
+ * on the same obsidian hierarchy without flattening every plane to one alpha. */
+window.thunar:backdrop {
+  color: @senomy_fg;
+  background-color: rgba(10, 12, 15, 0.50);
+}
+
+window.thunar > box,
+window.thunar grid,
+window.thunar paned,
+window.thunar paned > separator,
+.thunar > box,
+.thunar grid,
+.thunar paned,
+.thunar paned > separator {
+  color: @senomy_fg;
+  background-color: transparent;
+  background-image: none;
+}
+
+window.thunar notebook,
+window.thunar notebook > stack,
+window.thunar notebook > stack > box,
+window.thunar viewport,
+window.thunar iconview,
+.thunar notebook,
+.thunar notebook > stack,
+.thunar notebook > stack > box,
+.thunar viewport,
+.thunar iconview {
+  color: @senomy_fg;
+  background-color: rgba(8, 9, 11, 0.84);
+  background-image: none;
+}
+
+/* Menu row: one quiet architectural line, never six boxed labels. */
+window.thunar menubar,
+.thunar menubar {
+  min-height: 25px;
+  margin: 0 8px 2px 8px;
+  padding: 0 5px;
+  color: @senomy_muted;
+  background-color: rgba(8, 9, 11, 0.46);
+  border: 0;
+  border-bottom: 1px solid rgba(221, 224, 234, 0.12);
+  border-radius: 0;
+}
+
+window.thunar menubar > menuitem,
+.thunar menubar > menuitem {
+  min-height: 23px;
+  padding: 0 7px;
+  color: @senomy_muted;
+  background-color: transparent;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+}
+
+window.thunar menubar > menuitem:hover,
+window.thunar menubar > menuitem:focus,
+.thunar menubar > menuitem:hover,
+.thunar menubar > menuitem:focus {
+  color: @senomy_frame_ivory;
+  background-color: rgba(244, 245, 248, 0.035);
+  border-bottom-color: rgba(154, 114, 232, 0.62);
+}
+
+/* Navigation remains a generous hit area around visually compact marks. */
+window.thunar toolbar,
+.thunar toolbar {
+  min-height: 42px;
+  margin: 0 6px 5px 6px;
+  padding: 3px 5px;
+  color: @senomy_fg;
+  background-color: rgba(15, 17, 21, 0.72);
+  background-image: none;
+  border: 1px solid rgba(221, 224, 234, 0.18);
+  border-radius: 8px;
+  box-shadow: inset 0 1px rgba(244, 245, 248, 0.035);
+}
+
+window.thunar toolbar button,
+window.thunar toolbar toolbutton > button,
+.thunar toolbar button,
+.thunar toolbar toolbutton > button {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 1px 6px;
+  color: @senomy_fg;
+  background-color: transparent;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+window.thunar toolbar button:hover,
+window.thunar toolbar toolbutton > button:hover,
+.thunar toolbar button:hover,
+.thunar toolbar toolbutton > button:hover {
+  color: @senomy_frame_ivory;
+  background-color: rgba(244, 245, 248, 0.045);
+  border-color: rgba(221, 224, 234, 0.22);
+}
+
+window.thunar toolbar button:checked,
+window.thunar toolbar button:active,
+window.thunar toolbar toolbutton > button:checked,
+window.thunar toolbar toolbutton > button:active,
+.thunar toolbar button:checked,
+.thunar toolbar button:active,
+.thunar toolbar toolbutton > button:checked,
+.thunar toolbar toolbutton > button:active {
+  color: @senomy_frame_ivory;
+  background-color: rgba(15, 17, 21, 0.88);
+  background-image: none;
+  border-color: rgba(221, 224, 234, 0.42);
+  box-shadow: inset 0 -2px rgba(154, 114, 232, 0.72);
+}
+
+/* The location selector is a technical navigation lens. It can remain a real
+ * editable entry or native breadcrumb pathbar according to Thunar state. */
+window.thunar toolbar entry,
+window.thunar toolbar button.location-button,
+.thunar toolbar entry,
+.thunar toolbar button.location-button {
+  min-height: 34px;
+  padding: 1px 9px;
+  color: @senomy_fg;
+  caret-color: @senomy_frame_violet_light;
+  background-color: rgba(8, 9, 11, 0.84);
+  background-image: none;
+  border: 1px solid rgba(221, 224, 234, 0.18);
+  border-radius: 6px;
+  box-shadow: inset 0 1px rgba(244, 245, 248, 0.025);
+}
+
+window.thunar toolbar entry:focus,
+window.thunar toolbar button.location-button:focus,
+.thunar toolbar entry:focus,
+.thunar toolbar button.location-button:focus {
+  border-color: rgba(201, 184, 255, 0.62);
+  box-shadow: inset 2px 0 rgba(154, 114, 232, 0.72);
+}
+
+/* Pane dividers provide structure without wrapping each region in a card. */
+window.thunar paned,
+.thunar paned {
+  margin: 0 6px;
+}
+
+window.thunar paned > separator,
+.thunar paned > separator {
+  min-width: 6px;
+  min-height: 6px;
+  background-color: transparent;
+  border: 0;
+  border-left: 1px solid rgba(221, 224, 234, 0.12);
+}
+
+window.thunar scrolledwindow,
+.thunar scrolledwindow {
+  color: @senomy_fg;
+  background-color: rgba(8, 9, 11, 0.84);
+  background-image: none;
+  border: 0;
+  border-radius: 0;
+}
+
+/* Main file table: open reading plane, aligned metadata, quiet hover, and one
+ * restrained violet selection trace. */
+window.thunar .standard-view,
+.thunar .standard-view {
+  color: @senomy_fg;
+  background-color: rgba(8, 9, 11, 0.84);
+  border: 1px solid rgba(221, 224, 234, 0.10);
+  border-radius: 0;
+}
+
+window.thunar treeview.view,
+.thunar treeview.view {
+  color: @senomy_fg;
+  background-color: rgba(8, 9, 11, 0.84);
+  border-color: rgba(221, 224, 234, 0.08);
+  -gtk-icon-effect: dim;
+  -GtkTreeView-horizontal-separator: 0;
+  -GtkTreeView-vertical-separator: 7;
+}
+
+window.thunar treeview.view:hover,
+.thunar treeview.view:hover {
+  background-color: rgba(244, 245, 248, 0.035);
+}
+
+window.thunar treeview.view:selected,
+window.thunar treeview.view:selected:focus,
+.thunar treeview.view:selected,
+.thunar treeview.view:selected:focus {
+  color: @senomy_frame_ivory;
+  background-color: rgba(90, 71, 132, 0.26);
+  outline: 1px solid rgba(201, 184, 255, 0.40);
+  outline-offset: -1px;
+  box-shadow: inset 2px 0 rgba(154, 114, 232, 0.78);
+}
+
+window.thunar treeview.view header button,
+.thunar treeview.view header button {
+  min-height: 29px;
+  padding: 1px 8px;
+  color: @senomy_muted;
+  background-color: rgba(15, 17, 21, 0.74);
+  background-image: none;
+  border: 0;
+  border-right: 1px solid rgba(221, 224, 234, 0.08);
+  border-bottom: 1px solid rgba(221, 224, 234, 0.14);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+window.thunar treeview.view header button:hover,
+window.thunar treeview.view header button:active,
+.thunar treeview.view header button:hover,
+.thunar treeview.view header button:active {
+  color: @senomy_frame_ivory;
+  background-color: rgba(244, 245, 248, 0.035);
+  border-bottom-color: rgba(154, 114, 232, 0.56);
+}
+
+/* Native Shortcuts exposes the real Places, Devices, and Network inventory. */
+window.thunar placessidebar,
+window.thunar .sidebar,
+.thunar placessidebar,
+.thunar .sidebar {
+  margin: 0;
+  color: @senomy_muted;
+  background-color: rgba(10, 12, 15, 0.79);
+  background-image: none;
+  border: 0;
+  border-right: 1px solid rgba(221, 224, 234, 0.12);
+  border-radius: 0;
+}
+
+window.thunar placessidebar row,
+window.thunar .sidebar row,
+.thunar placessidebar row,
+.thunar .sidebar row {
+  min-height: 32px;
+  margin: 0;
+  padding: 1px 8px;
+  color: @senomy_muted;
+  background-color: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+}
+
+window.thunar placessidebar row image,
+window.thunar .sidebar row image,
+.thunar placessidebar row image,
+.thunar .sidebar row image {
+  -gtk-icon-effect: dim;
+}
+
+window.thunar placessidebar row:hover,
+window.thunar .sidebar row:hover,
+.thunar placessidebar row:hover,
+.thunar .sidebar row:hover {
+  color: @senomy_fg;
+  background-color: rgba(244, 245, 248, 0.035);
+}
+
+window.thunar placessidebar row:selected,
+window.thunar .sidebar row:selected,
+.thunar placessidebar row:selected,
+.thunar .sidebar row:selected {
+  color: @senomy_frame_ivory;
+  background-color: rgba(90, 71, 132, 0.22);
+  border-left-color: rgba(154, 114, 232, 0.84);
+  box-shadow: inset 0 1px rgba(221, 224, 234, 0.08);
+}
+
+/* Thunar 4.20's real standalone image preview. Upstream supplies image,
+ * filename, and size only; unsupported formats remain honest empty previews. */
+window.thunar .preview-pane,
+.thunar .preview-pane {
+  min-width: 276px;
+  margin-left: 0;
+  padding: 0;
+  color: @senomy_muted;
+  background-color: rgba(10, 12, 15, 0.87);
+  background-image: none;
+  border: 0;
+  border-left: 1px solid rgba(221, 224, 234, 0.16);
+  border-radius: 0;
+}
+
+window.thunar .preview-pane viewport,
+window.thunar .preview-pane box,
+window.thunar .preview-pane grid,
+.thunar .preview-pane viewport,
+.thunar .preview-pane box,
+.thunar .preview-pane grid {
+  color: @senomy_muted;
+  background-color: transparent;
+  background-image: none;
+}
+
+window.thunar .preview-pane image,
+.thunar .preview-pane image {
+  margin: 14px;
+  padding: 8px;
+  background-color: rgba(8, 9, 11, 0.52);
+  border: 1px solid rgba(221, 224, 234, 0.12);
+}
+
+window.thunar .preview-pane label,
+.thunar .preview-pane label {
+  padding: 2px 4px;
+  color: @senomy_muted;
+  font-size: 12px;
+}
+
+/* Status is an integrated information rail, not a floating rounded textbox. */
+window.thunar statusbar,
+.thunar statusbar {
+  min-height: 27px;
+  margin: 4px 8px 0 8px;
+  padding: 2px 9px;
+  color: @senomy_muted;
+  background-color: rgba(10, 12, 15, 0.70);
+  background-image: none;
+  border: 0;
+  border-top: 1px solid rgba(221, 224, 234, 0.14);
+  border-radius: 0 0 10px 10px;
+  font-size: 11px;
+  font-feature-settings: "tnum";
+}
+
+/* Native menus retain every Thunar action while using the same compact ledger. */
+window.thunar menu,
+window.thunar popover,
+.thunar menu,
+.thunar popover {
+  padding: 4px;
+  color: @senomy_fg;
+  background-color: rgba(15, 17, 21, 0.95);
+  background-image: none;
+  border: 1px solid rgba(221, 224, 234, 0.30);
+  border-radius: 7px;
+}
+
+window.thunar menuitem,
+window.thunar modelbutton.flat,
+.thunar menuitem,
+.thunar modelbutton.flat {
+  min-height: 28px;
+  padding: 2px 9px;
+  border-radius: 4px;
+}
+
+window.thunar menuitem:hover,
+window.thunar modelbutton.flat:hover,
+.thunar menuitem:hover,
+.thunar modelbutton.flat:hover {
+  color: @senomy_frame_ivory;
+  background-color: rgba(154, 114, 232, 0.13);
+}
+
+window.thunar scrollbar,
+.thunar scrollbar {
+  background-color: transparent;
+}
+
+window.thunar scrollbar trough,
+.thunar scrollbar trough {
+  background-color: rgba(255, 255, 255, 0.012);
+}
+
+window.thunar scrollbar slider,
+.thunar scrollbar slider {
+  min-width: 3px;
+  min-height: 24px;
+  background-color: rgba(119, 124, 137, 0.46);
+  border: 0;
+  border-radius: 2px;
+}
+
+window.thunar scrollbar slider:hover,
+.thunar scrollbar slider:hover {
+  background-color: rgba(221, 224, 234, 0.68);
+}
+
+window.thunar scrollbar slider:active,
+.thunar scrollbar slider:active {
+  background-color: rgba(244, 245, 248, 0.92);
+  box-shadow: inset 1px 0 rgba(154, 114, 232, 0.92);
+}
+
+/* Backdrop keeps the same hierarchy with lower structure contrast. */
+window.thunar:backdrop menubar,
+window.thunar:backdrop toolbar,
+window.thunar:backdrop statusbar,
+window.thunar:backdrop placessidebar,
+window.thunar:backdrop .sidebar {
+  color: @senomy_dim;
+  background-color: rgba(10, 12, 15, 0.68);
+}
+
+window.thunar:backdrop .standard-view,
+window.thunar:backdrop .preview-pane,
+window.thunar:backdrop treeview.view {
+  color: @senomy_muted;
+  background-color: rgba(8, 9, 11, 0.78);
+}

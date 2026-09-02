@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "lines": [
+    {
+      "id": "ambient-steady",
+      "category": "ambient",
+      "severity": "ambient",
+      "rarity": "common",
+      "language": "en",
+      "tone": "calm",
+      "text": "Everything looks steady."
+    },
+    {
+      "id": "ambient-watch",
+      "category": "ambient",
+      "severity": "ambient",
+      "rarity": "common",
+      "language": "en",
+      "tone": "watchful",
+      "text": "Quiet system. I'll keep watch."
+    },
+    {
+      "id": "ambient-clear",
+      "category": "ambient",
+      "severity": "ambient",
+      "rarity": "common",
+      "language": "en",
+      "tone": "calm",
+      "text": "All clear for now."
+    },
+    {
+      "id": "ambient-cursor",
+      "category": "ambient",
+      "severity": "ambient",
+      "rarity": "uncommon",
+      "language": "en",
+      "tone": "reflective",
+      "text": "The cursor blinks. Possibility remains."
+    },
+    {
+      "id": "ambient-machina",
+      "category": "ambient",
+      "severity": "ambient",
+      "rarity": "uncommon",
+      "language": "la-en",
+      "tone": "watchful",
+      "text": "Machina vigilat. The machine keeps watch."
+    },
+    {
+      "id": "ambient-astra",
+      "category": "ambient",
+      "severity": "ambient",
+      "rarity": "uncommon",
+      "language": "la-en",
+      "tone": "reflective",
+      "text": "Per aspera ad astra. Through hardship, to the stars."
+    }
+  ]
+}

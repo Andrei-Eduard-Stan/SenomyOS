@@ -1,0 +1,151 @@
+(defwidget timeline-source-button [source text]
+  (button
+    :class {timeline_source == source
+      ? "timeline-source-button active"
+      : "timeline-source-button"}
+    :onclick "$HOME/.config/eww/scripts/ui-action.sh timeline-source ${source}"
+    text))
+
+(defwidget timeline-event [event]
+  (box
+    :class "timeline-event"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    (box
+      :space-evenly false
+      :spacing 8
+      (label
+        :class "timeline-time"
+        :text "${event.date} ${event.time}")
+      (label
+        :class "timeline-severity ${event.severity}"
+        :text {event.severity})
+      (label
+        :class "timeline-event-source"
+        :text {event.source}))
+    (label
+      :class "timeline-event-title"
+      :xalign 0
+      :text {event?.title ?: "Event"})
+    (label
+      :class "timeline-message"
+      :xalign 0
+      :limit-width 64
+      :wrap true
+      :tooltip {event.message}
+      :text {event.message})))
+
+(defwidget timeline-source-view [status]
+  (box
+    :class "timeline-source-view"
+    :orientation "v"
+    :space-evenly false
+
+    (label
+      :class "timeline-summary"
+      :xalign 0
+      :text {status?.ok == true
+        ? "${status.data.count} EVENTS // ${status.source}"
+        : "SOURCE UNAVAILABLE"})
+
+    (box
+      :class "timeline-error"
+      :orientation "v"
+      :space-evenly false
+      :visible {status?.ok != true}
+      (label
+        :class "insight-state"
+        :xalign 0
+        :text "UNAVAILABLE")
+      (label
+        :class "insight-detail"
+        :xalign 0
+        :limit-width 64
+        :wrap true
+        :text {status?.error?.message ?: "The selected source is unavailable."}))
+
+    (box
+      :class "timeline-empty"
+      :visible {status?.ok == true && status?.data?.count == 0}
+      (label
+        :class "insight-detail"
+        :xalign 0
+        :text "No entries are available from this source."))
+
+    (box
+      :class "timeline-events"
+      :orientation "v"
+      :space-evenly false
+      (for event in {status?.data?.entries ?: []}
+        (timeline-event :event event)))))
+
+(defwidget insights-timeline []
+  (box
+    :class "insights-section"
+    :orientation "v"
+    :space-evenly false
+
+    (insights-section-heading
+      :eyebrow "EVENTS"
+      :title "Timeline"
+      :detail "A bounded local record of shell interactions and sanitized operating-system evidence. It never records keystrokes, file contents, websites, passwords or credentials.")
+
+    (box
+      :class "timeline-explainer"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      (label
+        :class "timeline-explainer-title"
+        :xalign 0
+        :text {timeline_source == "activity" ? "SENOMY ACTIVITY" : timeline_source == "session" ? "USER SESSION JOURNAL" : timeline_source == "system" ? "SYSTEM JOURNAL" : timeline_source == "kernel" ? "KERNEL JOURNAL" : "EWW DAEMON LOG"})
+      (label
+        :class "timeline-explainer-copy"
+        :xalign 0
+        :wrap true
+        :text {timeline_source == "activity" ? "Buttons, panel transitions, section changes and approved SenomyOS actions." : timeline_source == "session" ? "Messages emitted by applications and services in your user session. This is not a history of everything you personally do." : timeline_source == "system" ? "Host services and operating-system events available to your account." : timeline_source == "kernel" ? "Hardware, driver and kernel messages available to your account." : "Native daemon output when available. If this Eww build leaves its cache empty, a clearly sourced Senomy interaction bridge shows component commands instead."}))
+
+    (box
+      :class "timeline-toolbar"
+      :orientation "v"
+      :space-evenly false
+      :spacing 8
+
+      (box
+        :class "timeline-sources"
+        :space-evenly false
+        :spacing 4
+        (timeline-source-button :source "activity" :text "Activity")
+        (timeline-source-button :source "session" :text "Session")
+        (timeline-source-button :source "system" :text "System")
+        (timeline-source-button :source "kernel" :text "Kernel")
+        (timeline-source-button :source "eww" :text "Eww"))
+
+      (box
+        :space-evenly false
+        (box :hexpand true)
+        (button
+          :class {timeline_follow
+            ? "timeline-follow active"
+            : "timeline-follow"}
+          :onclick {timeline_follow
+            ? "$HOME/.config/eww/scripts/ui-action.sh timeline-follow false"
+            : "$HOME/.config/eww/scripts/ui-action.sh timeline-follow true"}
+          {timeline_follow ? "FOLLOW // ON" : "FOLLOW // PAUSED"})))
+
+    (box
+      :visible {timeline_source == "activity"}
+      (timeline-source-view :status timeline_activity_status))
+    (box
+      :visible {timeline_source == "session"}
+      (timeline-source-view :status timeline_session_status))
+    (box
+      :visible {timeline_source == "system"}
+      (timeline-source-view :status timeline_system_status))
+    (box
+      :visible {timeline_source == "kernel"}
+      (timeline-source-view :status timeline_kernel_status))
+    (box
+      :visible {timeline_source == "eww"}
+      (timeline-source-view :status timeline_eww_status))))

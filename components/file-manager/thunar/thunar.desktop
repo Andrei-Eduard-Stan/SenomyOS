@@ -1,0 +1,21 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Thunar File Workspace
+GenericName=File Manager
+Comment=Browse local files with the SenomyOS workspace
+Exec=/usr/bin/env sh -c "exec ~/.local/bin/senomy-file-workspace"
+Icon=org.xfce.thunar
+Terminal=false
+StartupNotify=true
+Categories=System;Core;GTK;FileTools;FileManager;
+Keywords=file manager;files;folders;directories;explorer;home;trash;
+Actions=home;touch;
+
+[Desktop Action home]
+Name=Open Home
+Exec=/usr/bin/env sh -c "exec ~/.local/bin/senomy-file-workspace"
+
+[Desktop Action touch]
+Name=Open Touch Layout
+Exec=/usr/bin/env sh -c "SENOMY_FILE_DENSITY=touch exec ~/.local/bin/senomy-file-workspace"

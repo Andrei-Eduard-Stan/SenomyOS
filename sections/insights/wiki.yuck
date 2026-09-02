@@ -1,0 +1,282 @@
+(defwidget wiki-link [link]
+  (button
+    :class {link.available
+      ? "wiki-link"
+      : "wiki-link unavailable"}
+    :tooltip {link.available
+      ? "Open ${link.target_title}"
+      : (link.external
+        ? "External links are displayed but not launched from Eww"
+        : "The linked article is unavailable")}
+    :timeout "2s"
+    :onclick {link.available
+      ? "${EWW_CMD} update wiki_category=${link.category_id} wiki_article=${link.article_id}"
+      : "true"}
+    (box
+      :space-evenly false
+      :spacing 7
+      (label :class "wiki-link-mark" :text ">>")
+      (label
+        :class "wiki-link-label"
+        :xalign 0
+        :hexpand true
+        :text {link.label})
+      (label
+        :class "wiki-link-state"
+        :text {link.available ? "ARTICLE" : (link.external ? "EXTERNAL" : "MISSING")}))))
+
+(defwidget wiki-links [links]
+  (box
+    :class "wiki-links"
+    :orientation "v"
+    :space-evenly false
+    :spacing 4
+    :visible {arraylength(links) > 0}
+    (for link in links
+      (wiki-link :link link))))
+
+(defwidget wiki-block [block]
+  (box
+    :class "wiki-block wiki-block-${block.type}"
+    :orientation "v"
+    :space-evenly false
+
+    (label
+      :class "wiki-heading level-${block?.level ?: 1}"
+      :visible {block.type == "heading"}
+      :xalign 0
+      :wrap true
+      :show-truncated false
+      :text {block?.text ?: ""})
+
+    (label
+      :class "wiki-paragraph"
+      :visible {block.type == "paragraph"}
+      :xalign 0
+      :wrap true
+      :show-truncated false
+      :text {block?.text ?: ""})
+
+    (box
+      :class "wiki-quote"
+      :visible {block.type == "quote"}
+      (label
+        :xalign 0
+        :wrap true
+        :show-truncated false
+        :text {block?.text ?: ""}))
+
+    (box
+      :class "wiki-code"
+      :orientation "v"
+      :space-evenly false
+      :visible {block.type == "code"}
+      (label
+        :class "wiki-code-language"
+        :xalign 0
+        :text {block?.language ?: "text"})
+      (label
+        :class "wiki-code-text"
+        :xalign 0
+        :wrap true
+        :show-truncated false
+        :text {block?.text ?: ""}))
+
+    (box
+      :class "wiki-list"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      :visible {block.type == "list"}
+      (for item in {block?.items ?: []}
+        (box
+          :class "wiki-list-item"
+          :space-evenly false
+          :spacing 8
+          (label
+            :class "wiki-list-marker"
+            :valign "start"
+            :text {block.ordered ? "${item.index}." : "//"})
+          (label
+            :class "wiki-list-copy"
+            :xalign 0
+            :hexpand true
+            :wrap true
+            :show-truncated false
+            :text {item.text}))))
+
+    (box
+      :class "wiki-table"
+      :orientation "v"
+      :space-evenly false
+      :visible {block.type == "table"}
+      (box
+        :class "wiki-table-row header"
+        :space-evenly true
+        (for cell in {block?.headers ?: []}
+          (label
+            :class "wiki-table-cell header"
+            :xalign 0
+            :hexpand true
+            :wrap true
+            :text {cell.text})))
+      (for row in {block?.rows ?: []}
+        (box
+          :class "wiki-table-row"
+          :space-evenly true
+          (for cell in {row.cells}
+            (label
+              :class "wiki-table-cell"
+              :xalign 0
+              :hexpand true
+              :wrap true
+              :text {cell.text})))))
+
+    (box
+      :class "wiki-divider"
+      :hexpand true
+      :visible {block.type == "divider"})
+
+    (wiki-links :links {block?.links ?: []})))
+
+(defwidget wiki-category [category]
+  (button
+    :class {wiki_category == category.id
+      ? "wiki-category active"
+      : "wiki-category"}
+    :onclick "${EWW_CMD} update wiki_category=${category.id} wiki_article=${category.default_article_id}"
+    (box
+      :space-evenly false
+      :spacing 7
+      (label
+        :class "wiki-category-title"
+        :text {category.title})
+      (label
+        :class "wiki-category-count"
+        :text {"${category.article_count}"}))))
+
+(defwidget wiki-article-index [article]
+  (button
+    :class {wiki_article == article.id
+      ? "wiki-article-index active"
+      : "wiki-article-index"}
+    :visible {article.category_id == wiki_category}
+    :onclick "${EWW_CMD} update wiki_article=${article.id}"
+    (box
+      :orientation "v"
+      :space-evenly false
+      :spacing 3
+      (label
+        :class "wiki-article-index-title"
+        :xalign 0
+        :wrap true
+        :text {article.title})
+      (label
+        :class "wiki-article-index-summary"
+        :xalign 0
+        :wrap true
+        :text {article.summary}))))
+
+(defwidget wiki-article [article]
+  (box
+    :class "wiki-article"
+    :orientation "v"
+    :space-evenly false
+    :visible {article.id == wiki_article}
+
+    (box
+      :class "wiki-article-header"
+      :orientation "v"
+      :space-evenly false
+      :spacing 5
+      (label
+        :class "wiki-article-category"
+        :xalign 0
+        :text {"${article.category_title} // ${article.modified_label}"})
+      (label
+        :class "wiki-article-title"
+        :xalign 0
+        :wrap true
+        :text {article.title})
+      (label
+        :class "wiki-article-summary"
+        :xalign 0
+        :wrap true
+        :show-truncated false
+        :text {article.summary})
+      (label
+        :class "wiki-article-source"
+        :xalign 0
+        :text {"SOURCE // ${article.source_path}"}))
+
+    (box
+      :class "wiki-article-blocks"
+      :orientation "v"
+      :space-evenly false
+      (for block in {article.blocks}
+        (wiki-block :block block)))))
+
+(defwidget insights-wiki []
+  (box
+    :class "insights-section wiki-section"
+    :orientation "v"
+    :space-evenly false
+
+    (insights-section-heading
+      :eyebrow "KNOWLEDGE"
+      :title "SenomyOS Wiki"
+      :detail "A local knowledge base rendered from bounded Markdown files under wiki/.")
+
+    (box
+      :class "wiki-status-error"
+      :orientation "v"
+      :space-evenly false
+      :visible {wiki_catalog?.ok != true}
+      (label
+        :class "wiki-status-error-code"
+        :xalign 0
+        :text "WIKI UNAVAILABLE")
+      (label
+        :class "wiki-status-error-copy"
+        :xalign 0
+        :wrap true
+        :text {wiki_catalog?.error?.message ?: "The Markdown catalog is loading."}))
+
+    (box
+      :class "wiki-categories"
+      :space-evenly false
+      :spacing 5
+      :visible {wiki_catalog?.ok == true}
+      (for category in {wiki_catalog?.data?.categories ?: []}
+        (wiki-category :category category)))
+
+    (box
+      :class "wiki-workspace"
+      :space-evenly false
+      :visible {wiki_catalog?.ok == true}
+
+      (box
+        :class "wiki-index"
+        :orientation "v"
+        :space-evenly false
+        :spacing 5
+        (label
+          :class "wiki-index-label"
+          :xalign 0
+          :text "ARTICLES")
+        (for article in {wiki_catalog?.data?.articles ?: []}
+          (wiki-article-index :article article)))
+
+      (box
+        :class "wiki-reader"
+        :orientation "v"
+        :space-evenly false
+        :hexpand true
+        (for article in {wiki_catalog?.data?.articles ?: []}
+          (wiki-article :article article))))
+
+    (label
+      :class "wiki-warning-count"
+      :visible {arraylength(wiki_catalog?.data?.warnings ?: []) > 0}
+      :xalign 0
+      :text {"PARSER NOTES // ${arraylength(wiki_catalog?.data?.warnings ?: [])}"})))

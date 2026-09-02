@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+EWW_BIN="${EWW_BIN:-/usr/bin/eww}"
+EWW_CONFIG="${SENOMY_EWW_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/eww}"
+START_SCRIPT="$EWW_CONFIG/scripts/start-eww.sh"
+IPC_TIMEOUT="${SENOMY_EWW_IPC_TIMEOUT:-3}"
+
+fail() {
+  printf 'senomy-eww-legacy: %s\n' "$*" >&2
+  exit 1
+}
+
+eww_command() {
+  /usr/bin/timeout "$IPC_TIMEOUT" "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" "$@"
+}
+
+is_ready() {
+  eww_command ping >/dev/null 2>&1
+}
+
+bar_active() {
+  eww_command active-windows 2>/dev/null | grep -qE '^[^:]+: main-bar$'
+}
+
+case "${1:-}" in
+  start)
+    [[ -x "$EWW_BIN" ]] || fail "Eww is not executable at $EWW_BIN"
+    [[ -x "$START_SCRIPT" ]] || fail "legacy runtime is missing $START_SCRIPT"
+    # start-eww.sh already waits for IPC, the window definition, and the live
+    # main-bar. A second immediate IPC check can race Eww 0.5's client channel
+    # teardown even though the verified layer is mapped.
+    if ! "$START_SCRIPT"; then
+      printf 'senomy-eww-legacy: first verified start failed; retrying once after stale-state reconciliation\n' >&2
+      "$START_SCRIPT"
+    fi
+    ;;
+  stop)
+    if is_ready; then
+      eww_command close-all >/dev/null 2>&1 || true
+      eww_command kill >/dev/null 2>&1 || true
+    fi
+    for _attempt in {1..30}; do
+      is_ready || exit 0
+      sleep 0.1
+    done
+    fail "Eww IPC remained reachable after a clean stop"
+    ;;
+  status)
+    if bar_active; then
+      printf 'active\n'
+    elif is_ready; then
+      printf 'daemon-only\n'
+      exit 1
+    else
+      printf 'inactive\n'
+      exit 3
+    fi
+    ;;
+  *)
+    printf 'usage: senomy-eww-legacy {start|stop|status}\n' >&2
+    exit 64
+    ;;
+esac

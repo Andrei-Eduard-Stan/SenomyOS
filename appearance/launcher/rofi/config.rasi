@@ -1,0 +1,30 @@
+configuration {
+    font: "JetBrainsMono Nerd Font 10";
+    show-icons: true;
+    icon-theme: "Adwaita";
+    matching: "fuzzy";
+    tokenize: true;
+    case-smart: true;
+    cycle: false;
+    hover-select: true;
+    click-to-exit: true;
+    steal-focus: true;
+
+    drun-match-fields: "name,generic,comment,categories,keywords";
+    drun-display-format: "{name}    {generic}";
+    display-drun: "APPS";
+    display-files: "FILES";
+    display-window: "WINDOWS";
+    display-actions: "ACTIONS";
+
+    kb-mode-next: "Control+Tab,Alt+Right";
+    kb-mode-previous: "Control+ISO_Left_Tab,Alt+Left";
+    kb-row-up: "Up,Control+k";
+    kb-row-down: "Down,Control+j";
+    kb-accept-entry: "Control+m,Return,KP_Enter";
+    kb-remove-to-eol: "Control+Shift+k";
+    kb-accept-custom-alt: "";
+    kb-custom-1: "Control+Shift+Return";
+}
+
+@theme "themes/command-lens.rasi"

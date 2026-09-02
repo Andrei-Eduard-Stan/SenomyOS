@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DURATION="${1:-65}"
+UNIT="${SENOMY_QS_UNIT:-senomy-quickshell.service}"
+
+case "$DURATION" in
+  *[!0-9]*|'') printf 'duration must be a positive integer\n' >&2; exit 64 ;;
+esac
+((DURATION >= 10)) || { printf 'duration must be at least 10 seconds\n' >&2; exit 64; }
+
+pid="$(systemctl --user show -p MainPID --value "$UNIT")"
+[[ "$pid" =~ ^[1-9][0-9]*$ && -r "/proc/$pid/stat" ]] || {
+  printf '%s is not running\n' "$UNIT" >&2
+  exit 69
+}
+
+clock_ticks="$(getconf CLK_TCK)"
+samples="$(mktemp "${TMPDIR:-/tmp}/senomy-v2-benchmark.XXXXXX")"
+children="$(mktemp "${TMPDIR:-/tmp}/senomy-v2-children.XXXXXX")"
+trap 'rm -f "$samples" "$children"' EXIT
+
+process_ticks() {
+  local remainder fields
+  remainder="$(sed 's/^[^)]*) //' "/proc/$pid/stat")"
+  read -r -a fields <<<"$remainder"
+  printf '%s\n' "$((fields[11] + fields[12]))"
+}
+
+previous_ticks="$(process_ticks)"
+previous_time="$(date +%s%N)"
+start_time="$previous_time"
+
+for ((sample = 1; sample <= DURATION; sample++)); do
+  sleep 1
+  [[ -r "/proc/$pid/stat" ]] || { printf 'process exited during benchmark\n' >&2; exit 70; }
+  current_ticks="$(process_ticks)"
+  current_time="$(date +%s%N)"
+  elapsed_ns=$((current_time - previous_time))
+  delta_ticks=$((current_ticks - previous_ticks))
+  cpu_percent="$(awk -v delta="$delta_ticks" -v ticks="$clock_ticks" -v ns="$elapsed_ns" 'BEGIN { printf "%.4f", (delta / ticks) / (ns / 1000000000) * 100 }')"
+  rss_kib="$(awk '/^VmRSS:/{print $2}' "/proc/$pid/status")"
+  read -r pss_kib private_kib < <(
+    awk '/^Pss:/{pss=$2} /^Private_Clean:/{private+=$2} /^Private_Dirty:/{private+=$2} END{print pss+0, private+0}' "/proc/$pid/smaps_rollup"
+  )
+  task_count="$(find "/proc/$pid/task" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+  child_line="$(cat "/proc/$pid/task/$pid/children" 2>/dev/null || true)"
+  for child in $child_line; do printf '%s\n' "$child" >>"$children"; done
+  jq -cn \
+    --argjson second "$sample" --argjson cpu "$cpu_percent" \
+    --argjson rss "$rss_kib" --argjson pss "$pss_kib" \
+    --argjson private "$private_kib" --argjson tasks "$task_count" \
+    '{second:$second,cpu_percent:$cpu,rss_kib:$rss,pss_kib:$pss,private_kib:$private,tasks:$tasks}' >>"$samples"
+  previous_ticks="$current_ticks"
+  previous_time="$current_time"
+done
+
+finish_time="$(date +%s%N)"
+unique_children="$(sort -u "$children" | sed '/^$/d' | wc -l)"
+jq -s \
+  --arg unit "$UNIT" --argjson pid "$pid" --argjson requested_seconds "$DURATION" \
+  --argjson elapsed_seconds "$(awk -v ns="$((finish_time - start_time))" 'BEGIN { printf "%.3f", ns / 1000000000 }')" \
+  --argjson observed_child_pids "$unique_children" '
+  def mean: add / length;
+  def percentile($p): sort | .[((length * $p | ceil) - 1)];
+  def summary($key):
+    [.[].[$key]] as $values |
+    {mean:($values|mean),median:($values|percentile(0.5)),p95:($values|percentile(0.95)),min:($values|min),max:($values|max),growth:($values[-1]-$values[0])};
+  {
+    schema_version:1,
+    unit:$unit,
+    pid:$pid,
+    requested_seconds:$requested_seconds,
+    elapsed_seconds:$elapsed_seconds,
+    sample_count:length,
+    cpu_percent:summary("cpu_percent"),
+    rss_kib:summary("rss_kib"),
+    pss_kib:summary("pss_kib"),
+    private_kib:summary("private_kib"),
+    tasks:summary("tasks"),
+    observed_child_pids:$observed_child_pids
+  }' "$samples"

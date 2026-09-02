@@ -1,0 +1,236 @@
+(defwidget diagnostics-task-content [task]
+  (box
+    :space-evenly false
+    :spacing 10
+    (label
+      :class "diagnostics-task-code"
+      :text {task.code})
+    (box
+      :orientation "v"
+      :space-evenly false
+      :spacing 2
+      :hexpand true
+      (label
+        :class "diagnostics-task-title"
+        :xalign 0
+        :text {task.title})
+      (label
+        :class "diagnostics-task-summary"
+        :xalign 0
+        :limit-width 52
+        :show-truncated true
+        :text {task.summary}))
+    (label
+      :class "diagnostics-task-arrow"
+      :text ">")))
+
+(defwidget diagnostics-output-line [line]
+  (box
+    :class "diagnostics-output-line"
+    :space-evenly false
+    :spacing 9
+    (label
+      :class "diagnostics-line-number"
+      :yalign 0
+      :text {line.line_no})
+    (label
+      :class "diagnostics-line-text"
+      :xalign 0
+      :yalign 0
+      :limit-width 62
+      :wrap true
+      :text {line.text})))
+
+(defwidget diagnostics-result [status]
+  (box
+    :class "diagnostics-terminal"
+    :orientation "v"
+    :space-evenly false
+
+    (box
+      :class "diagnostics-terminal-header"
+      :space-evenly false
+      :spacing 8
+      (label
+        :class "diagnostics-terminal-mark"
+        :text "RUN")
+      (label
+        :class "diagnostics-terminal-title"
+        :xalign 0
+        :hexpand true
+        :text "SENOMY TASK CONSOLE")
+      (label
+        :class "diagnostics-run-state ${status?.data?.state ?: "idle"}"
+        :text {status?.data?.state_label ?: "READY"}))
+
+    (box
+      :class "diagnostics-command-row"
+      :space-evenly false
+      :spacing 8
+      (label
+        :class "diagnostics-prompt"
+        :yalign 0
+        :text "senomy@system:~$")
+      (label
+        :class "diagnostics-command"
+        :xalign 0
+        :yalign 0
+        :limit-width 52
+        :wrap true
+        :text {status?.data?.command_preview ?: "select <allowlisted-task>"}))
+
+    (box
+      :class "diagnostics-meta"
+      :space-evenly false
+      :spacing 12
+      (label
+        :text "TASK // ${status?.data?.code ?: "RUN"}")
+      (label
+        :text {status?.data?.state == "ready" || status?.data?.state == "failed"
+          ? "EXIT // ${status?.data?.exit_code ?: 0}"
+          : "EXIT // --"})
+      (label
+        :xalign 1
+        :hexpand true
+        :text "FINISHED // ${status?.data?.finished_at_label ?: "NEVER"}"))
+
+    (box
+      :class "diagnostics-result-copy"
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      (label
+        :class "diagnostics-result-title"
+        :xalign 0
+        :text {status?.data?.title ?: "Awaiting task"})
+      (label
+        :class "diagnostics-result-summary"
+        :xalign 0
+        :limit-width 64
+        :wrap true
+        :text {status?.data?.summary ?: "Choose a read-only task."})
+      (label
+        :class "diagnostics-result-scope"
+        :xalign 0
+        :limit-width 64
+        :wrap true
+        :text "SCOPE // ${status?.data?.scope ?: "No command has run."}")
+      (label
+        :class "diagnostics-result-scope"
+        :xalign 0
+        :text "SOURCE // ${status?.data?.execution_source ?: "senomy-diagnostics"}"))
+
+    (box
+      :class "diagnostics-running"
+      :visible {status?.data?.state == "running"}
+      (label
+        :xalign 0
+        :text "EXECUTING // bounded by the configured timeout"))
+
+    (box
+      :class "diagnostics-error"
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      :visible {(status?.error?.code ?: "") != ""}
+      (label
+        :class "diagnostics-error-code"
+        :xalign 0
+        :text "ERROR // ${status?.error?.code ?: "UNKNOWN"}")
+      (label
+        :class "diagnostics-error-message"
+        :xalign 0
+        :limit-width 64
+        :wrap true
+        :text {status?.error?.message ?: "The diagnostic task failed."}))
+
+    (box
+      :class "diagnostics-empty"
+      :visible {status?.data?.state == "idle"}
+      (label
+        :xalign 0
+        :text "No command history is kept. Select one task to begin."))
+
+    (box
+      :class "diagnostics-empty"
+      :visible {status?.data?.state == "ready" && status?.data?.line_count == 0}
+      (label
+        :xalign 0
+        :text "Task completed successfully with no output."))
+
+    (box
+      :class "diagnostics-output"
+      :orientation "v"
+      :space-evenly false
+      (for line in {status?.data?.output ?: []}
+        (diagnostics-output-line :line line)))
+
+    (label
+      :class "diagnostics-truncated"
+      :xalign 0
+      :visible {status?.data?.truncated == true}
+      :text "OUTPUT BOUNDED // showing ${status?.data?.shown_line_count ?: 0} of ${status?.data?.line_count ?: 0} lines")
+
+    (label
+      :class "diagnostics-guidance"
+      :xalign 0
+      :limit-width 64
+      :wrap true
+      :text "SENOMY // ${status?.data?.guidance ?: "Use a real terminal for arbitrary commands."}")))
+
+(defwidget insights-diagnostics []
+  (box
+    :class "insights-section"
+    :orientation "v"
+    :space-evenly false
+
+    (insights-section-heading
+      :eyebrow "TASK RUNNER"
+      :title "Diagnostics"
+      :detail "Choose a read-only task, inspect its exact command and scope, then review bounded sanitized output.")
+
+    (box
+      :class "diagnostics-policy"
+      :orientation "v"
+      :space-evenly false
+      :spacing 4
+      (label
+        :class "diagnostics-policy-state"
+        :xalign 0
+        :text "POLICY // READ-ONLY")
+      (label
+        :class "diagnostics-policy-copy"
+        :xalign 0
+        :limit-width 64
+        :wrap true
+        :text "There is no free-form prompt here. Task IDs map to fixed argument arrays; no sudo, restart, install, kill or shell interpolation is connected."))
+
+    (box
+      :class "diagnostics-catalog"
+      :orientation "v"
+      :space-evenly false
+      :spacing 6
+      (box
+        :class "diagnostics-catalog-heading"
+        :space-evenly false
+        (label
+          :xalign 0
+          :hexpand true
+          :text "ALLOWLISTED TASKS")
+        (label
+          :text "CLICK TO RUN"))
+      (for task in {diagnostics_catalog?.data?.tasks ?: []}
+        (button
+          :halign "fill"
+          :class {diagnostics_status?.data?.task_id == task.id
+            ? "diagnostics-task active"
+            : diagnostics_status?.data?.active_task != "none"
+              ? "diagnostics-task disabled"
+              : "diagnostics-task"}
+          :tooltip {task.command_preview}
+          :onclick {diagnostics_status?.data?.active_task == "none"
+            ? "$HOME/.config/eww/scripts/diagnostics-status.sh run ${task.id} >/dev/null 2>&1 &"
+            : "true"}
+          (diagnostics-task-content :task task))))
+
+    (diagnostics-result :status diagnostics_status)))

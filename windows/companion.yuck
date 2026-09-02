@@ -1,0 +1,145 @@
+(defwindow companion
+  :namespace "senomy-companion"
+  :geometry (geometry
+    :x "12px"
+    :y "72px"
+    :width "330px"
+    :height "760px"
+    :anchor "top right")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "senomy-companion ${companion_mode} dock-${companion_dock} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-accent-${appearance_status?.data?.accent ?: "cyan"}"
+    :orientation "v"
+    :space-evenly false
+
+    (box
+      :class "companion-toolbar"
+      :space-evenly false
+      (button
+        :class "companion-dock"
+        :tooltip {companion_dock == "right" ? "Move companion to the left edge" : "Move companion to the right edge"}
+        :timeout "8s"
+        :onclick "$HOME/.config/eww/scripts/companion-state.sh dock"
+        {companion_dock == "right" ? "MOVE ←" : "MOVE →"})
+      (label
+        :class "companion-toolbar-title"
+        :xalign 0
+        :hexpand true
+        :text "SENOMY // COMPANION")
+      (button
+        :class {companion_pinned ? "companion-pin active" : "companion-pin"}
+        :tooltip {companion_pinned ? "Unpin; expanded view will auto-collapse" : "Pin expanded companion for this session"}
+        :timeout "8s"
+        :onclick "$HOME/.config/eww/scripts/companion-state.sh pin"
+        {companion_pinned ? "PINNED" : "PIN"})
+      (button
+        :class "companion-minimize"
+        :tooltip {companion_mode == "compact" ? "Expand companion" : "Collapse to avatar view"}
+        :timeout "8s"
+        :onclick {companion_mode == "compact"
+          ? "$HOME/.config/eww/scripts/companion-state.sh expand"
+          : "$HOME/.config/eww/scripts/companion-state.sh collapse"}
+        {companion_mode == "compact" ? "OPEN" : "MIN"})
+      (button
+        :class "companion-close"
+        :tooltip "Close companion; reopen from the Rail avatar"
+        :timeout "8s"
+        :onclick "$HOME/.config/eww/scripts/companion-state.sh close"
+        "CLOSE"))
+
+    (box
+      :class "companion-stage"
+      :orientation "v"
+      :space-evenly false
+      :vexpand true
+
+      (box
+        :class "companion-art expanded"
+        :visible {companion_mode == "expanded"}
+        :halign "center"
+        :valign "center"
+        (senomy-avatar
+          :variant "chibi"
+          :size 288
+          :context "companion"
+          :domain "companion"))
+
+      (box
+        :class "companion-art compact"
+        :visible {companion_mode == "compact"}
+        :halign "center"
+        :valign "center"
+        (senomy-avatar
+          :variant "chibi"
+          :size 248
+          :context "companion-compact"
+          :domain "companion"))
+
+      (box
+        :class "companion-observation"
+        :orientation "v"
+        :space-evenly false
+        :spacing 5
+        (label
+          :class "companion-eyebrow"
+          :xalign 0
+          :text {batt_json.available == true && batt_json.percent_total <= 20
+            ? "POWER // VERIFIED WARNING"
+            : (companion_media?.data?.playing == true
+              ? "MEDIA // LIVE SESSION"
+              : "SENOMY // LOCAL OBSERVER")})
+        (label
+          :class "companion-headline"
+          :xalign 0
+          :wrap true
+          :text {batt_json.available == true && batt_json.percent_total <= 20
+            ? "Energy reserve is ${batt_json.percent_total}% // connect power soon"
+            : (companion_media?.data?.playing == true
+              ? companion_media.data.message
+              : senomy_rail_message)})
+        (label
+          :class "companion-source"
+          :xalign 0
+          :wrap true
+          :text {batt_json.available == true && batt_json.percent_total <= 20
+            ? "SOURCE // UPOWER // ${batt_json.state}"
+            : (companion_media?.data?.session_available == true
+              ? "SOURCE // ${companion_media.data.player} // ${companion_media.data.status}"
+              : "LOCAL // PRIVATE // NO MEDIA SESSION")})
+
+        (box
+          :class "companion-media-detail"
+          :visible {companion_mode == "expanded" && companion_media?.data?.session_available == true}
+          :orientation "v"
+          :space-evenly false
+          :spacing 3
+          (label
+            :class "companion-track"
+            :xalign 0
+            :wrap true
+            :text {companion_media?.data?.title ?: "Untitled media"})
+          (label
+            :class "companion-artist"
+            :xalign 0
+            :wrap true
+            :text {companion_media?.data?.artist ?: "Artist unavailable"}))
+
+        (box
+          :class "companion-actions"
+          :visible {companion_mode == "expanded"}
+          :space-evenly false
+          :spacing 8
+          (button
+            :class "companion-action"
+            :tooltip "Open the Senomy Insights briefing"
+            :timeout "8s"
+            :onclick "$HOME/.config/eww/scripts/surface-state.sh show-insights briefing ${active_surface} ${active_flyout}"
+            "OPEN INSIGHTS")
+          (label
+            :class "companion-session-state"
+            :xalign 1
+            :hexpand true
+            :text {companion_pinned ? "SESSION // PINNED" : "AUTO-COLLAPSE // 30S"}))))))

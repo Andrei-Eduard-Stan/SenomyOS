@@ -1,0 +1,24 @@
+(defwindow surface-dismiss
+  :geometry (geometry
+    :x "0px"
+    :y "0px"
+    :width "100%"
+    :height "100%"
+    :anchor "bottom center")
+  :stacking "fg"
+  :focusable false
+  :exclusive false
+  :namespace "senomy-surface-dismiss"
+
+  (eventbox
+    :class "surface-dismiss-layer"
+    :cursor "default"
+    :active {dismiss_armed && (active_surface != "none" || active_flyout != "none")}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh dismiss ${active_surface} ${active_flyout}"
+    :onmiddleclick "$HOME/.config/eww/scripts/surface-state.sh dismiss ${active_surface} ${active_flyout}"
+    :onrightclick "$HOME/.config/eww/scripts/surface-state.sh dismiss ${active_surface} ${active_flyout}"
+    (box
+      :class "surface-dismiss-hit-area"
+      :hexpand true
+      :vexpand true)))

@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd -P)}"
+BIN_ROOT="${XDG_BIN_HOME:-$HOME/.local/bin}"
+UNIT_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/senomyos"
+
+declare -a LINKS=(
+  "$SOURCE_ROOT/scripts/senomy-shell|$BIN_ROOT/senomy-shell"
+  "$SOURCE_ROOT/scripts/senomy-dev|$BIN_ROOT/senomy-dev"
+  "$SOURCE_ROOT/scripts/senomy-quickshell-run|$BIN_ROOT/senomy-quickshell-run"
+  "$SOURCE_ROOT/scripts/senomy-eww-legacy|$BIN_ROOT/senomy-eww-legacy"
+  "$SOURCE_ROOT/scripts/senomy-session-action|$BIN_ROOT/senomy-session-action"
+  "$SOURCE_ROOT/systemd/senomy-quickshell.service|$UNIT_ROOT/senomy-quickshell.service"
+  "$SOURCE_ROOT/systemd/senomy-eww-legacy.service|$UNIT_ROOT/senomy-eww-legacy.service"
+  "$SOURCE_ROOT/systemd/senomy-shell-fallback.service|$UNIT_ROOT/senomy-shell-fallback.service"
+)
+
+plan() {
+  local entry source target
+  for entry in "${LINKS[@]}"; do
+    IFS='|' read -r source target <<<"$entry"
+    printf '%s -> %s\n' "$target" "$source"
+  done
+  printf '%s (generated only when absent; login default remains Eww)\n' "$CONFIG_ROOT/shell.json"
+}
+
+check() {
+  local entry source target failed=0
+  for entry in "${LINKS[@]}"; do
+    IFS='|' read -r source target <<<"$entry"
+    if [[ -L "$target" && "$(readlink -f "$target")" == "$(readlink -f "$source")" ]]; then
+      printf 'OK   %s\n' "$target"
+    else
+      printf 'MISS %s\n' "$target"
+      failed=1
+    fi
+  done
+  return "$failed"
+}
+
+apply() {
+  local entry source target
+  mkdir -p "$BIN_ROOT" "$UNIT_ROOT" "$CONFIG_ROOT"
+  for entry in "${LINKS[@]}"; do
+    IFS='|' read -r source target <<<"$entry"
+    [[ -e "$source" ]] || { printf 'missing source: %s\n' "$source" >&2; exit 1; }
+    if [[ -e "$target" || -L "$target" ]]; then
+      [[ -L "$target" && "$(readlink -f "$target")" == "$(readlink -f "$source")" ]] || {
+        printf 'refusing to replace unmanaged target: %s\n' "$target" >&2
+        exit 1
+      }
+    else
+      ln -s "$source" "$target"
+    fi
+  done
+  if [[ ! -e "$CONFIG_ROOT/shell.json" ]]; then
+    /usr/bin/jq -n --arg source "$SOURCE_ROOT" \
+      '{schema_version:1,selected_backend:"eww",source_root:$source,login_default:"eww",reason:"initial-deploy"}' >"$CONFIG_ROOT/shell.json"
+    chmod 600 "$CONFIG_ROOT/shell.json"
+  fi
+  systemctl --user daemon-reload
+  printf 'V2 development links installed. No service was enabled or started.\n'
+}
+
+case "${1:-}" in
+  plan) plan ;;
+  check) check ;;
+  apply) apply ;;
+  *)
+    printf 'usage: senomy-v2-deploy {plan|apply|check}\n' >&2
+    exit 64
+    ;;
+esac

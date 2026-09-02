@@ -1,0 +1,303 @@
+(defwidget network-metric [label value detail]
+  (box :class "control-tech-metric network" :orientation "v" :space-evenly false :spacing 3
+    (label :class "control-tech-label" :xalign 0 :text label)
+    (label :class "control-tech-value" :xalign 0 :text value)
+    (label :class "control-tech-detail" :xalign 0 :limit-width 25 :show-truncated true :text detail)))
+
+(defwidget network-detail-row [label value]
+  (box :class "control-tech-row" :space-evenly false
+    (label :class "control-tech-row-label" :xalign 0 :hexpand true :text label)
+    (label :class "control-tech-row-value" :limit-width 43 :show-truncated true :text value)))
+
+(defwidget network-confirm [id title copy command]
+  (box :class "control-confirm network" :orientation "v" :space-evenly false :spacing 9
+    :visible {pending_action == id}
+    (label :class "control-confirm-code" :xalign 0 :text "CONFIRM // NETWORK STATE")
+    (label :class "control-confirm-title" :xalign 0 :text title)
+    (label :class "control-confirm-copy" :xalign 0 :wrap true :text copy)
+    (box :space-evenly false :spacing 8
+      (button :class "control-confirm-action" :onclick "${EWW_CMD} update pending_action=none" "CANCEL")
+      (button :class "control-confirm-action apply" :timeout "12s"
+        :onclick "${command} >/dev/null 2>&1 && ${EWW_CMD} update pending_action=none &" "APPLY"))))
+
+(defwidget network-nearby-row [network device connectivity]
+  (box
+    :class {network.active ? "network-nearby-row active" : "network-nearby-row"}
+    :orientation "v"
+    :space-evenly false
+    :spacing 7
+    (box :space-evenly false :spacing 9
+      (label
+        :class "network-nearby-signal"
+        :text {network.signal_percent >= 75 ? "󰤨" : (network.signal_percent >= 50 ? "󰤥" : (network.signal_percent >= 25 ? "󰤢" : "󰤟"))})
+      (box :orientation "v" :space-evenly false :hexpand true :spacing 2
+        (label :class "network-nearby-name" :xalign 0 :limit-width 33 :show-truncated true :text {network.ssid})
+        (label
+          :class "network-nearby-meta"
+          :xalign 0
+          :text "${network.signal_percent}% · ${network.band_summary} · ${network.security} · ${network.radio_count} radio${network.radio_count == 1 ? "" : "s"}"))
+      (label
+        :class {network.active ? "network-nearby-badge active" : (network.saved ? "network-nearby-badge saved" : "network-nearby-badge")}
+        :text {network.active ? (connectivity == "full" ? "ONLINE" : "LINKED") : (network.saved ? "SAVED" : (network.secured ? "SECURED" : "OPEN"))})
+      (button
+        :class "network-row-action"
+        :visible {network.saved && !network.active}
+        :timeout "20s"
+        :onclick "$HOME/.config/eww/scripts/network-action.sh activate-profile '${network.profile?.uuid ?: ""}' >/dev/null 2>&1 &"
+        "CONNECT")
+      (button
+        :class "network-row-action"
+        :visible {!network.saved && network.secured}
+        :timeout "8s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout} && $HOME/.config/eww/scripts/network-action.sh connect-interactive '${network.bssid}' '${device}'"
+        "CONNECT")
+      (button
+        :class "network-row-action"
+        :visible {!network.saved && !network.secured}
+        :timeout "20s"
+        :onclick "$HOME/.config/eww/scripts/network-action.sh connect-open '${network.bssid}' '${device}' >/dev/null 2>&1 &"
+        "CONNECT")
+      (button
+        :class "network-row-action warning"
+        :visible {network.active}
+        :onclick "${EWW_CMD} update pending_action=network-nearby-down-${network.bssid}"
+        "DISCONNECT"))
+    (progress :class "network-nearby-strength" :value {network.signal_percent})
+    (network-confirm
+      :id "network-nearby-down-${network.bssid}"
+      :title "Disconnect from ${network.ssid}?"
+      :copy "The active wireless route will be dropped. NetworkManager may reconnect automatically while this saved profile remains enabled."
+      :command "$HOME/.config/eww/scripts/network-action.sh disconnect '${device}'")))
+
+(defwidget network-saved-profile [profile]
+  (box
+    :class {profile.active ? "network-profile-card active" : "network-profile-card"}
+    :orientation "v"
+    :space-evenly false
+    :spacing 9
+    (box :space-evenly false
+      (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+        (label :class "control-tech-code" :xalign 0 :text "PROFILE // ${profile.active ? "ACTIVE" : "SAVED"}")
+        (label :class "network-profile-name" :xalign 0 :limit-width 40 :show-truncated true :text {profile.name})
+        (label :class "network-profile-ssid" :xalign 0 :text "SSID ${profile.ssid}"))
+      (label
+        :class {profile.autoconnect ? "control-state-badge ready" : "control-state-badge"}
+        :text {profile.autoconnect ? "AUTO" : "MANUAL"}))
+
+    (box :class "network-profile-actions" :space-evenly false :spacing 6
+      (button
+        :class "network-row-action"
+        :visible {!profile.active}
+        :timeout "20s"
+        :onclick "$HOME/.config/eww/scripts/network-action.sh activate-profile '${profile.uuid}' >/dev/null 2>&1 &"
+        "CONNECT")
+      (button
+        :class "network-row-action warning"
+        :visible {profile.active}
+        :onclick "${EWW_CMD} update pending_action=network-profile-down-${profile.uuid}"
+        "DISCONNECT")
+      (button
+        :class "network-row-action"
+        :onclick "$HOME/.config/eww/scripts/network-action.sh toggle-autoconnect '${profile.uuid}' '${profile.autoconnect ? "no" : "yes"}' >/dev/null 2>&1 &"
+        :tooltip {profile.autoconnect ? "Disable automatic connection" : "Enable automatic connection"}
+        {profile.autoconnect ? "AUTO OFF" : "AUTO ON"})
+      (button
+        :class "network-row-action"
+        :timeout "8s"
+        :onclick "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout} && $HOME/.config/eww/scripts/network-action.sh edit-profile '${profile.uuid}'"
+        "EDIT")
+      (button
+        :class "network-row-action danger"
+        :onclick "${EWW_CMD} update pending_action=network-profile-forget-${profile.uuid}"
+        "FORGET"))
+
+    (network-confirm
+      :id "network-profile-down-${profile.uuid}"
+      :title "Disconnect ${profile.name}?"
+      :copy "This drops the active profile but keeps its configuration and authentication material in NetworkManager."
+      :command "$HOME/.config/eww/scripts/network-action.sh deactivate-profile '${profile.uuid}'")
+    (network-confirm
+      :id "network-profile-forget-${profile.uuid}"
+      :title "Forget ${profile.name}?"
+      :copy "NetworkManager will permanently delete this saved profile, including its stored authentication configuration. Reconnecting later may require credentials."
+      :command "$HOME/.config/eww/scripts/network-action.sh forget-profile '${profile.uuid}'")))
+
+(defwidget network-interface-card [device]
+  (box :class "network-interface-card ${device.connected ? "connected" : "offline"}"
+    :orientation "v" :space-evenly false :spacing 9
+    (box :space-evenly false
+      (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+        (label :class "control-tech-code" :xalign 0 :text "INTERFACE // ${device.type}")
+        (label :class "control-tech-card-title" :xalign 0 :text {device.id})
+        (label :class "control-tech-detail" :xalign 0 :text {device.connection ?: "No active profile"}))
+      (label :class {device.connected ? "control-state-badge ready" : "control-state-badge"}
+        :text {device.state}))
+    (box :class "control-tech-table" :orientation "v" :space-evenly false
+      (network-detail-row :label "IPv4" :value {arraylength(device.ip4_addresses) > 0 ? device.ip4_addresses[0] : "Unavailable"})
+      (network-detail-row :label "IPv6" :value {arraylength(device.ip6_addresses) > 0 ? device.ip6_addresses[0] : "Unavailable"})
+      (network-detail-row :label "Gateway" :value {device.gateway4 ?: device.gateway6 ?: "Unavailable"})
+      (network-detail-row :label "DNS" :value {arraylength(device.dns) > 0 ? device.dns[0] : "Unavailable"})
+      (network-detail-row :label "Driver / firmware" :value "${device.driver ?: "Unavailable"} / ${device.firmware ?: "Unavailable"}")
+      (network-detail-row :label "MTU / link" :value "${device.mtu ?: "N/A"} / ${(device.speed_mbps ?: "") != "" ? "${device.speed_mbps} Mb/s" : "speed unavailable"}"))
+    (button :class "network-disconnect"
+      :visible {device.connected}
+      :onclick "${EWW_CMD} update pending_action=network-device-down-${device.id}"
+      "REVIEW DISCONNECT")
+    (network-confirm
+      :id "network-device-down-${device.id}"
+      :title "Disconnect interface ${device.id}?"
+      :copy "Every connection currently routed through this interface will be dropped."
+      :command "$HOME/.config/eww/scripts/network-action.sh disconnect '${device.id}'")))
+
+(defwidget control-network-section []
+  (box :class "control-network-section" :orientation "v" :space-evenly false
+    :visible {control_section == "network"} :vexpand true :hexpand true
+    (scroll :class "control-tech-scroll network" :vscroll true :hscroll false :vexpand true :hexpand true
+      (box :class "control-tech-page" :orientation "v" :space-evenly false :spacing 16
+        (box :class "section-heading" :orientation "v" :space-evenly false :spacing 4
+          (label :class "section-eyebrow" :xalign 0 :text "NETWORK // NETWORKMANAGER + KERNEL")
+          (label :class "section-title" :xalign 0 :text "Link command")
+          (label :class "section-detail" :xalign 0 :wrap true
+            :text "Connectivity, radio state, access-point signal, addressing, DNS, routes and interface hardware. Scans and state changes never happen silently."))
+
+        (box :class "control-source-error" :orientation "v" :space-evenly false :spacing 5
+          :visible {network_status?.ok != true}
+          (label :class "control-source-error-code" :xalign 0 :text "SOURCE // ${network_status?.error?.code ?: "LOADING"}")
+          (label :class "control-source-error-copy" :xalign 0 :wrap true :text {network_status?.error?.message ?: "Network telemetry is loading."}))
+
+        (box :class "control-operation network ${network_operation_status.data.state}" :orientation "v" :space-evenly false :spacing 4
+          :visible {network_operation_status.data.state != "idle"}
+          (box :space-evenly false :spacing 8
+            (label :class "control-operation-code" :xalign 0 :hexpand true
+              :text "OPERATION // ${network_operation_status.data.state_label}")
+            (label :class "control-state-badge ${network_operation_status.data.state == "failed" ? "danger" : (network_operation_status.data.state == "succeeded" ? "ready" : "") }"
+              :text {network_operation_status.data.state_label}))
+          (label :class "control-operation-title" :xalign 0 :text {network_operation_status.data.label})
+          (label :class "control-operation-copy" :xalign 0 :wrap true :text {network_operation_status.data.message}))
+
+        (box :class "control-tech-live" :orientation "v" :space-evenly false :spacing 16
+          :visible {network_status?.ok == true}
+          (box :class "control-tech-brief network" :space-evenly false :spacing 14
+            (label :class "control-tech-brief-icon" :text "󰖩")
+            (box :orientation "v" :space-evenly false :valign "center" :spacing 4
+              (label :class "control-tech-code" :xalign 0 :text "LINK INTELLIGENCE // ${network_status.data.internet.label}")
+              (label :class "control-tech-brief-copy" :xalign 0 :wrap true
+                :text {network_status.data.connected
+                  ? (network_status.data.internet.online
+                    ? "Seno: ${network_status.data.primary.connection} is carrying a verified global route. ${(network_status.data.wifi.access_point.ssid ?: "") != "" ? "Wireless signal is ${network_status.data.wifi.access_point.signal_percent}% on ${network_status.data.wifi.access_point.band}." : "The active path is wired or virtual."}"
+                    : "Seno: ${network_status.data.primary.connection} is associated, but internet access is not verified. ${network_status.data.internet.detail}.")
+                  : "Seno: No primary route is active. Check radio state, carrier and saved connection profiles."})))
+
+          (box :class "control-tech-grid" :orientation {bar_layout?.data?.narrow ? "v" : "h"} :space-evenly true :spacing 8
+            (network-metric :label "INTERNET" :value {network_status.data.internet.label} :detail {network_status.data.internet.detail})
+            (network-metric :label "PRIMARY" :value {network_status.data.primary.type ?: "NONE"} :detail {network_status.data.primary.id ?: "No route"})
+            (network-metric :label "WI-FI" :value {network_status.data.wifi.enabled ? "ON" : "OFF"} :detail {network_status.data.wifi.access_point.ssid ?: "Not associated"})
+            (network-metric :label "INTERFACES" :value "${network_status.data.device_count}" :detail "${network_status.data.wifi.saved_profile_count} saved Wi-Fi profiles"))
+
+          (box :class "network-radio-card" :orientation "v" :space-evenly false :spacing 10
+            (box :space-evenly false
+              (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+                (label :class "control-tech-code" :xalign 0 :text "RADIO // POLICY")
+                (label :class "control-tech-card-title" :xalign 0 :text "Wireless control plane"))
+              (label :class {network_status.data.wifi.enabled ? "control-state-badge ready" : "control-state-badge danger"}
+                :text {network_status.data.wifi.enabled ? "ENABLED" : "DISABLED"}))
+            (box :class "network-actions" :space-evenly false :spacing 8
+              (button :class "network-action"
+                :visible {!network_status.data.wifi.enabled}
+                :onclick "$HOME/.config/eww/scripts/network-action.sh wifi-enable" "ENABLE WI-FI")
+              (button :class "network-action warning"
+                :visible {network_status.data.wifi.enabled}
+                :onclick "${EWW_CMD} update pending_action=network-wifi-disable" "REVIEW WI-FI OFF")
+              (button :class "network-action"
+                :active {network_status.data.wifi.enabled && network_status.data.wifi.device.id != ""}
+                :timeout "12s"
+                :onclick "$HOME/.config/eww/scripts/network-action.sh rescan '${network_status.data.wifi.device.id}'" "REFRESH SCAN")
+              (button :class "network-action"
+                :timeout "8s"
+                :onclick "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout} && $HOME/.config/eww/scripts/network-action.sh create-profile"
+                "ADD / HIDDEN")))
+
+          (box :class "network-catalog-card" :orientation "v" :space-evenly false :spacing 10
+            (box :space-evenly false
+              (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+                (label :class "control-tech-code" :xalign 0 :text "NEARBY // CACHED ACCESS POINTS")
+                (label :class "control-tech-card-title" :xalign 0 :text "Available networks")
+                (label :class "control-tech-detail" :xalign 0
+                  :text "Strongest radio per SSID · refresh is manual"))
+              (label :class "network-catalog-count"
+                :text "${network_status.data.wifi.nearby_count} VISIBLE"))
+
+            (box :class "network-nearby-list" :orientation "v" :space-evenly false :spacing 6
+              :visible {network_status.data.wifi.enabled && network_status.data.wifi.nearby_count > 0}
+              (for network in {network_status.data.wifi.nearby}
+                (network-nearby-row
+                  :network {network}
+                  :device {network_status.data.wifi.device.id}
+                  :connectivity {network_status.data.connectivity})))
+
+            (label
+              :class "network-catalog-empty"
+              :visible {!network_status.data.wifi.enabled}
+              :xalign 0 :wrap true
+              :text "Wi-Fi is disabled. Enable the radio to view cached networks.")
+            (label
+              :class "network-catalog-empty"
+              :visible {network_status.data.wifi.enabled && network_status.data.wifi.nearby_count == 0}
+              :xalign 0 :wrap true
+              :text "No visible access points are cached. Use REFRESH SCAN.")
+            (label
+              :class "network-hidden-note"
+              :visible {network_status.data.wifi.hidden_network_count > 0}
+              :xalign 0 :wrap true
+              :text "${network_status.data.wifi.hidden_network_count} hidden access point${network_status.data.wifi.hidden_network_count == 1 ? "" : "s"} detected. Use ADD / HIDDEN with the network name and credentials."))
+
+          (box
+            :class "network-portal-card"
+            :orientation "v"
+            :space-evenly false
+            :spacing 8
+            :visible {network_status.data.connected && !network_status.data.internet.online}
+            (label :class "control-confirm-code" :xalign 0 :text "ACCESS // ${network_status.data.internet.label}")
+            (label :class "control-confirm-title" :xalign 0 :text "The Wi-Fi link is not the internet")
+            (label :class "control-confirm-copy" :xalign 0 :wrap true
+              :text "${network_status.data.internet.detail}. Open hotspots such as EE WiFi commonly require a browser sign-in instead of a Wi-Fi password.")
+            (button
+              :class "network-portal-action"
+              :timeout "8s"
+              :onclick "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout} && $HOME/.config/eww/scripts/network-action.sh open-portal"
+              "OPEN CAPTIVE PORTAL"))
+
+          (box :class "network-ap-card" :orientation "v" :space-evenly false :spacing 10
+            :visible {(network_status.data.wifi.access_point.ssid ?: "") != ""}
+            (box :space-evenly false
+              (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+                (label :class "control-tech-code" :xalign 0 :text "ACCESS POINT // ASSOCIATED")
+                (label :class "control-tech-card-title" :xalign 0 :text {network_status.data.wifi.access_point.ssid}))
+              (label :class "network-signal" :text "${network_status.data.wifi.access_point.signal_percent}%"))
+            (progress :class "network-signal-bar" :value {network_status.data.wifi.access_point.signal_percent})
+            (box :class "control-tech-table" :orientation "v" :space-evenly false
+              (network-detail-row :label "Band / channel" :value "${network_status.data.wifi.access_point.band} / ${network_status.data.wifi.access_point.channel}")
+              (network-detail-row :label "Frequency" :value "${network_status.data.wifi.access_point.frequency_mhz} MHz")
+              (network-detail-row :label "Negotiated rate" :value {network_status.data.wifi.access_point.rate})
+              (network-detail-row :label "Security" :value {network_status.data.wifi.access_point.security})
+              (network-detail-row :label "BSSID" :value {network_status.data.wifi.access_point.bssid})))
+
+          (box :class "network-profile-section" :orientation "v" :space-evenly false :spacing 10
+            (box :space-evenly false
+              (box :orientation "v" :space-evenly false :hexpand true :spacing 3
+                (label :class "control-tech-code" :xalign 0 :text "PROFILES // NETWORKMANAGER")
+                (label :class "control-tech-card-title" :xalign 0 :text "Saved wireless networks"))
+              (label :class "network-catalog-count"
+                :text "${network_status.data.wifi.saved_profile_count} SAVED"))
+            (box :class "network-profile-list" :orientation "v" :space-evenly false :spacing 8
+              (for profile in {network_status.data.wifi.saved_profiles}
+                (network-saved-profile :profile {profile}))))
+
+          (box :class "network-interface-list" :orientation "v" :space-evenly false :spacing 10
+            (label :class "control-tech-code" :xalign 0 :text "INTERFACES // CAPABILITY INVENTORY")
+            (for device in {network_status.data.devices}
+              (network-interface-card :device device)))
+
+          (network-confirm :id "network-wifi-disable" :title "Disable the Wi-Fi radio?"
+            :copy "This immediately drops every wireless connection and may interrupt downloads, remote sessions and network-dependent applications."
+            :command "$HOME/.config/eww/scripts/network-action.sh wifi-disable"))))))

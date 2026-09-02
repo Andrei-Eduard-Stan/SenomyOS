@@ -1,36 +1,97 @@
-(defwindow actioncenter
-  :monitor 0
-  :geometry (geometry
-              :x "calc(100% - 360px - 12px)"
-              :y "48px"
-              :width "360px"
-              :height "520px")
-  :stacking "fg"
-  :anchor "top right"
-  :focusable true
-  :exclusive false
-  :visible { panel == "action" }
-  (box :class "ac-panel" :orientation "v" :spacing 8 :padding 12
-    ;; tabs / header
-    (box :class "ac-tabs" :spacing 8
-      (button :class { ac_page == "main"    ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=main" "Overview")
-      (button :class { ac_page == "audio"   ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=audio" "Audio")
-      (button :class { ac_page == "network" ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=network" "Network")
-      (button :class { ac_page == "battery" ? "ac-tab active" : "ac-tab" }
-              :onclick "eww update ac_page=battery" "Battery")
-      (box :hexpand true)
-      (button :class "ac-close" :onclick "eww update panel=none" "")
-    )
+(defwidget control-tab [section icon text]
+  (button
+    :halign "fill"
+    :class {control_section == section
+      ? "control-tab shell-tab active"
+      : "control-tab shell-tab"}
+    :onclick "${EWW_CMD} update pending_action=none && $HOME/.config/eww/scripts/ui-action.sh control-section ${section}"
+    (box
+      :space-evenly false
+      :spacing 10
+      (label :class "shell-tab-icon" :text icon)
+      (label :class "shell-tab-label" :xalign 0 :text text))))
 
-    ;; content panes
-    (box :class "ac-body" :vexpand true
-      (box :visible { ac_page == "main" }    (actioncenter-main))
-      (box :visible { ac_page == "audio" }   (volume-panel))
-      (box :visible { ac_page == "network" } (wifi-panel))
-      (box :visible { ac_page == "battery" } (battery-panel))
-    )
-  )
-)
+(defwindow actioncenter
+  :namespace "senomy-control"
+  :geometry (geometry
+    :x "0px"
+    :y "12px"
+    :width "960px"
+    :height "760px"
+    :anchor "bottom right")
+  :stacking "overlay"
+  :focusable false
+  :exclusive false
+
+  (box
+    :class "control-centre shell-panel layout-${bar_layout?.data?.density ?: "standard"} ${(bar_layout?.data?.phone ?: false) ? "layout-phone" : ""} appearance-font-${appearance_status?.data?.font_family ?: "jetbrains"} appearance-scale-${appearance_status?.data?.font_scale ?: "standard"} appearance-title-px-${appearance_status?.data?.title_px ?: 16} appearance-body-px-${appearance_status?.data?.body_px ?: 11} appearance-meta-px-${appearance_status?.data?.meta_px ?: 9} appearance-nav-px-${appearance_status?.data?.nav_px ?: 10} appearance-accent-${appearance_status?.data?.accent ?: "cyan"} appearance-gradient-${appearance_status?.data?.gradient ?: "subtle"}"
+    :orientation "v"
+    :space-evenly false
+    :spacing 12
+    :vexpand true
+    :hexpand true
+
+    (surface-hero-header
+      :surface_class "control-header"
+      :domain "ambient"
+      :eyebrow "SENOMY // SYSTEM CONTROL"
+      :title "SENOMY CONTROL CENTRE"
+      :subtitle "Contextual system controls and guarded device actions"
+      :close_tooltip "Close Control Centre"
+      :close_action "$HOME/.config/eww/scripts/surface-state.sh close control ${active_surface} ${active_flyout}"
+      (label :class "shell-hero-chip ready" :text "10 ROUTES ONLINE")
+      (label :class "shell-hero-chip secondary" :text "LOCAL // GUARDED"))
+
+    (box
+      :class "control-content shell-content"
+      :orientation {(bar_layout?.data?.phone ?: false) ? "v" : "h"}
+      :space-evenly false
+      :vexpand true
+
+      (scroll
+        :class "control-tabs-scroll shell-nav"
+        :vscroll {(bar_layout?.data?.phone ?: false) != true}
+        :hscroll {(bar_layout?.data?.phone ?: false) == true}
+        :vexpand {(bar_layout?.data?.phone ?: false) != true}
+
+        (box
+          :class "control-tabs"
+          :orientation {(bar_layout?.data?.phone ?: false) ? "h" : "v"}
+          :spacing 4
+
+          (control-tab :section "overview" :icon "" :text "Overview")
+          (control-tab :section "network" :icon "" :text "Network")
+          (control-tab :section "audio" :icon "" :text "Audio")
+          (control-tab :section "power" :icon "" :text "Power")
+          (control-tab :section "calendar" :icon "" :text "Calendar")
+          (control-tab :section "input" :icon "" :text "Input")
+          (control-tab :section "devices" :icon "" :text "Devices")
+          (control-tab :section "apps" :icon "" :text "Applications")
+          (control-tab :section "appearance" :icon "󰏘" :text "Appearance")
+          (control-tab :section "settings" :icon "" :text "Settings")))
+
+      (box
+        :class "control-body shell-body"
+        :space-evenly false
+        :vexpand true
+        :hexpand true
+
+        (control-overview-section)
+
+        (control-network-section)
+
+        (control-audio-section)
+
+        (control-power-section)
+
+        (control-calendar-section)
+
+        (control-input-section)
+
+        (control-devices-section)
+
+        (applications-section)
+
+        (control-appearance-section)
+
+        (control-settings-section)))))

@@ -1,0 +1,43 @@
+(defwidget insights-briefing []
+  (box
+    :class "insights-section"
+    :orientation "v"
+    :space-evenly false
+
+    (insights-section-heading
+      :eyebrow "CURRENT"
+      :title "Briefing"
+      :detail "Verified observations with source and freshness context.")
+
+    (insight-row
+      :rank "01"
+      :state {rail_system_status?.ok == true ? "INFORMATIONAL" : "UNAVAILABLE"}
+      :title "System activity"
+      :detail {rail_system_status?.ok == true
+        ? "CPU ${round(rail_system_status.data.cpu.percent, 0)}% // Memory ${round(rail_system_status.data.memory.percent, 0)}% // Uptime ${rail_system_status.data.uptime.human}"
+        : (rail_system_status?.error?.message ?: "System status is still loading.")}
+      :source "SOURCE // procfs")
+
+    (insight-row
+      :rank "02"
+      :state {batt_json.state == "loading" || batt_json.available != true
+        ? "UNAVAILABLE"
+        : (batt_json.percent_total <= 20 ? "WARNING" : "INFORMATIONAL")}
+      :title "Power"
+      :detail {batt_json.state == "loading"
+        ? "Battery information is still loading."
+        : (batt_json.available == true ? "${batt_json.percent_total}% combined // ${batt_json.state}" : (batt_json.error ?: "No battery detected"))}
+      :source "SOURCE // UPower")
+
+    (insight-row
+      :rank "03"
+      :state {updates_status?.data?.successful_source_count > 0
+        ? (updates_status.data.known_total_count > 0 ? "RECOMMENDED" : "INFORMATIONAL")
+        : "UNAVAILABLE"}
+      :title "Maintenance briefing"
+      :detail {updates_status?.data?.successful_source_count > 0
+        ? (updates_status.data.known_total_count > 0
+          ? "${updates_status.data.known_total_count} package update${updates_status.data.known_total_count == 1 ? " is" : "s are"} available for review."
+          : "The latest successful package checks report no known updates.")
+        : "No successful package check is available yet. Open Updates to run one manually."}
+      :source "SOURCE // cached package checks")))

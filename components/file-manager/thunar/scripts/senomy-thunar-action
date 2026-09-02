@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Fixed, data-only actions invoked by Thunar UCA entries. Thunar expands %F
+# into individually quoted arguments; this helper never evaluates those values.
+set -euo pipefail
+
+action="${1:-}"
+[[ $# -gt 0 ]] && shift
+
+notify() {
+  local title="$1" detail="$2"
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send --app-name=SenomyOS "$title" "$detail" >/dev/null 2>&1 || true
+  fi
+}
+
+fail_action() {
+  notify "Thunar action unavailable" "$1"
+  printf 'senomy-thunar-action: %s\n' "$1" >&2
+  exit 1
+}
+
+validate_paths() {
+  local maximum="$1" require_files="$2" path
+  shift 2
+  (($# > 0)) || fail_action "No selected paths were provided."
+  (($# <= maximum)) || fail_action "The selection exceeds the $maximum-item safety limit."
+  for path in "$@"; do
+    [[ "$path" == /* ]] || fail_action "Only absolute local paths are supported."
+    [[ ! "$path" =~ [[:cntrl:]] ]] || fail_action "Paths containing control characters are not supported."
+    [[ -e "$path" || -L "$path" ]] || fail_action "A selected path no longer exists."
+    if [[ "$require_files" == true && ! -f "$path" ]]; then
+      fail_action "Checksum calculation accepts regular files only."
+    fi
+  done
+}
+
+case "$action" in
+  copy-path)
+    validate_paths 100 false "$@"
+    command -v wl-copy >/dev/null 2>&1 || fail_action "wl-copy is not installed."
+    printf '%s\n' "$@" | wl-copy || fail_action "The path clipboard operation failed."
+    notify "Path copied" "$# item(s) copied to the clipboard."
+    ;;
+  copy-sha256)
+    validate_paths 32 true "$@"
+    command -v sha256sum >/dev/null 2>&1 || fail_action "sha256sum is not installed."
+    command -v wl-copy >/dev/null 2>&1 || fail_action "wl-copy is not installed."
+    sha256sum -- "$@" | wl-copy || fail_action "The checksum clipboard operation failed."
+    notify "SHA-256 copied" "$# checksum(s) copied to the clipboard."
+    ;;
+  *) fail_action "Unknown allowlisted action." ;;
+esac

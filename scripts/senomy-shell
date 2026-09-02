@@ -1,0 +1,314 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd -P)}"
+CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/senomyos"
+CONFIG_FILE="$CONFIG_ROOT/shell.json"
+RUNTIME_ROOT="${XDG_RUNTIME_DIR:-/tmp}/senomyos"
+LOCK_FILE="$RUNTIME_ROOT/shell-selector.lock"
+LOCK_TIMEOUT="${SENOMY_SHELL_LOCK_TIMEOUT:-10}"
+QS_UNIT=senomy-quickshell.service
+EWW_UNIT=senomy-eww-legacy.service
+FALLBACK_UNIT=senomy-shell-fallback.service
+WORKSPACE_UNIT=workspaces.service
+NOTIFICATION_UNIT=swaync.service
+QS_NAMESPACE=senomy-v2-rail
+EWW_NAMESPACE=senomy-rail
+
+fail() {
+  printf 'senomy-shell: %s\n' "$*" >&2
+  exit 1
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || fail "required command is unavailable: $1"
+}
+
+layer_count() {
+  local namespace="$1"
+  /usr/bin/hyprctl -j layers 2>/dev/null |
+    /usr/bin/jq --arg namespace "$namespace" '[.[]?.levels[][]? | select(.namespace == $namespace)] | length' 2>/dev/null || printf '0\n'
+}
+
+monitor_count() {
+  /usr/bin/hyprctl -j monitors 2>/dev/null | /usr/bin/jq 'length' 2>/dev/null || printf '0\n'
+}
+
+reserve_ready() {
+  local expected="$1" namespace="$2"
+  local monitors layers reserved
+  monitors="$(monitor_count)"
+  layers="$(layer_count "$namespace")"
+  reserved="$(/usr/bin/hyprctl -j monitors 2>/dev/null | /usr/bin/jq '[.[]? | select((.reserved[3] // 0) >= 64)] | length' 2>/dev/null || printf '0')"
+  [[ "$monitors" -gt 0 && "$layers" -eq "$monitors" && "$reserved" -eq "$monitors" ]] || return 1
+  if [[ "$expected" == quickshell ]]; then
+    [[ "$(layer_count "$EWW_NAMESPACE")" -eq 0 ]]
+  else
+    [[ "$(layer_count "$QS_NAMESPACE")" -eq 0 ]]
+  fi
+}
+
+wait_until() {
+  local description="$1"
+  shift
+  for _attempt in {1..60}; do
+    "$@" && return 0
+    sleep 0.1
+  done
+  printf 'senomy-shell: %s\n' "$description" >&2
+  return 1
+}
+
+quickshell_ready() {
+  systemctl --user is-active --quiet "$QS_UNIT" &&
+    reserve_ready quickshell "$QS_NAMESPACE" &&
+    /usr/bin/qs ipc --path "$SOURCE_ROOT/shell/quickshell" show 2>/dev/null | grep -q '^target shell$'
+}
+
+eww_ready() {
+  "$SOURCE_ROOT/scripts/senomy-eww-legacy" status >/dev/null 2>&1 && reserve_ready eww "$EWW_NAMESPACE"
+}
+
+selected_mode() {
+  if [[ -r "$CONFIG_FILE" ]]; then
+    /usr/bin/jq -r '.selected_backend // "eww"' "$CONFIG_FILE" 2>/dev/null || printf 'eww\n'
+  else
+    printf 'eww\n'
+  fi
+}
+
+write_mode() {
+  local mode="$1" reason="${2:-user-selection}" temporary
+  mkdir -p "$CONFIG_ROOT"
+  temporary="$(mktemp "$CONFIG_ROOT/.shell.json.XXXXXX")"
+  /usr/bin/jq -n \
+    --arg mode "$mode" \
+    --arg source "$SOURCE_ROOT" \
+    --arg reason "$reason" \
+    --arg changed "$(date --iso-8601=seconds)" \
+    '{schema_version:1,selected_backend:$mode,source_root:$source,login_default:"eww",reason:$reason,changed_at:$changed}' >"$temporary"
+  chmod 600 "$temporary"
+  mv -f "$temporary" "$CONFIG_FILE"
+}
+
+detected_mode() {
+  local qs eww
+  qs="$(layer_count "$QS_NAMESPACE")"
+  eww="$(layer_count "$EWW_NAMESPACE")"
+  if [[ "$qs" -gt 0 && "$eww" -gt 0 ]]; then
+    printf 'conflict\n'
+  elif [[ "$qs" -gt 0 ]]; then
+    printf 'quickshell\n'
+  elif [[ "$eww" -gt 0 ]]; then
+    printf 'eww\n'
+  else
+    printf 'none\n'
+  fi
+}
+
+notification_owner() {
+  local owner
+  owner="$(/usr/bin/busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
+    org.freedesktop.DBus GetNameOwner s org.freedesktop.Notifications 2>/dev/null |
+    /usr/bin/sed -n 's/^s "\(.*\)"$/\1/p' || true)"
+  printf '%s\n' "${owner:-unowned}"
+}
+
+preflight() {
+  require_command jq
+  require_command hyprctl
+  require_command systemctl
+  require_command flock
+  require_command busctl
+  [[ -x /usr/bin/qs ]] || fail "Quickshell is not installed at /usr/bin/qs"
+  [[ -f "$SOURCE_ROOT/shell/quickshell/shell.qml" ]] || fail "Quickshell source is missing"
+  for unit in "$QS_UNIT" "$EWW_UNIT" "$FALLBACK_UNIT"; do
+    systemctl --user cat "$unit" >/dev/null 2>&1 || fail "$unit is not installed; run senomy-v2-deploy apply"
+  done
+  systemctl --user cat "$NOTIFICATION_UNIT" >/dev/null 2>&1 || fail "$NOTIFICATION_UNIT is unavailable"
+  [[ -n "${WAYLAND_DISPLAY:-}" && -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || fail "Hyprland session environment is unavailable"
+}
+
+adopt_and_stop_eww_rail() {
+  if "$SOURCE_ROOT/scripts/senomy-eww-legacy" status >/dev/null 2>&1; then
+    systemctl --user start "$EWW_UNIT"
+    systemctl --user stop "$EWW_UNIT"
+  else
+    systemctl --user stop "$EWW_UNIT" >/dev/null 2>&1 || true
+    "$SOURCE_ROOT/scripts/senomy-eww-legacy" stop >/dev/null 2>&1 || true
+  fi
+}
+
+restore_eww() {
+  systemctl --user reset-failed "$WORKSPACE_UNIT" "$EWW_UNIT" >/dev/null 2>&1 || true
+  systemctl --user start "$WORKSPACE_UNIT"
+  systemctl --user start "$EWW_UNIT"
+  wait_until "Eww did not regain sole Rail reserve ownership" eww_ready
+}
+
+use_quickshell() {
+  preflight
+  if quickshell_ready; then
+    systemctl --user start "$NOTIFICATION_UNIT"
+    systemctl --user stop "$WORKSPACE_UNIT" >/dev/null 2>&1 || true
+    write_mode quickshell
+    printf 'Quickshell already owns the Rail reserve.\n'
+    return 0
+  fi
+  # Keep the Eww workspace listener alive until Quickshell is ready. Its
+  # dependency pins graphical-session.target, so PartOf services such as the
+  # transitional SwayNC provider do not disappear between Rail owners.
+  adopt_and_stop_eww_rail
+  systemctl --user reset-failed "$QS_UNIT" >/dev/null 2>&1 || true
+  if ! systemctl --user start "$QS_UNIT"; then
+    restore_eww
+    write_mode eww quickshell-start-failed
+    fail "Quickshell failed to start; Eww fallback was restored"
+  fi
+  if ! wait_until "Quickshell did not gain sole Rail reserve ownership" quickshell_ready; then
+    systemctl --user stop "$QS_UNIT" >/dev/null 2>&1 || true
+    restore_eww
+    write_mode eww quickshell-readiness-failed
+    fail "Quickshell readiness failed; Eww fallback was restored"
+  fi
+  systemctl --user stop "$WORKSPACE_UNIT" >/dev/null 2>&1 || true
+  write_mode quickshell
+  printf 'Quickshell owns the Rail reserve; login-time default remains Eww.\n'
+}
+
+use_eww() {
+  preflight
+  if eww_ready && ! systemctl --user is-active --quiet "$QS_UNIT"; then
+    systemctl --user start "$NOTIFICATION_UNIT"
+    write_mode eww
+    printf 'Eww already owns the Rail reserve.\n'
+    return 0
+  fi
+  # Pin graphical-session.target before releasing Quickshell so notification
+  # and portal services are not coupled to the Rail handoff.
+  systemctl --user start "$WORKSPACE_UNIT"
+  systemctl --user stop "$QS_UNIT" >/dev/null 2>&1 || true
+  if ! restore_eww; then
+    systemctl --user stop "$EWW_UNIT" "$WORKSPACE_UNIT" >/dev/null 2>&1 || true
+    systemctl --user reset-failed "$QS_UNIT" >/dev/null 2>&1 || true
+    if systemctl --user start "$QS_UNIT" >/dev/null 2>&1 &&
+      wait_until "Eww failed and Quickshell recovery did not become ready" quickshell_ready; then
+      write_mode quickshell eww-start-failed
+      fail "Eww failed to return; Quickshell was restored"
+    fi
+    fail "Eww failed to return and Quickshell recovery also failed; use the documented TTY recovery"
+  fi
+  write_mode eww
+  printf 'Eww owns the Rail reserve.\n'
+}
+
+recover_eww() {
+  mkdir -p "$RUNTIME_ROOT"
+  restore_eww
+  write_mode eww systemd-fallback
+  printf 'Eww fallback restored after a Quickshell service failure.\n'
+}
+
+show_status() {
+  local detected selected qs_active eww_active workspace_active notification_active notification_bus_owner qs_layers eww_layers
+  detected="$(detected_mode)"
+  selected="$(selected_mode)"
+  qs_active="$(systemctl --user is-active "$QS_UNIT" 2>/dev/null || true)"
+  eww_active="$(systemctl --user is-active "$EWW_UNIT" 2>/dev/null || true)"
+  workspace_active="$(systemctl --user is-active "$WORKSPACE_UNIT" 2>/dev/null || true)"
+  notification_active="$(systemctl --user is-active "$NOTIFICATION_UNIT" 2>/dev/null || true)"
+  notification_bus_owner="$(notification_owner)"
+  qs_layers="$(layer_count "$QS_NAMESPACE")"
+  eww_layers="$(layer_count "$EWW_NAMESPACE")"
+  /usr/bin/jq -n \
+    --arg selected "$selected" --arg detected "$detected" \
+    --arg quickshell_service "$qs_active" --arg eww_service "$eww_active" \
+    --arg workspace_service "$workspace_active" --arg notification_service "$notification_active" \
+    --arg notification_owner "$notification_bus_owner" --arg login_default eww \
+    --arg source_root "$SOURCE_ROOT" --argjson quickshell_layers "$qs_layers" \
+    --argjson eww_layers "$eww_layers" \
+    '{selected_backend:$selected,detected_backend:$detected,login_default:$login_default,services:{quickshell:$quickshell_service,eww:$eww_service,workspaces:$workspace_service,notifications:$notification_service},notifications:{dbus_name:"org.freedesktop.Notifications",owner:$notification_owner},layers:{quickshell:$quickshell_layers,eww:$eww_layers},source_root:$source_root}'
+}
+
+doctor() {
+  local failed=0
+  printf 'source root: %s\n' "$SOURCE_ROOT"
+  printf 'selected: %s\n' "$(selected_mode)"
+  printf 'detected: %s\n' "$(detected_mode)"
+  printf 'Quickshell: %s\n' "$(/usr/bin/qs --version 2>/dev/null || printf unavailable)"
+  printf 'Hyprland monitors: %s\n' "$(monitor_count)"
+  printf 'Rail layers: quickshell=%s eww=%s\n' "$(layer_count "$QS_NAMESPACE")" "$(layer_count "$EWW_NAMESPACE")"
+  printf 'Notifications: service=%s owner=%s\n' \
+    "$(systemctl --user is-active "$NOTIFICATION_UNIT" 2>/dev/null || true)" "$(notification_owner)"
+  for unit in "$QS_UNIT" "$EWW_UNIT" "$FALLBACK_UNIT" "$NOTIFICATION_UNIT"; do
+    if systemctl --user cat "$unit" >/dev/null 2>&1; then
+      printf 'unit %-31s installed\n' "$unit"
+    else
+      printf 'unit %-31s MISSING\n' "$unit"
+      failed=1
+    fi
+  done
+  if [[ "$(detected_mode)" == conflict ]]; then
+    printf 'ERROR: both Rail namespaces are present\n' >&2
+    failed=1
+  fi
+  if ! systemctl --user is-active --quiet "$NOTIFICATION_UNIT" || [[ "$(notification_owner)" == unowned ]]; then
+    printf 'ERROR: the transitional SwayNC notification provider is unavailable\n' >&2
+    failed=1
+  fi
+  return "$failed"
+}
+
+mkdir -p "$RUNTIME_ROOT"
+
+# OnFailure must be able to restore Eww while an initiating selector still
+# owns the migration lock. systemd serializes the unit start itself, and both
+# the direct rollback and this path are intentionally idempotent.
+if [[ "${1:-}" == recover-eww ]]; then
+  recover_eww
+  exit 0
+fi
+
+exec 9>"$LOCK_FILE"
+/usr/bin/flock -w "$LOCK_TIMEOUT" 9 || fail "another selector operation is still running"
+
+case "${1:-}" in
+  use)
+    case "${2:-}" in
+      quickshell) use_quickshell ;;
+      eww) use_eww ;;
+      *) fail "usage: senomy-shell use {quickshell|eww}" ;;
+    esac
+    ;;
+  restart)
+    case "$(detected_mode)" in
+      quickshell)
+        systemctl --user reset-failed "$QS_UNIT" >/dev/null 2>&1 || true
+        systemctl --user restart "$QS_UNIT"
+        wait_until "Quickshell restart did not recover full QML and Rail ownership" quickshell_ready
+        ;;
+      eww)
+        systemctl --user reset-failed "$EWW_UNIT" >/dev/null 2>&1 || true
+        systemctl --user restart "$EWW_UNIT"
+        wait_until "Eww restart did not recover Rail ownership" eww_ready
+        ;;
+      *)
+        case "$(selected_mode)" in
+          quickshell) use_quickshell ;;
+          *) use_eww ;;
+        esac
+        ;;
+    esac
+    ;;
+  status) show_status ;;
+  logs)
+    journalctl --user -u "$QS_UNIT" -u "$EWW_UNIT" -u "$FALLBACK_UNIT" -n "${2:-120}" --no-pager
+    ;;
+  doctor) doctor ;;
+  *)
+    printf 'usage: senomy-shell {use {quickshell|eww}|status|restart|logs [LINES]|doctor}\n' >&2
+    exit 64
+    ;;
+esac

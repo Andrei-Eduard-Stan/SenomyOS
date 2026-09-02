@@ -2,14 +2,15 @@
 Description=Eww workspaces listener (Hyprland -> Eww)
 After=graphical-session.target
 Wants=graphical-session.target
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 Environment=EWW_CFG=%h/.config/eww
 Environment=PATH=/usr/bin:/bin:/usr/local/bin
 ExecStart=%h/.config/eww/scripts/workspaces.sh
-Restart=always
-RestartSec=0.20
+Restart=on-failure
+RestartSec=2
 
 [Install]
 WantedBy=default.target

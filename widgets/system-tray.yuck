@@ -1,0 +1,39 @@
+(defwidget system-tray []
+  (button
+    :hexpand true
+    :class {active_flyout == "tray"
+      ? "icon-button bar-control tray-overflow-trigger active"
+      : "icon-button bar-control tray-overflow-trigger"}
+    :tooltip {active_flyout == "tray"
+      ? "Close hidden icons"
+      : "Show hidden icons"}
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-tray ${active_surface} ${active_flyout}"
+    (box
+      :class "rail-icon-stage"
+      :hexpand true
+      :vexpand true
+      :halign "fill"
+      :valign "fill"
+      (bar-icon
+        :icon {active_flyout == "tray"
+          ? "tray-down"
+          : "tray-up"}))))
+
+(defwidget applications-button []
+  (button
+    :hexpand true
+    :visible {bar_layout?.data?.narrow != true}
+    :class {active_surface == "control" && control_section == "apps"
+      ? "icon-button bar-control applications-trigger active"
+      : "icon-button bar-control applications-trigger"}
+    :tooltip "Applications and system tray"
+    :timeout "8s"
+    :onclick "$HOME/.config/eww/scripts/surface-state.sh toggle-control apps ${active_surface} ${active_flyout} ${control_section}"
+    (box
+      :class "rail-icon-stage"
+      :hexpand true
+      :vexpand true
+      :halign "fill"
+      :valign "fill"
+      (bar-icon :icon "applications"))))
