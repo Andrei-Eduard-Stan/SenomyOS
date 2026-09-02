@@ -25,6 +25,11 @@ ShellRoot {
         metrics: metricsService
         active: shellState.dashboardActive
     }
+    Services.InsightsService {
+        id: insightsService
+        active: shellState.activePrimary === "insights"
+        section: shellState.insightsSection
+    }
     Services.SenomyState {
         id: senomyState
         shellState: shellState
@@ -39,7 +44,7 @@ ShellRoot {
         target: "shell"
 
         function popup(token: string): string {
-            if (token !== "" && !/^(calendar|tray):[^:]+$/.test(token))
+            if (token !== "" && !/^(volume|tray|calendar|notifications|power):[^:]+$/.test(token))
                 return "invalid popup token";
             shellState.activePopup = token;
             return shellState.activePopup;
@@ -52,6 +57,18 @@ ShellRoot {
 
         function popupState(): string {
             return shellState.activePopup;
+        }
+
+        function primary(kind: string, screenName: string, section: string): string {
+            if (kind === "") {
+                shellState.closePrimary();
+                return "closed";
+            }
+            return shellState.showPrimary(kind, screenName, section) ? shellState.activePrimary : "invalid";
+        }
+
+        function companion(mode: string, screenName: string): string {
+            return shellState.setCompanionMode(mode, screenName) ? shellState.companionMode : "invalid";
         }
 
         function networkState(): string {
@@ -127,10 +144,17 @@ ShellRoot {
         model: Quickshell.screens
 
         RailWindow {
+            notificationToastEnabled: modelData === Quickshell.screens[0]
             metrics: metricsService
             battery: batteryService
             audio: audioService
             network: networkService
+            bluetooth: bluetoothService
+            media: mediaService
+            notifications: notificationService
+            performance: performanceService
+            insights: insightsService
+            senomy: senomyState
             power: powerService
             uiState: shellState
         }

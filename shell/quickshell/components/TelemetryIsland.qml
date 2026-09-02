@@ -6,6 +6,8 @@ SenomyFrame {
     id: root
 
     required property var metrics
+    property bool dashboardOpen: false
+    signal togglePerformance()
     width: 392
     height: Config.Theme.islandHeight
     motif: "telemetry"
@@ -45,9 +47,10 @@ SenomyFrame {
         id: telemetryArea
         anchors.fill: parent
         hoverEnabled: true
-        cursorShape: Qt.ArrowCursor
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.togglePerformance()
     }
     ToolTip.visible: telemetryArea.containsMouse
     ToolTip.delay: 550
-    ToolTip.text: "CPU, memory and uptime · Performance Dashboard remains on Eww"
+    ToolTip.text: root.dashboardOpen ? "Close Performance Dashboard" : "Open Performance Dashboard"
 }

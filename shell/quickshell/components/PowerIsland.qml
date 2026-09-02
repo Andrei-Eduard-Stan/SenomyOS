@@ -6,6 +6,9 @@ SenomyFrame {
     id: root
 
     property var powerService
+    property bool panelOpen: false
+    property alias panelAnchor: powerArea
+    signal togglePower()
 
     width: 68
     height: Config.Theme.islandHeight
@@ -17,18 +20,19 @@ SenomyFrame {
         height: 20
         source: "../assets/icons/power.svg"
         fillMode: Image.PreserveAspectFit
-        opacity: 0.64
+        opacity: powerService && powerService.available ? 0.88 : 0.42
     }
 
     MouseArea {
         id: powerArea
         anchors.fill: parent
         hoverEnabled: true
-        cursorShape: Qt.ArrowCursor
+        cursorShape: powerService && powerService.available ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onClicked: if (powerService && powerService.available) root.togglePower()
     }
     ToolTip.visible: powerArea.containsMouse
     ToolTip.delay: 450
     ToolTip.text: powerService && powerService.available
-        ? "Guarded session-action backend ready; UI migration remains deferred"
+        ? (root.panelOpen ? "Close guarded session controls" : "Open guarded session controls")
         : "Session-action backend unavailable"
 }

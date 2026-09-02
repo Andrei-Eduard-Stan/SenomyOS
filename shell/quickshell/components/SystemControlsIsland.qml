@@ -11,8 +11,13 @@ SenomyFrame {
     required property var battery
     required property var network
     property bool trayOpen: false
+    property bool volumeOpen: false
+    property bool controlOpen: false
     property alias trayAnchor: trayButton.anchorItem
+    property var volumeAnchor: null
     signal toggleTray()
+    signal toggleVolume()
+    signal openControl(string section)
     width: 320
     height: Config.Theme.islandHeight
     motif: "controls"
@@ -47,7 +52,7 @@ SenomyFrame {
                     id: "audio",
                     icon: root.audio.muted ? "volume-muted.svg" : "volume.svg",
                     badge: root.audio.label,
-                    tooltip: root.audio.available ? "PipeWire output · click to toggle mute" : "PipeWire output unavailable"
+                    tooltip: root.audio.available ? "Open native PipeWire audio controls" : "PipeWire output unavailable"
                 },
                 {
                     id: "network",
@@ -69,12 +74,18 @@ SenomyFrame {
                 width: 60
                 height: parent.height
 
+                Component.onCompleted: if (modelData.id === "audio") root.volumeAnchor = control
+                Component.onDestruction: if (root.volumeAnchor === control) root.volumeAnchor = null
+
                 Rectangle {
                     anchors.centerIn: parent
                     width: 46
                     height: 42
                     radius: 12
-                    color: controlArea.containsMouse ? Config.Theme.surfaceHover : "transparent"
+                    color: controlArea.containsMouse
+                        || (modelData.id === "audio" && root.volumeOpen)
+                        || ((modelData.id === "network" || modelData.id === "battery") && root.controlOpen)
+                        ? Config.Theme.surfaceHover : "transparent"
                 }
                 Image {
                     anchors.centerIn: parent
@@ -109,13 +120,17 @@ SenomyFrame {
                     id: controlArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    cursorShape: modelData.id === "applications" || (modelData.id === "audio" && root.audio.available)
-                        ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    cursorShape: modelData.id === "audio" && !root.audio.available
+                        ? Qt.ArrowCursor : Qt.PointingHandCursor
                     onClicked: {
                         if (modelData.id === "applications")
-                            Quickshell.execDetached(["rofi", "-show", "drun"]);
+                            Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "apps"]);
                         else if (modelData.id === "audio")
-                            root.audio.toggleMuted();
+                            root.toggleVolume();
+                        else if (modelData.id === "network")
+                            root.openControl("network");
+                        else if (modelData.id === "battery")
+                            root.openControl("power");
                     }
                 }
                 ToolTip.visible: controlArea.containsMouse

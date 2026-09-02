@@ -10,6 +10,7 @@ PopupWindow {
     required property var anchorItem
     property bool requestedOpen: false
     property bool cardShown: false
+    signal dismissRequested()
 
     implicitWidth: 330
     implicitHeight: 126
@@ -41,13 +42,13 @@ PopupWindow {
     }
     onAnchorItemChanged: {
         if (!anchorItem)
-            requestedOpen = false;
+            dismissRequested();
     }
 
     HyprlandFocusGrab {
         windows: [root]
         active: root.cardShown
-        onCleared: root.requestedOpen = false
+        onCleared: if (root.requestedOpen) root.dismissRequested()
     }
 
     Timer {
@@ -79,7 +80,7 @@ PopupWindow {
         Behavior on opacity {
             NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic }
         }
-        Keys.onEscapePressed: root.requestedOpen = false
+        Keys.onEscapePressed: root.dismissRequested()
 
         SenomyFrame {
             anchors.fill: parent

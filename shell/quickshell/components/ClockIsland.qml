@@ -7,8 +7,12 @@ SenomyFrame {
     id: root
 
     property bool calendarOpen: false
-    property alias calendarAnchor: clockArea
+    property bool notificationsOpen: false
+    property var notifications
+    property alias calendarAnchor: calendarArea
+    property alias notificationsAnchor: notificationArea
     signal toggleCalendar()
+    signal toggleNotifications()
     width: 188
     height: Config.Theme.islandHeight
     motif: "clock-notification"
@@ -23,9 +27,12 @@ SenomyFrame {
         anchors.fill: parent
         spacing: 10
 
-        Column {
-            anchors.verticalCenter: parent.verticalCenter
+        Item {
             width: parent.width - 44
+            height: parent.height
+            Column {
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.width
             spacing: 1
             Text {
                 text: Qt.formatDateTime(clock.date, "HH:mm")
@@ -40,6 +47,17 @@ SenomyFrame {
                 font.family: Config.Theme.fontFamily
                 font.pixelSize: 8
             }
+            }
+            MouseArea {
+                id: calendarArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.toggleCalendar()
+            }
+            ToolTip.visible: calendarArea.containsMouse && !root.calendarOpen
+            ToolTip.delay: 450
+            ToolTip.text: "Open calendar"
         }
 
         Item {
@@ -54,17 +72,34 @@ SenomyFrame {
                 fillMode: Image.PreserveAspectFit
                 opacity: 0.7
             }
+            Rectangle {
+                visible: root.notifications && root.notifications.unreadCount > 0
+                anchors.right: parent.right
+                anchors.top: parent.top
+                width: 18
+                height: 18
+                radius: 9
+                color: Config.Theme.accent
+                Text {
+                    anchors.centerIn: parent
+                    text: String(Math.min(99, root.notifications ? root.notifications.unreadCount : 0))
+                    color: Config.Theme.background
+                    font.family: Config.Theme.fontFamily
+                    font.pixelSize: 7
+                    font.weight: Font.Bold
+                }
+            }
+            MouseArea {
+                id: notificationArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.toggleNotifications()
+            }
+            ToolTip.visible: notificationArea.containsMouse && !root.notificationsOpen
+            ToolTip.delay: 450
+            ToolTip.text: root.notifications && root.notifications.serverEnabled
+                ? "Open notification history" : "Native history awaits notification migration"
         }
     }
-
-    MouseArea {
-        id: clockArea
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: root.toggleCalendar()
-    }
-    ToolTip.visible: clockArea.containsMouse && !root.calendarOpen
-    ToolTip.delay: 450
-    ToolTip.text: "Open calendar"
 }

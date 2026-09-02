@@ -12,6 +12,7 @@ PopupWindow {
     property bool cardShown: false
     property int displayedYear: new Date().getFullYear()
     property int displayedMonth: new Date().getMonth()
+    signal dismissRequested()
 
     readonly property var now: new Date()
     readonly property string monthTitle: Qt.formatDate(new Date(displayedYear, displayedMonth, 1), "MMMM yyyy")
@@ -87,14 +88,14 @@ PopupWindow {
 
     onAnchorItemChanged: {
         if (!anchorItem)
-            requestedOpen = false;
+            dismissRequested();
     }
 
     HyprlandFocusGrab {
         id: focusGrab
         windows: [root]
         active: root.cardShown
-        onCleared: root.requestedOpen = false
+        onCleared: if (root.requestedOpen) root.dismissRequested()
     }
 
     Timer {
@@ -128,7 +129,7 @@ PopupWindow {
             NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic }
         }
 
-        Keys.onEscapePressed: root.requestedOpen = false
+        Keys.onEscapePressed: root.dismissRequested()
 
         SenomyFrame {
             anchors.fill: parent
