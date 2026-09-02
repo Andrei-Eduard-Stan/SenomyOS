@@ -1872,3 +1872,49 @@ rejected because it retains private-protocol coupling and duplicate ownership.
 SwayNC is transitional but not Eww-owned. The migration units pull it in as a
 graphical-session dependency, and selector diagnostics expose loss of its DBus
 name. Neither the unit nor a shell backend is newly enabled at login.
+
+## D118 — Centralize the functional shell in shared Quickshell state
+
+**Date:** 2026-09-02
+**Status:** Accepted
+
+Milestone 3 uses one `ShellState` for the sole primary surface, sole transient
+popup and independent companion session. System domains are subscribed once
+through shared services and consumed by Rail, Control, Performance, Insights
+and Senomy state. Screen removal reconciles target state, and primary focus
+treats the visible companion as a peer. This replaces independent Eww flags
+without creating a second cross-toolkit coordinator.
+
+Always-on Level 1 metrics are one in-process two-second `/proc` sampler. Level
+2 detail/history/process work exists only while Performance is visible and is
+bounded to 60 samples. Level 3 benchmarks, diagnostic tasks, reports and
+session actions remain explicit and allowlisted.
+
+## D119 — Make notification ownership exclusive to the selected backend
+
+**Date:** 2026-09-02
+**Status:** Accepted; supersedes the transitional phase of D117
+
+Quickshell mode owns `org.freedesktop.Notifications`, toast presentation, DND,
+actions and a bounded private history. SwayNC is stopped and conflicts with the
+Quickshell unit. Eww mode restores SwayNC before its shell. Selector readiness
+verifies the provider PID, and isolated tests cover replacement IDs, actions,
+urgency, timeout, resident/transient policy, close reason, persistence and
+dismissal.
+
+Legacy SwayNC history reads distinguish installed from active and do not call
+`swaync-client` unless SwayNC is already running. This prevents a read-only
+validator or collector from D-Bus-activating SwayNC and stopping Quickshell.
+
+## D120 — Preserve direct surface access in portrait without redesigning V2
+
+**Date:** 2026-09-02
+**Status:** Accepted
+
+The interim Rail keeps its standard composition but uses one workspace slot,
+a compact CPU telemetry target and a compact clock below 1180 logical pixels.
+Performance therefore remains directly reachable from telemetry in portrait.
+When a right-docked companion shares a normal-width screen with a right-edge
+primary surface, it temporarily presents on the left without mutating the
+user's stored dock preference. This is a functional usability correction, not
+the deferred visual redesign.

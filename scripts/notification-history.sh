@@ -13,6 +13,8 @@ readonly HISTORY_FILE="$STATE_ROOT/history.jsonl"
 readonly LOCK_FILE="$STATE_ROOT/history.lock"
 readonly HISTORY_LIMIT="${SENOMY_NOTIFICATION_LIMIT:-120}"
 readonly USER_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/swaync/config.json"
+readonly SWAYNC_CLIENT_BIN="${SENOMY_SWAYNC_CLIENT_BIN:-swaync-client}"
+readonly SYSTEMCTL_BIN="${SENOMY_SYSTEMCTL_BIN:-systemctl}"
 
 fail() {
   printf 'SenomyOS notifications: %s\n' "$*" >&2
@@ -38,6 +40,18 @@ sanitize() {
     | sub(" $"; "")
     | .[0:$limit]
   '
+}
+
+swaync_is_active() {
+  case "${SENOMY_SWAYNC_ACTIVE:-auto}" in
+    true) return 0 ;;
+    false) return 1 ;;
+    auto) ;;
+    *) fail "SENOMY_SWAYNC_ACTIVE must be true, false, or auto" ;;
+  esac
+
+  command -v "$SYSTEMCTL_BIN" >/dev/null 2>&1 &&
+    "$SYSTEMCTL_BIN" --user is-active --quiet swaync.service >/dev/null 2>&1
 }
 
 capture() {
@@ -97,16 +111,19 @@ capture() {
 }
 
 read_status() {
-  local observed_at provider_available=false capture_configured=false dnd=false
+  local observed_at provider_available=false provider_active=false capture_configured=false dnd=false
   local active_count=0 entries='[]' candidate
 
   require_limit
   printf -v observed_at '%(%s)T' -1
-  if command -v swaync-client >/dev/null 2>&1; then
+  if command -v "$SWAYNC_CLIENT_BIN" >/dev/null 2>&1; then
     provider_available=true
-    candidate="$(timeout 0.4s swaync-client --count 2>/dev/null || printf 0)"
-    [[ "$candidate" =~ ^[0-9]+$ ]] && active_count="$candidate"
-    [[ "$(timeout 0.4s swaync-client --get-dnd 2>/dev/null || printf false)" == true ]] && dnd=true
+    if swaync_is_active; then
+      provider_active=true
+      candidate="$(timeout 0.4s "$SWAYNC_CLIENT_BIN" --count 2>/dev/null || printf 0)"
+      [[ "$candidate" =~ ^[0-9]+$ ]] && active_count="$candidate"
+      [[ "$(timeout 0.4s "$SWAYNC_CLIENT_BIN" --get-dnd 2>/dev/null || printf false)" == true ]] && dnd=true
+    fi
   fi
   if [[ -r "$USER_CONFIG" ]] && jq -e '
       .scripts["senomy-history"].exec
@@ -138,6 +155,7 @@ read_status() {
 
   jq -nc --argjson at "$observed_at" \
     --argjson provider_available "$provider_available" \
+    --argjson provider_active "$provider_active" \
     --argjson capture_configured "$capture_configured" \
     --argjson active_count "$active_count" --argjson dnd "$dnd" \
     --argjson limit "$HISTORY_LIMIT" --argjson entries "$entries" '
@@ -149,6 +167,7 @@ read_status() {
         data: {
           provider: "SwayNotificationCenter",
           provider_available: $provider_available,
+          provider_active: $provider_active,
           capture_configured: $capture_configured,
           active_count: $active_count,
           do_not_disturb: $dnd,

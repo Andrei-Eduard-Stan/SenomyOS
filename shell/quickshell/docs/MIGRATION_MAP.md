@@ -1,5 +1,26 @@
 # SenomyOS Eww → Quickshell Migration Map
 
+## Milestone 3 completion overlay — 2026-09-02
+
+| Runtime area | Current Quickshell owner | Remaining legacy dependency in Quickshell mode | Acceptance |
+|---|---|---:|---|
+| Rail/workspaces/apps | `RailWindow`, native Hyprland objects | None | Runtime/virtual display passed; physical input pending |
+| Audio/network/battery/Bluetooth/media | Shared native service scopes | None | Real state passed; selected mutations/device cases pending |
+| Tray/calendar | Native popup components | None | Runtime/placement passed; real item/input QA pending |
+| Notifications | Native server, toast and private bounded history | None; SwayNC is Eww-mode only | Isolated protocol and live rollback passed |
+| Control Centre | `ControlCentre.qml` | None | All ten routes loaded live |
+| Performance | `PerformanceDashboard.qml` + tiered service | Bounded source scripts only; no Eww | Seven routes, 60-sample cap and stop passed |
+| Insights/companion/Senomy | Native QML plus `InsightsService`/`SenomyState` | Bounded source scripts and shared assets only | Eight routes/coexistence/hotplug passed |
+| Power/session | Native two-stage service/popup | Source-owned allowlisted helper, no Eww | Request/cancel passed; no destructive confirm run |
+| Command Lens | External source-owned Rofi wrapper | None | Intentionally remains external to Quickshell |
+| Recovery | Eww adapter, SwayNC and workspace service | Recovery only | Switch/rollback passed; keep installed |
+
+The detailed table below is the preserved Milestone 2 migration checkpoint.
+Rows saying “future” or “keep on Eww” are superseded by the completion overlay
+and `../../../docs/QUICKSHELL_V3_PARITY.md`; they remain as decision history.
+
+## Milestone 2 historical checkpoint
+
 Status reflects the real live tree audited on 2026-09-01. “Keep” means Eww
 remains authoritative until an explicit later acceptance gate; it does not mean
 the module is permanent.
@@ -35,18 +56,20 @@ the module is permanent.
 | Multi-monitor/layout profiles | Adapt to monitor width and density | `bar-layout.sh`, profile status, Eww screen choice | `hyprctl -j monitors`, profile JSON | 15 s layout poll + startup-selected screen | `Quickshell.screens`, per-screen variants, width breakpoints | Virtual hotplug, integer/fractional, narrow landscape, and portrait passed | High: physical hotplug/touch still needs evidence |
 | Startup/recovery | Start one stable shell and preserve fallback | Hyprland Lua, `start-eww.sh`, `senomy-shellctl.sh` | compositor startup and Eww IPC | detached daemon, readiness checks, main-bar open | non-enabled user units + verified selector + OnFailure fallback | Live switching complete; Eww remains login default | Critical: login ownership change remains gated |
 
-## Shared state and service architecture
+## Milestone 3 shared state and service architecture
 
 V2 separates compositor/system sources from presentation. Hyprland, UPower,
-PipeWire, NetworkManager, and System Tray are subscribed to once through
-Quickshell services.
-The only fixed-rate sampler reads `/proc/stat`, `/proc/meminfo`, and
-`/proc/uptime` once every two seconds without forking. Each screen gets a Rail
-window, while all screen instances share the same service objects.
+PipeWire, NetworkManager, BlueZ, MPRIS, notifications, and System Tray are
+subscribed to once through shared Quickshell services. `ShellState` owns one
+`none|control|performance|insights` primary, one popup token, and the
+independent companion mode. It also reconciles target state when a screen is
+removed.
 
-The next architectural seam should be a single shell-state service owning
-`none|control|performance|insights` and the active flyout. Until it exists and
-can coordinate with Eww, V2 must not open duplicate primary surfaces.
+The fixed-rate Level 1 sampler reads `/proc/stat`, `/proc/meminfo`,
+`/proc/net/dev`, and `/proc/uptime` without forking. Level 2 detail/history and
+process collection runs only while Performance is visible and caps histories
+at 60 samples. Level 3 benchmark/diagnostic work requires an explicit,
+allowlisted action.
 
 ## Frame and asset boundary
 

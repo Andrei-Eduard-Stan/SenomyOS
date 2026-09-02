@@ -11,6 +11,29 @@ import "services" as Services
 ShellRoot {
     id: shell
 
+    function screenExists(screenName) {
+        if (!screenName)
+            return false;
+        for (let index = 0; index < Quickshell.screens.length; index++) {
+            if (Quickshell.screens[index].name === screenName)
+                return true;
+        }
+        return false;
+    }
+
+    function reconcileScreens() {
+        if (shellState.primaryScreen && !screenExists(shellState.primaryScreen))
+            shellState.closePrimary();
+        if (shellState.activePopup) {
+            const separator = shellState.activePopup.indexOf(":");
+            const popupScreen = separator >= 0 ? shellState.activePopup.slice(separator + 1) : "";
+            if (!screenExists(popupScreen))
+                shellState.closePopups();
+        }
+        if (shellState.companionScreen && !screenExists(shellState.companionScreen))
+            shellState.setCompanionMode("closed", "");
+    }
+
     Services.SystemMetrics { id: metricsService }
     Services.BatteryService { id: batteryService }
     Services.AudioService { id: audioService }
@@ -38,6 +61,13 @@ ShellRoot {
         network: networkService
         metrics: metricsService
         notifications: notificationService
+    }
+
+    Connections {
+        target: Quickshell
+        function onScreensChanged() {
+            Qt.callLater(shell.reconcileScreens);
+        }
     }
 
     IpcHandler {
@@ -86,11 +116,80 @@ ShellRoot {
             });
         }
 
+        function audioState(): string {
+            return JSON.stringify({
+                available: audioService.available,
+                volume: audioService.volume,
+                muted: audioService.muted,
+                outputName: audioService.outputName,
+                outputCount: audioService.outputNodes.length,
+                inputAvailable: audioService.inputAvailable,
+                inputVolume: audioService.inputVolume,
+                inputMuted: audioService.inputMuted,
+                inputName: audioService.inputName,
+                inputCount: audioService.inputNodes.length
+            });
+        }
+
+        function batteryState(): string {
+            return JSON.stringify({
+                available: batteryService.available,
+                count: batteryService.count,
+                percentage: batteryService.percentage,
+                charging: batteryService.charging,
+                onBattery: batteryService.onBattery,
+                timeLabel: batteryService.timeLabel,
+                low: batteryService.low,
+                critical: batteryService.critical,
+                powerProfileAvailable: batteryService.powerProfileAvailable,
+                powerProfileName: batteryService.powerProfileName,
+                packs: batteryService.batteries.map(device => ({
+                    model: device.model,
+                    percentage: device.percentage,
+                    energy: device.energy,
+                    energyCapacity: device.energyCapacity,
+                    state: String(device.state)
+                }))
+            });
+        }
+
         function powerState(): string {
             return JSON.stringify({
                 available: powerService.available,
                 state: powerService.state,
                 allowedActions: powerService.allowedActions
+            });
+        }
+
+        function powerRequest(action: string): string {
+            return powerService.request(action) ? powerService.state : "rejected";
+        }
+
+        function powerCancel(): string {
+            return powerService.cancel() ? powerService.state : "rejected";
+        }
+
+        function performanceState(): string {
+            return JSON.stringify({
+                active: performanceService.active,
+                cpuSamples: performanceService.cpuHistory.length,
+                memorySamples: performanceService.memoryHistory.length,
+                rxSamples: performanceService.rxHistory.length,
+                txSamples: performanceService.txHistory.length,
+                detailReady: Object.keys(performanceService.details).length > 0,
+                processCount: performanceService.processes.length,
+                benchmarkPageActive: performanceService.benchmarkPageActive,
+                error: performanceService.error
+            });
+        }
+
+        function insightsState(): string {
+            return JSON.stringify({
+                active: insightsService.active,
+                section: insightsService.section,
+                loadedRoutes: Object.keys(insightsService.payloads),
+                actionState: insightsService.actionState,
+                error: insightsService.error
             });
         }
 

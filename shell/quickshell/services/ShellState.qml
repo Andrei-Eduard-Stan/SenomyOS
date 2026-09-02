@@ -84,8 +84,10 @@ Scope {
     }
 
     function toggleCompanion(screenName) {
-        companionScreen = screenName;
-        companionMode = companionMode === "closed" ? "expanded" : "closed";
+        if (companionMode === "closed")
+            setCompanionMode("expanded", screenName);
+        else
+            setCompanionMode("closed", "");
     }
 
     function setCompanionMode(mode, screenName) {
@@ -94,8 +96,10 @@ Scope {
         if (screenName)
             companionScreen = screenName;
         companionMode = mode;
-        if (mode === "closed")
+        if (mode === "closed") {
             companionPinned = false;
+            companionScreen = "";
+        }
         return true;
     }
 }

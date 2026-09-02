@@ -1361,3 +1361,40 @@ Syntax validity does not make the update-loop architecture correct.
   SwayNC unit and keep the graphical-session target pinned during Rail handoff,
   so stopping Eww-only workspace publication cannot silently stop notification
   delivery. This dependency is migration-time only and changes no enabled unit.
+
+## September 2 Quickshell V2 functional migration
+
+- Runtime versions are Quickshell 0.3.1-1, Qt 6.11.2 and Hyprland 0.56.2 with
+  the Lua configuration provider. The authoritative branch is
+  `/home/Duku/SenomyOS` `quickshell-v2`; login default remains Eww.
+- In the final observed development state, `senomy-quickshell.service` was
+  active with one Rail. Eww, `workspaces.service` and SwayNC were inactive, and
+  the Quickshell main PID was the sole notification owner. No Eww component is
+  required during normal Quickshell operation.
+- Shared native services now cover Hyprland workspaces/toplevels, PipeWire,
+  NetworkManager, UPower, BlueZ, MPRIS, StatusNotifier and notifications. Ten
+  Control routes, seven Performance routes, eight Insights routes, the
+  companion and all five compact popups loaded live.
+- The real state snapshot exposed one output sink, two input nodes, the active
+  NetworkManager SSID/connectivity, two laptop batteries, an enabled Bluetooth
+  adapter and four visible devices. No MPRIS player was active, so the shell
+  truthfully showed an unavailable/idle media state.
+- Quickshell notification ownership passed an isolated private-bus suite and a
+  full live Eww -> Quickshell -> Eww -> Quickshell rollback cycle. The private
+  store is bounded to 120 mode-0600 records. SwayNC remains Eww-mode recovery
+  infrastructure only.
+- Level 2 Performance remained capped at 60 samples after a 65-second run and
+  stopped all collectors after closure. Level 3 plans/status loaded without
+  starting a benchmark. All five power actions entered and cancelled the
+  pending state; no destructive confirmation ran.
+- Temporary headless outputs verified one Rail per output, source-screen
+  Control/Calendar/Insights/companion/Performance placement, scale 1.25,
+  864-logical-pixel portrait, side-by-side companion/primary presentation and
+  complete state cleanup on hot-unplug. The outputs were removed.
+- A 30-s idle resource sample measured median 0.978% CPU, 347,264 KiB RSS,
+  195,291 KiB PSS and 163,060 KiB private memory with 18 threads, no child PID
+  and -80 KiB end-to-start memory growth. Mean CPU was 1.323%; this and the
+  roughly 14.7 MiB PSS increase from Milestone 2 remain soak watch items.
+- Physical pointer/keyboard acceptance, real second-monitor/touch evidence,
+  active-player MPRIS control, Bluetooth pairing and new secured-Wi-Fi prompt
+  evidence remain outstanding. See `docs/QUICKSHELL_V3_QA.md`.

@@ -1,5 +1,31 @@
 # Milestone 1 Resource and Responsiveness Benchmark
 
+## Milestone 3 functional-shell measurements
+
+Measured on 2026-09-02 with Quickshell 0.3.1-1, Qt 6.11.2, Hyprland
+0.56.2, one 1920x1080 scale-1 panel, Eww and SwayNC stopped, and every primary
+surface/popup/companion closed. Thirty requested one-second samples took
+32.565 seconds because each interval reads `smaps_rollup`.
+
+| Quickshell metric | Mean | Median | p95 | Min | Max | End minus start |
+|---|---:|---:|---:|---:|---:|---:|
+| CPU, % of one core | 1.323 | 0.978 | 3.681 | 0.000 | 3.690 | n/a |
+| RSS, KiB | 347,263 | 347,264 | 347,332 | 347,200 | 347,336 | -80 |
+| PSS, KiB | 195,289 | 195,291 | 195,360 | 195,227 | 195,364 | -80 |
+| Private, KiB | 163,058 | 163,060 | 163,128 | 162,996 | 163,132 | -80 |
+| Threads | 18 | 18 | 18 | 18 | 18 | 0 |
+
+No child PID was observed. Median PSS is about 14.7 MiB above the Milestone 2
+production-foundation sample after adding native BlueZ, MPRIS, notifications,
+all functional surfaces and their shared state. The sample stays below 200 MiB
+PSS and shows no interval growth. Mean CPU increased from 0.694% to 1.323%; it
+is a documented soak/watch item, not evidence of a runaway process.
+
+A separate 65-second open-Dashboard run capped CPU, memory, RX and TX history
+at exactly 60 samples. Four seconds after closure the counts remained 60 and
+no detail, process or benchmark child was present. GPU utilization remains
+unmeasured and is not inferred.
+
 ## Milestone 2 production-foundation measurements
 
 Measured on 2026-09-01 with the packaged Arch Quickshell 0.3.1-1, one

@@ -1,6 +1,58 @@
 # SenomyOS Architecture
 
-## Current runtime
+## Current Quickshell development runtime
+
+Milestone 3 runs from `/home/Duku/SenomyOS/shell/quickshell` on the
+`quickshell-v2` branch. In selected Quickshell mode, one supervised process
+owns every Rail, all shell presentation, and `org.freedesktop.Notifications`.
+Eww, its workspace publisher, its listeners, and SwayNC are inactive. Eww is
+still the unchanged login default and automatic recovery backend.
+
+```text
+native/event sources
+├── Hyprland workspaces, monitors and toplevels
+├── PipeWire outputs and inputs
+├── NetworkManager devices and Wi-Fi networks
+├── UPower batteries and power state
+├── BlueZ adapters and devices
+├── MPRIS players
+├── StatusNotifier items and menus
+└── org.freedesktop.Notifications requests
+            │
+            ▼
+shared Quickshell service scopes
+├── SystemMetrics (Level 1, one in-process 2s /proc sampler)
+├── Audio / Network / Battery / Bluetooth / Media
+├── NotificationService (bounded private history)
+├── PerformanceService (Level 2 only while visible; Level 3 explicit)
+├── InsightsService (route-visible or explicit allowlisted work only)
+├── SenomyState
+└── ShellState
+            │
+            ▼
+Rail + one primary surface + one popup + optional companion
+```
+
+`ShellState` is the only surface authority. Primary state is
+`none|control|performance|insights`; popup state is empty or one
+`kind:screen` token; the companion is `closed|compact|expanded` and may coexist
+with a primary. `Quickshell.screensChanged` closes state whose source output
+has disappeared. Primary focus grabs include a visible companion as a peer,
+so companion interaction does not accidentally close the primary.
+
+Notification ownership is backend-specific. `senomy-quickshell.service`
+conflicts with SwayNC and creates the native server only when
+`SENOMY_NOTIFICATION_OWNER=quickshell`. Eww mode restores SwayNC before Eww.
+The selector verifies the owner PID as part of readiness and never permits two
+servers. The private notification store is mode 0600 and bounded to 120
+records.
+
+No Eww process is required in normal Quickshell mode. Existing status/action
+scripts used by Performance or Insights are source-owned bounded adapters, not
+Eww IPC or presentation dependencies. The external Command Lens remains an
+intentional Rofi boundary.
+
+## Preserved Eww fallback runtime
 
 The current authenticated session was started from the legacy tracked `.conf`
 and still reflects its original wallpaper startup commands. The deployed

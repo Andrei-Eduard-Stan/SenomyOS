@@ -77,12 +77,14 @@ env SENOMY_NOTIFICATION_ROOT="$notification_root" SENOMY_NOTIFICATION_LIMIT=2 \
 check_contract "Notification history" "$STANDARD
   and .data.retained_count == 2
   and .data.retention_limit == 2
+  and .data.provider_active == false
   and .data.entries[0].summary == \"Second notification\"
   and .data.entries[0].urgency == \"critical\"
   and (.data.entries[1].body | contains(\"<b>\") | not)
   and .data.privacy.local_only == true
   and .data.privacy.actions_stored == false" \
   env SENOMY_NOTIFICATION_ROOT="$notification_root" SENOMY_NOTIFICATION_LIMIT=2 \
+  SENOMY_SWAYNC_ACTIVE=false \
   XDG_CONFIG_HOME="$TEST_ROOT/config" "$CONFIG_DIR/scripts/notification-history.sh" read
 
 check_contract "SwayNC integration" "$STANDARD and .data.installed == false" \

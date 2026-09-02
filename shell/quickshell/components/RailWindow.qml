@@ -80,7 +80,7 @@ PanelWindow {
         width: implicitWidth
         height: Config.Theme.islandHeight
         monitor: root.hyprlandMonitor
-        capacity: root.ultraNarrow ? 1 : root.narrow ? 3 : 4
+        capacity: root.veryNarrow ? 1 : root.narrow ? 3 : 4
     }
 
     Row {
@@ -104,8 +104,8 @@ PanelWindow {
 
         TelemetryIsland {
             id: telemetryIsland
-            visible: !root.veryNarrow
-            width: visible ? (root.narrow ? 300 : 392) : 0
+            compact: root.veryNarrow
+            width: compact ? 70 : root.narrow ? 300 : 392
             metrics: root.metrics
             dashboardOpen: root.uiState.activePrimary === "performance"
                 && root.uiState.primaryScreen === root.popupPrefix
@@ -129,6 +129,7 @@ PanelWindow {
         ClockIsland {
             id: clockIsland
             visible: !root.ultraNarrow
+            compact: root.veryNarrow
             notifications: root.notifications
             calendarOpen: root.uiState.activePopup === root.calendarToken
             notificationsOpen: root.uiState.activePopup === root.notificationsToken
@@ -199,7 +200,9 @@ PanelWindow {
     }
 
     ControlCentre {
+        id: controlCentre
         targetScreen: root.screen
+        coexistWindow: companionPanel
         state: root.uiState
         metrics: root.metrics
         audio: root.audio
@@ -212,7 +215,9 @@ PanelWindow {
     }
 
     PerformanceDashboard {
+        id: performanceDashboard
         targetScreen: root.screen
+        coexistWindow: companionPanel
         state: root.uiState
         performance: root.performance
         metrics: root.metrics
@@ -221,7 +226,9 @@ PanelWindow {
     }
 
     InsightsPanel {
+        id: insightsPanel
         targetScreen: root.screen
+        coexistWindow: companionPanel
         state: root.uiState
         insights: root.insights
         senomy: root.senomy
@@ -233,6 +240,7 @@ PanelWindow {
     }
 
     CompanionPanel {
+        id: companionPanel
         targetScreen: root.screen
         state: root.uiState
         senomy: root.senomy

@@ -9,11 +9,12 @@ SenomyFrame {
     property bool calendarOpen: false
     property bool notificationsOpen: false
     property var notifications
+    property bool compact: false
     property alias calendarAnchor: calendarArea
     property alias notificationsAnchor: notificationArea
     signal toggleCalendar()
     signal toggleNotifications()
-    width: 188
+    width: compact ? 110 : 188
     height: Config.Theme.islandHeight
     motif: "clock-notification"
     active: calendarOpen
@@ -42,6 +43,7 @@ SenomyFrame {
                 font.weight: Font.DemiBold
             }
             Text {
+                visible: !root.compact
                 text: Qt.formatDate(clock.date, "ddd dd MMM").toUpperCase()
                 color: Config.Theme.muted
                 font.family: Config.Theme.fontFamily

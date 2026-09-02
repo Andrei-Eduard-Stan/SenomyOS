@@ -431,6 +431,31 @@ Progress on the T480 reference system:
 - the non-inotify appearance fallback now checks once per second rather than
   ten times per second while retaining its recovery heartbeat.
 
+### Quickshell Milestone 3 functional migration
+
+Implemented on `quickshell-v2` on 2026-09-02:
+
+- native functional Rail, workspace/toplevel indicators and all visible Rail
+  entry points;
+- ten-route Control Centre, separate seven-route Performance Dashboard,
+  separate eight-route Insights surface and independent companion;
+- shared native audio, network, UPower, Bluetooth, MPRIS, tray and notification
+  state;
+- one-primary/one-popup coordination, companion coexistence, source-output
+  removal cleanup and compact portrait telemetry/clock controls;
+- conditional 60-sample Level 2 telemetry and explicit confirmation-gated
+  Level 3/session actions;
+- isolated native notification protocol acceptance plus reversible SwayNC
+  ownership in Eww mode;
+- virtual multi-monitor, scale-1.25, portrait and hot-unplug acceptance;
+- no Eww process or SwayNC dependency during normal Quickshell use.
+
+The remaining Milestone 3 gate is the real pointer/keyboard checklist in
+`QUICKSHELL_V3_QA.md`. Physical second-monitor, touch, active MPRIS,
+Bluetooth-pairing and new secured-Wi-Fi cases remain capability-specific
+follow-ups. Eww stays the login default and recovery backend; default-shell
+promotion is not part of this stage.
+
 ## Stage 11 — Hardware and form-factor profiles
 
 Before Stage 11 broadens hardware support, the current shell must pass the

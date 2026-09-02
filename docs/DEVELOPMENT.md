@@ -24,6 +24,44 @@
 Use `revival/live` for the revival unless a later feature branch is explicitly
 chosen.
 
+Quickshell migration work is the explicit later branch `quickshell-v2` in the
+authoritative `/home/Duku/SenomyOS` worktree. Do not run Quickshell work from
+the detached Eww fallback or the out-of-scope secondary clone.
+
+## Quickshell Milestone 3 validation
+
+Static source checks do not require a live restart:
+
+```bash
+./scripts/senomy-dev check
+./scripts/validate-data-contracts.sh
+./scripts/validate-quickshell-notifications.sh
+qmllint -I shell/quickshell shell/quickshell/shell.qml
+```
+
+The notification validator runs on a private D-Bus session and never displaces
+the live owner. Do not run `validate-interactions.sh` or
+`validate-all-panels.sh` while Quickshell is selected: they are legacy live-Eww
+acceptance harnesses and require the Eww daemon. The static aggregate already
+checks their source contracts.
+
+For a supervised live check, first warn that the Rail may briefly disappear,
+then use only the selector:
+
+```bash
+senomy-shell use quickshell
+senomy-shell status
+senomy-shell doctor
+qs ipc --path shell/quickshell show
+```
+
+Use `senomy-shell use eww` for rollback. Never start SwayNC manually while
+Quickshell is selected; notification ownership is part of selector readiness.
+Transient headless-output QA must use Hyprland's active Lua API on the current
+0.56 runtime, remove the output in an EXIT trap, and verify the physical
+monitor count/reserve afterward. `hyprctl keyword monitor` is a legacy-parser
+path and does not apply to the active Lua provider.
+
 ## Live desktop boundaries
 
 Editing files under `/home/Duku/.config/eww` changes files used by the live Eww

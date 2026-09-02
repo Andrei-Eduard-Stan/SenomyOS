@@ -1,5 +1,32 @@
 # SenomyOS Data Sources and Command Policy
 
+## Milestone 3 Quickshell source map
+
+| Domain | Quickshell source | Activity policy |
+|---|---|---|
+| Workspaces/apps/monitors | `Quickshell.Hyprland` objects | Event-driven; no Eww workspace publisher in Quickshell mode |
+| Audio | `Quickshell.Services.Pipewire` | Native graph/default-node signals; no polling process |
+| Network/Wi-Fi | `Quickshell.Networking` NetworkManager backend | Native signals; scanning only while requested by the visible page |
+| Batteries/power profile | `Quickshell.Services.UPower` | Native device/property signals; aggregate weighted by real energy capacity |
+| Bluetooth | `Quickshell.Bluetooth` | Native objects; discovery only while Device Management is visible |
+| Media | `Quickshell.Services.Mpris` | Native player/property signals; no artwork work when no player exists |
+| Tray | `Quickshell.Services.SystemTray` | Native item/menu signals; no inventory poller |
+| Notifications | `NotificationServer` | Event-driven server; 120-record local 0600 history; DND suppresses toast, not history |
+| Level 1 metrics | `/proc/stat`, `/proc/meminfo`, `/proc/net/dev`, `/proc/uptime` via `FileView` | One in-process 2s sampler, always on |
+| Level 2 metrics | Level 1 history plus bounded `performance-status.sh` and `performance-processes.sh` adapters | 1s history, detail every 3 ticks, processes every 5 ticks; only while Dashboard is visible; 60 samples maximum |
+| Level 3 work | `benchmark-action.sh`, diagnostic/console/report allowlists | Explicit user request and confirmation only |
+| Insights | Existing update/timeline/diagnostic/console/report/wiki adapters | Initial route load; 5s Timeline or 15s Briefing/Updates only while visible; other work explicit |
+
+Secure unknown Wi-Fi uses `nmcli --ask` in a terminal through a fixed argv
+array. NetworkManager, not QML or Eww state, owns secret prompting/storage.
+Session actions similarly cross a fixed allowlisted argv boundary and require
+the service's second confirmation.
+
+In Eww fallback mode, `notification-history.sh` may read SwayNC count/DND only
+when an actual `swaync` process exists. Installation and activity are separate
+fields. A read while Quickshell is active never calls `swaync-client`, avoiding
+implicit D-Bus activation of a competing notification server.
+
 ## Principles
 
 - Presentation consumes normalized data.
@@ -41,7 +68,7 @@ On failure:
 Messages must be safe to show in the UI and must not contain command lines with
 secrets.
 
-## Source inventory
+## Legacy/common source inventory
 
 | Domain | Preferred source | Suggested cadence | Notes |
 |---|---|---:|---|
@@ -612,11 +639,14 @@ Notification actions and opaque hints are never stored. The state directory
 and files are mode 0700/0600, remain local, and have an explicit confirmed
 clear action.
 
-`read` combines retained entries with bounded SwayNC count and Do Not Disturb
-queries. Those client queries have a 400ms timeout so an unavailable D-Bus
-provider cannot stall Insights. Eww polls once per second only while Insights /
-Notifications is visible. This is notification history, not a guarantee that
-every application or daemon will emit a notification.
+In Eww mode, `read` combines retained entries with bounded SwayNC count and Do
+Not Disturb queries. It invokes `swaync-client` only after confirming the
+supervised SwayNC user unit is active; installation is reported separately from
+activity. Those client queries have a 400ms timeout. A Quickshell-mode read can
+therefore never D-Bus-activate the competing server. Eww polls once per second
+only while Insights / Notifications is visible. This legacy history is not a
+guarantee that every application or daemon will emit a notification and is not
+the native Quickshell store.
 
 ## Insights timeline collector
 

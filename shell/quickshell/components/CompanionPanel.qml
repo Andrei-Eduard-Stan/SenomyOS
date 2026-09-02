@@ -17,6 +17,9 @@ PanelWindow {
     readonly property bool onThisScreen: state.companionScreen === (targetScreen ? targetScreen.name : "")
     readonly property bool compact: state.companionMode === "compact"
     readonly property bool expanded: state.companionMode === "expanded"
+    readonly property bool primaryOnThisScreen: state.activePrimary !== ""
+        && state.primaryScreen === (targetScreen ? targetScreen.name : "")
+    readonly property bool effectiveLeftDock: state.companionDock === "left" || primaryOnThisScreen
 
     screen: targetScreen
     visible: onThisScreen && state.companionMode !== "closed"
@@ -27,8 +30,8 @@ PanelWindow {
     focusable: true
 
     anchors {
-        left: state.companionDock === "left"
-        right: state.companionDock !== "left"
+        left: effectiveLeftDock
+        right: !effectiveLeftDock
         bottom: true
     }
     margins {

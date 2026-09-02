@@ -1,6 +1,29 @@
 # Audited Live SenomyOS Shell State
 
-Audit date: 2026-09-01. This records observed runtime state, not an assumption
+## Milestone 3 development state — 2026-09-02
+
+The live development session is selected to Quickshell from the authoritative
+`/home/Duku/SenomyOS` `quickshell-v2` worktree. One
+`senomy-quickshell.service` process owns one `senomy-v2-rail` layer on the
+physical display and is the sole `org.freedesktop.Notifications` owner. The
+Eww adapter, Eww-only `workspaces.service`, and SwayNC are inactive. Login-time
+ownership remains Eww.
+
+The native Rail, workspace/toplevel model, volume/tray/calendar/notification/
+power popups, ten-route Control Centre, seven-route Performance Dashboard,
+eight-route Insights surface, and companion are implemented. Shared services
+own PipeWire, NetworkManager, UPower, BlueZ, MPRIS, notifications, Level 1
+metrics, conditional Level 2 metrics, explicit Level 3 work, and Senomy state.
+No Quickshell surface opens a legacy Eww window.
+
+Automated and virtual-display acceptance is recorded in
+`../../../docs/QUICKSHELL_V3_QA.md`. Physical pointer/keyboard acceptance is
+still pending, so this is not yet a Milestone 3 sign-off or permission to
+promote the login default.
+
+## Preserved Milestone 2 / Eww baseline audit
+
+Audit date: 2026-09-01. This records the preserved baseline runtime state, not an assumption
 from older documentation.
 
 ## Configuration and repository boundary

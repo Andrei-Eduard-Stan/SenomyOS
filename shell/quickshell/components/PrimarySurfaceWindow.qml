@@ -15,6 +15,7 @@ PanelWindow {
     property string activeSection: ""
     property int preferredWidth: 960
     property int preferredHeight: 720
+    property var coexistWindow: null
     default property alias bodyData: body.data
     signal closeRequested()
     signal sectionRequested(string section)
@@ -46,7 +47,12 @@ PanelWindow {
     }
 
     HyprlandFocusGrab {
-        windows: [root]
+        // The companion is a peer overlay, not a competing primary surface.
+        // Treat it as inside the same focus region while it is visible so
+        // pointer/keyboard interaction there does not dismiss this surface.
+        windows: root.coexistWindow && root.coexistWindow.visible
+            ? [root, root.coexistWindow]
+            : [root]
         active: root.requestedOpen
         onCleared: if (root.requestedOpen) root.closeRequested()
     }

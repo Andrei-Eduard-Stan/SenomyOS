@@ -7,6 +7,7 @@ SenomyFrame {
 
     required property var metrics
     property bool dashboardOpen: false
+    property bool compact: false
     signal togglePerformance()
     width: 392
     height: Config.Theme.islandHeight
@@ -14,10 +15,12 @@ SenomyFrame {
 
     Row {
         anchors.centerIn: parent
-        spacing: 18
+        spacing: root.compact ? 4 : 18
 
         Repeater {
-            model: [
+            model: root.compact ? [
+                { key: "CPU", value: root.metrics.ready ? Math.round(root.metrics.cpuPercent) + "%" : "…" }
+            ] : [
                 { key: "CPU", value: root.metrics.ready ? Math.round(root.metrics.cpuPercent) + "%" : "…" },
                 { key: "MEM", value: Math.round(root.metrics.memoryPercent) + "%" },
                 { key: "UP", value: root.metrics.uptimeLabel }
