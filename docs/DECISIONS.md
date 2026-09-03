@@ -1918,3 +1918,21 @@ When a right-docked companion shares a normal-width screen with a right-edge
 primary surface, it temporarily presents on the left without mutating the
 user's stored dock preference. This is a functional usability correction, not
 the deferred visual redesign.
+
+## D121 — Promote Quickshell at the compositor boundary and retain Eww recovery
+
+**Date:** 2026-09-03
+**Status:** Accepted by explicit user direction
+
+Hyprland now imports its session environment and calls the guarded selector for
+Quickshell at every login. The shell unit remains deliberately non-enabled so
+it cannot race compositor startup without the required Wayland and Hyprland
+environment. `workspaces.service` is disabled and starts only with the Eww
+recovery path.
+
+Eww is not uninstalled or deleted. Repeated Quickshell startup/readiness failure
+still invokes the recovery unit, which restores SwayNC, workspace publication,
+and Eww in a verified order. An operator can also select Eww for the current
+session; the next login attempts Quickshell again. The user authorized this
+promotion before physical pointer/keyboard and extended-soak evidence was
+complete, so those items remain open and are not retroactively marked passed.

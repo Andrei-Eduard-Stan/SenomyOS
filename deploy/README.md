@@ -55,9 +55,10 @@ device-profile strategy, and the recovery gates required before activation.
 
 ## Packages, services, and first boot
 
-`packages.json` declares official Arch dependencies and keeps the required AUR
-Eww package in an explicit external-review tier. `services.json` records system
-enablement policy and package-managed user presets. The orchestrator exposes
+`packages.json` declares Quickshell as the official primary shell dependency
+and keeps the required AUR Eww package in an explicit recovery tier.
+`services.json` records system enablement policy, package-managed user presets,
+and the disabled recovery-only workspace service. The orchestrator exposes
 read-only audit/plan paths plus confirmed package installation and first boot:
 
 ```bash
@@ -159,6 +160,8 @@ user's home directory.
 ## Component policies
 
 - **Eww:** managed directly in the current live repository for now.
+- **Shell ownership:** Hyprland invokes the non-enabled Quickshell unit through
+  the guarded selector. Eww, SwayNC, and `workspaces.service` are recovery-only.
 - **Hyprland:** complete-file replacement is supported, but applying it remains
   an explicit reviewed action. The deployer installs `hyprland.lua`, the
   project wallpaper, and the bounded `swaybg` launcher for selection at the

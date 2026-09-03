@@ -88,9 +88,11 @@ Also still unverified: a real second monitor/hotplug, touch input, active MPRIS
 playback, Bluetooth pairing, and a new secured Wi-Fi secret prompt. These are
 capability-specific follow-ups, not permission to disrupt the current session.
 
-## Promotion gate
+## Manual acceptance and promotion record
 
 Milestone 3 can be signed off only after the required physical interaction
-checklist is reported. Even then, Quickshell login-default promotion remains a
-separate later decision requiring an extended session soak, suspend/resume and
-real-hardware input/display evidence. Eww stays installed and recoverable.
+checklist is reported. On 2026-09-03 the user explicitly directed Quickshell to
+become the permanent login shell before that sign-off. The promotion therefore
+does not claim an extended soak, suspend/resume, physical-input, or real
+second-display pass. Eww stays installed and automatically recoverable, and a
+fresh-login observation remains required evidence.

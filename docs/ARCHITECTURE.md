@@ -5,8 +5,8 @@
 Milestone 3 runs from `/home/Duku/SenomyOS/shell/quickshell` on the
 `quickshell-v2` branch. In selected Quickshell mode, one supervised process
 owns every Rail, all shell presentation, and `org.freedesktop.Notifications`.
-Eww, its workspace publisher, its listeners, and SwayNC are inactive. Eww is
-still the unchanged login default and automatic recovery backend.
+Eww, its workspace publisher, its listeners, and SwayNC are inactive.
+Quickshell is the login default; Eww is the automatic recovery backend.
 
 ```text
 native/event sources
@@ -52,17 +52,19 @@ scripts used by Performance or Insights are source-owned bounded adapters, not
 Eww IPC or presentation dependencies. The external Command Lens remains an
 intentional Rofi boundary.
 
-## Preserved Eww fallback runtime
+## Login ownership and preserved Eww fallback
 
-The current authenticated session was started from the legacy tracked `.conf`
-and still reflects its original wallpaper startup commands. The deployed
-next-session `hyprland.lua` starts:
+The deployed `hyprland.lua` imports the compositor environment and calls
+`senomy-shell use quickshell`. The selector starts the supervised Quickshell
+unit and accepts it only after every monitor has one Rail reserve and
+Quickshell exclusively owns notifications. Ordinary login does not start the
+Eww workspace publisher, Eww daemon, or SwayNC.
 
-- the workspace listener service;
-- the Eww daemon and `main-bar`;
-- a legacy `update-loop.sh`;
-- one bounded `senomy-wallpaper` entry point backed by `swaybg` and a
-  project-owned generated wallpaper.
+The Eww sources, adapter, workspace listener, and SwayNC remain installed as a
+recovery chain. Repeated Quickshell failure invokes
+`senomy-shell-fallback.service`, which restores them in notification-first
+order. An explicit `senomy-shell use eww` remains available for operator
+rollback, but the following login attempts Quickshell again.
 
 The stable data flows are:
 

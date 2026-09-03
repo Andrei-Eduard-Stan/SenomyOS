@@ -529,12 +529,12 @@ PrimarySurfaceWindow {
         id: settingsPage
         Column {
             spacing: 12
-            SurfaceCard { width: parent.width; title: "SHELL MODE"; value: "QUICKSHELL V2"; detail: "Login-time ownership remains Eww until explicit later promotion." }
+            SurfaceCard { width: parent.width; title: "SHELL MODE"; value: "QUICKSHELL V2"; detail: "Quickshell owns login startup; Eww is retained only for verified automatic recovery." }
             SurfaceCard { width: parent.width; title: "NOTIFICATIONS"; value: root.notifications.serverEnabled ? "NATIVE OWNER" : "SWAYNC OWNER"; detail: "Ownership is exclusive and controlled by the shell selector." }
             SurfaceButton { width: parent.width; text: "OPEN COMMAND LENS ACTIONS"; onClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "actions"]) }
             Text {
                 width: parent.width
-                text: "Recovery, shell switching, deployment, and login-default changes remain outside the ordinary Control Centre to prevent accidental system mutation."
+                text: "Recovery, shell switching, and deployment remain outside the ordinary Control Centre to prevent accidental system mutation."
                 color: Config.Theme.muted
                 font.family: Config.Theme.fontFamily
                 font.pixelSize: 9

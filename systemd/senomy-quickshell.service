@@ -1,5 +1,5 @@
 [Unit]
-Description=SenomyOS Quickshell V2 development shell
+Description=SenomyOS Quickshell shell
 Wants=graphical-session.target
 After=graphical-session.target
 Conflicts=swaync.service
@@ -16,4 +16,5 @@ RestartMode=direct
 RestartSec=1
 TimeoutStopSec=8
 
-# Deliberately no [Install] section: Milestone 2 does not change login ownership.
+# Hyprland starts this through the verified selector after importing its session
+# environment. Keeping the unit non-enabled avoids a race with compositor startup.

@@ -4,6 +4,7 @@
   "official": [
     {"package":"base","tier":"runtime","required":true,"reason":"Arch base userspace"},
     {"package":"hyprland","tier":"runtime","required":true,"reason":"Wayland compositor and Lua configuration runtime"},
+    {"package":"quickshell","tier":"runtime","required":true,"reason":"Primary SenomyOS shell runtime"},
     {"package":"rofi","tier":"runtime","required":true,"reason":"Command Lens launcher"},
     {"package":"thunar","tier":"runtime","required":true,"reason":"File workspace"},
     {"package":"hyprlock","tier":"runtime","required":true,"reason":"Authenticated session lock"},
@@ -23,7 +24,7 @@
     {"package":"playerctl","tier":"runtime","required":true,"reason":"Media state and keys"},
     {"package":"brightnessctl","tier":"runtime","required":true,"reason":"Backlight controls where available"},
     {"package":"libnotify","tier":"runtime","required":true,"reason":"Desktop notifications"},
-    {"package":"swaync","tier":"runtime","required":true,"reason":"Notification presentation and bounded history hook"},
+    {"package":"swaync","tier":"runtime","required":true,"reason":"Notification server for the automatic Eww recovery backend"},
     {"package":"polkit-gnome","tier":"runtime","required":true,"reason":"Graphical PolicyKit agent"},
     {"package":"xdg-desktop-portal","tier":"runtime","required":true,"reason":"Desktop portal framework"},
     {"package":"xdg-desktop-portal-hyprland","tier":"runtime","required":true,"reason":"Hyprland portal backend"},
@@ -49,6 +50,6 @@
     {"package":"grub","tier":"system","required":false,"reason":"Optional GRUB bootloader theme target on GRUB-based installations"}
   ],
   "external": [
-    {"package":"eww","provider":"aur","tier":"runtime","required":true,"reason":"SenomyOS shell runtime","review":"Build and PKGBUILD review remain mandatory; bootstrap never silently substitutes an AUR package."}
+    {"package":"eww","provider":"aur","tier":"runtime","required":true,"reason":"Automatic recovery shell runtime","review":"Build and PKGBUILD review remain mandatory; bootstrap never silently substitutes an AUR package."}
   ]
 }

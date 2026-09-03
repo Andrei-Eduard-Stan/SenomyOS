@@ -31,7 +31,8 @@ Usage:
 
 audit and plan are read-only. install-packages uses pacman and optionally the
 already-installed paru helper. apply deploys reviewed user/system files,
-enables the workspace unit, and enters interactive recovery provisioning. It
+installs the Quickshell selector, disables the recovery-only workspace unit,
+and enters interactive recovery provisioning. It
 does not restart SDDM, reload Hyprland, regenerate initramfs/GRUB, log out, or
 reboot.
 EOF
@@ -59,7 +60,7 @@ validate_manifests() {
       (.policy | IN("enable", "optional")) and (.required | type == "boolean")) and
     all(.user[];
       (.unit | test("^[A-Za-z0-9@_.-]+\\.(service|socket)$")) and
-      (.policy | IN("enable", "preset")) and (.required | type == "boolean") and
+      (.policy | IN("enable", "preset", "fallback")) and (.required | type == "boolean") and
       (.managed | type == "boolean"))
   ' "$SERVICE_MANIFEST" >/dev/null || fail 'service manifest is invalid'
 }
@@ -173,7 +174,7 @@ apply_first_boot() {
   report="$(audit)"
   jq -e '.data.ready_for_configuration == true' <<<"$report" >/dev/null || fail 'install every required package before applying first boot'
   pgrep -i -x thunar >/dev/null 2>&1 && fail 'close every Thunar window before first-boot apply'
-  printf 'This installs user/system configuration and enables workspaces.service.\n'
+  printf 'This installs user/system configuration and makes Quickshell the next-login shell.\n'
   printf 'It does not restart SDDM, reload Hyprland, regenerate boot files, log out, or reboot.\n'
   confirm "BOOTSTRAP SENOMYOS $profile"
   "$SCRIPT_DIR/generate-appearance.py" build
@@ -181,8 +182,9 @@ apply_first_boot() {
   for component in "profile-$profile" hyprland rofi gtk3 hyprlock workspaces-unit thunar; do
     "$USER_DEPLOY" apply "$component" --yes
   done
+  "$SCRIPT_DIR/senomy-v2-deploy" apply
   "$SYSTEMCTL_BIN" --user daemon-reload
-  "$SYSTEMCTL_BIN" --user enable --now workspaces.service
+  "$SYSTEMCTL_BIN" --user disable workspaces.service
   sudo "$SYSTEM_DEPLOY" apply sddm --yes
   sudo "$SYSTEM_DEPLOY" apply recovery --yes
   sudo "$RECOVERYCTL" provision "$target_user"

@@ -1,9 +1,8 @@
 # SenomyOS Shell V2 — Milestone 3 functional shell
 
 This directory is the source-owned Quickshell 0.3 / QtQuick implementation of
-the SenomyOS Obsidian Rail. It can replace Eww during the current Hyprland
-session through a guarded selector, but Eww remains the login default and
-automatic fallback.
+the SenomyOS Obsidian Rail. Hyprland starts it at login through a guarded
+selector. Eww remains installed only as the automatic recovery backend.
 
 ## Current scope
 
@@ -25,8 +24,8 @@ automatic fallback.
 - modular SenomyOS Luminous Reliquary SVG frames.
 
 Normal Quickshell use does not start an Eww process, Eww workspace publisher,
-or SwayNC. Eww is deliberately retained as the login-time and automatic
-failure fallback. Physical pointer/keyboard acceptance items remain before
+or SwayNC. Eww is deliberately retained only as the automatic failure
+fallback. Physical pointer/keyboard acceptance items remain before
 Milestone 3 sign-off; see `../../docs/QUICKSHELL_V3_QA.md`.
 
 ## Live development
@@ -54,8 +53,9 @@ Runtime logs are available without attaching another reader to Eww:
 senomy-shell logs 120
 ```
 
-No V2 unit is enabled. The existing Hyprland startup remains Eww-owned, so the
-next login still starts the known-good fallback.
+No shell unit is enabled directly. Hyprland imports its session environment and
+invokes `senomy-shell use quickshell`; the selector starts the supervised unit
+and restores Eww automatically if startup or readiness fails.
 
 ## Runtime requirements
 

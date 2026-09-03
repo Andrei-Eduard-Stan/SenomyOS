@@ -16,6 +16,7 @@ WORKSPACE_UNIT=workspaces.service
 NOTIFICATION_UNIT=swaync.service
 QS_NAMESPACE=senomy-v2-rail
 EWW_NAMESPACE=senomy-rail
+LOGIN_DEFAULT=quickshell
 
 fail() {
   printf 'senomy-shell: %s\n' "$*" >&2
@@ -75,9 +76,10 @@ eww_ready() {
 
 selected_mode() {
   if [[ -r "$CONFIG_FILE" ]]; then
-    /usr/bin/jq -r '.selected_backend // "eww"' "$CONFIG_FILE" 2>/dev/null || printf 'eww\n'
+    /usr/bin/jq -r --arg login_default "$LOGIN_DEFAULT" \
+      '.selected_backend // $login_default' "$CONFIG_FILE" 2>/dev/null || printf '%s\n' "$LOGIN_DEFAULT"
   else
-    printf 'eww\n'
+    printf '%s\n' "$LOGIN_DEFAULT"
   fi
 }
 
@@ -89,8 +91,9 @@ write_mode() {
     --arg mode "$mode" \
     --arg source "$SOURCE_ROOT" \
     --arg reason "$reason" \
+    --arg login_default "$LOGIN_DEFAULT" \
     --arg changed "$(date --iso-8601=seconds)" \
-    '{schema_version:1,selected_backend:$mode,source_root:$source,login_default:"eww",reason:$reason,changed_at:$changed}' >"$temporary"
+    '{schema_version:1,selected_backend:$mode,source_root:$source,login_default:$login_default,reason:$reason,changed_at:$changed}' >"$temporary"
   chmod 600 "$temporary"
   mv -f "$temporary" "$CONFIG_FILE"
 }
@@ -230,7 +233,7 @@ use_quickshell() {
   fi
   systemctl --user stop "$WORKSPACE_UNIT" >/dev/null 2>&1 || true
   write_mode quickshell
-  printf 'Quickshell owns the Rail reserve; login-time default remains Eww.\n'
+  printf 'Quickshell owns the Rail reserve and is the login-time default.\n'
 }
 
 use_eww() {
@@ -287,7 +290,7 @@ show_status() {
     --arg quickshell_service "$qs_active" --arg eww_service "$eww_active" \
     --arg workspace_service "$workspace_active" --arg notification_service "$notification_active" \
     --arg notification_owner "$notification_bus_owner" --argjson notification_pid "$notification_bus_pid" \
-    --arg notification_provider "$notification_provider_name" --arg login_default eww \
+    --arg notification_provider "$notification_provider_name" --arg login_default "$LOGIN_DEFAULT" \
     --arg source_root "$SOURCE_ROOT" --argjson quickshell_layers "$qs_layers" \
     --argjson eww_layers "$eww_layers" \
     '{selected_backend:$selected,detected_backend:$detected,login_default:$login_default,services:{quickshell:$quickshell_service,eww:$eww_service,workspaces:$workspace_service,notifications:$notification_service},notifications:{dbus_name:"org.freedesktop.Notifications",owner:$notification_owner,owner_pid:$notification_pid,provider:$notification_provider},layers:{quickshell:$quickshell_layers,eww:$eww_layers},source_root:$source_root}'

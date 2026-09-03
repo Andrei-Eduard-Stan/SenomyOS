@@ -1,7 +1,8 @@
 # Quickshell V3 functional parity and Eww retirement ledger
 
 Status: Milestone 3 automated acceptance complete; physical input acceptance
-pending, 2026-09-02.
+pending; Quickshell login ownership promoted by explicit user direction on
+2026-09-03.
 
 `Migrated` means Quickshell owns the function in Quickshell mode. `Verified`
 distinguishes automated/live evidence from interactions that still require a
@@ -48,6 +49,5 @@ person using real pointer or keyboard input. See `QUICKSHELL_V3_QA.md`.
 | Eww daemon, startup script and fallback adapter | Recovery backend | Recovery only | Do not remove in Milestone 3 |
 
 Normal Quickshell operation now has no Eww process, Eww user service,
-`workspaces.service`, Eww listener, or SwayNC dependency. Eww remains the
-unchanged login-time default and automatic recovery backend until a later,
-explicit promotion milestone.
+`workspaces.service`, Eww listener, or SwayNC dependency. Quickshell is the
+login-time default. Eww remains installed as the automatic recovery backend.

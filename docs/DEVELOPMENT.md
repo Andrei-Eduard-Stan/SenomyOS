@@ -57,6 +57,10 @@ qs ipc --path shell/quickshell show
 
 Use `senomy-shell use eww` for rollback. Never start SwayNC manually while
 Quickshell is selected; notification ownership is part of selector readiness.
+Quickshell is the login default. Hyprland invokes the selector rather than
+enabling the shell unit directly, so the compositor environment is available
+before readiness checks. Eww rollback affects the current session only; the
+next login attempts Quickshell again.
 Transient headless-output QA must use Hyprland's active Lua API on the current
 0.56 runtime, remove the output in an EXIT trap, and verify the physical
 monitor count/reserve afterward. `hyprctl keyword monitor` is a legacy-parser

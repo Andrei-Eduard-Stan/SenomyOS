@@ -1,13 +1,13 @@
 # Audited Live SenomyOS Shell State
 
-## Milestone 3 development state — 2026-09-02
+## Quickshell login ownership — 2026-09-03
 
-The live development session is selected to Quickshell from the authoritative
+The live desktop and next-login path are selected to Quickshell from the authoritative
 `/home/Duku/SenomyOS` `quickshell-v2` worktree. One
 `senomy-quickshell.service` process owns one `senomy-v2-rail` layer on the
 physical display and is the sole `org.freedesktop.Notifications` owner. The
-Eww adapter, Eww-only `workspaces.service`, and SwayNC are inactive. Login-time
-ownership remains Eww.
+Eww adapter, Eww-only `workspaces.service`, and SwayNC are inactive.
+Hyprland invokes the guarded selector at login; Eww is recovery-only.
 
 The native Rail, workspace/toplevel model, volume/tray/calendar/notification/
 power popups, ten-route Control Centre, seven-route Performance Dashboard,
@@ -18,8 +18,8 @@ No Quickshell surface opens a legacy Eww window.
 
 Automated and virtual-display acceptance is recorded in
 `../../../docs/QUICKSHELL_V3_QA.md`. Physical pointer/keyboard acceptance is
-still pending, so this is not yet a Milestone 3 sign-off or permission to
-promote the login default.
+still pending. The user explicitly authorized login-default promotion before
+that manual gate; this does not convert the outstanding checklist into a pass.
 
 ## Preserved Milestone 2 / Eww baseline audit
 
@@ -51,9 +51,11 @@ now a detached fallback checkout rather than the V2 development root. See
 ## Startup sequence
 
 The active Hyprland Lua source imports the compositor environment into the user
-manager, restarts `workspaces.service`, starts the PolicyKit agent, calls
-`scripts/start-eww.sh`, and starts the Senomy wallpaper path. It contains no
-Quickshell startup command.
+manager, calls `senomy-shell use quickshell`, starts the PolicyKit agent, and
+starts the Senomy wallpaper path. It contains no normal Eww or workspace-service
+startup command. The selector verifies Rail reserves and notification ownership
+before accepting Quickshell; failure restores Eww, SwayNC, and the workspace
+publisher.
 
 `start-eww.sh` resolves the live configuration directory, removes duplicate or
 stale config-matched Eww daemons when necessary, starts one detached foreground

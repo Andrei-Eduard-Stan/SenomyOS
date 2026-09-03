@@ -14,6 +14,7 @@
 | Power/session | Native two-stage service/popup | Source-owned allowlisted helper, no Eww | Request/cancel passed; no destructive confirm run |
 | Command Lens | External source-owned Rofi wrapper | None | Intentionally remains external to Quickshell |
 | Recovery | Eww adapter, SwayNC and workspace service | Recovery only | Switch/rollback passed; keep installed |
+| Login ownership | Hyprland → guarded selector → supervised Quickshell | Eww only on failed readiness/recovery | Promoted 2026-09-03; next real login still requires observation |
 
 The detailed table below is the preserved Milestone 2 migration checkpoint.
 Rows saying “future” or “keep on Eww” are superseded by the completion overlay
@@ -54,7 +55,7 @@ the module is permanent.
 | Appearance/tokens/frames | Shared product language and scalable ornament | `eww.scss`, `appearance/`, generated frame SVGs, generator | appearance profile/tokens | generated assets + Eww classes/listener | generated QML singleton + shared SVG modules | Generator and repository-relative canonical assets complete | Low: component-specific layout remains native |
 | Exclusive zones/input regions | Reserve screen edge without blocking gaps | `main-bar` geometry/exclusive flag | Eww layer-shell window | full-width Eww window | masked full-width `PanelWindow` | Ported in V2 | Medium: compositor/version behavior |
 | Multi-monitor/layout profiles | Adapt to monitor width and density | `bar-layout.sh`, profile status, Eww screen choice | `hyprctl -j monitors`, profile JSON | 15 s layout poll + startup-selected screen | `Quickshell.screens`, per-screen variants, width breakpoints | Virtual hotplug, integer/fractional, narrow landscape, and portrait passed | High: physical hotplug/touch still needs evidence |
-| Startup/recovery | Start one stable shell and preserve fallback | Hyprland Lua, `start-eww.sh`, `senomy-shellctl.sh` | compositor startup and Eww IPC | detached daemon, readiness checks, main-bar open | non-enabled user units + verified selector + OnFailure fallback | Live switching complete; Eww remains login default | Critical: login ownership change remains gated |
+| Startup/recovery | Start one stable shell and preserve fallback | Hyprland Lua, `start-eww.sh`, `senomy-shellctl.sh` | compositor startup and Eww IPC | detached daemon, readiness checks, main-bar open | non-enabled user units + verified selector + OnFailure fallback | Quickshell promoted; Eww recovery retained | Critical: observe a fresh login and keep rollback healthy |
 
 ## Milestone 3 shared state and service architecture
 

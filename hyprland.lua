@@ -46,9 +46,8 @@ local menu = "/usr/bin/env sh -c '$HOME/.local/bin/senomy-command-lens'"
 
 if os.getenv("SENOMY_NESTED_QA") ~= "1" then
     hl.on("hyprland.start", function()
-        hl.exec_cmd("systemctl --user import-environment XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE WAYLAND_DISPLAY DISPLAY && systemctl --user reset-failed workspaces.service && systemctl --user restart workspaces.service")
+        hl.exec_cmd("systemctl --user import-environment XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE WAYLAND_DISPLAY DISPLAY && " .. home .. "/.local/bin/senomy-shell use quickshell")
         hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
-        hl.exec_cmd(home .. "/.config/eww/scripts/start-eww.sh")
         hl.exec_cmd(home .. "/.local/bin/senomy-wallpaper")
     end)
 end

@@ -25,7 +25,7 @@ plan() {
     IFS='|' read -r source target <<<"$entry"
     printf '%s -> %s\n' "$target" "$source"
   done
-  printf '%s (generated only when absent; login default remains Eww)\n' "$CONFIG_ROOT/shell.json"
+  printf '%s (generated only when absent; login default is Quickshell)\n' "$CONFIG_ROOT/shell.json"
 }
 
 check() {
@@ -59,11 +59,11 @@ apply() {
   done
   if [[ ! -e "$CONFIG_ROOT/shell.json" ]]; then
     /usr/bin/jq -n --arg source "$SOURCE_ROOT" \
-      '{schema_version:1,selected_backend:"eww",source_root:$source,login_default:"eww",reason:"initial-deploy"}' >"$CONFIG_ROOT/shell.json"
+      '{schema_version:1,selected_backend:"quickshell",source_root:$source,login_default:"quickshell",reason:"initial-deploy"}' >"$CONFIG_ROOT/shell.json"
     chmod 600 "$CONFIG_ROOT/shell.json"
   fi
   systemctl --user daemon-reload
-  printf 'V2 development links installed. No service was enabled or started.\n'
+  printf 'Quickshell shell links installed. Hyprland owns login activation; no service was enabled or started here.\n'
 }
 
 case "${1:-}" in

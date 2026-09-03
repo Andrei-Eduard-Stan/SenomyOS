@@ -3,6 +3,10 @@
 Status: Milestone 2 development foundation, 2026-09-01. Quickshell is a live
 selectable backend, but Eww remains the login-time default and recovery shell.
 
+This document preserves the Milestone 2 checkpoint. D121 supersedes its
+login-ownership statements: Quickshell became the login default on 2026-09-03,
+while Eww remains the recovery shell.
+
 ## Source, runtime, and deployment boundaries
 
 The authoritative Git worktree for V2 is `/home/Duku/SenomyOS` on
@@ -18,7 +22,7 @@ The current boundaries are:
 |---|---|---|
 | Authoritative source | `/home/Duku/SenomyOS` | Git; human-edited and generated source projections |
 | Legacy live fallback | `~/.config/eww` | Detached, known-good Eww runtime/source snapshot |
-| User preference | `~/.config/senomyos/shell.json` | Selected migration backend, source root, unchanged login default |
+| User preference at this checkpoint | `~/.config/senomyos/shell.json` | Selected migration backend, source root, then-current login default |
 | Ephemeral selector state | `$XDG_RUNTIME_DIR/senomyos/` | Lock and Eww daemon log; never source or preference |
 | Development commands | `~/.local/bin/senomy-*` | Explicit symlinks into the source worktree |
 | User units | `~/.config/systemd/user/senomy-*.service` | Explicit symlinks into source; linked but not enabled |
@@ -44,10 +48,9 @@ ownership correction is complete: the V2 shell is under `shell/quickshell/`.
   merged backward into the detached live fallback.
 - `/home/Duku/Projects/SenomyOS` is unrelated and out of scope.
 
-No Milestone 2 unit has an `[Install]` section. The current Hyprland Lua startup
-still starts `workspaces.service` and `~/.config/eww/scripts/start-eww.sh`.
-Logging out and back in therefore restores Eww regardless of the last live
-selection.
+No Milestone 2 unit had an `[Install]` section. At this checkpoint, Hyprland
+still started `workspaces.service` and `~/.config/eww/scripts/start-eww.sh`.
+D121 later replaced that path with the guarded Quickshell selector.
 
 ## Live development and shell selection
 

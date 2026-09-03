@@ -11,4 +11,5 @@ RemainAfterExit=yes
 TimeoutStartSec=35
 TimeoutStopSec=8
 
-# Deliberately no [Install] section: Hyprland retains the existing Eww startup.
+# Recovery-only unit. The selector starts it after Quickshell failure or an
+# explicit operator rollback; it is never enabled for ordinary login startup.

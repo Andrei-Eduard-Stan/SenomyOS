@@ -62,6 +62,7 @@ check "GTK stylesheet contract" bash -c '
 ' _ "$CONFIG_DIR"
 check "Isolated Eww definitions" "$CONFIG_DIR/scripts/validate-eww-config.sh"
 check "Session startup contract" "$CONFIG_DIR/scripts/validate-startup-contract.sh"
+check "Quickshell login ownership" "$CONFIG_DIR/scripts/validate-shell-promotion.sh"
 check "Eww client no-autostart contract" bash -c '
   for file in \
     start-eww.sh surface-state.sh ui-action.sh workspaces.sh \

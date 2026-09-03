@@ -38,7 +38,7 @@ The visible startup path has separate owners and separate technical limits:
 | GRUB | bootloader | static theme is staged | background, OS logo, fonts, menu, selected row, timeout text |
 | Kernel + initramfs | early Linux userspace | Plymouth source is staged | logo, frame animation, progress, safe status and disk-unlock prompts |
 | SDDM | system display-manager session | implemented and deployable | animated QML login surface, layout/session selection and guarded system actions |
-| Hyprland + Eww | authenticated desktop | implemented and deployable | full shell, live data, rich animation and user interaction |
+| Hyprland + Quickshell | authenticated desktop | implemented and deployable | full shell, live data, rich animation and user interaction; Eww is automatic recovery only |
 | Hyprlock | authenticated session | implemented and deployable | live screenshot blur, PAM unlock and bounded locked-session keys |
 
 This separation matters. A visual effect that is easy in SDDM may be

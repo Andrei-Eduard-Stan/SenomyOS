@@ -453,8 +453,9 @@ Implemented on `quickshell-v2` on 2026-09-02:
 The remaining Milestone 3 gate is the real pointer/keyboard checklist in
 `QUICKSHELL_V3_QA.md`. Physical second-monitor, touch, active MPRIS,
 Bluetooth-pairing and new secured-Wi-Fi cases remain capability-specific
-follow-ups. Eww stays the login default and recovery backend; default-shell
-promotion is not part of this stage.
+follow-ups. By explicit user direction on 2026-09-03, Quickshell was promoted
+to login ownership before manual sign-off. Eww remains recovery-only; the
+outstanding evidence is still recorded rather than treated as passed.
 
 ## Stage 11 — Hardware and form-factor profiles
 

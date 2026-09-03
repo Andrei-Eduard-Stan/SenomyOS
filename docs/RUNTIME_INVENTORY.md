@@ -7,6 +7,20 @@ Runtime facts can change. Recheck them before relying on them for a mutation.
 The current T480 is the reference development machine, not the target hardware
 specification for SenomyOS.
 
+## Current shell ownership — 2026-09-03
+
+The authoritative worktree is `/home/Duku/SenomyOS` on `quickshell-v2`.
+Hyprland 0.56.2 uses the live Lua provider. Its tracked and live startup source
+now invokes `senomy-shell use quickshell`; the legacy `.conf` mirror records the
+same ownership policy. `workspaces.service` is disabled for login startup.
+
+Normal runtime is one supervised `senomy-quickshell.service`, one Rail per
+monitor, native notification ownership, and no Eww, SwayNC, or workspace
+publisher. Eww 0.6.0-1, its adapter, SwayNC, and the workspace publisher remain
+installed for automatic failure recovery and explicit current-session
+rollback. The promotion was applied by explicit user direction before the
+physical Milestone 3 checklist was signed off.
+
 ## Paths
 
 ```text
@@ -1366,7 +1380,8 @@ Syntax validity does not make the update-loop architecture correct.
 
 - Runtime versions are Quickshell 0.3.1-1, Qt 6.11.2 and Hyprland 0.56.2 with
   the Lua configuration provider. The authoritative branch is
-  `/home/Duku/SenomyOS` `quickshell-v2`; login default remains Eww.
+  `/home/Duku/SenomyOS` `quickshell-v2`; at this September 2 snapshot the login
+  default remained Eww.
 - In the final observed development state, `senomy-quickshell.service` was
   active with one Rail. Eww, `workspaces.service` and SwayNC were inactive, and
   the Quickshell main PID was the sole notification owner. No Eww component is

@@ -6,7 +6,7 @@
     {"unit":"bluetooth.service","policy":"optional","required":false,"reason":"Only required when Bluetooth is supported and enabled"}
   ],
   "user": [
-    {"unit":"workspaces.service","policy":"enable","required":true,"managed":true,"reason":"Event-driven workspace publication"},
+    {"unit":"workspaces.service","policy":"fallback","required":false,"managed":true,"reason":"Recovery-only Eww workspace publication; disabled during normal Quickshell login"},
     {"unit":"pipewire.socket","policy":"preset","required":true,"managed":false,"reason":"Package-managed audio activation"},
     {"unit":"pipewire-pulse.socket","policy":"preset","required":true,"managed":false,"reason":"Package-managed Pulse compatibility activation"},
     {"unit":"wireplumber.service","policy":"preset","required":true,"managed":false,"reason":"Package-managed audio policy"}
