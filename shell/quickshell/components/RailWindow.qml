@@ -171,6 +171,7 @@ PanelWindow {
         audio: root.audio
         media: root.media
         requestedOpen: root.uiState.activePopup === root.volumeToken
+        onOpenAudioRequested: root.uiState.showPrimary("control", root.popupPrefix, "audio")
         onRequestedOpenChanged: if (!requestedOpen && root.uiState.activePopup === root.volumeToken)
             root.uiState.activePopup = ""
         onDismissRequested: if (root.uiState.activePopup === root.volumeToken)
@@ -202,6 +203,7 @@ PanelWindow {
     ControlCentre {
         id: controlCentre
         targetScreen: root.screen
+        anchorCenterX: rightRail.x + systemControlsIsland.x + systemControlsIsland.width / 2
         coexistWindow: companionPanel
         state: root.uiState
         metrics: root.metrics
@@ -217,6 +219,7 @@ PanelWindow {
     PerformanceDashboard {
         id: performanceDashboard
         targetScreen: root.screen
+        anchorCenterX: rightRail.x + telemetryIsland.x + telemetryIsland.width / 2
         coexistWindow: companionPanel
         state: root.uiState
         performance: root.performance
@@ -228,6 +231,7 @@ PanelWindow {
     InsightsPanel {
         id: insightsPanel
         targetScreen: root.screen
+        anchorCenterX: rightRail.x + statusIsland.x + statusIsland.width / 2
         coexistWindow: companionPanel
         state: root.uiState
         insights: root.insights

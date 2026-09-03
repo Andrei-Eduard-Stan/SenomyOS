@@ -10,13 +10,25 @@ Item {
     property string tier: "compact"
     property bool active: false
     property bool hovered: hoverHandler.hovered
+    property real motifCenterX: width / 2
     default property alias contentData: content.data
 
     readonly property int opticalHeight: tier === "compact" ? Math.min(44, height) : height
     readonly property int opticalY: Math.round((height - opticalHeight) / 2)
-    readonly property int cornerSize: tier === "standard" ? 32 : Config.Theme.compactCorner
-    readonly property int horizontalEdgeHeight: tier === "standard" ? 9 : 6
-    readonly property int verticalEdgeWidth: tier === "standard" ? 9 : 6
+    readonly property int cornerSize: tier === "large" ? Config.Theme.largeCorner
+        : tier === "standard" ? Config.Theme.standardCorner : Config.Theme.compactCorner
+    readonly property int horizontalEdgeHeight: tier === "large" ? Config.Theme.largeEdgeHorizontal
+        : tier === "standard" ? Config.Theme.standardEdgeHorizontal : 6
+    readonly property int verticalEdgeWidth: tier === "large" ? Config.Theme.largeEdgeVertical
+        : tier === "standard" ? Config.Theme.standardEdgeVertical : 6
+    readonly property int safeTop: tier === "large" ? Config.Theme.largeSafeTop
+        : tier === "standard" ? Config.Theme.standardSafeTop : 7
+    readonly property int safeRight: tier === "large" ? Config.Theme.largeSafeRight
+        : tier === "standard" ? Config.Theme.standardSafeRight : 9
+    readonly property int safeBottom: tier === "large" ? Config.Theme.largeSafeBottom
+        : tier === "standard" ? Config.Theme.standardSafeBottom : 7
+    readonly property int safeLeft: tier === "large" ? Config.Theme.largeSafeLeft
+        : tier === "standard" ? Config.Theme.standardSafeLeft : 9
     readonly property string assetRoot: "../assets/frames/"
 
     Rectangle {
@@ -24,14 +36,21 @@ Item {
         y: root.opticalY + 1
         width: parent.width - 2
         height: root.opticalHeight - 2
-        radius: root.tier === "standard" ? 25 : 15
-        color: root.hovered ? Config.Theme.surfaceHover : Config.Theme.surface
+        radius: root.tier === "compact" ? 14 : 5
+        color: Config.Theme.glassSurface
         border.width: root.active ? 1 : 0
         border.color: Qt.rgba(Config.Theme.accent.r, Config.Theme.accent.g, Config.Theme.accent.b, 0.48)
+    }
 
-        Behavior on color {
-            ColorAnimation { duration: 110 }
-        }
+    Rectangle {
+        x: 1
+        y: root.opticalY + 1
+        width: parent.width - 2
+        height: root.opticalHeight - 2
+        radius: root.tier === "compact" ? 14 : 5
+        color: root.active ? Config.Theme.glassFocus
+            : root.hovered ? Config.Theme.glassHover : "transparent"
+        Behavior on color { ColorAnimation { duration: 130 } }
     }
 
     Item {
@@ -95,7 +114,9 @@ Item {
 
         Image {
             visible: root.motif.length > 0
-            anchors.horizontalCenter: parent.horizontalCenter
+            x: Math.max(root.cornerSize,
+                Math.min(frame.width - root.cornerSize - width,
+                    root.motifCenterX - width / 2))
             anchors.top: root.motif === "telemetry" || root.motif === "clock-notification" || root.motif === "power"
                 ? undefined : parent.top
             anchors.bottom: root.motif === "telemetry" || root.motif === "clock-notification" || root.motif === "power"
@@ -112,10 +133,10 @@ Item {
     Item {
         id: content
         anchors.fill: parent
-        anchors.leftMargin: root.tier === "standard" ? 16 : 9
-        anchors.rightMargin: root.tier === "standard" ? 16 : 9
-        anchors.topMargin: root.tier === "standard" ? 14 : 7
-        anchors.bottomMargin: root.tier === "standard" ? 14 : 7
+        anchors.leftMargin: root.safeLeft
+        anchors.rightMargin: root.safeRight
+        anchors.topMargin: root.safeTop
+        anchors.bottomMargin: root.safeBottom
     }
 
     HoverHandler { id: hoverHandler }

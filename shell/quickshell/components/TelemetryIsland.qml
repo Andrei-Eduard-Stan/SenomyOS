@@ -26,8 +26,16 @@ SenomyFrame {
                 { key: "UP", value: root.metrics.uptimeLabel }
             ]
             delegate: Row {
+                required property int index
                 required property var modelData
-                spacing: 6
+                spacing: root.compact ? 4 : 10
+                Rectangle {
+                    visible: index > 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 1
+                    height: 20
+                    color: Config.Theme.glassHover
+                }
                 Text {
                     text: modelData.key
                     color: Config.Theme.dim

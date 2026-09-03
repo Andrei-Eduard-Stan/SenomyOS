@@ -20,11 +20,13 @@ PrimarySurfaceWindow {
 
     requestedOpen: state.activePrimary === "control"
         && state.primaryScreen === (targetScreen ? targetScreen.name : "")
+    replacementOpening: state.activePrimary !== "" && state.activePrimary !== "control"
     title: "CONTROL CENTRE"
     eyebrow: "CONTEXTUAL SYSTEM CONTROL"
     activeSection: state.controlSection
     preferredWidth: 980
-    preferredHeight: 720
+    preferredHeight: 760
+    motif: "controls"
     sections: [
         {id: "overview", label: "OVERVIEW"},
         {id: "network", label: "NETWORK"},
@@ -192,8 +194,8 @@ PrimarySurfaceWindow {
                     required property var modelData
                     width: ListView.view.width
                     height: 58
-                    radius: 14
-                    color: Config.Theme.surfaceRaised
+                    radius: 5
+                    color: Config.Theme.glassRaised
                     border.width: 1
                     border.color: modelData.connected ? Config.Theme.accent : Config.Theme.surfaceHover
                     Row {
@@ -202,7 +204,7 @@ PrimarySurfaceWindow {
                         spacing: 8
                         Column {
                             anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 230
+                            width: parent.width - 318
                             Text {
                                 width: parent.width
                                 text: networkRow.modelData.name || "Hidden network"
@@ -221,6 +223,36 @@ PrimarySurfaceWindow {
                                 font.family: Config.Theme.fontFamily
                                 font.pixelSize: 8
                                 elide: Text.ElideRight
+                            }
+                        }
+                        Item {
+                            width: 80
+                            height: 42
+                            Text {
+                                anchors.top: parent.top
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: root.wifiPercent(networkRow.modelData.signalStrength) + "%"
+                                color: networkRow.modelData.connected ? Config.Theme.accent : Config.Theme.muted
+                                font.family: Config.Theme.fontFamily
+                                font.pixelSize: 8
+                                font.weight: Font.DemiBold
+                            }
+                            Row {
+                                anchors.bottom: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 3
+                                Repeater {
+                                    model: 8
+                                    delegate: Rectangle {
+                                        required property int index
+                                        width: 6
+                                        height: 4 + index * 2
+                                        anchors.bottom: parent.bottom
+                                        radius: 1
+                                        color: root.wifiPercent(networkRow.modelData.signalStrength) >= (index + 1) * 12.5
+                                            ? Config.Theme.accent : Config.Theme.glassHover
+                                    }
+                                }
                             }
                         }
                         SurfaceButton {

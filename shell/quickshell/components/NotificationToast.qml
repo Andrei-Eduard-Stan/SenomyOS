@@ -10,9 +10,11 @@ PanelWindow {
     required property var notifications
     property bool placementEnabled: false
     property bool shown: false
+    property bool toastShown: false
 
     screen: targetScreen
-    visible: placementEnabled && notifications.serverEnabled && shown && notifications.latest !== null
+    visible: placementEnabled && notifications.serverEnabled && notifications.latest !== null
+        && (shown || toastShown || closeTimer.running)
     implicitWidth: 430
     implicitHeight: 170
     color: "transparent"
@@ -46,6 +48,28 @@ PanelWindow {
         }
     }
 
+    onShownChanged: {
+        if (shown) {
+            closeTimer.stop();
+            revealTimer.restart();
+        } else {
+            revealTimer.stop();
+            toastShown = false;
+            closeTimer.restart();
+        }
+    }
+
+    Timer {
+        id: revealTimer
+        interval: 1
+        onTriggered: root.toastShown = root.shown
+    }
+
+    Timer {
+        id: closeTimer
+        interval: Config.Theme.popupCloseMs
+    }
+
     Timer {
         id: hideTimer
         interval: root.notifications.latest && root.notifications.latest.urgency === "Critical" ? 12000 : 6000
@@ -55,6 +79,22 @@ PanelWindow {
     SenomyFrame {
         id: frame
         anchors.fill: parent
+        opacity: root.toastShown ? 1 : 0
+        transform: Translate {
+            x: root.toastShown ? 0 : 18
+            Behavior on x {
+                NumberAnimation {
+                    duration: root.shown ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                    easing.type: root.shown ? Easing.OutCubic : Easing.InCubic
+                }
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.shown ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                easing.type: root.shown ? Easing.OutCubic : Easing.InCubic
+            }
+        }
         tier: "standard"
         motif: "clock-notification"
         active: true

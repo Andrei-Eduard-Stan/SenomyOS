@@ -143,7 +143,7 @@ hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "a
 -- its translucent glass pixels instead of every GTK layer-shell surface.
 hl.layer_rule({
     name = "senomy-rail-glass",
-    match = { namespace = "^senomy-rail$" },
+    match = { namespace = "^senomy-(rail|v2-rail)$" },
     blur = true,
     ignore_alpha = 0.06,
     xray = false,
@@ -151,7 +151,7 @@ hl.layer_rule({
 
 hl.layer_rule({
     name = "senomy-surface-glass",
-    match = { namespace = "^senomy-(control|performance|insights|flyout|companion)$" },
+    match = { namespace = "^senomy-(control|performance|insights|flyout|companion|v2-(primary|companion|notification-toast))$" },
     blur = true,
     ignore_alpha = 0.08,
     xray = false,

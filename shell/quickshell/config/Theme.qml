@@ -18,13 +18,36 @@ QtObject {
     readonly property color danger: "#c46f7d"
     readonly property color success: "#7fa98a"
 
+    readonly property real glassSurfaceAlpha: 0.38
+    readonly property real glassRaisedAlpha: 0.54
+    readonly property real glassHoverAlpha: 0.07
+    readonly property real glassFocusAlpha: 0.1
+    readonly property color glassSurface: Qt.rgba(surface.r, surface.g, surface.b, glassSurfaceAlpha)
+    readonly property color glassRaised: Qt.rgba(surfaceRaised.r, surfaceRaised.g, surfaceRaised.b, glassRaisedAlpha)
+    readonly property color glassHover: Qt.rgba(foreground.r, foreground.g, foreground.b, glassHoverAlpha)
+    readonly property color glassFocus: Qt.rgba(accent.r, accent.g, accent.b, glassFocusAlpha)
+
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
     readonly property int railHeight: 64
     readonly property int islandHeight: 56
     readonly property int screenInset: 20
     readonly property int islandGap: 22
     readonly property int compactCorner: 16
+    readonly property int standardCorner: 32
+    readonly property int largeCorner: 48
+    readonly property int standardEdgeHorizontal: 9
+    readonly property int standardEdgeVertical: 9
+    readonly property int largeEdgeHorizontal: 12
+    readonly property int largeEdgeVertical: 12
+    readonly property int standardSafeTop: 14
+    readonly property int standardSafeRight: 16
+    readonly property int standardSafeBottom: 14
+    readonly property int standardSafeLeft: 16
+    readonly property int largeSafeTop: 22
+    readonly property int largeSafeRight: 24
+    readonly property int largeSafeBottom: 22
+    readonly property int largeSafeLeft: 24
     readonly property int touchTarget: 48
-    readonly property int popupOpenMs: 140
-    readonly property int popupCloseMs: 110
+    readonly property int popupOpenMs: 190
+    readonly property int popupCloseMs: 150
 }

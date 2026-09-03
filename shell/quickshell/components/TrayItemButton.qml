@@ -21,7 +21,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 12
-        color: pointer.containsMouse ? Config.Theme.surfaceHover : Config.Theme.surfaceRaised
+        color: pointer.containsMouse ? Config.Theme.glassHover : Config.Theme.glassRaised
         border.width: root.attention ? 1 : 0
         border.color: Config.Theme.warning
     }

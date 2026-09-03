@@ -349,6 +349,66 @@ No actionable P0/P1/P2 difference remains.
 
 final result: passed
 
+# Quickshell V2 Glass, Alignment, Telemetry, and Motion
+
+## Visual sources and implementation captures
+
+- Rail: `assets/mockups/ChatGPT Image Aug 26, 2026, 05_32_43 AM.png` against
+  `/tmp/senomy-design-qa/final-rail.png`.
+- Control / Network: `assets/mockups/ChatGPT Image Aug 25, 2026, 07_49_03 PM.png`
+  against `/tmp/senomy-design-qa/final-control-network.png`.
+- Performance / Storage: `assets/mockups/ChatGPT Image Aug 25, 2026, 07_49_42 PM.png`
+  against `/tmp/senomy-design-qa/final-performance-storage.png`.
+- Insights / Briefing: `assets/mockups/ChatGPT Image Aug 25, 2026, 07_52_39 PM.png`
+  against `/tmp/senomy-design-qa/final-insights-2.png`.
+- Companion: `assets/mockups/ChatGPT Image Aug 25, 2026, 07_57_50 PM.png`
+  against `/tmp/senomy-design-qa/final-companion-expanded.png`.
+- Compact references: `assets/mockups/volume-flyout-luminous-reliquary-v1.png`
+  and `assets/mockups/tray-overflow-luminous-reliquary-v1.png` against the
+  corresponding `revised-volume.png` and `revised-tray.png` live captures.
+
+All implementation images are native 1920x1080 captures from focused `eDP-1`.
+Each reference and implementation pair was normalized to 960x540 and joined in
+one 1920x540 image under `/tmp/senomy-design-qa/comparisons/final-*.png` before
+review. The mockups are directional rather than literal data fixtures; current
+hardware, workspace, network, storage, clock, and notification values remain
+truthful.
+
+## Findings
+
+1. Frame hierarchy now uses the authored Large, Standard, and Compact assets.
+   The decorative motif follows each owning island, including when the surface
+   position clamps at a screen edge.
+2. The panel fill, raised regions, hover, focus, and compositor blur form a
+   consistent almost-transparent obsidian system. Foreground values remain
+   readable over the blurred clients behind them.
+3. The live workspace shows the installed ChatGPT and VS Code icons rather than
+   generic marks. Only real Hyprland workspaces are shown, so the current one-
+   workspace Rail intentionally differs from the illustrative five-workspace
+   reference.
+4. Performance charts contain real bounded samples and now have grid, fill, and
+   current-point treatment. Storage adds a real 19% filesystem gauge and real
+   device topology; Network adds the current NetworkManager signal meter.
+5. Insights removes duplicate Senomy artwork from the primary surface and uses
+   local observations plus source/freshness context. Character art remains in
+   the separate companion and Rail avatar.
+6. Large surfaces, compact popups, toast, and companion have bounded fade and
+   directional slide motion. Live transition sampling found one primary layer
+   throughout replacement and zero after close.
+
+## Focused issues
+
+- P0: none.
+- P1: none.
+- P2: none.
+- P3: the mockups contain illustrative data density, five occupied workspaces,
+  and unavailable storage I/O rates. The implementation intentionally shows
+  only collected live values and leaves unsupported metrics absent.
+- P3: physical touch, secondary-monitor, active-player, Bluetooth-pairing, and
+  new secured-Wi-Fi states remain capability-specific follow-up evidence.
+
+final result: passed
+
 # Performance Dashboard Large-frame migration
 
 ## Comparison target

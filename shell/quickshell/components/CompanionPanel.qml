@@ -20,9 +20,11 @@ PanelWindow {
     readonly property bool primaryOnThisScreen: state.activePrimary !== ""
         && state.primaryScreen === (targetScreen ? targetScreen.name : "")
     readonly property bool effectiveLeftDock: state.companionDock === "left" || primaryOnThisScreen
+    readonly property bool requestedVisible: onThisScreen && state.companionMode !== "closed"
+    property bool panelShown: false
 
     screen: targetScreen
-    visible: onThisScreen && state.companionMode !== "closed"
+    visible: requestedVisible || panelShown || closeMotionTimer.running
     implicitWidth: compact ? 190 : 390
     implicitHeight: compact ? 280 : Math.min(680, targetScreen ? targetScreen.height - Config.Theme.railHeight - 36 : 680)
     color: "transparent"
@@ -37,7 +39,7 @@ PanelWindow {
     margins {
         left: Config.Theme.screenInset
         right: Config.Theme.screenInset
-        bottom: Config.Theme.railHeight + 12
+        bottom: 0
     }
 
     WlrLayershell.namespace: "senomy-v2-companion"
@@ -45,8 +47,26 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     mask: Region {
-        Region { item: frame; radius: 26 }
+        Region { item: frame; radius: root.compact ? 14 : 5 }
     }
+
+    onRequestedVisibleChanged: {
+        if (requestedVisible) {
+            closeMotionTimer.stop();
+            revealMotionTimer.restart();
+        } else {
+            revealMotionTimer.stop();
+            panelShown = false;
+            closeMotionTimer.restart();
+        }
+    }
+
+    Timer {
+        id: revealMotionTimer
+        interval: 1
+        onTriggered: root.panelShown = root.requestedVisible
+    }
+    Timer { id: closeMotionTimer; interval: Config.Theme.popupCloseMs }
 
     Timer {
         id: collapseTimer
@@ -62,9 +82,27 @@ PanelWindow {
     SenomyFrame {
         id: frame
         anchors.fill: parent
-        tier: "standard"
+        tier: root.compact ? "compact" : "standard"
         motif: "identity"
         active: true
+        opacity: root.panelShown ? 1 : 0
+        scale: root.panelShown ? 1 : 0.985
+        transform: Translate {
+            x: root.panelShown ? 0 : (root.effectiveLeftDock ? -18 : 18)
+            Behavior on x {
+                NumberAnimation {
+                    duration: root.requestedVisible ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                    easing.type: root.requestedVisible ? Easing.OutCubic : Easing.InCubic
+                }
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.requestedVisible ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                easing.type: root.requestedVisible ? Easing.OutCubic : Easing.InCubic
+            }
+        }
+        Behavior on scale { NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic } }
 
         Column {
             anchors.fill: parent
@@ -115,8 +153,8 @@ PanelWindow {
             Rectangle {
                 width: parent.width
                 height: root.compact ? 150 : 300
-                radius: 22
-                color: Config.Theme.surfaceRaised
+                radius: 5
+                color: Config.Theme.glassRaised
                 clip: true
                 Image {
                     anchors.fill: parent

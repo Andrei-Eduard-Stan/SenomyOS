@@ -7,33 +7,34 @@ SenomyFrame {
     id: root
 
     required property var workspace
-    width: 80
+    readonly property var visibleToplevels: root.workspace
+        ? root.workspace.toplevels.values.slice(0, 3) : []
+
+    width: 66
     height: Config.Theme.islandHeight
     motif: "workspace"
     active: workspace && workspace.active
 
-    Row {
+    Column {
         anchors.centerIn: parent
-        spacing: 8
+        spacing: 1
 
         Text {
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
             text: root.workspace ? root.workspace.id : "—"
             color: root.workspace && root.workspace.active ? Config.Theme.foreground : Config.Theme.muted
             font.family: Config.Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: 11
             font.weight: Font.DemiBold
         }
 
-        Grid {
-            anchors.verticalCenter: parent.verticalCenter
-            columns: 2
-            rows: 2
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
             spacing: 2
 
             Repeater {
                 model: ScriptModel {
-                    values: root.workspace ? root.workspace.toplevels.values.slice(0, 4) : []
+                    values: root.visibleToplevels
                 }
                 delegate: AppIndicator {
                     required property var modelData
@@ -58,6 +59,7 @@ SenomyFrame {
     ToolTip.visible: pointer.containsMouse
     ToolTip.delay: 500
     ToolTip.text: root.workspace
-        ? "Workspace " + root.workspace.id + " · " + root.workspace.toplevels.values.length + " app"
+        ? "Workspace " + root.workspace.id + " · " + root.workspace.toplevels.values.length
+            + (root.workspace.toplevels.values.length === 1 ? " app" : " apps")
         : "Workspace unavailable"
 }

@@ -1936,3 +1936,28 @@ and Eww in a verified order. An operator can also select Eww for the current
 session; the next login attempts Quickshell again. The user authorized this
 promotion before physical pointer/keyboard and extended-soak evidence was
 complete, so those items remain open and are not retroactively marked passed.
+
+## D122 — Anchor translucent Quickshell surfaces to their Rail instruments
+
+**Date:** 2026-09-03
+**Status:** Accepted by explicit user direction
+
+Quickshell V2 uses the canonical token registry for a translucent obsidian
+surface, raised-surface, hover, and focus hierarchy. Hyprland blur rules match
+the `senomy-v2-*` layer namespaces so transparency remains legible rather than
+showing sharp client content through the shell. Large surfaces use the authored
+Large frame tier and retain the repository-owned motif assets.
+
+Every primary surface receives the screen-space centre of its owning Rail
+instrument. Its window position clamps to safe screen edges while the frame
+motif continues to align with the trigger. Because the Rail already reserves a
+64px exclusive zone, primary and companion bottom margins do not subtract the
+Rail height a second time. Replacement primaries hide the outgoing layer before
+the incoming reveal so the one-primary contract remains true during motion;
+ordinary close actions retain the bounded fade-and-slide exit.
+
+Real desktop-entry icons replace generic workspace marks. Telemetry graphics
+must bind to live values: history charts use bounded samples, Network uses
+NetworkManager signal strength, and the Storage capacity gauge uses the
+read-only filesystem inventory. Senomy character artwork remains confined to
+the Rail avatar and companion, not duplicated inside primary panels.

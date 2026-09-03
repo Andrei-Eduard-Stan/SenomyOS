@@ -11,10 +11,10 @@ Rectangle {
 
     implicitWidth: 210
     implicitHeight: 112
-    radius: 16
-    color: Config.Theme.surfaceRaised
+    radius: 5
+    color: Config.Theme.glassRaised
     border.width: 1
-    border.color: Config.Theme.surfaceHover
+    border.color: Qt.rgba(Config.Theme.muted.r, Config.Theme.muted.g, Config.Theme.muted.b, 0.24)
 
     Column {
         anchors.fill: parent

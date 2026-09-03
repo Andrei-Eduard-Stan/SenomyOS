@@ -11,7 +11,7 @@ Item {
     property int offset: 0
 
     property int capacity: 4
-    readonly property int chipWidth: 80
+    readonly property int chipWidth: 66
     readonly property int chipGap: 10
     readonly property var workspaces: Hyprland.workspaces.values
         .filter(workspace => workspace.id > 0 && workspace.monitor === root.monitor)
@@ -116,9 +116,9 @@ Item {
                     height: 27
                     radius: 9
                     color: arrowArea.containsMouse && modelData.enabled
-                        ? Config.Theme.surfaceHover : Config.Theme.surface
+                        ? Config.Theme.glassHover : Config.Theme.glassSurface
                     border.width: 1
-                    border.color: modelData.enabled ? Config.Theme.dim : Config.Theme.surfaceRaised
+                    border.color: modelData.enabled ? Config.Theme.dim : Config.Theme.glassRaised
 
                     Text {
                         anchors.centerIn: parent

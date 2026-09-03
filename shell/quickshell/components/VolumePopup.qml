@@ -9,14 +9,16 @@ PopupWindow {
 
     required property var anchorItem
     required property var audio
-    required property var media
+    property var media
     property bool requestedOpen: false
+    property bool cardShown: false
     signal dismissRequested()
+    signal openAudioRequested()
 
-    implicitWidth: 440
-    implicitHeight: 510
+    implicitWidth: 420
+    implicitHeight: 122
     color: "transparent"
-    visible: requestedOpen
+    visible: requestedOpen || cardShown || closeTimer.running
     grabFocus: false
 
     anchor.item: anchorItem
@@ -24,17 +26,57 @@ PopupWindow {
     anchor.gravity: Edges.Top | Edges.Left
     anchor.rect.y: -12
 
+    onRequestedOpenChanged: {
+        if (requestedOpen) {
+            closeTimer.stop();
+            revealTimer.restart();
+        } else {
+            revealTimer.stop();
+            cardShown = false;
+            closeTimer.restart();
+        }
+    }
     onAnchorItemChanged: if (!anchorItem) dismissRequested()
+
+    Timer {
+        id: revealTimer
+        interval: 1
+        onTriggered: {
+            root.cardShown = root.requestedOpen;
+            if (root.cardShown)
+                card.forceActiveFocus();
+        }
+    }
+    Timer { id: closeTimer; interval: Config.Theme.popupCloseMs }
 
     HyprlandFocusGrab {
         windows: [root]
-        active: root.requestedOpen
+        active: root.cardShown
         onCleared: if (root.requestedOpen) root.dismissRequested()
     }
 
     FocusScope {
+        id: card
         anchors.fill: parent
-        focus: root.requestedOpen
+        focus: root.cardShown
+        opacity: root.cardShown ? 1 : 0
+        scale: root.cardShown ? 1 : 0.98
+        transform: Translate {
+            y: root.cardShown ? 0 : 12
+            Behavior on y {
+                NumberAnimation {
+                    duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                    easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+                }
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+            }
+        }
+        Behavior on scale { NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic } }
         Keys.onEscapePressed: root.dismissRequested()
 
         SenomyFrame {
@@ -45,51 +87,44 @@ PopupWindow {
 
             Column {
                 anchors.fill: parent
-                spacing: 13
+                spacing: 9
 
                 Row {
                     width: parent.width
+                    spacing: 8
                     Text {
-                        width: parent.width - closeButton.width
-                        text: "AUDIO ROUTING // PIPEWIRE"
-                        color: Config.Theme.accent
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - closeButton.width - 8
+                        text: root.audio.outputName + "  //  " + root.audio.label
+                        color: Config.Theme.muted
                         font.family: Config.Theme.fontFamily
                         font.pixelSize: 9
-                        font.weight: Font.DemiBold
+                        elide: Text.ElideMiddle
                     }
                     SurfaceButton {
                         id: closeButton
-                        width: 64
-                        height: 38
-                        text: "CLOSE"
+                        width: 34
+                        height: 28
+                        text: "×"
                         onClicked: root.dismissRequested()
                     }
                 }
 
-                Text {
-                    width: parent.width
-                    text: root.audio.outputName
-                    color: Config.Theme.foreground
-                    font.family: Config.Theme.fontFamily
-                    font.pixelSize: 13
-                    font.weight: Font.DemiBold
-                    elide: Text.ElideRight
-                }
-
                 Row {
                     width: parent.width
-                    spacing: 10
+                    height: 48
+                    spacing: 8
                     SurfaceButton {
-                        width: 86
-                        text: root.audio.muted ? "UNMUTE" : "MUTE"
+                        width: 58
+                        height: 42
+                        text: root.audio.muted ? "ON" : "MUTE"
                         active: root.audio.muted
                         enabled: root.audio.available
                         onClicked: root.audio.toggleMuted()
                     }
                     Slider {
-                        id: outputSlider
                         anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 152
+                        width: parent.width - 58 - 48 - 82 - 24
                         from: 0
                         to: 1
                         value: root.audio.volume
@@ -98,120 +133,18 @@ PopupWindow {
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 46
+                        width: 48
                         horizontalAlignment: Text.AlignRight
                         text: root.audio.label
                         color: Config.Theme.foreground
                         font.family: Config.Theme.fontFamily
                         font.pixelSize: 10
                     }
-                }
-
-                Text {
-                    text: "OUTPUT DEVICES"
-                    color: Config.Theme.dim
-                    font.family: Config.Theme.fontFamily
-                    font.pixelSize: 8
-                    font.weight: Font.DemiBold
-                }
-                ListView {
-                    width: parent.width
-                    height: Math.min(116, contentHeight)
-                    spacing: 5
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
-                    model: root.audio.outputNodes
-                    delegate: SurfaceButton {
-                        required property var modelData
-                        width: ListView.view.width
-                        height: 44
-                        text: modelData.description || modelData.nickname || modelData.name || "Audio output"
-                        active: modelData === root.audio.sink
-                        onClicked: root.audio.selectOutput(modelData)
-                    }
-                }
-
-                Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
-
-                Text {
-                    width: parent.width
-                    text: "INPUT // " + root.audio.inputName
-                    color: Config.Theme.muted
-                    font.family: Config.Theme.fontFamily
-                    font.pixelSize: 9
-                    elide: Text.ElideRight
-                }
-                Row {
-                    width: parent.width
-                    spacing: 10
                     SurfaceButton {
-                        width: 86
-                        text: root.audio.inputMuted ? "UNMUTE" : "MUTE"
-                        active: root.audio.inputMuted
-                        enabled: root.audio.inputAvailable
-                        onClicked: root.audio.toggleInputMuted()
-                    }
-                    Slider {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 142
-                        from: 0
-                        to: 1
-                        value: root.audio.inputVolume
-                        enabled: root.audio.inputAvailable
-                        onMoved: root.audio.setInputVolume(value)
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 36
-                        text: Math.round(root.audio.inputVolume * 100) + "%"
-                        color: Config.Theme.muted
-                        font.family: Config.Theme.fontFamily
-                        font.pixelSize: 9
-                    }
-                }
-
-                Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
-
-                Row {
-                    width: parent.width
-                    spacing: 8
-                    SurfaceButton {
-                        width: 60
-                        text: "PREV"
-                        enabled: root.media.available && root.media.selectedPlayer.canGoPrevious
-                        onClicked: root.media.previous()
-                    }
-                    SurfaceButton {
-                        width: 76
-                        text: root.media.playing ? "PAUSE" : "PLAY"
-                        enabled: root.media.available && root.media.selectedPlayer.canTogglePlaying
-                        onClicked: root.media.toggle()
-                    }
-                    SurfaceButton {
-                        width: 60
-                        text: "NEXT"
-                        enabled: root.media.available && root.media.selectedPlayer.canGoNext
-                        onClicked: root.media.next()
-                    }
-                    Column {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 220
-                        Text {
-                            width: parent.width
-                            text: root.media.title
-                            color: Config.Theme.foreground
-                            font.family: Config.Theme.fontFamily
-                            font.pixelSize: 10
-                            elide: Text.ElideRight
-                        }
-                        Text {
-                            width: parent.width
-                            text: root.media.artist || root.media.identity
-                            color: Config.Theme.dim
-                            font.family: Config.Theme.fontFamily
-                            font.pixelSize: 8
-                            elide: Text.ElideRight
-                        }
+                        width: 82
+                        height: 42
+                        text: "AUDIO ›"
+                        onClicked: root.openAudioRequested()
                     }
                 }
             }

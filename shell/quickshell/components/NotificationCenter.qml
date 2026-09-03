@@ -9,12 +9,13 @@ PopupWindow {
     required property var anchorItem
     required property var notifications
     property bool requestedOpen: false
+    property bool cardShown: false
     signal dismissRequested()
 
     implicitWidth: 470
     implicitHeight: 610
     color: "transparent"
-    visible: requestedOpen
+    visible: requestedOpen || cardShown || closeTimer.running
     grabFocus: false
 
     anchor.item: anchorItem
@@ -22,18 +23,58 @@ PopupWindow {
     anchor.gravity: Edges.Top | Edges.Left
     anchor.rect.y: -12
 
-    onRequestedOpenChanged: if (requestedOpen) notifications.markRead()
+    onRequestedOpenChanged: {
+        if (requestedOpen) {
+            notifications.markRead();
+            closeTimer.stop();
+            revealTimer.restart();
+        } else {
+            revealTimer.stop();
+            cardShown = false;
+            closeTimer.restart();
+        }
+    }
     onAnchorItemChanged: if (!anchorItem) dismissRequested()
 
     HyprlandFocusGrab {
         windows: [root]
-        active: root.requestedOpen
+        active: root.cardShown
         onCleared: if (root.requestedOpen) root.dismissRequested()
     }
 
+    Timer {
+        id: revealTimer
+        interval: 1
+        onTriggered: {
+            root.cardShown = root.requestedOpen;
+            if (root.cardShown)
+                card.forceActiveFocus();
+        }
+    }
+    Timer { id: closeTimer; interval: Config.Theme.popupCloseMs }
+
     FocusScope {
+        id: card
         anchors.fill: parent
-        focus: root.requestedOpen
+        focus: root.cardShown
+        opacity: root.cardShown ? 1 : 0
+        scale: root.cardShown ? 1 : 0.985
+        transform: Translate {
+            y: root.cardShown ? 0 : 12
+            Behavior on y {
+                NumberAnimation {
+                    duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                    easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+                }
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+            }
+        }
+        Behavior on scale { NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic } }
         Keys.onEscapePressed: root.dismissRequested()
 
         SenomyFrame {
@@ -97,8 +138,8 @@ PopupWindow {
                         required property var modelData
                         width: ListView.view.width
                         height: Math.max(100, cardContent.implicitHeight + 22)
-                        radius: 15
-                        color: Config.Theme.surfaceRaised
+                        radius: 5
+                        color: Config.Theme.glassRaised
                         border.width: 1
                         border.color: modelData.urgency === "Critical" ? Config.Theme.danger
                             : modelData.unread ? Config.Theme.accent : Config.Theme.surfaceHover

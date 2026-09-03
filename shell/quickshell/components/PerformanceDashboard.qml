@@ -13,11 +13,13 @@ PrimarySurfaceWindow {
 
     requestedOpen: state.activePrimary === "performance"
         && state.primaryScreen === (targetScreen ? targetScreen.name : "")
+    replacementOpening: state.activePrimary !== "" && state.activePrimary !== "performance"
     title: "PERFORMANCE"
     eyebrow: "CATHEDRAL DECK // CONDITIONAL TELEMETRY"
     activeSection: state.performanceSection
-    preferredWidth: 1180
-    preferredHeight: 800
+    preferredWidth: 1480
+    preferredHeight: 760
+    motif: "telemetry"
     sections: [
         {id: "overview", label: "OVERVIEW"},
         {id: "cpu", label: "CPU / GPU"},
@@ -199,15 +201,58 @@ PrimarySurfaceWindow {
                     SurfaceCard { width: (parent.width - 16) / 3; title: "USED"; value: root.formatBytes((root.performance.details.storage || {}).used_bytes); detail: "of " + root.formatBytes((root.performance.details.storage || {}).total_bytes) }
                     SurfaceCard { width: (parent.width - 16) / 3; title: "FILESYSTEM"; value: (root.performance.details.storage || {}).filesystem || "UNKNOWN"; detail: (root.performance.details.storage || {}).source || "Source unavailable" }
                 }
-                Text { text: "PHYSICAL DEVICES"; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 8 }
-                Repeater {
-                    model: (root.performance.details.storage || {}).devices || []
-                    delegate: SurfaceButton {
-                        required property var modelData
-                        width: storageColumn.width
-                        text: modelData.name + " // " + (modelData.model || "Unknown model")
-                        detail: root.formatBytes(modelData.size_bytes) + " · " + (modelData.transport || "unknown transport") + " · " + modelData.partition_count + " partition(s)"
+                Row {
+                    width: parent.width
+                    height: 330
+                    spacing: 12
+                    RadialGauge {
+                        width: 330
+                        height: parent.height
+                        title: "ROOT FILESYSTEM CAPACITY"
+                        value: Number((root.performance.details.storage || {}).percent || 0)
+                        valueLabel: Math.round(value) + "% USED"
+                        detail: root.formatBytes((root.performance.details.storage || {}).used_bytes)
+                            + " of " + root.formatBytes((root.performance.details.storage || {}).total_bytes)
                     }
+                    Column {
+                        width: parent.width - 342
+                        spacing: 9
+                        Text {
+                            text: "PHYSICAL DEVICE TOPOLOGY"
+                            color: Config.Theme.dim
+                            font.family: Config.Theme.fontFamily
+                            font.pixelSize: 8
+                            font.weight: Font.DemiBold
+                        }
+                        Repeater {
+                            model: (root.performance.details.storage || {}).devices || []
+                            delegate: SurfaceButton {
+                                required property var modelData
+                                width: parent.width
+                                height: 64
+                                text: modelData.name + " // " + (modelData.model || "Unknown model")
+                                detail: root.formatBytes(modelData.size_bytes) + " · "
+                                    + (modelData.transport || "unknown transport") + " · "
+                                    + modelData.partition_count + " partition(s)"
+                            }
+                        }
+                        SurfaceCard {
+                            width: parent.width
+                            title: "ROOT DEVICE"
+                            value: ((root.performance.details.storage || {}).root_device || {}).name || "UNAVAILABLE"
+                            detail: ((root.performance.details.storage || {}).source || "unknown")
+                                + " · logical/physical sector "
+                                + String(((root.performance.details.storage || {}).root_device || {}).logical_sector_bytes || 0)
+                                + "/" + String(((root.performance.details.storage || {}).root_device || {}).physical_sector_bytes || 0)
+                        }
+                    }
+                }
+                Text {
+                    width: parent.width
+                    text: "SOURCE // findmnt + statvfs + lsblk · READ-ONLY INVENTORY"
+                    color: Config.Theme.dim
+                    font.family: Config.Theme.fontFamily
+                    font.pixelSize: 8
                 }
             }
         }
@@ -282,8 +327,8 @@ PrimarySurfaceWindow {
                     required property var modelData
                     width: ListView.view.width
                     height: 45
-                    radius: 12
-                    color: Config.Theme.surfaceRaised
+                    radius: 5
+                    color: Config.Theme.glassRaised
                     Row {
                         anchors.fill: parent
                         anchors.leftMargin: 8

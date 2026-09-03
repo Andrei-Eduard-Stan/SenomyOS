@@ -15,13 +15,21 @@ PanelWindow {
     property string activeSection: ""
     property int preferredWidth: 960
     property int preferredHeight: 720
+    property string motif: "identity"
+    property real anchorCenterX: targetScreen ? targetScreen.width / 2 : preferredWidth / 2
     property var coexistWindow: null
+    property bool surfaceShown: false
+    property bool replacementOpening: false
     default property alias bodyData: body.data
     signal closeRequested()
     signal sectionRequested(string section)
 
     screen: targetScreen
-    visible: requestedOpen
+    readonly property real surfaceLeft: Math.max(Config.Theme.screenInset,
+        Math.min((targetScreen ? targetScreen.width : implicitWidth) - implicitWidth - Config.Theme.screenInset,
+            anchorCenterX - implicitWidth / 2))
+
+    visible: requestedOpen || surfaceShown || (closeTimer.running && !replacementOpening)
     implicitWidth: Math.max(520, Math.min(preferredWidth, targetScreen ? targetScreen.width - 40 : preferredWidth))
     implicitHeight: Math.max(480, Math.min(preferredHeight,
         targetScreen ? targetScreen.height - Config.Theme.railHeight - 34 : preferredHeight))
@@ -30,12 +38,14 @@ PanelWindow {
     focusable: true
 
     anchors {
-        right: true
+        left: true
         bottom: true
     }
     margins {
-        right: Config.Theme.screenInset
-        bottom: Config.Theme.railHeight + 12
+        left: root.surfaceLeft
+        // The Rail's exclusive zone already removes its height from the
+        // layershell work area. Zero keeps this frame visually docked above it.
+        bottom: 0
     }
 
     WlrLayershell.namespace: "senomy-v2-primary"
@@ -43,7 +53,36 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     mask: Region {
-        Region { item: frame; radius: 26 }
+        Region { item: frame; radius: 5 }
+    }
+
+    onRequestedOpenChanged: {
+        if (requestedOpen) {
+            closeTimer.stop();
+            revealTimer.restart();
+        } else {
+            revealTimer.stop();
+            surfaceShown = false;
+            if (replacementOpening)
+                closeTimer.stop();
+            else
+                closeTimer.restart();
+        }
+    }
+
+    Timer {
+        id: revealTimer
+        interval: 1
+        onTriggered: {
+            root.surfaceShown = root.requestedOpen;
+            if (root.surfaceShown)
+                surface.forceActiveFocus();
+        }
+    }
+
+    Timer {
+        id: closeTimer
+        interval: Config.Theme.popupCloseMs
     }
 
     HyprlandFocusGrab {
@@ -53,20 +92,42 @@ PanelWindow {
         windows: root.coexistWindow && root.coexistWindow.visible
             ? [root, root.coexistWindow]
             : [root]
-        active: root.requestedOpen
+        active: root.surfaceShown
         onCleared: if (root.requestedOpen) root.closeRequested()
     }
 
     FocusScope {
+        id: surface
         anchors.fill: parent
-        focus: root.requestedOpen
+        focus: root.surfaceShown
+        opacity: root.surfaceShown ? 1 : 0
+        scale: root.surfaceShown ? 1 : 0.985
+        transform: Translate {
+            y: root.surfaceShown ? 0 : 18
+            Behavior on y {
+                NumberAnimation {
+                    duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                    easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+                }
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+            }
+        }
+        Behavior on scale {
+            NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic }
+        }
         Keys.onEscapePressed: root.closeRequested()
 
         SenomyFrame {
             id: frame
             anchors.fill: parent
-            tier: "standard"
-            motif: "identity"
+            tier: "large"
+            motif: root.motif
+            motifCenterX: root.anchorCenterX - root.surfaceLeft
             active: true
 
             Row {
@@ -78,26 +139,37 @@ PanelWindow {
                     height: parent.height
                     spacing: 12
 
-                    Column {
+                    Row {
                         width: parent.width
-                        spacing: 4
-                        Text {
-                            width: parent.width
-                            text: root.eyebrow
-                            color: Config.Theme.accent
-                            font.family: Config.Theme.fontFamily
-                            font.pixelSize: 8
-                            font.weight: Font.DemiBold
-                            elide: Text.ElideRight
+                        spacing: 8
+                        Column {
+                            width: parent.width - 46
+                            spacing: 4
+                            Text {
+                                width: parent.width
+                                text: root.eyebrow
+                                color: Config.Theme.accent
+                                font.family: Config.Theme.fontFamily
+                                font.pixelSize: 8
+                                font.weight: Font.DemiBold
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                width: parent.width
+                                text: root.title
+                                color: Config.Theme.foreground
+                                font.family: Config.Theme.fontFamily
+                                font.pixelSize: 19
+                                font.weight: Font.DemiBold
+                                wrapMode: Text.WordWrap
+                            }
                         }
-                        Text {
-                            width: parent.width
-                            text: root.title
-                            color: Config.Theme.foreground
-                            font.family: Config.Theme.fontFamily
-                            font.pixelSize: 19
-                            font.weight: Font.DemiBold
-                            wrapMode: Text.WordWrap
+                        SurfaceButton {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 38
+                            height: 38
+                            text: "×"
+                            onClicked: root.closeRequested()
                         }
                     }
 

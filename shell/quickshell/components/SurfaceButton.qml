@@ -14,11 +14,12 @@ Rectangle {
 
     implicitWidth: 148
     implicitHeight: detail.length > 0 ? 54 : Config.Theme.touchTarget
-    radius: 13
+    radius: 5
     color: active ? Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.16)
-        : area.containsMouse && enabled ? Config.Theme.surfaceHover : Config.Theme.surfaceRaised
+        : area.containsMouse && enabled ? Config.Theme.glassHover : Config.Theme.glassRaised
     border.width: 1
-    border.color: active ? accentColor : Config.Theme.dim
+    border.color: active ? accentColor
+        : Qt.rgba(Config.Theme.muted.r, Config.Theme.muted.g, Config.Theme.muted.b, 0.52)
     opacity: enabled ? 1 : 0.46
 
     Behavior on color { ColorAnimation { duration: 100 } }

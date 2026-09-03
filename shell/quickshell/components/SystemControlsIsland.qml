@@ -85,7 +85,7 @@ SenomyFrame {
                     color: controlArea.containsMouse
                         || (modelData.id === "audio" && root.volumeOpen)
                         || ((modelData.id === "network" || modelData.id === "battery") && root.controlOpen)
-                        ? Config.Theme.surfaceHover : "transparent"
+                        ? Config.Theme.glassHover : "transparent"
                 }
                 Image {
                     anchors.centerIn: parent
@@ -104,7 +104,7 @@ SenomyFrame {
                     height: 14
                     width: Math.max(22, badgeText.implicitWidth + 8)
                     radius: 7
-                    color: Config.Theme.surfaceRaised
+                    color: Config.Theme.glassRaised
                     border.width: 1
                     border.color: Config.Theme.dim
                     Text {
@@ -150,7 +150,7 @@ SenomyFrame {
                 width: 46
                 height: 42
                 radius: 12
-                color: trayArea.containsMouse || root.trayOpen ? Config.Theme.surfaceHover : "transparent"
+                color: trayArea.containsMouse || root.trayOpen ? Config.Theme.glassHover : "transparent"
             }
             Image {
                 anchors.centerIn: parent
@@ -168,7 +168,7 @@ SenomyFrame {
                 height: 14
                 width: Math.max(22, trayBadge.implicitWidth + 8)
                 radius: 7
-                color: Config.Theme.surfaceRaised
+                color: Config.Theme.glassRaised
                 border.width: 1
                 border.color: Config.Theme.dim
                 Text {

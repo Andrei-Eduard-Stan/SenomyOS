@@ -17,11 +17,13 @@ PrimarySurfaceWindow {
 
     requestedOpen: state.activePrimary === "insights"
         && state.primaryScreen === (targetScreen ? targetScreen.name : "")
+    replacementOpening: state.activePrimary !== "" && state.activePrimary !== "insights"
     title: "SENOMY INSIGHTS"
     eyebrow: "LOCAL SYSTEM BRIEFING"
     activeSection: state.insightsSection
     preferredWidth: 1040
     preferredHeight: 760
+    motif: "identity"
     sections: [
         {id: "briefing", label: "BRIEFING"},
         {id: "notifications", label: "NOTIFICATIONS"},
@@ -42,6 +44,26 @@ PrimarySurfaceWindow {
 
     function data(route) {
         return payload(route).data || ({});
+    }
+
+    function briefingObservations() {
+        return [
+            {label: "SYSTEM HEALTH", value: senomy.systemHealth.toUpperCase()},
+            {label: "CPU UTILISATION", value: Math.round(metrics.cpuPercent) + "%"},
+            {label: "MEMORY UTILISATION", value: Math.round(metrics.memoryPercent) + "%"},
+            {label: "CONNECTIVITY", value: network.detail},
+            {label: "POWER", value: battery.detail}
+        ];
+    }
+
+    function briefingContext() {
+        return [
+            {label: "LOCAL TIME", value: Qt.formatDateTime(new Date(), "ddd dd MMM · hh:mm")},
+            {label: "NOTIFICATIONS", value: notifications.unreadCount + " unread"},
+            {label: "KNOWN UPDATES", value: String(data("briefing").known_total_count || 0)},
+            {label: "MEDIA", value: media.playing ? media.title : "Quiet"},
+            {label: "DATA LOCALITY", value: "Local only"}
+        ];
     }
 
     Loader {
@@ -70,69 +92,140 @@ PrimarySurfaceWindow {
                 id: briefingColumn
                 width: parent.width
                 spacing: 13
-                Row {
+                Column {
                     width: parent.width
-                    spacing: 14
-                    Rectangle {
-                        width: 128
-                        height: 128
-                        radius: 24
-                        color: Config.Theme.surfaceRaised
-                        clip: true
-                        Image {
-                            anchors.fill: parent
-                            anchors.margins: 3
-                            source: root.senomy.state === "battery-low" || root.senomy.state === "critical"
-                                ? "../assets/senomy/senomy_chibi_lowbattery-v1.png"
-                                : root.senomy.state === "listening"
-                                    ? "../assets/senomy/senomy_chibi_listening-v1.png"
-                                    : "../assets/senomy/senomy_chibi_browsing.png"
-                            fillMode: Image.PreserveAspectCrop
-                            mipmap: true
-                        }
+                    spacing: 9
+                    Text {
+                        width: parent.width
+                        text: root.senomy.state.toUpperCase() + " // LOCAL OBSERVER"
+                        color: Config.Theme.accent
+                        font.family: Config.Theme.fontFamily
+                        font.pixelSize: 9
+                        font.weight: Font.DemiBold
                     }
-                    Column {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 142
-                        spacing: 8
-                        Text {
-                            width: parent.width
-                            text: root.senomy.state.toUpperCase() + " // LOCAL OBSERVER"
-                            color: Config.Theme.accent
-                            font.family: Config.Theme.fontFamily
-                            font.pixelSize: 9
-                            font.weight: Font.DemiBold
-                        }
-                        Text {
-                            width: parent.width
-                            text: root.senomy.message
-                            color: Config.Theme.foreground
-                            font.family: Config.Theme.fontFamily
-                            font.pixelSize: 18
-                            font.weight: Font.DemiBold
-                            wrapMode: Text.WordWrap
-                        }
-                        Text {
-                            width: parent.width
-                            text: "This briefing derives from local shell, media, battery, network, health, and notification state. No remote personality system is introduced."
-                            color: Config.Theme.muted
-                            font.family: Config.Theme.fontFamily
-                            font.pixelSize: 9
-                            wrapMode: Text.WordWrap
-                        }
+                    Text {
+                        width: parent.width
+                        text: root.senomy.message
+                        color: Config.Theme.foreground
+                        font.family: Config.Theme.fontFamily
+                        font.pixelSize: 22
+                        font.weight: Font.DemiBold
+                        wrapMode: Text.WordWrap
+                    }
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: Config.Theme.glassHover
+                    }
+                    Text {
+                        width: parent.width
+                        text: "Derived from local shell, media, battery, network, health, and notification state."
+                        color: Config.Theme.muted
+                        font.family: Config.Theme.fontFamily
+                        font.pixelSize: 9
+                        wrapMode: Text.WordWrap
                     }
                 }
-                Grid {
+                Row {
                     width: parent.width
-                    columns: 3
-                    columnSpacing: 10
-                    rowSpacing: 10
-                    SurfaceCard { width: (parent.width - 20) / 3; title: "SYSTEM HEALTH"; value: root.senomy.systemHealth.toUpperCase(); detail: "CPU " + Math.round(root.metrics.cpuPercent) + "% · MEM " + Math.round(root.metrics.memoryPercent) + "%" }
-                    SurfaceCard { width: (parent.width - 20) / 3; title: "CONNECTIVITY"; value: root.network.label; detail: root.network.detail }
-                    SurfaceCard { width: (parent.width - 20) / 3; title: "POWER"; value: root.battery.label; detail: root.battery.detail }
-                    SurfaceCard { width: (parent.width - 20) / 3; title: "MEDIA"; value: root.media.playing ? "LISTENING" : "QUIET"; detail: root.media.title }
-                    SurfaceCard { width: (parent.width - 20) / 3; title: "ATTENTION"; value: root.senomy.attentionState.toUpperCase(); detail: root.notifications.unreadCount + " unread notification(s)" }
-                    SurfaceCard { width: (parent.width - 20) / 3; title: "UPDATES"; value: String(root.data("briefing").known_total_count || 0); detail: "Known package updates" }
+                    spacing: 18
+                    Column {
+                        width: (parent.width - 37) * 0.62
+                        spacing: 0
+                        Text {
+                            height: 34
+                            text: "SYSTEM OBSERVATIONS"
+                            color: Config.Theme.dim
+                            font.family: Config.Theme.fontFamily
+                            font.pixelSize: 8
+                            font.weight: Font.DemiBold
+                        }
+                        Repeater {
+                            model: root.briefingObservations()
+                            delegate: Item {
+                                required property var modelData
+                                width: parent.width
+                                height: 48
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: modelData.label
+                                    color: Config.Theme.muted
+                                    font.family: Config.Theme.fontFamily
+                                    font.pixelSize: 9
+                                }
+                                Text {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: parent.width * 0.58
+                                    text: modelData.value
+                                    color: Config.Theme.foreground
+                                    font.family: Config.Theme.fontFamily
+                                    font.pixelSize: 9
+                                    horizontalAlignment: Text.AlignRight
+                                    elide: Text.ElideRight
+                                }
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    height: 1
+                                    color: Config.Theme.glassHover
+                                }
+                            }
+                        }
+                    }
+                    Rectangle {
+                        width: 1
+                        height: 274
+                        color: Config.Theme.glassHover
+                    }
+                    Column {
+                        width: (parent.width - 37) * 0.38
+                        spacing: 0
+                        Text {
+                            height: 34
+                            text: "SOURCE / FRESHNESS / LOCAL CONTEXT"
+                            color: Config.Theme.dim
+                            font.family: Config.Theme.fontFamily
+                            font.pixelSize: 8
+                            font.weight: Font.DemiBold
+                        }
+                        Repeater {
+                            model: root.briefingContext()
+                            delegate: Item {
+                                required property var modelData
+                                width: parent.width
+                                height: 48
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: modelData.label
+                                    color: Config.Theme.muted
+                                    font.family: Config.Theme.fontFamily
+                                    font.pixelSize: 8
+                                }
+                                Text {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: parent.width * 0.54
+                                    text: modelData.value
+                                    color: modelData.label === "DATA LOCALITY" ? Config.Theme.accent : Config.Theme.foreground
+                                    font.family: Config.Theme.fontFamily
+                                    font.pixelSize: 8
+                                    horizontalAlignment: Text.AlignRight
+                                    elide: Text.ElideRight
+                                }
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    height: 1
+                                    color: Config.Theme.glassHover
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

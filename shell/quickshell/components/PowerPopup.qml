@@ -9,12 +9,13 @@ PopupWindow {
     required property var anchorItem
     required property var powerService
     property bool requestedOpen: false
+    property bool cardShown: false
     signal dismissRequested()
 
     implicitWidth: 430
     implicitHeight: powerService.state === "pending" ? 350 : 250
     color: "transparent"
-    visible: requestedOpen
+    visible: requestedOpen || cardShown || closeTimer.running
     grabFocus: false
 
     anchor.item: anchorItem
@@ -22,18 +23,59 @@ PopupWindow {
     anchor.gravity: Edges.Top | Edges.Left
     anchor.rect.y: -12
 
-    onRequestedOpenChanged: if (!requestedOpen && powerService.state === "pending") powerService.cancel()
+    onRequestedOpenChanged: {
+        if (requestedOpen) {
+            closeTimer.stop();
+            revealTimer.restart();
+        } else {
+            if (powerService.state === "pending")
+                powerService.cancel();
+            revealTimer.stop();
+            cardShown = false;
+            closeTimer.restart();
+        }
+    }
     onAnchorItemChanged: if (!anchorItem) dismissRequested()
 
     HyprlandFocusGrab {
         windows: [root]
-        active: root.requestedOpen
+        active: root.cardShown
         onCleared: if (root.requestedOpen) root.dismissRequested()
     }
 
+    Timer {
+        id: revealTimer
+        interval: 1
+        onTriggered: {
+            root.cardShown = root.requestedOpen;
+            if (root.cardShown)
+                card.forceActiveFocus();
+        }
+    }
+    Timer { id: closeTimer; interval: Config.Theme.popupCloseMs }
+
     FocusScope {
+        id: card
         anchors.fill: parent
-        focus: root.requestedOpen
+        focus: root.cardShown
+        opacity: root.cardShown ? 1 : 0
+        scale: root.cardShown ? 1 : 0.985
+        transform: Translate {
+            y: root.cardShown ? 0 : 12
+            Behavior on y {
+                NumberAnimation {
+                    duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                    easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+                }
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
+                easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
+            }
+        }
+        Behavior on scale { NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic } }
         Keys.onEscapePressed: root.dismissRequested()
 
         SenomyFrame {

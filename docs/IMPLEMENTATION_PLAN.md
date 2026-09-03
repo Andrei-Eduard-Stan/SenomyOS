@@ -457,6 +457,26 @@ follow-ups. By explicit user direction on 2026-09-03, Quickshell was promoted
 to login ownership before manual sign-off. Eww remains recovery-only; the
 outstanding evidence is still recorded rather than treated as passed.
 
+### Quickshell visual and motion foundation
+
+Implemented on `quickshell-v2` on 2026-09-03:
+
+- canonical translucent glass tokens projected into Quickshell and matching
+  Hyprland blur rules for the V2 layer namespaces;
+- authored Large/Standard/Compact frame geometry and trigger-aligned motifs;
+- island-origin fade, slide, and scale motion with replacement-safe primary
+  switching;
+- installed desktop-entry icons in workspace cells;
+- expanded Cathedral Deck geometry, bounded history fills, live Network signal
+  bars, a live Storage capacity gauge, and an editorial Insights briefing;
+- compact Volume and Tray layouts aligned above their Rail controls;
+- live 1920x1080 visual comparison against the repository mockups and an idle
+  end state with one Quickshell Rail, zero Eww layers, and zero primary layers.
+
+Physical touch, real secondary-monitor, active-player, Bluetooth pairing, and
+new secured-Wi-Fi acceptance remain capability-specific rather than inferred
+from this reference-monitor pass.
+
 ## Stage 11 — Hardware and form-factor profiles
 
 Before Stage 11 broadens hardware support, the current shell must pass the

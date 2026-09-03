@@ -24,7 +24,7 @@ SenomyFrame {
             width: 36
             height: 36
             radius: 12
-            color: Config.Theme.surfaceRaised
+            color: Config.Theme.glassRaised
             clip: true
 
             Image {

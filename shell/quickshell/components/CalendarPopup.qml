@@ -179,7 +179,7 @@ PopupWindow {
                                 width: 50
                                 height: 44
                                 radius: 13
-                                color: navArea.containsMouse ? Config.Theme.surfaceHover : Config.Theme.surfaceRaised
+                                color: navArea.containsMouse ? Config.Theme.glassHover : Config.Theme.glassRaised
                                 border.width: 1
                                 border.color: Config.Theme.dim
                                 Text {

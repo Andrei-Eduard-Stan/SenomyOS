@@ -1413,3 +1413,25 @@ Syntax validity does not make the update-loop architecture correct.
 - Physical pointer/keyboard acceptance, real second-monitor/touch evidence,
   active-player MPRIS control, Bluetooth pairing and new secured-Wi-Fi prompt
   evidence remain outstanding. See `docs/QUICKSHELL_V3_QA.md`.
+
+## September 3 Quickshell V2 visual and motion foundation
+
+- The active reference monitor is `eDP-1` at 1920x1080 logical pixels. Live
+  captures verified Control at 960x760, Performance at 1480x760, Insights at
+  1040x760, the expanded and compact companion, and all five compact popups.
+- Primary surfaces and the companion now sit 12px above the Rail's visible
+  frame. Control, Performance, and Insights frame motifs align with the centre
+  of their respective system-controls, telemetry, and identity islands even
+  when the window itself clamps to a screen edge.
+- The current single real workspace contains ChatGPT and VS Code. Both resolve
+  to their actual installed icons; no generic executable mark is displayed.
+- Canonical glass alphas are 0.38 for the main surface and 0.54 for raised
+  regions. Hyprland's live Lua configuration matches the tracked file and blurs
+  `senomy-v2-primary`, companion, Rail, and toast layers.
+- Open motion is 190ms and close motion is 150ms with opacity and directional
+  translation. A live Control-to-Performance switch showed exactly one mapped
+  primary layer at 30ms, 100ms, and settlement; a normal close retained one
+  outgoing layer during its exit and then returned to zero.
+- Quickshell remains the selected and login-default backend with one Rail and
+  native notification ownership. Eww, its workspace publisher, and SwayNC are
+  inactive; the verified Eww recovery path remains installed.
