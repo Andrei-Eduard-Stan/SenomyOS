@@ -1,54 +1,54 @@
-ROADMAP SCOPE COMPLETE
-Milestones 1 through 6 are complete.
-Milestone 7 and later remain out of scope.
-
 # SenomyOS automation progress
 
 Updated: 2026-10-04
 
 ## Fixed roadmap mapping
 
-For this automation, milestones 1 through 6 map exactly to Stages 1 through 6
-of `docs/IMPLEMENTATION_PLAN.md`:
-
-1. Preserve and stabilize the baseline
-2. Shared state and data foundation
-3. Obsidian Rail main bar
-4. Senomy Insights foundation
-5. Control Centre shell and core sections
-6. Device Management
-
-Stage 7 and every later stage are outside this automation's scope. Historical
-Quickshell milestone numbers and the numbered implementation order in
-`docs/SETTINGS_CAPABILITIES.md` do not change this mapping.
+For this automation, milestones 1 through 6 map exactly to the six numbered
+items under **Implementation order after Wi-Fi** in
+`docs/SETTINGS_CAPABILITIES.md`. The historical stages in
+`docs/IMPLEMENTATION_PLAN.md` are not the active automation roadmap. There is
+no seventh item in scope.
 
 ## Milestone status
 
-| Milestone | Classification | Existing completion evidence | Physical acceptance still required |
+| Milestone | Classification | Source status | Physical acceptance still required |
 |---|---|---|---|
-| 1 — Preserve and stabilize the baseline | COMPLETE | The implementation plan records completion in `f9e1402` and `547bab3`; `b322e0d` records Stage 1 stabilization. Tracked/live Hyprland sources were compared and configuration errors were empty. | The deliberately retained old current-session process clears only on logout/reboot; no automated run may terminate it. |
-| 2 — Shared state and data foundation | COMPLETE | Centralized surface/section state, serialized transitions, normalized system/audio/network collectors, validated volume actions, failure states, and preservation of battery/workspace paths are recorded as implemented and validated. | No remaining physical acceptance blocks source completion. |
-| 3 — Obsidian Rail main bar | COMPLETE | The approved Rail hierarchy, workspace and dual-battery behavior, primary-surface triggers, tray/volume flyouts, interaction states, shared coordinator, and companion foundation are recorded as implemented. Live comparison and twelve coordinator transitions passed. | Capability-specific pointer, keyboard, multi-monitor, touch, media, Bluetooth, and secured-Wi-Fi evidence remains tracked separately; it does not block source completion. |
-| 4 — Senomy Insights foundation | COMPLETE | The separate Insights surface and all stable routes are connected with truthful provider/freshness states, bounded histories, guarded clearing, manual update checks, allowlisted diagnostics, and no unrestricted command path. | Provider- and hardware-specific acceptance remains separate from source completion. |
-| 5 — Control Centre shell and core sections | COMPLETE | One coordinated panel connects all approved sections. Repeated activation, explicit close, outside dismissal, Escape, cross-surface replacement, and visibility-scoped polling are recorded as passing. | Physical provider and input acceptance remains open where identified in `docs/DESKTOP_ALPHA.md` and `docs/SETTINGS_CAPABILITIES.md`. |
-| 6 — Device Management | COMPLETE | Read-only monitor, input, audio, battery, Bluetooth, and network-interface inventories are connected with capability-aware empty states. Mutating device actions are explicitly outside Stage 6. | Physical hotplug, multi-output, input, and device-provider acceptance remains open and does not block the completed read-only source scope. |
+| 1 — Notification bulk-clear confirmation | COMPLETE | Both bulk-clear routes use exact retained/active snapshots, explicit confirmation, persistence outcome reporting, and isolated controller/UI/private-bus tests. | Full live-view pointer and focus acceptance remains open. |
+| 2 — Audio endpoint and power-profile guards | COMPLETE | Shared selection guards preview exact targets, revalidate readiness/membership/prior state, and wait for provider-observed outcomes. Isolated provider and shared-control tests pass. | Real endpoint routing and power-profile provider acceptance remains open. |
+| 3 — Shared Bluetooth page ownership | COMPLETE | One route-scoped discovery owner and guarded adapter/device action controller are connected and fake-provider tested. | Physical multi-output, pairing, passkey, and device-outcome acceptance remains open. |
+| 4 — Per-control parity and native process scope | COMPLETE | `docs/SETTINGS_CAPABILITIES.md` records per-control coverage and explicit gaps instead of broad parity. Native process scope is bounded inspection plus confirmed, identity- and ownership-checked SIGTERM; SIGKILL and service restart are unavailable, and narrower legacy Eww capabilities are recorded. | Physical selection and termination of a deliberately disposable user process remains open. |
+| 5 — Display/input inventory and session reliability | COMPLETE | Shared read-only inventory, screen-loss reconciliation, isolated hotplug lifecycle coverage, guarded display configuration with independent rollback, saved defaults, topology, enable/disable, mirroring, and persistent input preferences are implemented and fake-provider tested. | Docking, hotplug, mirroring, rollback, fractional-scale, keyboard, pointer, and touch acceptance remains open. |
+| 6 — Persistent preferences, native handoffs, and idle/session policy | INCOMPLETE | Existing source provides shell/input preferences, optional Fcitx5 handoff, Hypridle packaging, and a fixed lock/display-off policy. This run added validated persistent idle timeout preferences and deterministic Hypridle config generation without restarting the service. | Hypridle is absent on the reference runtime; fresh-login, lock, suspend/resume, authentication, recovery, and physical input acceptance remain open. |
 
-## Final automation run
+## Current run
 
-- Selected milestone: none; all in-scope milestones are COMPLETE.
-- Work completed: fixed the automation mapping and recorded the terminal scope status.
-- Validation evidence: authoritative progress records in
-  `docs/IMPLEMENTATION_PLAN.md`, `docs/DESKTOP_ALPHA.md`,
-  `docs/SETTINGS_CAPABILITIES.md`, `docs/DECISIONS.md`, and
-  `docs/RUNTIME_INVENTORY.md` were reconciled without claiming unperformed
-  physical acceptance.
-- Commit: `af9aebc` — `docs: close roadmap stages one through six`
-  (ledger creation only).
-- Push: not performed. The branch was already two commits ahead of
-  `origin/quickshell-v2` before this run, so pushing the ledger would also
-  publish pre-existing commits outside this run's reviewed scope. The remote
-  was fetched and is still an ancestor of the local branch.
-- Next milestone: none. Stage 7 and later are out of scope.
-
-Later scheduled runs must read the terminal marker above and stop immediately
-without further repository inspection.
+- Selected milestone: 6 — Persistent preferences, native handoffs, and
+  idle/session policy.
+- Completed stage: added an atomic mode-0600 preference store for whole-minute
+  lock (1–60 minutes) and display-off (2–120 minutes) timeouts, requiring
+  display-off to follow lock; generated only fixed allowlisted Hypridle
+  directives; kept automatic suspend disabled; reported that activation is
+  still required instead of restarting the service.
+- Changed implementation:
+  `shell/quickshell/scripts/session-policy.py`,
+  `shell/quickshell/tests/test_session_policy.py`, and
+  `scripts/validate-session-policy.sh`.
+- Validation: `bash -n scripts/validate-session-policy.sh`; four isolated
+  Python cases covering defaults, persistence/rendering/modes, invalid input,
+  unknown operations, and corrupt state; Python compilation; targeted
+  whitespace check. All passed. No live configuration or service changed.
+- Commit: this focused milestone commit —
+  `feat(settings): persist idle timeout policy`; its hash is reported by the
+  automation run because a commit cannot contain its own stable hash.
+- Push: not performed. The branch already contained four local commits beyond
+  `origin/quickshell-v2` before this milestone commit, including the two
+  incorrect-scope ledger commits. Publishing those unreviewed predecessors is
+  outside this run's safe scope.
+- Exact next stage: connect the validated lock/display-off preferences to the
+  Control Centre through `SessionPolicy.qml`, with unavailable, saving,
+  saved/restart-required, and error states. Because the authoritative QML tree
+  is live-watched, publish that stage only with an explicit reload-risk warning
+  and an isolated QML fixture prepared first. Lid policy remains a later bounded
+  part of milestone 6; automatic suspend remains disabled pending physical
+  acceptance.
