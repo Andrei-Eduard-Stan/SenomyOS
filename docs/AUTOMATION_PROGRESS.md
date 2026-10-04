@@ -42,8 +42,12 @@ Quickshell milestone numbers and the numbered implementation order in
   `docs/SETTINGS_CAPABILITIES.md`, `docs/DECISIONS.md`, and
   `docs/RUNTIME_INVENTORY.md` were reconciled without claiming unperformed
   physical acceptance.
-- Commit: pending final ledger-only commit.
-- Push: pending final ledger-only push to `origin/quickshell-v2`.
+- Commit: `af9aebc` — `docs: close roadmap stages one through six`
+  (ledger creation only).
+- Push: not performed. The branch was already two commits ahead of
+  `origin/quickshell-v2` before this run, so pushing the ledger would also
+  publish pre-existing commits outside this run's reviewed scope. The remote
+  was fetched and is still an ancestor of the local branch.
 - Next milestone: none. Stage 7 and later are out of scope.
 
 Later scheduled runs must read the terminal marker above and stop immediately
