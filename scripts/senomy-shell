@@ -342,6 +342,17 @@ doctor() {
   return "$failed"
 }
 
+# Informational commands must not create selector state or wait behind a
+# handoff lock. They observe current ownership; only mutations serialize.
+case "${1:-}" in
+  status) show_status; exit 0 ;;
+  doctor) doctor; exit $? ;;
+  logs)
+    journalctl --user -u "$QS_UNIT" -u "$EWW_UNIT" -u "$FALLBACK_UNIT" -n "${2:-120}" --no-pager
+    exit $?
+    ;;
+esac
+
 mkdir -p "$RUNTIME_ROOT"
 
 # OnFailure must be able to restore Eww while an initiating selector still
@@ -383,11 +394,6 @@ case "${1:-}" in
         ;;
     esac
     ;;
-  status) show_status ;;
-  logs)
-    journalctl --user -u "$QS_UNIT" -u "$EWW_UNIT" -u "$FALLBACK_UNIT" -n "${2:-120}" --no-pager
-    ;;
-  doctor) doctor ;;
   *)
     printf 'usage: senomy-shell {use {quickshell|eww}|status|restart|logs [LINES]|doctor}\n' >&2
     exit 64
