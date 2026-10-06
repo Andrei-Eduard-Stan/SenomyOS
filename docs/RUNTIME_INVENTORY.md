@@ -1,5 +1,16 @@
 # SenomyOS Runtime Inventory
 
+## Read-only reconciliation — 2026-10-06
+
+Current entry point: [PROJECT_STATE.md](PROJECT_STATE.md). Quickshell is active,
+with one Rail and native notification ownership; Eww/SwayNC/workspace units are
+inactive. Tracked/live Lua differ only by the tracked lid-switch binding, absent
+live. Hyprland reports no config errors. Hypridle is absent and its unit is not
+loaded. Older matching-config and active-Eww observations below are dated facts,
+not current claims. No reload, handoff, device change or config synchronization
+was performed. Recent journals include stacking and portal registration warnings.
+
+
 Last read-only verification: 2026-08-26.
 
 Runtime facts can change. Recheck them before relying on them for a mutation.

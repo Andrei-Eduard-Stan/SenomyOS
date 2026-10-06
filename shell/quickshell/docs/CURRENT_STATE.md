@@ -1,5 +1,10 @@
 # Audited Live SenomyOS Shell State
 
+Historical snapshot. Current state authority is
+[PROJECT_STATE.md](../../../docs/PROJECT_STATE.md); current roadmap is
+[AUTOMATION_PROGRESS.md](../../../docs/AUTOMATION_PROGRESS.md).
+
+
 ## Quickshell login ownership — 2026-09-03
 
 The live desktop and next-login path are selected to Quickshell from the authoritative

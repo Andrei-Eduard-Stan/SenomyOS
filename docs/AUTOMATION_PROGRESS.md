@@ -1,54 +1,144 @@
 # SenomyOS automation progress
 
-Updated: 2026-10-04
+Canonical user-approved roadmap (direct approval: 2026-10-05). Current facts
+and authority rules: [PROJECT_STATE.md](PROJECT_STATE.md). Reconciliation:
+[FORENSIC_AUDIT_2026-10-06.md](FORENSIC_AUDIT_2026-10-06.md).
+Checked implementation items do not mean physical/manual acceptance passed.
 
-## Fixed roadmap mapping
+Updated: 2026-10-06
 
-For this automation, milestones 1 through 6 map exactly to the six numbered
-items under **Implementation order after Wi-Fi** in
-`docs/SETTINGS_CAPABILITIES.md`. The historical stages in
-`docs/IMPLEMENTATION_PLAN.md` are not the active automation roadmap. There is
-no seventh item in scope.
+This ledger uses the user-approved roadmap below. It replaces the former
+six-item Settings Capabilities interpretation and its invalid terminal marker.
+Commits `af9aebc` and `568a875` are not evidence that this roadmap is complete.
 
-## Milestone status
+## Status summary
 
-| Milestone | Classification | Source status | Physical acceptance still required |
-|---|---|---|---|
-| 1 — Notification bulk-clear confirmation | COMPLETE | Both bulk-clear routes use exact retained/active snapshots, explicit confirmation, persistence outcome reporting, and isolated controller/UI/private-bus tests. | Full live-view pointer and focus acceptance remains open. |
-| 2 — Audio endpoint and power-profile guards | COMPLETE | Shared selection guards preview exact targets, revalidate readiness/membership/prior state, and wait for provider-observed outcomes. Isolated provider and shared-control tests pass. | Real endpoint routing and power-profile provider acceptance remains open. |
-| 3 — Shared Bluetooth page ownership | COMPLETE | One route-scoped discovery owner and guarded adapter/device action controller are connected and fake-provider tested. | Physical multi-output, pairing, passkey, and device-outcome acceptance remains open. |
-| 4 — Per-control parity and native process scope | COMPLETE | `docs/SETTINGS_CAPABILITIES.md` records per-control coverage and explicit gaps instead of broad parity. Native process scope is bounded inspection plus confirmed, identity- and ownership-checked SIGTERM; SIGKILL and service restart are unavailable, and narrower legacy Eww capabilities are recorded. | Physical selection and termination of a deliberately disposable user process remains open. |
-| 5 — Display/input inventory and session reliability | COMPLETE | Shared read-only inventory, screen-loss reconciliation, isolated hotplug lifecycle coverage, guarded display configuration with independent rollback, saved defaults, topology, enable/disable, mirroring, and persistent input preferences are implemented and fake-provider tested. | Docking, hotplug, mirroring, rollback, fractional-scale, keyboard, pointer, and touch acceptance remains open. |
-| 6 — Persistent preferences, native handoffs, and idle/session policy | INCOMPLETE | Existing source provides shell/input preferences, optional Fcitx5 handoff, Hypridle packaging, and a fixed lock/display-off policy. This run added validated persistent idle timeout preferences and deterministic Hypridle config generation without restarting the service. | Hypridle is absent on the reference runtime; fresh-login, lock, suspend/resume, authentication, recovery, and physical input acceptance remain open. |
+| Roadmap section | Classification | Current source position |
+|---|---|---|
+| 1. Physical acceptance | REQUIRES PHYSICAL ACCEPTANCE | Source fixtures and guarded providers exist; every listed item requires attended real-hardware/session acceptance. |
+| 2. Idle and power policy | INCOMPLETE | Hypridle manifests, bounded editable timeouts, and a lock/none lid policy exist. Deployment and behavior acceptance are physical; automatic suspend remains blocked on recovery acceptance. |
+| 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection, complete keyboard/focus coverage, and native Wayland OSK/input-method integration remain source gaps. |
+| 4. Performance management | INCOMPLETE | Process sorting/details and confirmed ownership-checked SIGTERM exist. Guarded restart, service boundaries, and diagnostic/report parity remain incomplete. |
+| 5. Networking | INCOMPLETE | Native status, bounded scan/refresh, guarded connect/disconnect, and terminal-owned credential entry exist. Saved-profile management, VPN/DNS/proxy, and richer failure feedback remain incomplete. |
+| 6. Applications and desktop integration | INCOMPLETE | Launcher, tray, file-manager, and portal package foundations exist. Defaults, autostart, permission/portal status, and end-to-end peripheral/file integration remain incomplete. |
+| 7. Updates | INCOMPLETE | Insights update support is discovery-only. Reviewed installation and complete progress/failure/reboot/rollback/recovery flows remain incomplete. |
+| 8. Release engineering | INCOMPLETE | Bootstrap/manifests and deployment receipts exist. Versioned packages, migrations, VM/boot evidence, bootable media, and a hardware matrix remain incomplete. |
+| 9. Quality and release evidence | INCOMPLETE | Some responsive fixtures and targeted checks exist. Full audits/measurements/licensing, QML diagnostic resolution, and reviewable working-tree organization remain incomplete. |
 
-## Current run
+## Durable checklist
 
-- Selected milestone: 6 — Persistent preferences, native handoffs, and
-  idle/session policy.
-- Completed stage: added an atomic mode-0600 preference store for whole-minute
-  lock (1–60 minutes) and display-off (2–120 minutes) timeouts, requiring
-  display-off to follow lock; generated only fixed allowlisted Hypridle
-  directives; kept automatic suspend disabled; reported that activation is
-  still required instead of restarting the service.
-- Changed implementation:
-  `shell/quickshell/scripts/session-policy.py`,
-  `shell/quickshell/tests/test_session_policy.py`, and
-  `scripts/validate-session-policy.sh`.
-- Validation: `bash -n scripts/validate-session-policy.sh`; four isolated
-  Python cases covering defaults, persistence/rendering/modes, invalid input,
-  unknown operations, and corrupt state; Python compilation; targeted
-  whitespace check. All passed. No live configuration or service changed.
-- Commit: this focused milestone commit —
-  `feat(settings): persist idle timeout policy`; its hash is reported by the
-  automation run because a commit cannot contain its own stable hash.
-- Push: not performed. The branch already contained four local commits beyond
-  `origin/quickshell-v2` before this milestone commit, including the two
-  incorrect-scope ledger commits. Publishing those unreviewed predecessors is
-  outside this run's safe scope.
-- Exact next stage: connect the validated lock/display-off preferences to the
-  Control Centre through `SessionPolicy.qml`, with unavailable, saving,
-  saved/restart-required, and error states. Because the authoritative QML tree
-  is live-watched, publish that stage only with an explicit reload-risk warning
-  and an isolated QML fixture prepared first. Lid policy remains a later bounded
-  part of milestone 6; automatic suspend remains disabled pending physical
-  acceptance.
+### 1. Physical acceptance — REQUIRES PHYSICAL ACCEPTANCE
+
+- [ ] Real multi-monitor docking, hotplug, mirroring, rollback, fractional scaling, and output enable/disable.
+- [ ] Real keyboard, pointer, touchpad, and touchscreen testing.
+- [ ] Bluetooth pairing variants and audio-route changes.
+- [ ] Suspend/resume, lock recovery, and fresh-login testing.
+
+No unattended automation may perform these actions.
+
+### 2. Idle and power policy — INCOMPLETE
+
+- [ ] Install and deploy Hypridle through bootstrap. Source declarations are present; installation/deployment requires attended acceptance.
+- [ ] Verify lock and DPMS behavior. Physical acceptance required.
+- [x] Add editable timeouts. Source implementation and targeted automated validation are complete; runtime acceptance remains required.
+- [x] Design lid-close policy. Source exposes capability-aware `lock`/`none`; physical acceptance remains required.
+- [ ] Add automatic suspend only after recovery testing. BLOCKED on successful attended recovery testing; do not implement beforehand.
+
+### 3. Keyboard and accessibility — INCOMPLETE
+
+- [x] First-run keyboard locale selection. The backend derives a catalog-valid
+  current layout without changing it, reports whether a saved preference
+  exists, and the Input page presents an explicit first-run review state. Only
+  the confirmation button applies and persists the selection. Physical
+  keyboard acceptance remains required.
+- [x] Keyboard repeat-rate and repeat-delay settings. Source implementation is complete; physical acceptance remains required.
+- [ ] Focus-order and complete keyboard navigation audit.
+- [ ] On-screen keyboard and input-method support. Optional Fcitx5 handoff exists; native Wayland OSK support remains open.
+- [ ] Touch-target and portrait-layout acceptance. Physical acceptance required; source fixes discovered by it remain in scope.
+
+### 4. Performance management — INCOMPLETE
+
+- [x] Process sorting and detail views.
+- [ ] Guarded terminate/restart actions. Confirmed graceful user-process termination exists; restart remains unavailable.
+- [ ] Better service-management boundaries.
+- [ ] Expanded diagnostic and report parity.
+
+### 5. Networking — INCOMPLETE
+
+- [ ] Saved-network management.
+- [ ] VPN, DNS, and proxy settings.
+- [ ] Better connection failure feedback.
+- [ ] Physical scan-freshness and credential-flow testing. Physical acceptance required.
+
+### 6. Applications and desktop integration — INCOMPLETE
+
+- [ ] Default applications.
+- [ ] Autostart management.
+- [ ] Permissions and portal status.
+- [ ] Removable media, mounts, archives, shares, screencasting, and file-association acceptance.
+
+### 7. Updates — INCOMPLETE
+
+- [ ] Reviewed update installation.
+- [ ] Progress, failure, reboot-required, rollback, and recovery flow.
+- [x] Current Insights update support remains discovery-only; this describes the baseline and is not installation support.
+
+### 8. Release engineering — INCOMPLETE
+
+- [ ] Versioned installable packages.
+- [ ] Preference and configuration migrations.
+- [ ] Clean virtual-machine installation.
+- [ ] Cold boot and recovery boot.
+- [ ] Bootable installation/recovery image.
+- [ ] Hardware compatibility matrix.
+
+### 9. Quality and release evidence — INCOMPLETE
+
+- [ ] Full accessibility and responsive-layout audit.
+- [ ] Current idle CPU, memory, GPU, animation, and power measurements.
+- [ ] Font, icon, artwork, and dependency licensing audit.
+- [ ] Resolve existing nonfatal QML lint diagnostics.
+- [ ] Organize the large working tree into reviewable commits.
+
+## Latest durable work and validation
+
+- 2026-10-05 bounded Section 3 stage: removed the implicit `gb` first-run
+  assumption from the input backend. The read-only `get` contract now selects
+  an existing `localectl` X11 layout only when it is in the system XKB catalog,
+  falls back deterministically inside that catalog, and reports `firstRun`
+  without invoking `hyprctl`. Five isolated Python tests, Bash syntax, Python
+  compilation with a temporary bytecode directory, and targeted whitespace
+  checks pass. No live input setting changed.
+- 2026-10-05 first-run UI stage: `InputSettings.qml` now carries the backend's
+  `firstRun` state and the existing Input page shows a truthful detected-layout
+  review card plus a keyboard-accessible confirmation action. Page opening has
+  no apply side effect. Five isolated Python tests and targeted `qmllint`
+  completed successfully; lint emitted the repository's existing warning
+  categories. Targeted whitespace checks pass. No preference was applied.
+- 2026-10-06 bounded keyboard-navigation audit stage: extended the isolated
+  styled-control fixture to verify ordered Tab focus, skipping disabled
+  actions, Return/Space activation, pointer activation, and disabled action
+  gating. `scripts/validate-control-settings.sh` now runs that fixture with an
+  isolated runtime directory. The targeted validator passes: four skin
+  preference cases, six screen lifecycle cases, the focus fixture, Bash
+  syntax, QML lint, and whitespace checks. No production focus defect was found
+  in this bounded primitive-level pass, so no runtime control was changed.
+- Commit `a6629ba` (`feat(settings): persist idle timeout policy`) added the
+  bounded persistent timeout backend and targeted tests.
+- Additional shared-working-tree source for timeout controls and the lid policy
+  passed six isolated Python tests, four offscreen QML/JavaScript tests, Bash
+  syntax, Python compilation, manifest JSON validation, `qmllint` with existing
+  warning categories, and targeted whitespace checks. It remains uncommitted
+  because its dependency files overlap pre-existing shared changes.
+- No live configuration, package, service, session, or physical device was
+  changed by that work.
+- Push remains withheld: `quickshell-v2` already contains unreviewed local
+  commits ahead of `origin/quickshell-v2`, including the incorrect-scope ledger
+  commits.
+
+## Exact next stage
+
+Section 3: continue the focus-order and complete keyboard-navigation audit with
+the Control Centre's section navigation and route-change focus restoration.
+Use an isolated fixture; repair only concrete unreachable, stale, or incorrectly
+ordered focus behavior discovered there. Do not drive the live desktop.

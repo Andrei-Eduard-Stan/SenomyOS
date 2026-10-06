@@ -1,5 +1,10 @@
 # SenomyOS Handbook
 
+Current facts: [PROJECT_STATE.md](PROJECT_STATE.md). Current user-approved
+roadmap: [AUTOMATION_PROGRESS.md](AUTOMATION_PROGRESS.md). Dated tutorials below
+retain historical paths and must not override those entry points.
+
+
 ## What this handbook is
 
 This is the practical operating manual for reviving and developing SenomyOS.

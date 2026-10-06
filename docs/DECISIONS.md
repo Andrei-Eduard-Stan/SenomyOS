@@ -1,5 +1,17 @@
 # SenomyOS Decision Log
 
+## D164 — Separate current state, canonical roadmap and historical evidence (2026-10-06)
+
+The forensic-audit request and direct 2026-10-05 user roadmap approval establish
+`PROJECT_STATE.md` as the current-state entry point and `AUTOMATION_PROGRESS.md`
+as the existing canonical nine-domain roadmap. Historical Eww stages and
+Quickshell milestones remain dated evidence, not competing completion counters.
+Implementation, automated checks, runtime observation and manual acceptance are
+reported separately. No visual proposal or implementation alone proves approval.
+The bounded selector repair makes informational reads bypass mutation locking
+and state creation; shell handoffs retain their existing serialization.
+
+
 This is a lightweight architecture and product decision record. Add a dated
 entry when a decision changes surface ownership, safety policy, data contracts,
 or the development workflow.

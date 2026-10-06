@@ -1,5 +1,11 @@
 # SenomyOS Revival Implementation Plan
 
+Historical sequencing, retained for evidence. Current state is
+[PROJECT_STATE.md](PROJECT_STATE.md); current execution roadmap is
+[AUTOMATION_PROGRESS.md](AUTOMATION_PROGRESS.md). These stages are not the
+current nine-section roadmap's numbering.
+
+
 Every stage should remain independently reviewable and recoverable. A stage is
 not complete until its diff and validation have been reported.
 
