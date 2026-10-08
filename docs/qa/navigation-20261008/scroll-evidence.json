@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-08",
+  "sourcePatches": [
+    {
+      "file": "shell/quickshell/components/ControlCentre.qml",
+      "beforeSha256": "ef51a6effbf2fa3cba6a6b6a21dfd4df08dcf7e8abf28f4a209687d17dc3dee8",
+      "afterSha256": "67fc50ba84a6fbed2e50c6d825e7c25167c1663fd116c494ea6a86d182fd1571"
+    },
+    {
+      "file": "shell/quickshell/components/AppearanceSettings.qml",
+      "beforeSha256": "83f8c3ebf71d79ca49424d8a235932631ef70f0efa8a3ba8f0ff3c4ad5929b89",
+      "afterSha256": "9e3efa5f9fabaeaf05788acf28f5bff88a9e4ae2160885cbcf899f75c9528976"
+    }
+  ],
+  "command": "python3 scripts/validate-control-routes.py",
+  "routes": 10,
+  "logicalSizes": [
+    [
+      1120,
+      820
+    ],
+    [
+      720,
+      500
+    ]
+  ],
+  "actionStates": [
+    "idle",
+    "pending"
+  ],
+  "providerMutationCount": 0,
+  "automated": "passed",
+  "runtime": "configuration reload and loaded observed; service running PID 1373; existing stacking warning persists",
+  "manualAcceptance": "pending",
+  "compositorHost": "substituted in fixture; not accepted"
+}

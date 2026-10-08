@@ -1,0 +1,5 @@
+--- a/shell/quickshell/components/AppearanceSettings.qml
++++ b/shell/quickshell/components/AppearanceSettings.qml
+@@ -6 +6 @@
+-Flickable {
++FocusScrollArea {

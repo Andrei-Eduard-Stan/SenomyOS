@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-08",
+  "sourcePatches": [
+    {
+      "file": "shell/quickshell/components/SelectionActionReview.qml",
+      "beforeSha256": "42b43893117c900aa3ab3f3d07d4288168ebc22933aae7ec732534d0bc90ba53",
+      "afterSha256": "aa0b7c135ef92bda9cc6c0a54c89e8f790907e3b789935a1a454425e6d5dc8c6"
+    },
+    {
+      "file": "shell/quickshell/components/NetworkActionReview.qml",
+      "beforeSha256": "31ab3c8158f0e8e0dc83dc9f1335f20c0d921801c4a14233af6cccf594c2d307",
+      "afterSha256": "39330b0f0daa3f4a6639e25cfdc496f7bfefe1ed83ffec5629671539c892fcad"
+    }
+  ],
+  "automated": "passed",
+  "validators": [
+    "validate-confirmation-focus.sh",
+    "validate-selection-confirmation.sh",
+    "validate-network-confirmation.sh",
+    "validate-control-routes.py"
+  ],
+  "realDeviceMutations": 0,
+  "manualAcceptance": "pending",
+  "diagnostics": "Qt focus/lint diagnostics and existing runtime stacking warning; not warning-free"
+}

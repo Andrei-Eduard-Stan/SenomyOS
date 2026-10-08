@@ -5,11 +5,130 @@ and authority rules: [PROJECT_STATE.md](PROJECT_STATE.md). Reconciliation:
 [FORENSIC_AUDIT_2026-10-06.md](FORENSIC_AUDIT_2026-10-06.md).
 Checked implementation items do not mean physical/manual acceptance passed.
 
-Updated: 2026-10-06
+Updated: 2026-10-08
+
+## Active autonomous scope — 2026-10-08
+
+User instruction: finish the functional work listed through and including
+Senomy Insights in the October 7 functional summary. This is an execution scope
+within the canonical roadmap, not replacement milestone numbering.
+
+In scope: session reliability, power policy, displays/devices, keyboard and
+accessibility, networking, applications, desktop integration, performance
+management and Senomy Insights. Preserve its eight routes, including update
+discovery. Update installation, release packaging/installer work and visual
+redesign remain outside this run. Existing styling/assets/layouts are preserved.
+
+Continuation rules:
+
+1. Read this scope and Exact next stage before editing; inspect HEAD/status and
+   relevant diffs. Resume saved work only after checking it against current source.
+2. Work on one explicit requirement at a time. Name its source, behavior, files,
+   test and remaining acceptance before marking it complete.
+3. Prepare watched-QML changes in an isolated copy; test fake providers before
+   publication. Warn before publishing because source watching can reload the UI.
+4. Keep code, automated checks, runtime observation and physical/manual acceptance
+   separate. Failures/timeouts/unavailable providers must not count as success.
+5. Checkpoint validated stages, preserving unrelated changes; never bulk stage or
+   push. Record an exact next step and dependency before stopping or interruption.
+6. Continue independent safe source work when physical acceptance blocks another
+   item. No unattended reboot, suspend, lock, network disconnect, real-device
+   mutation or destructive recovery test. Automatic suspend stays gated.
+7. A lost session, dead laptop or absent tool result is not completion evidence.
+   No persistent background execution or schedule is implied by this ledger.
+
+| Functional scope | Source mapping | Current remaining outcome |
+|---|---|---|
+| Session reliability | §1; Desktop Alpha A07 | Attended fresh login/lock/suspend/fallback; safely test failure logic separately |
+| Power policy | §2 | Deploy/accept idle policy; retain recovery gate on automatic suspend |
+| Displays/devices | §1; Settings Capabilities | Source guards exist; physical docking, rollback, pairing and routing acceptance |
+| Keyboard/accessibility | §3 | Section focus/navigation, full route/control reachability, input-method/OSK path |
+| Networking | §5 | Saved-profile management, VPN/DNS/proxy handoffs, failure feedback, provider acceptance |
+| Applications | §6 | Default applications and autostart management with validated native boundaries |
+| Desktop integration | §6 | Portal status and native peripheral/file/screencast journeys |
+| Performance management | §4 | Managed restart boundary, diagnostics/report coverage, accepted process flow |
+| Senomy Insights | Product Spec; native route contract | Complete briefing/timeline/diagnostic/console/report/wiki contracts and truthful freshness; notification acceptance |
+
+Interrupted-run check: HEAD is `e870369`; reflog has no later completed stage.
+The large pre-existing working tree remains preserved. No later saved result
+was established. Active staging copy:
+`~/.local/state/senomyos/development/functional-20261008`.
+
+Current bounded stage: Control Centre/shared dashboard section navigation and
+route-change focus restoration. Source was validated in the isolated copy and
+published on 2026-10-08. This does not close the full §3 accessibility audit.
+
+### Durable checkpoint — shared route navigation, 2026-10-08
+
+- Implementation: `DashboardNavigation.qml`, connected by the existing shared
+  `DashboardWindow.qml`. Opening focuses the active route; Up/Down/Home/End move
+  focus without activation; Return/Space activate; disabled routes are skipped;
+  focus tracks scrolling and route changes after old content destruction.
+  Inactive navigation must not steal focus. Tab/Shift-Tab can leave navigation.
+- Automated: `bash scripts/validate-dashboard-navigation.sh` passes the actual
+  shared component's isolated pointer/keyboard fixture, including narrow width,
+  disabled rows, deferred focus, scrolling, close/content exit and reopening.
+  Original production navigation reproduced missing initial selected-route focus.
+  Bash syntax and whitespace pass; QML lint exits successfully with existing
+  native-metadata/unqualified diagnostics, not warning-free.
+- Publication: source-watch refresh was warned in advance; no explicit service
+  restart, compositor edit or device mutation. Service remains active/running,
+  PID 1373 unchanged, compositor config errors empty. No full live pointer/UI
+  acceptance was performed; health does not prove the new behavior was exercised.
+- Existing shared window and its visual dependencies were already untracked.
+  Preserve them; the integration diff and original-source checksum are retained
+  under `docs/qa/navigation-20261008/` for recoverable review without bulk staging.
+  A clean-checkout/release claim remains invalid until that baseline is reviewed.
+- Next: exercise actual Control Centre route loading and focus in an isolated
+  fake-provider fixture; audit content controls and confirmation focus. Then
+  complete the native input-method/OSK boundary. Do not jump to visual redesign,
+  update installation or release tooling because this one component passes.
+
+### Durable checkpoint — focus remains visible, 2026-10-08
+
+- Concrete regression: the actual Input route focused a button at y=777 beyond
+  an 820px viewport without scrolling, clipping the focused control. Source
+  fixtures demonstrated this before the repair; it was not inferred from a TODO.
+- `FocusScrollArea.qml` keeps descendant keyboard focus vertically visible.
+  Existing scrolling routes use it; Applications/Settings receive scroll wrappers
+  around their unchanged content; Appearance uses the same behavior. No visual
+  redesign or provider/action contract changed.
+- `python3 scripts/validate-control-routes.py` passes actual ten-route content at
+  1120x820 and 720x500 in idle and pending-action states. It checks selected-route
+  focus and 45 Tab steps per route/scenario; fake-provider mutation count is zero.
+  The window/compositor host is substituted, not accepted; lists with real devices,
+  every locale/long label and real pointer/touch input remain separate acceptance.
+- Publication was warned. The journal subsequently reports configuration reload
+  and loaded; service remains running at PID 1373. Existing stacking warning
+  remains; compositor configuration errors are empty. No explicit restart.
+- Recoverable integration patches and source hashes are in
+  `docs/qa/navigation-20261008/`; original files are retained in the private staging
+  directory. Existing unrelated source changes are preserved, not bulk committed.
+- Next: pending confirmation should receive safe keyboard focus, with cancel/
+  dismissal and route replacement tested; then audit the remaining input-method
+  boundary. This is still partial §3, not whole-scope completion.
 
 This ledger uses the user-approved roadmap below. It replaces the former
 six-item Settings Capabilities interpretation and its invalid terminal marker.
 Commits `af9aebc` and `568a875` are not evidence that this roadmap is complete.
+
+### Durable checkpoint — safe confirmation focus, 2026-10-08
+
+- `ConfirmationFocus.qml` defaults newly pending selection/network previews to
+  Cancel and restores prior focus after dismissal. Deferred callbacks recheck
+  visibility/state; hidden contexts and rapid dismissal must not steal focus.
+- `bash scripts/validate-confirmation-focus.sh` passes fake-provider keyboard
+  cases for both review components. The original selection review failed the
+  initial Cancel-focus assertion. Existing selection/network guard validators
+  also pass, and the actual Control Centre route fixture still passes.
+- Confirmation activation requires deliberate movement to Confirm. These checks
+  invoke no real device mutations and do not accept other confirmation families.
+- Publication was warned; service remains running with no compositor config
+  errors. Qt focus/lint and existing stacking diagnostics remain recorded rather
+  than described as warning-free. Manual acceptance remains pending.
+- Integration patches preserve the pre-existing untracked review components.
+  See `docs/qa/navigation-20261008/`; clean-checkout reproducibility remains open.
+
 
 ## Status summary
 
@@ -138,7 +257,9 @@ No unattended automation may perform these actions.
 
 ## Exact next stage
 
-Section 3: continue the focus-order and complete keyboard-navigation audit with
-the Control Centre's section navigation and route-change focus restoration.
-Use an isolated fixture; repair only concrete unreachable, stale, or incorrectly
-ordered focus behavior discovered there. Do not drive the live desktop.
+Section 3: shared navigation, focus scrolling and safe initial focus for selection
+and network confirmations are implemented and isolated-tested. Next inspect the
+remaining Bluetooth/display/notification/session confirmation families and extend
+focus coverage where needed; then complete the native input-method/OSK boundary.
+Full accessibility and physical acceptance remain open. Use staging under the
+Active autonomous scope; do not drive real devices.

@@ -1,0 +1,6 @@
+--- a/shell/quickshell/components/NetworkActionReview.qml
++++ b/shell/quickshell/components/NetworkActionReview.qml
+@@ -6,0 +7 @@
++    ConfirmationFocus { view: root; actions: root.actions; cancelButton: cancel }
+@@ -32,0 +34 @@
++            id: cancel

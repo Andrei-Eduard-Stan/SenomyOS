@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-08",
+  "baseHead": "e870369",
+  "baselineSharedWindowTracked": false,
+  "beforeSha256": "f215e7b2c65102776c087a555aced4f405d0876aab9d9a90d002fda4f7991fac",
+  "afterSha256": "f1392560dc8e0ba5e25fbec6291f09b96a4dbbadb54ccde0c5bb8d7b2a346798",
+  "test": "bash scripts/validate-dashboard-navigation.sh",
+  "automated": "passed",
+  "liveBehaviorAcceptance": "pending",
+  "physicalAcceptance": "pending",
+  "sourceWatchPublicationWarned": true,
+  "explicitServiceRestart": false
+}

@@ -1,5 +1,16 @@
 # SenomyOS Decision Log
 
+## D165 — Durable functional scope and shared keyboard focus (2026-10-08)
+
+The user authorizes functional work through Senomy Insights, with aesthetics
+reserved for later. AUTOMATION_PROGRESS.md records the scope and exact next stage;
+source, automated results, runtime observation and manual acceptance stay separate.
+Shared dashboard navigation and focus-aware scrolling handle keyboard visibility.
+Selection/network review focus defaults to Cancel without changing action guards.
+Watched source is prepared with isolated fake-provider fixtures before publication.
+Integration patches preserve existing untracked baseline work; these checkpoints
+do not establish a reproducible clean checkout or completed hardware acceptance.
+
 ## D164 — Separate current state, canonical roadmap and historical evidence (2026-10-06)
 
 The forensic-audit request and direct 2026-10-05 user roadmap approval establish

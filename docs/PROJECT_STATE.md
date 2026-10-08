@@ -75,6 +75,14 @@ Do not use an automation terminal marker as whole-product completion.
 
 ## Resumed bounded work
 
+2026-10-08: the user authorizes autonomous functional development through and
+including Senomy Insights, with visual redesign deferred. The exact bounded
+scope, continuation rules and next step live in AUTOMATION_PROGRESS.md. Shared
+Control Centre/Performance route navigation and deferred focus restoration now
+have isolated regression coverage. Focus scrolling and selection/network review
+Cancel-focus behavior also pass isolated fixtures; full accessibility and physical acceptance
+remain open. No schedule or execution while the laptop is off is implied.
+
 2026-10-06: selector informational commands now bypass runtime-directory creation
 and handoff locking. `status`, `doctor` and `logs` must not create state or wait
 behind a shell mutation. The isolated regression validator is

@@ -1,5 +1,14 @@
 # SenomyOS Runtime Inventory
 
+## Functional publication observation — 2026-10-08
+
+After warned publication of shared keyboard focus changes, Quickshell reports
+configuration reload and loaded and remains active/running at PID 1373. No
+explicit service restart or compositor configuration edit was performed.
+Hyprland configuration errors are empty. Existing stacking warnings persist.
+This observes source loading/service health, not physical interaction acceptance.
+Evidence: docs/qa/navigation-20261008/ and AUTOMATION_PROGRESS.md.
+
 ## Read-only reconciliation — 2026-10-06
 
 Current entry point: [PROJECT_STATE.md](PROJECT_STATE.md). Quickshell is active,
