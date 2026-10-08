@@ -1,0 +1,10 @@
+--- a/shell/quickshell/components/ControlCentre.qml
++++ b/shell/quickshell/components/ControlCentre.qml
+@@ -24,0 +25,7 @@
++    Connections {
++        target: root.inputSettings && typeof root.inputSettings.releasePrimaryFocusRequested === "function" ? root.inputSettings : null
++        function onReleasePrimaryFocusRequested() {
++            if (root.state.activePrimary === "control" && root.state.controlSection === "input")
++                root.state.closePrimary();
++        }
++    }

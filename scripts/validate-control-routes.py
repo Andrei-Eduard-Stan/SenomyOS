@@ -53,7 +53,7 @@ def main():
         # Only the compositor/window host is substituted. Actual route content,
         # shared controls, navigation and scrolling come from the current source.
         (copied / "components/DashboardWindow.qml").write_text(HOST)
-        shutil.copy2(REPO / "shell/quickshell/tests/fixtures/control-routes.qml",
+        shutil.copy2(shell / "tests/fixtures/control-routes.qml",
                      copied / "control-routes-test.qml")
         runtime = root / "runtime"
         runtime.mkdir(mode=0o700)

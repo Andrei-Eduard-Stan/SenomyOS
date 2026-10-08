@@ -136,7 +136,7 @@ Commits `af9aebc` and `568a875` are not evidence that this roadmap is complete.
 |---|---|---|
 | 1. Physical acceptance | REQUIRES PHYSICAL ACCEPTANCE | Source fixtures and guarded providers exist; every listed item requires attended real-hardware/session acceptance. |
 | 2. Idle and power policy | INCOMPLETE | Hypridle manifests, bounded editable timeouts, and a lock/none lid policy exist. Deployment and behavior acceptance are physical; automatic suspend remains blocked on recovery acceptance. |
-| 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection and detected Fcitx5 settings handoff exist; complete keyboard/focus coverage and native Wayland OSK integration remain open. |
+| 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection and detected Fcitx5 settings handoff exist; conditional manual OSK controls are connected. Populated-control focus coverage and physical IME/OSK/touch acceptance remain open. |
 | 4. Performance management | INCOMPLETE | Process sorting/details and confirmed ownership-checked SIGTERM exist. Guarded restart, service boundaries, and diagnostic/report parity remain incomplete. |
 | 5. Networking | INCOMPLETE | Native status, bounded scan/refresh, guarded connect/disconnect, and terminal-owned credential entry exist. Saved-profile management, VPN/DNS/proxy, and richer failure feedback remain incomplete. |
 | 6. Applications and desktop integration | INCOMPLETE | Launcher, tray, file-manager, and portal package foundations exist. Defaults, autostart, permission/portal status, and end-to-end peripheral/file integration remain incomplete. |
@@ -172,7 +172,7 @@ No unattended automation may perform these actions.
   keyboard acceptance remains required.
 - [x] Keyboard repeat-rate and repeat-delay settings. Source implementation is complete; physical acceptance remains required.
 - [ ] Focus-order and complete keyboard navigation audit.
-- [ ] On-screen keyboard and input-method support. Detected Fcitx5 editor handoff now has mocked backend/UI coverage; engine/session/text-entry acceptance and native Wayland OSK support remain open.
+- [ ] On-screen keyboard and input-method support. Detected Fcitx5 editor handoff and conditional manual OSK controls have backend/UI and managed-stub coverage; physical engine/session/text-entry/touch acceptance remains open.
 - [ ] Touch-target and portrait-layout acceptance. Physical acceptance required; source fixes discovered by it remain in scope.
 
 ### 4. Performance management — INCOMPLETE
@@ -332,12 +332,40 @@ No unattended automation may perform these actions.
   child ownership. This remains the adapter's explicit unresolved boundary, not
   a reason to pretend the OSK feature is delivered.
 
+### Durable checkpoint — managed OSK adapter and controls, 2026-10-08
+
+- OskAdapter is connected through the persistent InputSettings service. Manual
+  Start/Show/Hide/Stop controls are capability-gated. Start previews the managed
+  shell-session lifetime; Start and Stop default to Cancel. Leaving Input cancels
+  pending reviews and keeps an owned child running. No automatic start/install.
+- The fixed-argv helper rechecks capabilities, execs only an allowlisted provider,
+  validates executable/signal readiness before show/hide and guards parent death.
+  Signals address only the adapter's process object. Confirmed stop requests
+  SIGTERM and waits for exit; no force-kill, name matching or arbitrary PID action.
+- The initial abrupt-exit disposable fixture left the stub running. Linux
+  PR_SET_PDEATHSIG(SIGTERM), parent-race checking and privileged/file-capability
+  rejection repair that boundary. This was demonstrated, not inferred from docs.
+- Automated: nine probe and twelve provider Python tests; thirteen controller
+  behaviors plus setup/cleanup; actual adapter/control and schema fixtures;
+  existing Fcitx fixture; ten Control Centre routes. Primary-focus release closes
+  only the current Input route and ignores late callbacks for another surface.
+- `python3 scripts/validate-osk-managed.py` compiles a no-input stub and verifies
+  native managed process readiness, owned show/hide, panel survival, confirmed
+  observed exit, reload cleanup and abrupt shell-exit cleanup. It uses four
+  sequential fixture children, never a real keyboard or desktop process.
+- Warned publication: Configuration Loaded observed; live Quickshell remains
+  active/running PID 1373; compositor errors empty. Existing stacking and Qt/lint
+  diagnostics remain. The reference probe still finds no provider and unknown
+  protocols; manual OSK text entry, real focus/occlusion, touch and lock/recovery
+  acceptance remain pending. Do not mark the full accessibility domain complete.
+- Integration patches/checksums: docs/qa/osk-adapter-20261008/. Pre-existing source
+  and visual work remain preserved; clean-checkout reproducibility remains open.
+
 ## Exact next stage
 
-Section 3: implement and test the production OSK adapter's owned-child lifecycle
-and explicit show/hide/confirmed-stop UI. Resolve reload/shutdown policy against
-OSK_PROVIDER_CONTRACT.md before launch hookup; route dismissal must preserve the
-keyboard, and successful show requests must release primary focus. Use fake
-providers for failures/races and unknown/missing tools; never activate or install
-an unvalidated keyboard automatically. Physical IME/OSK/accessibility acceptance
-and the later functional domains through Insights remain open.
+Section 3: test populated Network, Audio and Device Management lists for keyboard
+reachability and inner-list focus visibility, using fake devices/endpoints and
+no provider mutation. Repair demonstrated defects while preserving current layout.
+Record physical IME/OSK/focus/touch gates separately; then continue the Section 4
+Performance management source gaps and later domains through Insights. Do not
+revisit visuals, install updates or claim whole-scope completion.

@@ -1,0 +1,44 @@
+--- a/shell/quickshell/tests/fixtures/control-routes.qml
++++ b/shell/quickshell/tests/fixtures/control-routes.qml
+@@ -34 +34,24 @@
+-    property var inputProvider: ({available:true,busy:false,firstRun:true,layout:"us",layouts:["us","gb"],message:"",naturalScroll:false,tapToClick:true,repeatDelay:600,repeatRate:25,sensitivity:0,usFallback:false,apply:function(){test.mutations++;}})
++    QtObject {
++        id: inputProvider
++        signal releasePrimaryFocusRequested()
++        property bool available: true
++        property bool busy: false
++        property bool firstRun: true
++        property string layout: "us"
++        property var layouts: ["us","gb"]
++        property string message: ""
++        property bool naturalScroll: false
++        property bool tapToClick: true
++        property int repeatDelay: 600
++        property int repeatRate: 25
++        property real sensitivity: 0
++        property bool usFallback: false
++        property bool editorAvailable: false
++        property bool engineInstalled: false
++        property bool nativeToolsBusy: false
++        property string nativeToolsMessage: ""
++        property var oskController: null
++        property var oskCapabilities: ({providerInstalled:false,protocolState:"unknown",message:"Fixture unavailable"})
++        function apply() { test.mutations++; }
++    }
++
+@@ -49 +72 @@
+-        inputSettings: test.inputProvider
++        inputSettings: inputProvider
+@@ -87,0 +111,12 @@
++            state.activePrimary = "insights";
++            state.controlSection = "input";
++            inputProvider.releasePrimaryFocusRequested();
++            test.check(state.activePrimary === "insights","late OSK release must not close another primary surface");
++            state.activePrimary = "control";
++            state.controlSection = "audio";
++            inputProvider.releasePrimaryFocusRequested();
++            test.check(state.activePrimary === "control","late OSK release must not close another Control Centre route");
++            state.controlSection = "input";
++            inputProvider.releasePrimaryFocusRequested();
++            test.check(state.activePrimary === "","OSK show releases only the current Input primary surface");
++            test.check(test.mutations === 0,"focus release must not mutate providers");

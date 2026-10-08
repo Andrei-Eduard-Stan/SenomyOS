@@ -31,7 +31,30 @@ Window {
         function cancel() { test.mutations++; }
         function confirm() { test.mutations++; }
     }
-    property var inputProvider: ({available:true,busy:false,firstRun:true,layout:"us",layouts:["us","gb"],message:"",naturalScroll:false,tapToClick:true,repeatDelay:600,repeatRate:25,sensitivity:0,usFallback:false,apply:function(){test.mutations++;}})
+    QtObject {
+        id: inputProvider
+        signal releasePrimaryFocusRequested()
+        property bool available: true
+        property bool busy: false
+        property bool firstRun: true
+        property string layout: "us"
+        property var layouts: ["us","gb"]
+        property string message: ""
+        property bool naturalScroll: false
+        property bool tapToClick: true
+        property int repeatDelay: 600
+        property int repeatRate: 25
+        property real sensitivity: 0
+        property bool usFallback: false
+        property bool editorAvailable: false
+        property bool engineInstalled: false
+        property bool nativeToolsBusy: false
+        property string nativeToolsMessage: ""
+        property var oskController: null
+        property var oskCapabilities: ({providerInstalled:false,protocolState:"unknown",message:"Fixture unavailable"})
+        function apply() { test.mutations++; }
+    }
+
     property var sessionProvider: ({available:false,busy:false,configured:false,activationRequired:false,displayOffSeconds:600,lockSeconds:300,lidAction:"lock",lidAvailable:false,message:"",error:"",apply:function(){test.mutations++;}})
     ControlCentre {
         id: panel
@@ -46,7 +69,7 @@ Window {
         media: ({available:false,artist:"",identity:"Fixture",playing:false,selectedPlayer:null,title:"No player"})
         notifications: ({dnd:false,serverEnabled:false,setDnd:function(){test.mutations++;}})
         senomy: ({message:"Fixture",state:"nominal"})
-        inputSettings: test.inputProvider
+        inputSettings: inputProvider
         sessionPolicy: test.sessionProvider
         deviceInventory: ({snapshot:{},loading:false,error:"Fixture unavailable",displays:[],displayActions:actions})
     }
@@ -85,6 +108,18 @@ Window {
                 }
                 }
             }
+            state.activePrimary = "insights";
+            state.controlSection = "input";
+            inputProvider.releasePrimaryFocusRequested();
+            test.check(state.activePrimary === "insights","late OSK release must not close another primary surface");
+            state.activePrimary = "control";
+            state.controlSection = "audio";
+            inputProvider.releasePrimaryFocusRequested();
+            test.check(state.activePrimary === "control","late OSK release must not close another Control Centre route");
+            state.controlSection = "input";
+            inputProvider.releasePrimaryFocusRequested();
+            test.check(state.activePrimary === "","OSK show releases only the current Input primary surface");
+            test.check(test.mutations === 0,"focus release must not mutate providers");
             console.log("PASS: actual Control Centre routes load and keep keyboard focus visible at wide and constrained sizes; fake providers and window host only");
             Qt.quit();
         }

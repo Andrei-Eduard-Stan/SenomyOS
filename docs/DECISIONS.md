@@ -1,5 +1,16 @@
 # SenomyOS Decision Log
 
+## D169 — OSK uses a confirmed managed shell-session lifetime (2026-10-08)
+
+Manual Start previews the lifetime and defaults to Cancel; the persistent input
+service keeps the child across route closure. Show releases only the current
+Input primary surface, and Stop requires confirmation and observed exit. A
+same-PID exec helper and owned process object avoid arbitrary PID/name actions.
+Readiness checks executable identity and signal handling. The disposable abrupt-
+exit regression required a Linux parent-death SIGTERM guard, race checking and
+privileged/file-capability rejection. The native stub proves process lifecycle,
+not Wayland typing, real application focus or touchscreen acceptance.
+
 ## D168 — OSK advertisement is not completed integration (2026-10-08)
 
 Read-only detection distinguishes installed allowlisted providers and required

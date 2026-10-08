@@ -1,8 +1,8 @@
 # Native on-screen keyboard provider contract
 
-Dated investigation: 2026-10-08. Read-only detection and an isolated controller
-prototype now have automated coverage. Provider launch/show/hide is not connected
-to the live shell, and this is not delivered OSK or hardware acceptance.
+Dated investigation: 2026-10-08. Conditional manual controls and the managed
+provider adapter now have source/automated coverage. No provider is installed on
+the reference machine, and real text-entry/touch/compositor acceptance is pending.
 
 ## Evidence and candidate
 
@@ -75,3 +75,30 @@ shell exit. A detached process would lose direct ownership. The launch adapter
 must resolve this boundary and provide explicit lifecycle information before
 wiring show/hide to a live provider. Hiding the Input route must not terminate it.
 Reference: https://quickshell.org/docs/v0.3.0/types/Quickshell.Io/Process/ .
+
+## Adapter and manual-controls checkpoint — 2026-10-08
+
+The selected policy is a managed shell-session child. Starting previews that it
+survives panel dismissal and ends with shell reload/exit, with Cancel focused by
+default. Stop also requires confirmation. InputSettings owns the adapter outside
+the route Loader, so leaving Input cancels an unconfirmed review without stopping
+a running provider. Show requests close only the current Input primary surface;
+a late callback never closes another route or Insights.
+
+The launch helper rechecks advertised capabilities, executes an allowlisted
+provider with fixed argv in the same owned PID, rejects privileged/file-capability
+binaries, and establishes Linux PR_SET_PDEATHSIG(SIGTERM) with a parent-race check.
+The readiness probe requires that PID's executable and both show/hide signals to
+be blocked or handled before sending them. No arbitrary PID is signalled, no
+process-name matching or detached instance is used, and no keys are logged.
+
+A disposable no-input C stub verifies real Quickshell ownership/readiness,
+show/hide, panel lifetime, observed confirmed exit, configuration reload and
+abrupt shell exit. The abrupt-exit case failed before the parent-death guard was
+added. Stub process exit is checked separately from zombie PID reaping. These
+checks are not real Wayland/app-focus/text-entry acceptance. No real provider was
+started and no package was installed.
+
+Parent-death reference:
+https://man7.org/linux/man-pages/man2/PR_SET_PDEATHSIG.2const.html . The older
+prototype checkpoint above records the state before this adapter was connected.

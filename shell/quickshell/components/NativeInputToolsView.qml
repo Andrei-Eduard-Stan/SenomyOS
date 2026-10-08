@@ -30,9 +30,12 @@ Column {
         width: parent.width
         title: "ON-SCREEN KEYBOARD"
         value: root.settings && root.settings.oskCapabilities && root.settings.oskCapabilities.providerInstalled === true
-            ? "PROVIDER DETECTED / NOT INTEGRATED" : "PROVIDER UNAVAILABLE / NOT INTEGRATED"
+            ? root.settings.oskCapabilities.manualCandidate === true ? "MANUAL CONTROLS / UNVERIFIED"
+              : root.settings.oskCapabilities.protocolState === "incompatible" ? "PROTOCOLS INCOMPATIBLE" : "COMPATIBILITY UNKNOWN"
+            : "PROVIDER UNAVAILABLE"
         detail: root.settings && root.settings.oskCapabilities
-            ? root.settings.oskCapabilities.message + " Explicit controls and application text-entry acceptance remain open."
+            ? root.settings.oskCapabilities.message + " Manual controls require an installed provider and advertised protocols. Application text-entry acceptance remains open."
             : "OSK capabilities have not been checked. Integration remains open."
     }
+    OskControls { width: parent.width; controller: root.settings && root.settings.oskController ? root.settings.oskController : null }
 }

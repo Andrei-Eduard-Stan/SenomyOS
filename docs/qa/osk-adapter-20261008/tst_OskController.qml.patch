@@ -1,0 +1,34 @@
+--- a/shell/quickshell/tests/tst_OskController.qml
++++ b/shell/quickshell/tests/tst_OskController.qml
+@@ -36 +36,8 @@
+-    function start() { verify(control.requestShow());control.started(control.serial); }
++    function requestLaunch() { verify(control.requestShow());compare(control.state,"pending-start");verify(control.confirmStart()); }
++    function start() { requestLaunch();control.started(control.serial); }
++    function test_start_confirmation_cancel_and_capability_change() {
++        verify(!control.confirmStart());verify(control.requestShow());compare(control.state,"pending-start");compare(fake.starts,0);
++        verify(!control.requestShow());verify(control.cancelStart());compare(control.state,"stopped");compare(fake.starts,0);
++        verify(control.requestShow());control.capabilities={providerInstalled:false,protocolState:"unknown",manualCandidate:false,provider:""};
++        verify(!control.confirmStart());compare(fake.starts,0);compare(control.state,"unavailable");
++    }
+@@ -47 +54 @@
+-        compare(control.state,"stopped");verify(control.requestShow());compare(control.state,"starting");
++        compare(control.state,"stopped");requestLaunch();compare(control.state,"starting");
+@@ -65 +72 @@
+-        fake.acceptStart=false;verify(!control.requestShow());compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
++        fake.acceptStart=false;verify(control.requestShow());verify(!control.confirmStart());compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
+@@ -68 +75 @@
+-        verify(control.requestShow());fake.owner=0;control.started(control.serial);compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
++        requestLaunch();fake.owner=0;control.started(control.serial);compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
+@@ -71 +78 @@
+-        fake.acceptShow=false;verify(control.requestShow());control.started(control.serial);compare(control.state,"failed");compare(focus.count,0);
++        fake.acceptShow=false;requestLaunch();control.started(control.serial);compare(control.state,"failed");compare(focus.count,0);
+@@ -78,2 +85,2 @@
+-        verify(control.requestShow());const old=control.serial;fake.owner=0;control.failed(old);
+-        verify(control.requestShow());const current=control.serial;verify(current>old);
++        requestLaunch();const old=control.serial;fake.owner=0;control.failed(old);
++        requestLaunch();const current=control.serial;verify(current>old);
+@@ -93,2 +100,2 @@
+-        control.startupTimer.interval=5;verify(control.requestShow());wait(30);compare(control.state,"failed");compare(focus.count,0);compare(fake.stops,0);
+-        control.started(control.serial);compare(control.state,"failed");control.startupTimer.interval=8000;
++        control.startupTimer.interval=5;requestLaunch();wait(30);compare(control.state,"failed");compare(focus.count,0);compare(fake.stops,0);
++        control.started(control.serial);compare(control.state,"failed");control.startupTimer.interval=12000;

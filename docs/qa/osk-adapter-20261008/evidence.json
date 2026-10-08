@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-08",
+  "sourcePatches": [
+    {
+      "file": "shell/quickshell/services/OskController.qml",
+      "beforeSha256": "28283eb2a9bd1955d6fb3257b7ed59d13ff0b400b1db9d4c7ac5c7eee9b739ca",
+      "afterSha256": "172e03dcd45a914543610f2d5408bdc14be1d0d74cfff7ed7b1584683a391d78"
+    },
+    {
+      "file": "shell/quickshell/services/InputSettings.qml",
+      "beforeSha256": "73f138603b1ab60db18021abf4187f0e9f89f79bc1ec90b400f5f806afbba548",
+      "afterSha256": "dc0044215acb481a423e5d3b67fafa3410ab1491751f351a37d764d99a824b5b"
+    },
+    {
+      "file": "shell/quickshell/components/ControlCentre.qml",
+      "beforeSha256": "60cae7d5ca598ab12df5efd926d435e0ae435bfb94e885660a83ec0f4169ebc7",
+      "afterSha256": "90c528b4665eee4ba3f17312529c56b669733fcd299c2b4c876950a44dc102ce"
+    },
+    {
+      "file": "shell/quickshell/components/NativeInputToolsView.qml",
+      "beforeSha256": "a42fabae8751d485ec358a7ceda314b9ad693ef4411321871307c6c613120492",
+      "afterSha256": "c61860ae330bc77f44eedbf7ac76f12795eae48ee6595c7495724f6bd6d61e25"
+    },
+    {
+      "file": "shell/quickshell/tests/tst_OskController.qml",
+      "beforeSha256": "6dee8802f456165dacf81ba8507d6a3ebc91f4a45df88c0d59a9b78cdf41c61b",
+      "afterSha256": "945a33e5fb54594082100f47875011873ad8fc2b17a322e47cf476ac53d6d4d4"
+    },
+    {
+      "file": "shell/quickshell/tests/fixtures/control-routes.qml",
+      "beforeSha256": "7b3286693ba10bb9baaccea240720eb4f5d14dbbb300b111e576667b51acfa5e",
+      "afterSha256": "1fe0f3a3a1b96d3851c86c5f76ab1776f52968caa47a403601839e7d15f1d25a"
+    }
+  ],
+  "commands": [
+    "python3 scripts/validate-osk.py",
+    "python3 scripts/validate-osk-managed.py",
+    "python3 scripts/validate-native-input-tools.py",
+    "python3 scripts/validate-control-routes.py"
+  ],
+  "automated": "passed isolated fixtures: nine probe tests, twelve provider tests, thirteen controller behaviors plus setup/cleanup; actual adapter controls and disposable native managed-process fixture",
+  "productionConnected": "conditional Start/Show/Hide/confirmed Stop; start confirmation explains shell-session lifetime",
+  "runtimeReference": "provider absent, protocol status unknown; no real provider installed or started",
+  "physicalAcceptance": "pending: real Qt/GTK/XWayland entry, touch, occlusion, application/compositor focus, lock/recovery",
+  "provenRegressions": [
+    "abrupt shell termination did not end disposable child until parent-death guard added",
+    "stub sigwait did not model upstream signal masks; corrected to upstream-like signalfd"
+  ],
+  "diagnostics": "Qt focus/native metadata warnings and existing live stacking warning; not warning-free",
+  "references": [
+    "https://man7.org/linux/man-pages/man2/PR_SET_PDEATHSIG.2const.html",
+    "https://github.com/jjsullivan5196/wvkbd/blob/master/main.c"
+  ]
+}

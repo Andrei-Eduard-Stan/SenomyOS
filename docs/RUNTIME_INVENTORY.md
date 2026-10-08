@@ -1,5 +1,15 @@
 # SenomyOS Runtime Inventory
 
+## OSK source publication observation — 2026-10-08
+
+Conditional managed OSK controls are now connected. Read-only reference probing
+still reports providerInstalled=false and protocolState=unknown because the
+protocol inspection tool is unavailable. No real keyboard was started/installed.
+After warned source publication, Quickshell reports Configuration Loaded and
+remains active/running PID 1373; Hyprland config errors are empty. Existing
+stacking warnings persist. Native lifecycle validation used disposable no-input
+fixture children; real text entry/touch/compositor focus remains unaccepted.
+
 ## Functional publication observation — 2026-10-08
 
 After warned publication of shared keyboard focus changes, Quickshell reports

@@ -33,7 +33,14 @@ TestCase {
         fake.acceptStart=true;fake.acceptShow=true;fake.acceptHide=true;fake.acceptStop=true;
         control.capabilities=candidate();control.refreshState();focus.clear();
     }
-    function start() { verify(control.requestShow());control.started(control.serial); }
+    function requestLaunch() { verify(control.requestShow());compare(control.state,"pending-start");verify(control.confirmStart()); }
+    function start() { requestLaunch();control.started(control.serial); }
+    function test_start_confirmation_cancel_and_capability_change() {
+        verify(!control.confirmStart());verify(control.requestShow());compare(control.state,"pending-start");compare(fake.starts,0);
+        verify(!control.requestShow());verify(control.cancelStart());compare(control.state,"stopped");compare(fake.starts,0);
+        verify(control.requestShow());control.capabilities={providerInstalled:false,protocolState:"unknown",manualCandidate:false,provider:""};
+        verify(!control.confirmStart());compare(fake.starts,0);compare(control.state,"unavailable");
+    }
     function test_unknown_absent_incompatible_and_unallowlisted() {
         for (const caps of [{providerInstalled:false,protocolState:"advertised",manualCandidate:false,provider:""},
             {providerInstalled:true,protocolState:"unknown",manualCandidate:true,provider:"wvkbd-mobintl"},
@@ -44,7 +51,7 @@ TestCase {
         compare(fake.starts,0);compare(focus.count,0);
     }
     function test_start_deduplicates_and_releases_focus_after_owned_start() {
-        compare(control.state,"stopped");verify(control.requestShow());compare(control.state,"starting");
+        compare(control.state,"stopped");requestLaunch();compare(control.state,"starting");
         verify(!control.requestShow());compare(fake.starts,1);compare(focus.count,0);
         control.started(control.serial);compare(control.state,"show-requested");compare(fake.shows,1);compare(focus.count,1);
         compare(fake.commandName,"wvkbd-mobintl");verify(control.message.indexOf("unverified")>=0);
@@ -62,21 +69,21 @@ TestCase {
         fake.owner=0;control.exited(control.serial,true);compare(control.state,"stopped");
     }
     function test_removed_or_failed_launch_is_not_ready() {
-        fake.acceptStart=false;verify(!control.requestShow());compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
+        fake.acceptStart=false;verify(control.requestShow());verify(!control.confirmStart());compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
     }
     function test_child_ownership_required() {
-        verify(control.requestShow());fake.owner=0;control.started(control.serial);compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
+        requestLaunch();fake.owner=0;control.started(control.serial);compare(control.state,"failed");compare(fake.shows,0);compare(focus.count,0);
     }
     function test_show_failure_does_not_release_focus() {
-        fake.acceptShow=false;verify(control.requestShow());control.started(control.serial);compare(control.state,"failed");compare(focus.count,0);
+        fake.acceptShow=false;requestLaunch();control.started(control.serial);compare(control.state,"failed");compare(focus.count,0);
     }
     function test_hide_and_stop_failure_are_truthful() {
         start();fake.acceptHide=false;verify(!control.requestHide());compare(control.state,"failed");
         fake.acceptStop=false;verify(control.requestStop());verify(!control.confirmStop());compare(control.state,"failed");
     }
     function test_stale_callbacks_cannot_control_new_instance() {
-        verify(control.requestShow());const old=control.serial;fake.owner=0;control.failed(old);
-        verify(control.requestShow());const current=control.serial;verify(current>old);
+        requestLaunch();const old=control.serial;fake.owner=0;control.failed(old);
+        requestLaunch();const current=control.serial;verify(current>old);
         control.started(old);control.exited(old,true);control.failed(old);compare(control.state,"starting");compare(fake.shows,0);
         control.started(current);compare(control.state,"show-requested");compare(fake.shows,1);
     }
@@ -90,8 +97,8 @@ TestCase {
         fake.owner=0;control.exited(control.serial,true);compare(control.state,"unavailable");verify(!control.requestShow());
     }
     function test_startup_timeout_has_no_readiness_or_forced_stop() {
-        control.startupTimer.interval=5;verify(control.requestShow());wait(30);compare(control.state,"failed");compare(focus.count,0);compare(fake.stops,0);
-        control.started(control.serial);compare(control.state,"failed");control.startupTimer.interval=8000;
+        control.startupTimer.interval=5;requestLaunch();wait(30);compare(control.state,"failed");compare(focus.count,0);compare(fake.stops,0);
+        control.started(control.serial);compare(control.state,"failed");control.startupTimer.interval=12000;
     }
     function cleanup() { control.startupTimer.stop(); }
 }

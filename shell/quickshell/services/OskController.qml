@@ -3,7 +3,7 @@ import QtQuick
 // Adapter contract: start(name, serial), owns(serial), show(serial), hide(serial),
 // stop(serial). It must address only its own child, return boolean acceptance,
 // and report started/exited/failed asynchronously with the same serial.
-// No production adapter is connected until reload/shutdown ownership is proved.
+// The managed adapter ends with shell reload/exit; the start preview states that.
 QtObject {
     id: root
     required property var provider
@@ -13,6 +13,7 @@ QtObject {
     property int serial: 0
     property bool startPending: false
     readonly property bool owned: serial > 0 && provider && provider.owns(serial)
+    property string requestedProvider: ""
     property string previousState: "stopped"
     signal releasePrimaryFocusRequested()
 
@@ -22,6 +23,12 @@ QtObject {
             && ["wvkbd-mobintl", "wvkbd-deskintl"].indexOf(capabilities.provider) >= 0;
     }
     function refreshState() {
+        if (state === "pending-start") {
+            if (!available() || capabilities.provider !== requestedProvider) {
+                state = "unavailable"; message = "Keyboard capability changed; request again.";
+            }
+            return;
+        }
         if (!owned && !startPending && state !== "failed") {
             state = available() ? "stopped" : "unavailable";
             message = available() ? "Provider candidate detected; no keyboard is running." : "OSK capability is unavailable or unknown.";
@@ -30,7 +37,7 @@ QtObject {
     onCapabilitiesChanged: refreshState()
 
     function requestShow() {
-        if (startPending || (state === "pending-stop" || state === "stop-requested")) return false;
+        if (startPending || (state === "pending-start" || state === "pending-stop" || state === "stop-requested")) return false;
         if (owned) {
             if (!provider.show(serial)) { state = "failed"; message = "OSK show request failed."; return false; }
             state = "show-requested";
@@ -39,6 +46,23 @@ QtObject {
             return true;
         }
         if (!available()) { state = "unavailable"; message = "OSK capability is unavailable or unknown."; return false; }
+        requestedProvider = capabilities.provider;
+        state = "pending-start";
+        message = "Start the keyboard for this shell session? It stays open when this panel closes and ends when the shell reloads or exits.";
+        return true;
+    }
+    function cancelStart() {
+        if (state !== "pending-start") return false;
+        state = available() ? "stopped" : "unavailable";
+        message = "Keyboard start cancelled.";
+        return true;
+    }
+    function confirmStart() {
+        if (state !== "pending-start") return false;
+        if (!available() || capabilities.provider !== requestedProvider) {
+            state = "unavailable"; message = "Keyboard capability changed; request again.";
+            return false;
+        }
         serial++;
         startPending = true;
         state = "starting";
@@ -70,13 +94,13 @@ QtObject {
         message = successful ? "Owned keyboard exited." : "Owned keyboard exited unexpectedly.";
     }
     function requestHide() {
-        if (startPending || (state === "pending-stop" || state === "stop-requested") || !owned) return false;
+        if (startPending || (state === "pending-start" || state === "pending-stop" || state === "stop-requested") || !owned) return false;
         if (!provider.hide(serial)) { state = "failed"; message = "OSK hide request failed."; return false; }
         state = "hide-requested"; message = "Hide requested; surface visibility is unverified.";
         return true;
     }
     function requestStop() {
-        if (startPending || (state === "pending-stop" || state === "stop-requested") || !owned) return false;
+        if (startPending || (state === "pending-start" || state === "pending-stop" || state === "stop-requested") || !owned) return false;
         previousState = state;
         state = "pending-stop";
         message = "Stop the keyboard instance started by SenomyOS?";
@@ -95,7 +119,7 @@ QtObject {
         return true;
     }
     property var startupTimer: Timer {
-        interval: 8000
+        interval: 12000
         onTriggered: {
             root.startPending = false;
             root.state = "failed";
