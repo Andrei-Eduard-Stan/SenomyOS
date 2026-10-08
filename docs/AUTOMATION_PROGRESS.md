@@ -136,7 +136,7 @@ Commits `af9aebc` and `568a875` are not evidence that this roadmap is complete.
 |---|---|---|
 | 1. Physical acceptance | REQUIRES PHYSICAL ACCEPTANCE | Source fixtures and guarded providers exist; every listed item requires attended real-hardware/session acceptance. |
 | 2. Idle and power policy | INCOMPLETE | Hypridle manifests, bounded editable timeouts, and a lock/none lid policy exist. Deployment and behavior acceptance are physical; automatic suspend remains blocked on recovery acceptance. |
-| 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection, complete keyboard/focus coverage, and native Wayland OSK/input-method integration remain source gaps. |
+| 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection and detected Fcitx5 settings handoff exist; complete keyboard/focus coverage and native Wayland OSK integration remain open. |
 | 4. Performance management | INCOMPLETE | Process sorting/details and confirmed ownership-checked SIGTERM exist. Guarded restart, service boundaries, and diagnostic/report parity remain incomplete. |
 | 5. Networking | INCOMPLETE | Native status, bounded scan/refresh, guarded connect/disconnect, and terminal-owned credential entry exist. Saved-profile management, VPN/DNS/proxy, and richer failure feedback remain incomplete. |
 | 6. Applications and desktop integration | INCOMPLETE | Launcher, tray, file-manager, and portal package foundations exist. Defaults, autostart, permission/portal status, and end-to-end peripheral/file integration remain incomplete. |
@@ -172,7 +172,7 @@ No unattended automation may perform these actions.
   keyboard acceptance remains required.
 - [x] Keyboard repeat-rate and repeat-delay settings. Source implementation is complete; physical acceptance remains required.
 - [ ] Focus-order and complete keyboard navigation audit.
-- [ ] On-screen keyboard and input-method support. Optional Fcitx5 handoff exists; native Wayland OSK support remains open.
+- [ ] On-screen keyboard and input-method support. Detected Fcitx5 editor handoff now has mocked backend/UI coverage; engine/session/text-entry acceptance and native Wayland OSK support remain open.
 - [ ] Touch-target and portrait-layout acceptance. Physical acceptance required; source fixes discovered by it remain in scope.
 
 ### 4. Performance management — INCOMPLETE
@@ -276,10 +276,34 @@ No unattended automation may perform these actions.
 - Recoverable integration patches/checksums: docs/qa/confirmation-20261008/.
   Existing uncommitted baseline and visual work remain preserved.
 
+### Durable checkpoint — detected input-method handoff, 2026-10-08
+
+- InputSettings refreshes optional editor/engine capability when its route becomes
+  active. NativeInputToolsView shows independent installed-tool states, disables
+  absent/busy activation and invokes only the fixed Fcitx5 editor handoff.
+- The backend accepts only detect/open-ime with no user arguments; rechecks the
+  executable at launch; returns unavailable/failed/started truthfully. Started
+  means a child process was created, not that IME input works or settings changed.
+- Six mocked Python tests cover absence, editor/engine independence, fixed argv,
+  exec failure, removal after detection and rejected commands. The actual view's
+  fake-provider fixture passes at 340/540px with keyboard activation and absent/
+  busy gating. No real editor was launched. QML lint exits zero with diagnostics.
+- Reference-machine read-only detection reports editorAvailable=false and
+  engineInstalled=false. OSK integration is explicitly open, not inferred from
+  a command being installed. No packages/environment/autostart were changed.
+- Warned source publication reports Configuration Loaded; service active/running
+  PID 1373 unchanged; compositor config errors empty; existing stacking warning
+  persists. No manual application text-entry or touch acceptance was performed.
+- Integration patches/hashes: docs/qa/native-input-20261008/. Fcitx editor reference:
+  https://fcitx-im.org/wiki/Configtool_%28Fcitx_5%29/en . Existing baseline changes
+  remain separate; clean-checkout reproducibility remains open.
+
 ## Exact next stage
 
-Section 3: continue native input-method/OSK capability detection and a safe,
-truthful installed-tool handoff. Existing docs claim an optional Fcitx5 handoff,
-but connected source must establish it. Do not assume installed tools, compositor
-protocol support or touch acceptance. Full accessibility/physical acceptance and
-later roadmap domains remain open. Use isolated staging and fake providers.
+Section 3: establish a native-Wayland on-screen keyboard provider contract from
+primary documentation and installed compositor capabilities. Define explicit
+show/hide and safe lifecycle controls, unavailable/error states, focus/occlusion
+behavior and fake-provider tests before publication. Do not install or start an
+unvalidated provider or claim touchscreen/text-entry acceptance. IME session and
+physical accessibility acceptance remain open; continue later functional domains
+only with those gaps recorded. Visual redesign/update installation stay excluded.

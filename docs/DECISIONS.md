@@ -1,5 +1,13 @@
 # SenomyOS Decision Log
 
+## D167 — Optional input tools report installation separately from integration (2026-10-08)
+
+Fcitx5 editor and engine detection are separate capabilities. Opening settings
+uses a fixed argv and reports process creation, never completed input-method
+setup. Missing tools remain disabled. OSK stays explicitly unintegrated until a
+provider/lifecycle/compositor contract and physical acceptance exist. No package,
+environment or autostart mutation is implied by the native settings handoff.
+
 ## D166 — Safe focus extends to existing confirmation families (2026-10-08)
 
 Bluetooth shares the existing network review interface. Notification clear and

@@ -1,0 +1,4 @@
+--- a/shell/quickshell/components/ControlCentre.qml
++++ b/shell/quickshell/components/ControlCentre.qml
+@@ -588,0 +589 @@
++                NativeInputToolsView { width: parent.width; settings: root.inputSettings }
