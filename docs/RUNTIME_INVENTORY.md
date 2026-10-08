@@ -1,5 +1,12 @@
 ## Observation — Network profile source publication, 2026-10-08
 
+## 2026-10-08 — user-reported OSK typing
+
+User reports wvkbd-mobintl opened, typed and closed successfully in the reference
+session. This is reported evidence, not independently observed mobile/touch,
+rotation, focus/occlusion, lock or recovery acceptance. No OSK/theme changes made.
+
+
 ## 2026-10-08 — final bounded source regression
 
 Warned final source publication loaded 14:26:07; Quickshell remains active/running

@@ -10,7 +10,7 @@ are in qa/final-regression-20261008/validation.json and dated stage evidence.
 |---|---|---|
 | Session and power | Exclusive surfaces, screen-owner reconciliation, confirmation Cancel focus, editable idle/lid policy and recovery gates | Hypridle absent/unloaded; attended fresh login, real lock/DPMS, suspend/resume and fallback. Automatic suspend blocked until recovery passes. |
 | Devices/displays/audio | Capability inventory, finite keyboard navigation, reviewed device/routing/display controls | Real docking/scaling/rollback, touchpad/touchscreen, pairing and audio routes. No universal hardware claim. |
-| Input/accessibility | Persistent keyboard/repeat/pointer controls, first-run review, focus scrolling, detected Fcitx5 handoff and managed manual OSK | Fcitx5 absent; engine/session integration unresolved until installed and tested. Local wvkbd/protocol probe installed, no real launch/text entry yet. Touch/portrait/occlusion/lock-focus and full accessibility audit remain. |
+| Input/accessibility | Persistent keyboard/repeat/pointer controls, first-run review, focus scrolling, detected Fcitx5 handoff and managed manual OSK | Fcitx5 absent; engine/session integration unresolved until installed and tested. Local wvkbd/protocol probe installed; user reports successful real typing and open/close on the reference session. Touch/portrait/occlusion/lock-focus and full accessibility audit remain. |
 | Networking | Secret-free profiles, reviewed disconnect/delete/autoconnect with snapshot checks; native VPN/DNS/PAC-proxy handoffs; observed failure/timeout states | Real scanning and secure terminal credential flow, editor saving, VPN plugins/connectivity and DNS/PAC application behavior. Link connection is separate from Internet access. |
 | Applications | Six Gio registered default roles; reviewed preserved autostart overrides, user backups/protected identities, future-login framework link | Real file/link association opening and fresh-login startup. Current live future hook remains unconfigured; no defaults/autostarts were mutated. |
 | Desktop integration | Read-only portal services/interfaces and unavailable providers; existing launcher/file workspace handoffs | File chooser/open URI, removable mounts, archives/shares, permission prompts, camera/screenshot/screencast in real apps. Advertised interfaces are not accepted journeys; Flatpak absent. |
@@ -22,6 +22,13 @@ route tests; mutations are private/fake, and process lifecycle tests own disposa
 stubs. Native service remains active after warned source loads, PID1373 unchanged,
 Hyprland configuration errors empty; existing QML warnings remain. Passing these
 checks does not remove the last column.
+
+## User-reported reference-session evidence
+
+2026-10-08: the user reports that the installed OSK opened, typed and closed
+successfully. This updates the earlier no-real-launch checkpoint; it is reported
+acceptance on the reference session, not an independently observed touch/mobile,
+rotation, automatic-focus, occlusion, lock or recovery test. Those remain open.
 
 ## Next execution boundary
 

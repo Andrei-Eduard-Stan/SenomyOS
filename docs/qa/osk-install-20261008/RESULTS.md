@@ -18,3 +18,10 @@ recovery acceptance remain open. Reopen Input to refresh the tool capability.
 
 Sources: https://github.com/jjsullivan5196/wvkbd
 https://archive.archlinux.org/packages/w/wayland-utils/
+
+## Subsequent user-reported acceptance — 2026-10-08
+
+The user reports successful typing and opening/closing the installed keyboard.
+The original installation probe did not launch it; this later real-session report
+closes that specific reference-session evidence gap. Phone/tablet touch, rotation,
+automatic focus, occlusion, lock and recovery are not accepted by this report.
