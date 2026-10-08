@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 repo=Path(__file__).resolve().parents[1]
 script=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else repo/'scripts/performance-report.sh'
 with tempfile.TemporaryDirectory(prefix='senomy-reports-') as directory:
@@ -31,7 +32,13 @@ with tempfile.TemporaryDirectory(prefix='senomy-reports-') as directory:
     env['SENOMY_REPORT_TIMEOUT']='1'
     payload=json.loads(run('generate-json').stdout)
     assert 'failed or timed out' in Path(payload['data']['latest']['path']).read_text()
-    outside=root/'private.txt';outside.write_text('never expose fixture secret')
+    # Escalation is restricted to the timeout-owned fixture subprocess group.
+    (commands/'systemctl').write_text('#!/usr/bin/env bash\ntrap "" TERM\n/bin/sleep 30\n')
+    started=time.monotonic()
+    payload=json.loads(run('generate-json').stdout)
+    assert time.monotonic()-started < 12, 'TERM-ignoring collector exceeded forced deadline'
+    assert 'failed or timed out' in Path(payload['data']['latest']['path']).read_text()
+    outside=root/'private.txt' ;outside.write_text('never expose fixture secret')
     latest=reports/'latest.json';saved=json.loads(latest.read_text())
     for mutate in ['outside','malformed','symlink','permissions','missing']:
         latest.write_text(json.dumps(saved));latest.chmod(0o600)

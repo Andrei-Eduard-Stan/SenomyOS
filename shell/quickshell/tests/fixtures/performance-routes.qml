@@ -8,6 +8,8 @@ Window {
     id: test
     visible:true; width:1580; height:820
     property int mutations:0
+    property var stateProvider:state
+    property var performanceProvider:performance
     TestCase { id: input; when:false }
     QtObject {
         id: state
@@ -32,10 +34,10 @@ Window {
     }
     QtObject {
         id: performance
-        property bool active:true
-        property bool benchmarkPageActive:false
-        property bool processPageActive:false
-        property string actionContext:""
+        property bool active:state.activePrimary === "performance"
+        property bool benchmarkPageActive:active && state.performanceSection === "benchmarks"
+        property bool processPageActive:active && state.performanceSection === "processes"
+        property string actionContext:active ? "performance:" + state.performanceSection + ":" + state.primaryScreen : ""
         property var managedServices:services
         property string error:""
         property var details:({})
@@ -72,11 +74,27 @@ Window {
         metrics:({cpuPercent:10,memoryPercent:20,uptimeLabel:"Fixture",networkRxKib:1,networkTxKib:2})
         battery:({label:"Fixture",detail:"Fixture"});network:({label:"Fixture",detail:"Fixture"})
     }
+    Component {
+        id: otherOutput
+        PerformanceDashboard {
+            targetScreen:({name:"second-fixture"});state:test.stateProvider;performance:test.performanceProvider
+            metrics:panel.metrics;battery:panel.battery;network:panel.network
+            visible:false
+        }
+    }
     function check(ok,message) { if(!ok) {console.error("FAIL: "+message);Qt.exit(1);throw new Error(message);} }
     function inside(item,parent) {while(item){if(item===parent)return true;item=item.parent;}return false;}
     Timer {
         interval:400;running:true
         onTriggered: {
+            state.performanceSection="processes";
+            const other=otherOutput.createObject(test);input.wait(30);
+            test.check(performance.processPageActive && performance.actionContext === "performance:processes:fixture", "inactive output cannot overwrite shared context");
+            other.destroy();input.wait(30);
+            test.check(performance.processPageActive && performance.actionContext === "performance:processes:fixture", "output destruction cannot clear shared context");
+            state.primaryScreen="second-fixture";state.performanceSection="benchmarks";input.wait(20);
+            test.check(performance.benchmarkPageActive && !performance.processPageActive && performance.actionContext === "performance:benchmarks:second-fixture", "route/output context follows global state");
+            state.primaryScreen="fixture";state.performanceSection="overview";
             for(const size of [{w:1580,h:820},{w:900,h:600}]) {
                 test.width=size.w;test.height=size.h;input.wait(40);
                 for(const section of panel.sections) {

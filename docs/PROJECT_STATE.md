@@ -41,18 +41,24 @@ historical automation scope restrictions are historical, not replacement goals.
 
 ## Completion boundaries
 
-The native Rail, ten Control routes, seven Performance routes, eight Insights
+The native Rail, ten Control routes, eleven Performance routes, eight Insights
 routes, flyouts, independent companion, service graph and generated appearance
 foundation exist. Current read-only audio, two battery packs, Bluetooth and
 notification metadata respond. Historical protocol, virtual-output and fixture
 records provide useful dated evidence, not current physical sign-off.
 
-Still open: complete keyboard/accessibility audit; physical provider and
-multi-output acceptance; fresh login, lock, suspend and fallback recovery;
-saved-network/VPN/DNS/proxy settings; physical managed-service restart and
-diagnostic/report acceptance; defaults/autostart/portal journeys; update installation; licensing and
-current resource measurements; versioned artifacts/migrations; clean-VM/boot
-acceptance, installer/recovery media and hardware matrix.
+Source checks now cover populated keyboard routes, managed audio-service restart,
+saved-profile actions/native network editor handoffs, registered defaults/preserved
+autostart, portal evidence and shared verified Insights diagnostics/reports. The
+final combined 2026-10-08 run passed 12 suites plus 6 screen-lifecycle cases; see
+[FUNCTIONAL_ACCEPTANCE_2026-10-08.md](FUNCTIONAL_ACCEPTANCE_2026-10-08.md).
+
+Still open: full accessibility/physical input and multi-output acceptance; fresh
+login, real OSK typing, IME prerequisite installation, idle-policy deployment,
+lock/suspend/fallback recovery; real network credentials/editor/plugin acceptance;
+real process/service actions, file/portal/permission journeys; update installation;
+licensing/resource measurements, versioned artifacts/migrations, clean VM/boot,
+installer/recovery media and the hardware matrix.
 
 Automatic suspend and boot-theme activation remain blocked on their respective
 recovery/boot acceptance gates. Bespoke artwork and unresolved visual direction
@@ -101,5 +107,6 @@ restart, package installation or live compositor edit belongs to this stage.
 Reports now have backend/controller/actual-view fixtures. Insights preserves eight
 routes with queued queries, route status/timestamps and verified JSON outcomes.
 Reports bound and redact collection and reject invalid private manifests/paths.
-See AUTOMATION_PROGRESS for next Network/Application stages. This is source and
+Network profile, desktop defaults/autostart and portal source stages now pass; see
+FUNCTIONAL_ACCEPTANCE_2026-10-08.md for the attended next stage. This is source and
 isolated validation evidence; physical/native-provider acceptance remains open.

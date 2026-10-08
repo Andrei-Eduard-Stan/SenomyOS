@@ -1,5 +1,14 @@
 ## D175 — Profile controls and native advanced settings remain separate (2026-10-08)
 
+## 2026-10-08 — one Performance owner and forced collector deadlines
+
+Per-output Dashboard presentation must not own shared Performance route/action
+state; shell.qml owns it once. Read-only report collectors use a forced deadline
+on their own process group, preventing TERM-ignoring descendants holding output
+pipes after a wrapper exits. Automatic/physical acceptance gates remain open.
+See qa/final-regression-20261008/RESULTS.md and the functional acceptance ledger.
+
+
 ## 2026-10-08 — registered desktop preferences and portal evidence
 
 Use Gio registered handlers and reviewed, preserved XDG autostart overrides.

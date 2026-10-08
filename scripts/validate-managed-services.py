@@ -10,6 +10,15 @@ import tempfile
 import importlib.util
 repo=Path(__file__).resolve().parents[1]
 shell=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else repo/'shell/quickshell'
+# The actual global owner and fixture must share the route expressions; per-output
+# presentation may not bind or clear provider state.
+owner=(shell/'shell.qml').read_text()
+view=(shell/'components/PerformanceDashboard.qml').read_text()
+for expression in ['processPageActive: active && shellState.performanceSection === "processes"',
+                   'benchmarkPageActive: active && shellState.performanceSection === "benchmarks"',
+                   'actionContext: active ? "performance:" + shellState.performanceSection + ":" + shellState.primaryScreen : ""']:
+    assert owner.count(expression)==1, 'Performance global route owner missing or duplicated'
+assert not re.search(r'property: "(?:actionContext|benchmarkPageActive|processPageActive)"|root\.performance\.(?:actionContext|benchmarkPageActive|processPageActive)\s*=',view), 'Per-output view may not own shared provider state'
 spec=importlib.util.spec_from_file_location('routes',repo/'scripts/validate-control-routes.py')
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 subprocess.run([sys.executable,str(shell/'tests/test_managed_services.py')],check=True)

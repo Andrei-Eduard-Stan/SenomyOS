@@ -3,6 +3,7 @@ import QtQuick.Window
 import QtTest
 import Quickshell
 import "components"
+import "services"
 
 Window {
     id: test
@@ -60,6 +61,18 @@ Window {
     }
 
     property var sessionProvider: ({available:false,busy:false,configured:false,activationRequired:false,displayOffSeconds:600,lockSeconds:300,lidAction:"lock",lidAvailable:false,message:"",error:"",apply:function(){test.mutations++;}})
+    QtObject{id:runner;property bool running:false;function exec(args){test.mutations++;}}
+    DesktopPreferenceActions{id:reviews;runner:runner;helper:"fixture.py";active:true;context:"apps:fixture";defaults:settings.defaults;autostart:settings.autostart;apps:settings.apps;deployment:settings.deployment}
+    QtObject {
+        id:settings;property bool available:true;property bool loading:false;property string error:"";property string capabilityError:"";property string message:"Fixture desktop registry"
+        property var actions:reviews
+        property var defaults:Array.from({length:6},(_,i)=>({mime:i===0?"text/plain":"type/"+i,label:"Role "+i,current:"one.desktop",currentName:"Fixture One",options:[{id:"one.desktop",name:"Fixture One"},{id:"two.desktop",name:"Fixture Two"}],token:"role-token"}))
+        property var apps:[{id:"two.desktop",name:"Fixture Two",token:"app-token",autostartAllowed:true}]
+        property var autostart:Array.from({length:24},(_,i)=>({id:"entry-"+i+".desktop",name:"Autostart "+i,enabled:true,eligible:true,protected:i===0,source:"user",token:"entry-token"}))
+        property var deployment:({supported:true,enabled:false,token:"deployment-token",message:"Future login required"})
+        property var capabilities:({services:[{unit:"fixture-portal.service",available:true,state:"active"}],portal:{state:"advertised",message:"Not physical acceptance",features:[{name:"ScreenCast",advertised:true}]},flatpakAvailable:false,permissionPolicy:"Fixture native permission dialogs",journeys:"Fixture journeys"})
+        function refresh(){test.mutations++;}
+    }
     ControlCentre {
         id: panel
         anchors.fill: parent
@@ -74,6 +87,7 @@ Window {
         notifications: ({dnd:false,serverEnabled:false,setDnd:function(){test.mutations++;}})
         senomy: ({message:"Fixture",state:"nominal"})
         inputSettings: inputProvider
+        desktopSettings: settings
         sessionPolicy: test.sessionProvider
         deviceInventory: ({snapshot:{},loading:false,error:"Fixture unavailable",displays:[],displayActions:actions})
     }

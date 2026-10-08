@@ -1,5 +1,14 @@
 ## Observation — Network profile source publication, 2026-10-08
 
+## 2026-10-08 — final bounded source regression
+
+Warned final source publication loaded 14:26:07; Quickshell remains active/running
+PID1373 and Hyprland errors empty. Existing stackAfter warning remains. All 12
+combined fixture suites plus 6 screen-lifecycle Qt cases pass; whole-tree git
+whitespace and report Bash syntax pass. No real device/session/action mutation.
+Physical acceptance and absent Hypridle/Fcitx5 prerequisites remain unresolved.
+
+
 ## 2026-10-08 — desktop integration checkpoint
 
 Read-only registry reports 6 roles, 56 startup candidates and 4 protected system

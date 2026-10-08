@@ -44,8 +44,8 @@ Continuation rules:
 | Displays/devices | §1; Settings Capabilities | Source guards exist; physical docking, rollback, pairing and routing acceptance |
 | Keyboard/accessibility | §3 | Section focus/navigation, full route/control reachability, input-method/OSK path |
 | Networking | §5 | Saved-profile management, VPN/DNS/proxy handoffs, failure feedback, provider acceptance |
-| Applications | §6 | Default applications and autostart management with validated native boundaries |
-| Desktop integration | §6 | Portal status and native peripheral/file/screencast journeys |
+| Applications | §6 | Registered defaults and reviewed autostart source pass; real opening/future login acceptance |
+| Desktop integration | §6 | Read-only portal status source passes; native peripheral/file/permission/screencast journeys remain attended |
 | Performance management | §4 | Managed restart boundary, diagnostics/report coverage, accepted process flow |
 | Senomy Insights | Product Spec; native route contract | Complete briefing/timeline/diagnostic/console/report/wiki contracts and truthful freshness; notification acceptance |
 
@@ -136,10 +136,10 @@ Commits `af9aebc` and `568a875` are not evidence that this roadmap is complete.
 |---|---|---|
 | 1. Physical acceptance | REQUIRES PHYSICAL ACCEPTANCE | Source fixtures and guarded providers exist; every listed item requires attended real-hardware/session acceptance. |
 | 2. Idle and power policy | INCOMPLETE | Hypridle manifests, bounded editable timeouts, and a lock/none lid policy exist. Deployment and behavior acceptance are physical; automatic suspend remains blocked on recovery acceptance. |
-| 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection and detected Fcitx5 settings handoff exist; conditional manual OSK controls are connected. Populated-control focus coverage and physical IME/OSK/touch acceptance remain open. |
+| 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection and detected Fcitx5 settings handoff exist; conditional manual OSK controls are connected. Populated-control route fixtures pass; full accessibility and physical IME/OSK/touch acceptance remain open. |
 | 4. Performance management | INCOMPLETE | Process sorting/details and confirmed ownership-checked SIGTERM exist. Allowlisted user-service restart and shared diagnostic/console/report views now have source and fixture coverage; real action/provider acceptance remains open. |
 | 5. Networking | INCOMPLETE | Native status, bounded scan/refresh, guarded connect/disconnect, and terminal-owned credential entry exist. Saved-profile inventory/reviewed actions, detected native VPN/DNS/PAC-proxy handoffs and connection-failure observation now have source/fixture coverage; physical/editor/plugin acceptance remains open. |
-| 6. Applications and desktop integration | INCOMPLETE | Launcher, tray, file-manager, and portal package foundations exist. Defaults, autostart, permission/portal status, and end-to-end peripheral/file integration remain incomplete. |
+| 6. Applications and desktop integration | INCOMPLETE | Launcher, tray, file-manager, and portal package foundations exist. Registered defaults, reviewed preserved autostart and normalized read-only portal status now pass source fixtures. Real file/peripheral/permission/screencast and fresh-login acceptance remain open. |
 | 7. Updates | INCOMPLETE | Insights update support is discovery-only. Reviewed installation and complete progress/failure/reboot/rollback/recovery flows remain incomplete. |
 | 8. Release engineering | INCOMPLETE | Bootstrap/manifests and deployment receipts exist. Versioned packages, migrations, VM/boot evidence, bootable media, and a hardware matrix remain incomplete. |
 | 9. Quality and release evidence | INCOMPLETE | Some responsive fixtures and targeted checks exist. Full audits/measurements/licensing, QML diagnostic resolution, and reviewable working-tree organization remain incomplete. |
@@ -191,9 +191,9 @@ No unattended automation may perform these actions.
 
 ### 6. Applications and desktop integration — INCOMPLETE
 
-- [ ] Default applications.
-- [ ] Autostart management.
-- [ ] Permissions and portal status.
+- [x] Registered default application source for six supported roles; metadata/context review and observed registry result. Real opening remains acceptance.
+- [x] Reviewed preserved XDG autostart preferences, backups and protected entries; future-login framework link without live activation. Fresh-login acceptance remains open.
+- [x] Read-only portal service/interface status and permission policy; advertised capability never claims permission/provider acceptance.
 - [ ] Removable media, mounts, archives, shares, screencasting, and file-association acceptance.
 
 ### 7. Updates — INCOMPLETE
@@ -437,9 +437,27 @@ No unattended automation may perform these actions.
   unchanged live PID after publication recorded in docs/qa/desktop-settings-20261008/.
 - Real defaults opening, fresh login/autostart and portal journeys remain open.
 
+### Durable checkpoint — final combined regression, 2026-10-08
+
+- Performance state now has one global owner; peer-output creation/destruction
+  cannot overwrite action context. Service polling limited to relevant routes.
+- Read-only report collector groups have forced deadlines, including a child that
+  ignores TERM; the initial grace approach failed and was replaced before final
+  validation. Report executable mode retained. Whole working-tree whitespace and
+  Bash syntax pass; populated desktop views included in actual Control routes.
+- All 12 combined validation suites plus 6 screen-lifecycle cases pass. No live
+  action mutation. Warned final source load 14:26:07, active PID1373 unchanged,
+  compositor errors empty. Existing QML warnings remain. Evidence under
+  docs/qa/final-regression-20261008/; acceptance ledger in
+  docs/FUNCTIONAL_ACCEPTANCE_2026-10-08.md.
+
 ## Exact next stage
 
-Final cross-surface regression through Insights. Fix discovered per-monitor
-Performance action-context ownership and collector forced-deadline behavior,
-then run the combined functional fixtures and publish a source/manual acceptance
-ledger. No visual redesign, update installation or release-engineering expansion.
+The bounded autonomous source pass through Insights is checkpointed. Remaining
+scope items are attended acceptance and missing deployment prerequisites, not
+completed OS claims. Begin with real manual OSK text entry and attended idle-policy
+installation/deployment, then fresh login and lock/recovery acceptance before any
+automatic suspend. The full acceptance ledger names each remaining journey.
+Do not run these session/device actions unattended or expand into visual redesign,
+update installation or release engineering. Preserve dated source checks and the
+large dirty baseline; no clean-checkout/release claim, schedule or push is implied.

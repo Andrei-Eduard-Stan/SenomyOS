@@ -1,0 +1,14 @@
+{
+  "shell/quickshell/components/PerformanceDashboard.qml": {
+    "before": "932558a7f2859684cf0bea58c574553e552ea70bf92104b0df7e25858ca6613e",
+    "after": "09c4f82f146e7d05e47ce23f6a6bb59d17abc095118f47c20d76ed61cf556d7f"
+  },
+  "shell/quickshell/services/PerformanceService.qml": {
+    "before": "04137fdb7adb635bfb342b154cf4ceac98f23c45aea7fd8db899e41ba48b8d5a",
+    "after": "16a77e029ae4427626cf736626786d148bd6f687f00c07f2752d02719d80b46e"
+  },
+  "shell/quickshell/shell.qml": {
+    "before": "a41cf9573d927ec6aede75c4f175a67783471d44d0be2834db196b106fe9c3b7",
+    "after": "036867433f48099c22ede6ffea823435aa0b7b299e3677fa94b79059fe3011e4"
+  }
+}

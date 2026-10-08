@@ -1,0 +1,24 @@
+--- a/shell/quickshell/components/PerformanceDashboard.qml
++++ b/shell/quickshell/components/PerformanceDashboard.qml
+@@ -55,21 +54,0 @@
+-    }
+-
+-    Binding {
+-        target: root.performance
+-        property: "benchmarkPageActive"
+-        value: root.requestedOpen && root.state.performanceSection === "benchmarks"
+-    }
+-    Binding {
+-        target: root.performance
+-        property: "processPageActive"
+-        value: root.requestedOpen && root.state.performanceSection === "processes"
+-    }
+-    Binding {
+-        target: root.performance
+-        property: "actionContext"
+-        value: root.requestedOpen ? "performance:" + root.state.performanceSection + ":" + root.state.primaryScreen : ""
+-    }
+-    Component.onDestruction: {
+-        root.performance.actionContext = "";
+-        root.performance.benchmarkPageActive = false;
+-        root.performance.processPageActive = false;

@@ -109,7 +109,9 @@ generate() {
   {
     printf 'SENOMYOS EVIDENCE REPORT\nID: %s\nPROFILE: %s\nGENERATED: %s\nHOST: %s\nKERNEL: %s\nPOLICY: local-only, mode-0600, fixed read-only collectors, no unrestricted logs\n' "$id" "$label" "$(date --iso-8601=seconds)" "$(uname -n)" "$(uname -r)"
     while IFS= read -r section; do
-      timeout "$COLLECTOR_TIMEOUT" bash -c 'collect_section "$1"' _ "$section" || printf 'COLLECTOR WARNING: %s failed or timed out\n' "$section"
+      # Read-only collectors own this process group; kill the whole group at the
+      # deadline so an early shell exit cannot leave a TERM-ignoring pipe holder.
+      timeout --signal=KILL "$COLLECTOR_TIMEOUT" bash -c 'collect_section "$1"' _ "$section" || printf 'COLLECTOR WARNING: %s failed or timed out\n' "$section"
     done < <(profile_sections "$PROFILE")
   } | jq -Rr --arg home "$HOME_DIR" '
     gsub($home; "$HOME") | gsub("[[:cntrl:]]"; " ") |
