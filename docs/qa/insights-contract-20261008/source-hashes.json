@@ -1,0 +1,62 @@
+{
+  "shell/quickshell/services/InsightsRequests.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "44eb3e8465c53538dc0e2047d21e16dd143c2b00530adddcdfcae836f298da98"
+  },
+  "shell/quickshell/components/InsightsStatus.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "80eb1c2bc0cdc2b6f936e3fe9193ef2138e02a6bc06d7e5910af365a4f300097"
+  },
+  "shell/quickshell/components/InsightsTaskView.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "fd985685d72773307d0870809aa09a64245b6d7ee856381bbfcad55783bddb09"
+  },
+  "shell/quickshell/components/InsightsReportsView.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "ea5735fee46d57e94a7fa3db7d6664817c9e03677b3795ac5000495a429dfa01"
+  },
+  "shell/quickshell/tests/tst_InsightsRequests.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "d7e2caabeb612d9c19a930ae31df949fa7f00765af6e5b947380c170e345f2c5"
+  },
+  "shell/quickshell/tests/fixtures/insights-routes.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "e923984a47cfae6c25dd5b077a1508ae5db38413381c8cc6655f86c4a911d802"
+  },
+  "shell/quickshell/tests/fixtures/performance-shared-insights.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "14073e264e5eaf404ddce1c4d63afba542870b8861a1f58ac77c316b8523c097"
+  },
+  "shell/quickshell/insights-service-test.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "195a1a1cfaded3af3d893753389f7f8f80d59f74a48d759e6022c3a71c3041b4"
+  },
+  "shell/quickshell/services/InsightsService.qml": {
+    "before": "e4b8f6d96bed4b16de254b5a59404c28e9b0bb53041df1391bf5a244df77e1c9",
+    "after": "8f710fe4f79d6f7cabfbcd788f59f14f8cf0068d0376f9bdc109083cbeabb065"
+  },
+  "shell/quickshell/components/PrimarySurfaceWindow.qml": {
+    "before": "0ff59db11ada5ef7cde975dc7ddbe3dae543c48197e53bf90384e145822ca85a",
+    "after": "9559571b0d628a5c042cba4d7d9bf551ddedba55ebb4cbd839dad2a0e7582557"
+  },
+  "shell/quickshell/components/InsightsPanel.qml": {
+    "before": "faf8021b979c4f3e15df02a7d17821a3b9b405b13b8a74f626c16da353b63408",
+    "after": "3b3b8132b4ff42a8d6d12b40f7d1f426c670722616ba76f8cecba71ebf178f08"
+  },
+  "shell/quickshell/components/PerformanceDashboard.qml": {
+    "before": "371e7719d3aaf0891efd6f5c6481219d9569b90594066a8d5e1f4911c3bad958",
+    "after": "932558a7f2859684cf0bea58c574553e552ea70bf92104b0df7e25858ca6613e"
+  },
+  "shell/quickshell/components/RailWindow.qml": {
+    "before": "0b5ba5af48ee98621285f024f1976fc09505c8371e1deb35e9a34ef44c444d0e",
+    "after": "98b3414340e23982589aefa992a04e87c00e64ef11d19ce003fadffb3c9e9f36"
+  },
+  "shell/quickshell/shell.qml": {
+    "before": "6b64f0c2955f7b01764d6f68f20b0368eba960573ae84c7008e1a788e08cc98a",
+    "after": "2596e5f9298e7895ecb5e1894fa591c65f51624947693ee2dd2efccd8b8e95ac"
+  },
+  "scripts/performance-report.sh": {
+    "before": "2aa141f01193b002d8faadee1494b73c9e2ff184204d5ca9a24ad47fcecde66e",
+    "after": "e74dda231d1fbb0542b0cfc25610707233de68a9bd8d98f0f768ecfccf29952c"
+  }
+}

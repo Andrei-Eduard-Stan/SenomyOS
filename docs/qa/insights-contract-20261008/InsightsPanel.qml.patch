@@ -1,0 +1,182 @@
+--- a/shell/quickshell/components/InsightsPanel.qml
++++ b/shell/quickshell/components/InsightsPanel.qml
+@@ -43 +43 @@
+-        return insights.payloads[route] || ({ok: true, data: {}});
++        return insights.payloads[route] || ({ok: false, data: {}, error:{message:"No collected data yet."}});
+@@ -64 +64,2 @@
+-            {label: "KNOWN UPDATES", value: String(data("briefing").known_total_count || 0)},
++            {label: "KNOWN UPDATES", value: payload("briefing").ok && data("briefing").successful_source_count > 0
++                ? String(data("briefing").known_total_count) : "Not checked or unavailable"},
+@@ -69,0 +71 @@
++    InsightsStatus { id: routeStatus; width: parent.width; insights: root.insights; route: root.state.insightsSection; visible: root.state.insightsSection !== "notifications" }
+@@ -71 +73 @@
+-        anchors.fill: parent
++        anchors { left:parent.left;right:parent.right;top:routeStatus.visible?routeStatus.bottom:parent.top;bottom:parent.bottom;topMargin:routeStatus.visible?10:0 }
+@@ -88 +90 @@
+-        Flickable {
++        FocusScrollArea {
+@@ -252 +254,2 @@
+-            ListView {
++            FocusDeviceList {
++                id: notificationList
+@@ -261 +264 @@
+-                    width: ListView.view.width
++                    width: notificationList.width
+@@ -289 +292,2 @@
+-            ListView {
++            FocusDeviceList {
++                id: timelineList
+@@ -298 +302 @@
+-                    width: ListView.view.width
++                    width: timelineList.width
+@@ -315,2 +319,2 @@
+-                SurfaceCard { width: (parent.width - 10) / 2; title: "OFFICIAL"; value: (root.data("updates").official || {}).state_label || "NOT CHECKED"; detail: String((root.data("updates").official || {}).count || 0) + " package(s)" }
+-                SurfaceCard { width: (parent.width - 10) / 2; title: "AUR"; value: (root.data("updates").aur || {}).state_label || "NOT CHECKED"; detail: String((root.data("updates").aur || {}).count || 0) + " package(s)" }
++                SurfaceCard { width: (parent.width - 10) / 2; title: "OFFICIAL"; value: (root.data("updates").official || {}).state_label || "NOT CHECKED"; detail: String((root.data("updates").official || {}).count || 0) + " package(s) · " + ((root.data("updates").official || {}).freshness || "unknown") + " · " + ((root.data("updates").official || {}).checked_at_label || "NEVER") }
++                SurfaceCard { width: (parent.width - 10) / 2; title: "AUR"; value: (root.data("updates").aur || {}).state_label || "NOT CHECKED"; detail: String((root.data("updates").aur || {}).count || 0) + " package(s) · " + ((root.data("updates").aur || {}).freshness || "unknown") + " · " + ((root.data("updates").aur || {}).checked_at_label || "NEVER") }
+@@ -325 +329,2 @@
+-            ListView {
++            FocusDeviceList {
++                id: updatesList
+@@ -334 +339 @@
+-                    width: ListView.view.width
++                    width: updatesList.width
+@@ -342,125 +347,3 @@
+-    Component {
+-        id: diagnosticsPage
+-        Column {
+-            spacing: 10
+-            Text { text: "ALLOWLISTED READ-ONLY DIAGNOSTICS"; color: Config.Theme.accent; font.family: Config.Theme.fontFamily; font.pixelSize: 9; font.weight: Font.DemiBold }
+-            Flow {
+-                width: parent.width
+-                spacing: 7
+-                Repeater {
+-                    model: root.insights.tasksFor("diagnostics")
+-                    delegate: SurfaceButton {
+-                        required property var modelData
+-                        width: 190
+-                        text: modelData.code + " // " + modelData.title
+-                        detail: modelData.summary
+-                        enabled: root.insights.actionState !== "running"
+-                        onClicked: root.insights.runTask("diagnostics", modelData.id)
+-                    }
+-                }
+-            }
+-            Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
+-            Text { text: ((root.data("diagnosticsResult").title || "Awaiting task")).toUpperCase(); color: Config.Theme.foreground; font.family: Config.Theme.fontFamily; font.pixelSize: 12; font.weight: Font.DemiBold }
+-            ListView {
+-                width: parent.width
+-                height: Math.max(120, parent.height - 340)
+-                clip: true
+-                boundsBehavior: Flickable.StopAtBounds
+-                model: root.data("diagnosticsResult").output || []
+-                delegate: Text {
+-                    required property var modelData
+-                    width: ListView.view.width
+-                    text: typeof modelData === "string" ? modelData : modelData.text || JSON.stringify(modelData)
+-                    color: Config.Theme.muted
+-                    font.family: Config.Theme.fontFamily
+-                    font.pixelSize: 8
+-                    wrapMode: Text.WrapAnywhere
+-                }
+-            }
+-        }
+-    }
+-
+-    Component {
+-        id: consolePage
+-        Column {
+-            spacing: 10
+-            Text { text: "CURATED CONSOLE // NO ARBITRARY COMMAND ENTRY"; color: Config.Theme.accent; font.family: Config.Theme.fontFamily; font.pixelSize: 9; font.weight: Font.DemiBold }
+-            Flow {
+-                width: parent.width
+-                spacing: 7
+-                Repeater {
+-                    model: root.insights.tasksFor("console")
+-                    delegate: SurfaceButton {
+-                        required property var modelData
+-                        width: 176
+-                        text: modelData.code + " // " + modelData.title
+-                        detail: modelData.summary
+-                        enabled: root.insights.actionState !== "running"
+-                        onClicked: root.insights.runTask("console", modelData.id)
+-                    }
+-                }
+-            }
+-            Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
+-            Text { text: ((root.data("consoleResult").title || "Console standing by")).toUpperCase(); color: Config.Theme.foreground; font.family: Config.Theme.fontFamily; font.pixelSize: 12; font.weight: Font.DemiBold }
+-            ListView {
+-                width: parent.width
+-                height: Math.max(120, parent.height - 390)
+-                clip: true
+-                boundsBehavior: Flickable.StopAtBounds
+-                model: root.data("consoleResult").output || []
+-                delegate: Text {
+-                    required property var modelData
+-                    width: ListView.view.width
+-                    text: typeof modelData === "string" ? modelData : modelData.text || JSON.stringify(modelData)
+-                    color: Config.Theme.muted
+-                    font.family: Config.Theme.fontFamily
+-                    font.pixelSize: 8
+-                    wrapMode: Text.WrapAnywhere
+-                }
+-            }
+-        }
+-    }
+-
+-    Component {
+-        id: reportsPage
+-        Column {
+-            spacing: 12
+-            SurfaceCard {
+-                width: parent.width
+-                title: "PRIVATE EVIDENCE REPORTS"
+-                value: root.data("reports").exists ? (root.data("reports").latest.profile_label || "READY") : "NONE"
+-                detail: String(root.data("reports").history_count || 0) + " retained report(s) · mode 0600 · no automatic upload"
+-            }
+-            Flow {
+-                width: parent.width
+-                spacing: 8
+-                Repeater {
+-                    model: ["overview", "performance", "network", "power", "full"]
+-                    delegate: SurfaceButton {
+-                        required property string modelData
+-                        width: 130
+-                        text: "GENERATE " + modelData.toUpperCase()
+-                        enabled: root.insights.actionState !== "running"
+-                        onClicked: root.insights.generateReport(modelData)
+-                    }
+-                }
+-                SurfaceButton { width: 130; text: "OPEN LATEST"; enabled: Boolean(root.data("reports").exists); onClicked: root.insights.openLatestReport() }
+-            }
+-            Text { text: "LATEST PREVIEW"; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 8 }
+-            ListView {
+-                width: parent.width
+-                height: parent.height - 240
+-                clip: true
+-                boundsBehavior: Flickable.StopAtBounds
+-                model: root.data("reports").preview || []
+-                delegate: Text {
+-                    required property var modelData
+-                    width: ListView.view.width
+-                    text: String(modelData.line_no).padStart(3, "0") + "  " + modelData.text
+-                    color: Config.Theme.muted
+-                    font.family: Config.Theme.fontFamily
+-                    font.pixelSize: 8
+-                }
+-            }
+-        }
+-    }
++    Component { id: diagnosticsPage; InsightsTaskView { insights: root.insights; domain: "diagnostics" } }
++    Component { id: consolePage; InsightsTaskView { insights: root.insights; domain: "console" } }
++    Component { id: reportsPage; InsightsReportsView { insights: root.insights } }
+@@ -476 +359,2 @@
+-            ListView {
++            FocusDeviceList {
++                id: wikiList
+@@ -485 +369 @@
+-                    width: ListView.view.width
++                    width: wikiList.width
+@@ -493 +377 @@
+-            Flickable {
++            FocusScrollArea {

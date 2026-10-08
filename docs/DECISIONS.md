@@ -1,3 +1,19 @@
+## D173 — Insights and Performance share evidence views and request policy (2026-10-08)
+
+Queued route requests and per-route loading/error/observation state prevent stale
+results being misattributed or a new route being dropped while busy. Actions use
+verified JSON outcomes, matching task/profile/source and time; exit status alone
+is insufficient. Curated task/report views are shared by both primary surfaces.
+No collector action publishes into Eww fallback or runs from route opening.
+
+## D174 — Private reports validate paths and bound collection (2026-10-08)
+
+Report preview/open/deletion require valid private owned manifests and report
+files within the dedicated state directory, rejecting symlinks and outside paths.
+Generation bounds collectors and redacts sensitive-looking lines. Partial source
+warnings stay in the evidence; producing a report does not imply all hardware
+collectors succeeded. Physical/native-provider acceptance remains separate.
+
 ## D172 — Restart uses confirmed allowlisted user services (2026-10-08)
 
 Initial restart targets are PipeWire, PipeWire Pulse and WirePlumber user services.

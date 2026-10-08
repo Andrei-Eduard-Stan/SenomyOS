@@ -11,6 +11,8 @@ readonly HOME_DIR="${HOME:-/nonexistent}"
 readonly STATE_ROOT="${SENOMY_REPORT_ROOT:-${XDG_STATE_HOME:-$HOME_DIR/.local/state}/senomyos/reports}"
 readonly LATEST_FILE="$STATE_ROOT/latest.json"
 readonly HISTORY_LIMIT="${SENOMY_REPORT_HISTORY_LIMIT:-10}"
+readonly COLLECTOR_TIMEOUT="${SENOMY_REPORT_TIMEOUT:-8}"
+[[ "$COLLECTOR_TIMEOUT" =~ ^([1-9]|1[0-5])$ ]] || { printf 'Invalid report collector timeout\n' >&2; exit 2; }
 
 valid_profile() { case "$1" in overview | performance | network | power | full) return 0 ;; *) return 1 ;; esac; }
 valid_profile "$PROFILE" || { printf 'Unknown report profile: %s\n' "$PROFILE" >&2; exit 2; }
@@ -53,15 +55,36 @@ collect_section() {
   esac
 }
 
+valid_manifest() {
+  local manifest="$1" report_path
+  [[ -f "$manifest" && ! -L "$manifest" && "$(stat -c %u "$manifest")" == "$(id -u)" && "$(stat -c %a "$manifest")" == 600 ]] || return 1
+  jq -e --arg root "$STATE_ROOT" '
+    (.id|type=="string") and (.id|test("^[0-9]{8}-[0-9]{6}-(overview|performance|network|power|full)$"))
+    and (.profile|IN("overview","performance","network","power","full"))
+    and (.path == ($root + "/report-" + .id + ".txt"))
+    and (.generated_at|type=="number") and (.sections|type=="array")
+  ' "$manifest" >/dev/null 2>&1 || return 1
+  report_path="$(jq -r '.path' "$manifest")"
+  [[ -f "$report_path" && ! -L "$report_path" && "$(stat -c %u "$report_path")" == "$(id -u)" && "$(stat -c %a "$report_path")" == 600 ]]
+}
+
 history_json() {
-  local manifests=()
-  while IFS= read -r path; do manifests+=("$path"); done < <(find "$STATE_ROOT" -maxdepth 1 -type f -name 'report-*.json' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n "$HISTORY_LIMIT" | cut -d' ' -f2-)
+  local manifests=() path
+  while IFS= read -r path; do
+    if valid_manifest "$path"; then manifests+=("$path"); fi
+  done < <(find "$STATE_ROOT" -maxdepth 1 -type f -name 'report-*.json' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n "$HISTORY_LIMIT" | cut -d' ' -f2-)
   if ((${#manifests[@]})); then jq -sc 'map({id,profile,profile_label,generated_at,generated_label,size_bytes,line_count,path,section_count:(.sections|length)})' "${manifests[@]}"; else printf '[]'; fi
 }
 
 emit_status() {
   local latest='{}' history preview='[]' exists=false
-  [[ -r "$LATEST_FILE" ]] && latest="$(cat "$LATEST_FILE")" && exists=true
+  if [[ -e "$LATEST_FILE" || -L "$LATEST_FILE" ]]; then
+    if ! valid_manifest "$LATEST_FILE"; then
+      jq -nc --argjson at "$(date +%s)" '{schema_version:2,ok:false,source:"senomy-evidence-reports",observed_at:$at,data:{exists:false,latest:{},history:[],history_count:0,preview:[]},error:{code:"invalid_report",message:"Latest report is invalid, unavailable or outside the private report boundary."}}'
+      return
+    fi
+    latest="$(cat "$LATEST_FILE")"; exists=true
+  fi
   history="$(history_json)"
   if [[ "$exists" == true ]]; then
     path="$(jq -r '.path // empty' <<<"$latest")"
@@ -76,6 +99,8 @@ emit_status() {
 generate() {
   local timestamp id report manifest tmp_report tmp_manifest sections_json size lines label
   mkdir -p -m 700 "$STATE_ROOT"
+  chmod 700 "$STATE_ROOT"
+  export -f collect_section section_title
   timestamp="$(date '+%Y%m%d-%H%M%S')"; id="${timestamp}-${PROFILE}"
   report="$STATE_ROOT/report-$id.txt"; manifest="$STATE_ROOT/report-$id.json"
   tmp_report="$(mktemp "$STATE_ROOT/.report.XXXXXX")"; tmp_manifest="$(mktemp "$STATE_ROOT/.manifest.XXXXXX")"
@@ -83,8 +108,13 @@ generate() {
   label="$(tr '[:lower:]' '[:upper:]' <<<"$PROFILE")"
   {
     printf 'SENOMYOS EVIDENCE REPORT\nID: %s\nPROFILE: %s\nGENERATED: %s\nHOST: %s\nKERNEL: %s\nPOLICY: local-only, mode-0600, fixed read-only collectors, no unrestricted logs\n' "$id" "$label" "$(date --iso-8601=seconds)" "$(uname -n)" "$(uname -r)"
-    while IFS= read -r section; do collect_section "$section" || printf 'COLLECTOR WARNING: %s returned non-zero\n' "$section"; done < <(profile_sections "$PROFILE")
-  } >"$tmp_report"
+    while IFS= read -r section; do
+      timeout "$COLLECTOR_TIMEOUT" bash -c 'collect_section "$1"' _ "$section" || printf 'COLLECTOR WARNING: %s failed or timed out\n' "$section"
+    done < <(profile_sections "$PROFILE")
+  } | jq -Rr --arg home "$HOME_DIR" '
+    gsub($home; "$HOME") | gsub("[[:cntrl:]]"; " ") |
+    if test("(?i)(password|passwd|secret|token|authorization|cookie)") then "[redacted potentially sensitive line]" else .[0:320] end
+  ' >"$tmp_report"
   chmod 600 "$tmp_report"; mv "$tmp_report" "$report"
   size="$(stat -c %s "$report")"; lines="$(wc -l <"$report")"
   sections_json="$(profile_sections "$PROFILE" | jq -Rsc 'split("\n")|map(select(length>0))')"
@@ -100,6 +130,7 @@ generate() {
 
 delete_latest() {
   [[ -r "$LATEST_FILE" ]] || { emit_status; return; }
+  valid_manifest "$LATEST_FILE" || { emit_status; return 1; }
   report="$(jq -r '.path // empty' "$LATEST_FILE")"; id="$(jq -r '.id // empty' "$LATEST_FILE")"
   [[ "$report" == "$STATE_ROOT"/report-*.txt ]] && rm -f "$report"
   [[ "$id" =~ ^[0-9]{8}-[0-9]{6}-(overview|performance|network|power|full)$ ]] && rm -f "$STATE_ROOT/report-$id.json"
@@ -107,7 +138,7 @@ delete_latest() {
 }
 
 latest_path() {
-  [[ -r "$LATEST_FILE" ]] || exit 4
+  valid_manifest "$LATEST_FILE" || exit 4
   local path
   path="$(jq -r '.path // empty' "$LATEST_FILE")"
   [[ "$path" == "$STATE_ROOT"/report-*.txt && -r "$path" ]] || exit 4

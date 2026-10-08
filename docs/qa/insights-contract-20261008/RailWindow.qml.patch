@@ -1,0 +1,4 @@
+--- a/shell/quickshell/components/RailWindow.qml
++++ b/shell/quickshell/components/RailWindow.qml
+@@ -332,0 +333 @@
++        insights: root.insights

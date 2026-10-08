@@ -49,8 +49,8 @@ records provide useful dated evidence, not current physical sign-off.
 
 Still open: complete keyboard/accessibility audit; physical provider and
 multi-output acceptance; fresh login, lock, suspend and fallback recovery;
-saved-network/VPN/DNS/proxy settings; managed service restart; diagnostic/report
-parity; defaults/autostart/portal journeys; update installation; licensing and
+saved-network/VPN/DNS/proxy settings; physical managed-service restart and
+diagnostic/report acceptance; defaults/autostart/portal journeys; update installation; licensing and
 current resource measurements; versioned artifacts/migrations; clean-VM/boot
 acceptance, installer/recovery media and hardware matrix.
 
@@ -96,3 +96,10 @@ behind a shell mutation. The isolated regression validator is
 `bash scripts/validate-selector-readonly.sh`. This does not validate handoffs,
 crash recovery or physical interaction. No QML publication, reload, service
 restart, package installation or live compositor edit belongs to this stage.
+
+2026-10-08: allowlisted owning-user-service restart and shared Diagnostics/Console/
+Reports now have backend/controller/actual-view fixtures. Insights preserves eight
+routes with queued queries, route status/timestamps and verified JSON outcomes.
+Reports bound and redact collection and reject invalid private manifests/paths.
+See AUTOMATION_PROGRESS for next Network/Application stages. This is source and
+isolated validation evidence; physical/native-provider acceptance remains open.

@@ -1,3 +1,11 @@
+## Observation — Insights/report source publication, 2026-10-08
+
+Warned coordinated source publication reports Configuration Loaded at 13:42:42.
+Quickshell remains active/running PID1373; compositor configerrors empty. Existing
+stacking warning remains. Tests used fake providers/private process helpers and
+report storage; no live diagnostics/update check or report generation was run.
+Physical notification ownership and compositor focus remain unaccepted.
+
 ## Observation — managed user-service source publication, 2026-10-08
 
 Read-only catalog reports PipeWire/WirePlumber active and PipeWire Pulse inactive.

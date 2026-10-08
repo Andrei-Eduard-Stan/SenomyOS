@@ -1,0 +1,12 @@
+--- a/shell/quickshell/components/PerformanceDashboard.qml
++++ b/shell/quickshell/components/PerformanceDashboard.qml
+@@ -13,0 +14 @@
++    property var insights: null
+@@ -88,2 +89,2 @@
+-            case "console":
+-            case "reports": return insightsBridgePage;
++            case "console": return root.insights ? sharedTasksPage : insightsBridgePage;
++            case "reports": return root.insights ? sharedReportsPage : insightsBridgePage;
+@@ -620,0 +622,2 @@
++    Component { id: sharedTasksPage; InsightsTaskView { insights: root.insights; domain: root.state.performanceSection } }
++    Component { id: sharedReportsPage; InsightsReportsView { insights: root.insights } }

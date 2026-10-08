@@ -1,0 +1,149 @@
+--- a/shell/quickshell/services/InsightsService.qml
++++ b/shell/quickshell/services/InsightsService.qml
+@@ -5,3 +4,0 @@
+-// Existing SenomyOS collectors remain bounded, source-owned adapters during
+-// the functional migration. They are invoked only while their Insights route
+-// is visible or after an explicit allowlisted action.
+@@ -10 +6,0 @@
+-
+@@ -13,4 +9,7 @@
+-    property var payloads: ({})
+-    property string error: ""
+-    property string actionState: "idle"
+-    property string actionDomain: ""
++    property alias payloads: requests.payloads
++    property alias statuses: requests.statuses
++    readonly property string error: requests.error
++    readonly property string actionState: requests.actionState
++    readonly property string actionMessage: requests.actionMessage
++    readonly property string actionDomain: requests.actionDomain
++    readonly property bool busy: requests.busy
+@@ -18,12 +17,10 @@
+-
+-    function commandFor(route, readAfterAction) {
+-        switch (route) {
+-        case "briefing":
+-        case "updates": return [sourceRoot + "/scripts/update-status.sh", "read"];
+-        case "timeline": return [sourceRoot + "/scripts/timeline-status.sh", "activity"];
+-        case "diagnostics": return [sourceRoot + "/scripts/diagnostics-status.sh", readAfterAction ? "read" : "catalog"];
+-        case "console": return [sourceRoot + "/scripts/console-status.sh", readAfterAction ? "read" : "catalog"];
+-        case "reports": return [sourceRoot + "/scripts/performance-report.sh", "read-json"];
+-        case "wiki": return [sourceRoot + "/scripts/wiki-status.py", "catalog"];
+-        default: return [];
+-        }
++    function refresh(route,result) {return requests.refresh(route,result);}
++    function tasksFor(domain) {return requests.tasksFor(domain);}
++    function runTask(domain,id) {return requests.runTask(domain,id);}
++    function runUpdate(kind) {return requests.runUpdate(kind);}
++    function generateReport(profile) {return requests.generateReport(profile);}
++    function openLatestReport() {return requests.openLatestReport();}
++    InsightsRequests {
++        id: requests
++        active: root.active;section:root.section;sourceRoot:root.sourceRoot
++        queryRunner:queryProcess;actionRunner:actionProcess
+@@ -31,58 +27,0 @@
+-
+-    function refresh(route, readAfterAction) {
+-        const target = route || section;
+-        if (!active || target === "notifications" || queryProcess.running)
+-            return false;
+-        const command = commandFor(target, Boolean(readAfterAction));
+-        if (command.length === 0)
+-            return false;
+-        queryProcess.route = target;
+-        queryProcess.storeKey = target + (readAfterAction ? "Result" : "");
+-        queryProcess.exec(command);
+-        return true;
+-    }
+-
+-    function tasksFor(domain) {
+-        const payload = payloads[domain];
+-        return payload && payload.data && payload.data.tasks ? payload.data.tasks : [];
+-    }
+-
+-    function runTask(domain, taskId) {
+-        if ((domain !== "diagnostics" && domain !== "console") || actionProcess.running)
+-            return false;
+-        if (!tasksFor(domain).some(task => task.id === taskId))
+-            return false;
+-        actionState = "running";
+-        actionDomain = domain;
+-        error = "";
+-        actionProcess.exec([sourceRoot + "/scripts/" + domain + "-status.sh", "run", taskId]);
+-        return true;
+-    }
+-
+-    function runUpdate(kind) {
+-        if (actionProcess.running || ["official", "aur"].indexOf(kind) < 0)
+-            return false;
+-        actionState = "running";
+-        actionDomain = "updates";
+-        error = "";
+-        actionProcess.exec([sourceRoot + "/scripts/update-status.sh", "check-" + kind]);
+-        return true;
+-    }
+-
+-    function generateReport(profile) {
+-        if (actionProcess.running || ["overview", "performance", "network", "power", "full"].indexOf(profile) < 0)
+-            return false;
+-        actionState = "running";
+-        actionDomain = "reports";
+-        error = "";
+-        actionProcess.exec([sourceRoot + "/scripts/performance-report.sh", "generate-json", profile]);
+-        return true;
+-    }
+-
+-    function openLatestReport() {
+-        Quickshell.execDetached([sourceRoot + "/scripts/performance-report.sh", "open-latest"]);
+-    }
+-
+-    onActiveChanged: if (active) refresh(section, false)
+-    onSectionChanged: if (active) refresh(section, false)
+-
+@@ -91,3 +30,2 @@
+-        repeat: true
+-        running: root.active && ["briefing", "timeline", "updates"].indexOf(root.section) >= 0
+-        onTriggered: root.refresh(root.section, false)
++        repeat:true;running:root.active && ["briefing","timeline","updates"].indexOf(root.section)>=0
++        onTriggered: root.refresh(root.section,false)
+@@ -95 +32,0 @@
+-
+@@ -98,19 +35,2 @@
+-        property string route: ""
+-        property string storeKey: ""
+-        stdout: StdioCollector { id: queryOutput }
+-        stderr: StdioCollector { id: queryError }
+-        onExited: (exitCode, exitStatus) => {
+-            if (exitCode !== 0) {
+-                root.error = queryError.text.trim() || "Insights collector failed";
+-                return;
+-            }
+-            try {
+-                const parsed = JSON.parse(queryOutput.text);
+-                const next = Object.assign({}, root.payloads);
+-                next[storeKey] = parsed;
+-                root.payloads = next;
+-                root.error = parsed.ok === false && parsed.error ? parsed.error.message : "";
+-            } catch (error) {
+-                root.error = "Insights collector returned invalid JSON";
+-            }
+-        }
++        stdout:StdioCollector {id:queryOutput}
++        onExited:code=>requests.queryCompleted(code,queryOutput.text)
+@@ -118 +37,0 @@
+-
+@@ -121,10 +40,4 @@
+-        stdout: StdioCollector { id: actionOutput }
+-        stderr: StdioCollector { id: actionError }
+-        onExited: (exitCode, exitStatus) => {
+-            root.actionState = exitCode === 0 ? "succeeded" : "failed";
+-            root.error = exitCode === 0 ? "" : actionError.text.trim() || "Insights action failed";
+-            const domain = root.actionDomain;
+-            root.actionDomain = "";
+-            if (root.active && domain.length > 0)
+-                root.refresh(domain, domain === "diagnostics" || domain === "console");
+-        }
++        // Legacy collectors must not publish into the preserved Eww fallback.
++        environment: ({EWW_CONFIG:root.sourceRoot,SENOMY_EWW_BIN:"/usr/bin/false"})
++        stdout:StdioCollector {id:actionOutput}
++        onExited:code=>requests.actionCompleted(code,actionOutput.text)

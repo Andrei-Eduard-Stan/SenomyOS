@@ -137,7 +137,7 @@ Commits `af9aebc` and `568a875` are not evidence that this roadmap is complete.
 | 1. Physical acceptance | REQUIRES PHYSICAL ACCEPTANCE | Source fixtures and guarded providers exist; every listed item requires attended real-hardware/session acceptance. |
 | 2. Idle and power policy | INCOMPLETE | Hypridle manifests, bounded editable timeouts, and a lock/none lid policy exist. Deployment and behavior acceptance are physical; automatic suspend remains blocked on recovery acceptance. |
 | 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection and detected Fcitx5 settings handoff exist; conditional manual OSK controls are connected. Populated-control focus coverage and physical IME/OSK/touch acceptance remain open. |
-| 4. Performance management | INCOMPLETE | Process sorting/details and confirmed ownership-checked SIGTERM exist. Guarded restart, service boundaries, and diagnostic/report parity remain incomplete. |
+| 4. Performance management | INCOMPLETE | Process sorting/details and confirmed ownership-checked SIGTERM exist. Allowlisted user-service restart and shared diagnostic/console/report views now have source and fixture coverage; real action/provider acceptance remains open. |
 | 5. Networking | INCOMPLETE | Native status, bounded scan/refresh, guarded connect/disconnect, and terminal-owned credential entry exist. Saved-profile management, VPN/DNS/proxy, and richer failure feedback remain incomplete. |
 | 6. Applications and desktop integration | INCOMPLETE | Launcher, tray, file-manager, and portal package foundations exist. Defaults, autostart, permission/portal status, and end-to-end peripheral/file integration remain incomplete. |
 | 7. Updates | INCOMPLETE | Insights update support is discovery-only. Reviewed installation and complete progress/failure/reboot/rollback/recovery flows remain incomplete. |
@@ -178,9 +178,9 @@ No unattended automation may perform these actions.
 ### 4. Performance management — INCOMPLETE
 
 - [x] Process sorting and detail views.
-- [ ] Guarded terminate/restart actions. Confirmed graceful user-process termination exists; restart remains unavailable.
-- [ ] Better service-management boundaries.
-- [ ] Expanded diagnostic and report parity.
+- [x] Guarded terminate/restart source. Exact-identity SIGTERM and allowlisted owning-user-service restart are covered by fixtures. Arbitrary process replay is intentionally unsupported; real action acceptance remains open.
+- [x] User-service restart boundary: audio allowlist, snapshot/state revalidation, Cancel-focused review and observed new active instance. System/shell/compositor/network restarts remain unavailable.
+- [x] Shared Diagnostics/Console/Reports views serve Performance and Insights with guarded curated actions and bounded private reports. Physical/native-provider acceptance remains open.
 
 ### 5. Networking — INCOMPLETE
 
@@ -389,11 +389,32 @@ No unattended automation may perform these actions.
 - Inline diagnostic/report parity and physical audio/service acceptance remain
   open. Pre-existing dirty consumer source remains preserved separately.
 
+### Durable checkpoint — shared Insights contracts and report safety, 2026-10-08
+
+- Eight routes preserved; busy route changes queue, route loading/errors and
+  observation timestamps are separate. Zero helper exit does not override failed
+  JSON; task ID/time, report profile/time and requested update-source checks guard
+  outcomes. Console silent output is followed by cached-result verification even
+  after panel closure. No automatic action runs from opening a route.
+- Actual shared Diagnostics/Console/Reports now serve both primary surfaces.
+  Populated Insights lists and primary route navigation are keyboard reachable.
+  Unchecked update evidence is unavailable rather than zero; source check time/
+  provenance remains distinct from cache refresh. Legacy Eww publication disabled.
+- 13 Qt request cases, eight actual route fixtures, native Process/private-helper
+  checks and shared Performance fixtures pass. Report tests cover five profiles,
+  private modes, redaction, bounded collectors and invalid/outside/symlink manifest
+  rejection. No real diagnostics/update/provider action was run by these fixtures.
+- Warned publication reports Configuration Loaded at 13:42:42; Quickshell active
+  PID1373; compositor errors empty; existing stacking/lint warnings remain.
+  Compositor hosts are substituted in UI tests. Physical notification/focus and
+  provider acceptance remain open. See docs/qa/insights-contract-20261008/.
+
 ## Exact next stage
 
-Complete shared curated Diagnostics/Console/Reports views and Insights freshness,
-query routing and truthful action outcomes. Then Network saved-profile/VPN/DNS/
-proxy management and failure feedback; Applications defaults/autostart/portal
-status; remaining eight-route Insights coverage. Keep physical acceptance gates
-separate. Visual redesign, update installation and release engineering are out
-of scope. No unattended service/session/device mutation.
+Section 5: saved-profile management, VPN/DNS/proxy native editor boundaries and
+connection failure feedback, with safe structured inventory and explicit reviews
+for profile deletion/disconnect/policy changes. Use fake providers; do not alter
+live networking. Then Section 6 defaults/autostart/portal status and final
+cross-surface functional regression through Insights. Keep physical acceptance
+separate. Visual redesign, update installation and release engineering remain out
+of scope.
