@@ -20,7 +20,7 @@ if rg -q 'FAIL:|ERROR|Binding loop|ReferenceError|TypeError' "$runtime/test.log"
     cat "$runtime/test.log" >&2
     exit 1
 fi
-rg 'PASS: selection and network confirmation' "$runtime/test.log"
+rg 'PASS: selection, network/Bluetooth, notification and display confirmation' "$runtime/test.log"
 if rg -q 'WARN|Warning:' "$runtime/test.log" "$runtime/lint.log"; then
     printf 'Passed with diagnostics; Qt activeFocusOnTab/lint warnings are not treated as absent.\n'
 fi

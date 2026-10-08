@@ -57,6 +57,7 @@ PopupWindow {
     FocusScope {
         id: card
         anchors.fill: parent
+        ConfirmationFocus { view: card; actions: root.powerService; actionState: root.powerService.state; cancelButton: cancel }
         focus: root.cardShown
         opacity: root.cardShown ? 1 : 0
         scale: root.cardShown ? 1 : 0.985
@@ -157,6 +158,8 @@ PopupWindow {
                         spacing: 10
                         SurfaceButton {
                             width: (parent.width - 10) / 2
+                            id: cancel
+                            objectName: "powerCancel"
                             text: "CANCEL"
                             onClicked: powerService.cancel()
                         }

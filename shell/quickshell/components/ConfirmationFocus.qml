@@ -7,6 +7,8 @@ QtObject {
     required property var view
     required property var actions
     required property var cancelButton
+    property string actionState: actions ? actions.actionState : "idle"
+    property var pendingStates: ["pending"]
     property var previousFocus: null
     property int generation: 0
 
@@ -23,17 +25,18 @@ QtObject {
         if (!view || !actions || !cancelButton || !view.Window.window)
             return;
         const window = view.Window.window;
-        if (actions.actionState === "pending") {
+        if (pendingStates.indexOf(actionState) >= 0) {
+            if (!view.visible) return;
             if (!previousFocus)
                 previousFocus = window.activeFocusItem;
             Qt.callLater(function() {
                 if (serial === root.generation && root.view.visible
-                        && root.actions.actionState === "pending" && root.cancelButton.visible)
+                        && root.pendingStates.indexOf(root.actionState) >= 0 && root.cancelButton.visible)
                     root.cancelButton.forceActiveFocus(Qt.TabFocusReason);
             });
-        } else if (actions.actionState !== "running") {
+        } else if (actionState !== "running") {
             Qt.callLater(function() {
-                if (serial !== root.generation || !root.view.visible)
+                if (serial !== root.generation)
                     return;
                 const previous = root.previousFocus;
                 root.previousFocus = null;
@@ -48,17 +51,16 @@ QtObject {
         }
     }
 
-    property var stateObserver: Connections {
-        target: root.actions
-        function onActionStateChanged() { root.reconcile(); }
-    }
+    onActionStateChanged: reconcile()
     property var visibilityObserver: Connections {
         target: root.view
         function onVisibleChanged() {
             if (root.view.visible)
                 root.reconcile();
-            else if (root.actions.actionState === "pending")
+            else if (root.pendingStates.indexOf(root.actionState) >= 0) {
                 ++root.generation;
+                root.previousFocus = null;
+            }
         }
     }
     Component.onCompleted: reconcile()

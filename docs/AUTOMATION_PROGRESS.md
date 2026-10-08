@@ -255,11 +255,31 @@ No unattended automation may perform these actions.
   commits ahead of `origin/quickshell-v2`, including the incorrect-scope ledger
   commits.
 
+### Durable checkpoint — remaining confirmation focus, 2026-10-08
+
+- Bluetooth reuses NetworkActionReview rather than keeping an untested duplicate.
+  Notification clear and display previews use ConfirmationFocus. Temporary
+  display approval focuses Revert now; session previews focus Cancel for all
+  five actions. State adaptation keeps system-action controllers unchanged.
+- The extended fixture includes naturally hiding review components: cancellation
+  now returns focus even when the review disappears. Hidden pending contexts do
+  not capture stale focus or steal focus after route replacement.
+- `python3 scripts/validate-confirmation-families.py` passes fake-provider checks;
+  its session popup uses a substituted Window host. Real compositor focus/grabs,
+  physical display rollback and attended session actions remain unaccepted.
+- Bluetooth action/discovery validators pass (13/6 Qt cases including setup and
+  cleanup). Display validator passes nine Python cases and 15 Qt cases including
+  setup/cleanup. The actual ten-route Control Centre fixture also passes.
+- Source-watch publication was warned; Quickshell remains running, PID 1373;
+  Hyprland config errors empty. QML lint exits successfully with native metadata/
+  unqualified warnings; Qt focus diagnostics remain. No real device mutation.
+- Recoverable integration patches/checksums: docs/qa/confirmation-20261008/.
+  Existing uncommitted baseline and visual work remain preserved.
+
 ## Exact next stage
 
-Section 3: shared navigation, focus scrolling and safe initial focus for selection
-and network confirmations are implemented and isolated-tested. Next inspect the
-remaining Bluetooth/display/notification/session confirmation families and extend
-focus coverage where needed; then complete the native input-method/OSK boundary.
-Full accessibility and physical acceptance remain open. Use staging under the
-Active autonomous scope; do not drive real devices.
+Section 3: continue native input-method/OSK capability detection and a safe,
+truthful installed-tool handoff. Existing docs claim an optional Fcitx5 handoff,
+but connected source must establish it. Do not assume installed tools, compositor
+protocol support or touch acceptance. Full accessibility/physical acceptance and
+later roadmap domains remain open. Use isolated staging and fake providers.

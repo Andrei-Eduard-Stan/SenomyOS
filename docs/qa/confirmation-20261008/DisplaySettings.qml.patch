@@ -1,0 +1,12 @@
+--- a/shell/quickshell/components/DisplaySettings.qml
++++ b/shell/quickshell/components/DisplaySettings.qml
+@@ -16,0 +17 @@
++    ConfirmationFocus { view: root; actions: root.actions; pendingStates: ["pending", "revert-pending"]; cancelButton: root.actions.actionState === "revert-pending" ? revert : cancel }
+@@ -272,2 +273,2 @@
+-            DashboardButton { width: (parent.width-8)/2; text: "CANCEL"; onClicked: root.actions.cancel() }
+-            DashboardButton { width: (parent.width-8)/2; text: "APPLY TEMPORARILY"; onClicked: root.actions.confirm() }
++            DashboardButton { id: cancel; objectName: "displayCancel"; width: (parent.width-8)/2; text: "CANCEL"; onClicked: root.actions.cancel() }
++            DashboardButton { objectName: "displayConfirm"; width: (parent.width-8)/2; text: "APPLY TEMPORARILY"; onClicked: root.actions.confirm() }
+@@ -278 +279 @@
+-            DashboardButton { width: (parent.width-8)/2; text: "REVERT NOW"; onClicked: root.actions.revert() }
++            DashboardButton { id: revert; objectName: "displayRevert"; width: (parent.width-8)/2; text: "REVERT NOW"; onClicked: root.actions.revert() }

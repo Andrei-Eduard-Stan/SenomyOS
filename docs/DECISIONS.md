@@ -1,5 +1,13 @@
 # SenomyOS Decision Log
 
+## D166 — Safe focus extends to existing confirmation families (2026-10-08)
+
+Bluetooth shares the existing network review interface. Notification clear and
+session previews default to Cancel; temporary display approval defaults to Revert.
+ConfirmationFocus adapts provider state without changing mutation guards and
+restores focus after naturally hiding reviews. Session host substitution in tests
+is explicitly separate from real compositor and physical acceptance.
+
 ## D165 — Durable functional scope and shared keyboard focus (2026-10-08)
 
 The user authorizes functional work through Senomy Insights, with aesthetics

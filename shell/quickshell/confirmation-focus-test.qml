@@ -6,8 +6,9 @@ import "components"
 
 Window {
     id: test
-    visible: true; width: 540; height: 340
+    visible: true; width: 540; height: 1200
     TestCase { id: input; when: false }
+    property var currentReview: null
     property int confirmed: 0
     property int cancelled: 0
     QtObject {
@@ -18,7 +19,14 @@ Window {
         property string targetName: "Fixture network"
         property string impact: "Fake provider only"
         property string message: ""
+        property string requestedContext: "fixture"
+        property bool locked: false
+        property string actionKind: "configuration"
+        property int secondsRemaining: 15
+        property var previous: null
+        property var proposed: null
         function cancel() { test.cancelled++; actionState = "idle"; }
+        function revert() { test.cancelled++; actionState = "idle"; }
         function confirm() { test.confirmed++; actionState = "succeeded"; }
     }
     DashboardButton {
@@ -30,9 +38,11 @@ Window {
     DashboardButton { id: outside; x: 270; y: 5; text: "OUTSIDE" }
     Item {
         id: context
-        x: 10; y: 70; width: parent.width-20; height: 250
-        SelectionActionReview { id: selection; width: parent.width; actions: actions }
-        NetworkActionReview { id: network; width: parent.width; actions: actions; visible: false }
+        x: 10; y: 70; width: parent.width-20; height: 1100
+        SelectionActionReview { id: selection; width: parent.width; actions: actions; visible: test.currentReview === selection && actions.actionState !== "idle" }
+        NetworkActionReview { id: network; width: parent.width; actions: actions; visible: test.currentReview === network && actions.actionState !== "idle" }
+        NotificationClearReview { id: notification; width: parent.width; actions: actions; ownerContext: "fixture"; visible: test.currentReview === notification && actions.actionState !== "idle" }
+        DisplaySettings { id: display; width: parent.width; inventory: ({displays:[], displayActions:actions}); visible: test.currentReview === display }
     }
     function check(ok, message) {
         if (!ok) { console.error("FAIL: " + message); Qt.exit(1); throw new Error(message); }
@@ -40,13 +50,12 @@ Window {
     Timer {
         interval: 500; running: true
         onTriggered: {
-            for (const view of [selection,network]) {
+            for (const view of [selection,network,notification,display]) {
                 actions.actionState = "idle";
-                selection.visible = view === selection;
-                network.visible = view === network;
+                test.currentReview = view;
                 request.forceActiveFocus();
                 input.keyClick(Qt.Key_Return); input.wait(60);
-                const prefix = view === selection ? "selection" : "network";
+                const prefix = view === selection ? "selection" : view === network ? "network" : view === notification ? "notificationClear" : "display";
                 const cancel = input.findChild(view,prefix+"Cancel");
                 const confirm = input.findChild(view,prefix+"Confirm");
                 test.check(cancel.activeFocus,"new "+prefix+" preview must focus Cancel");
@@ -57,6 +66,13 @@ Window {
                 input.keyClick(Qt.Key_Return); input.wait(60);
                 input.keyClick(Qt.Key_Tab); input.wait(30);
                 test.check(confirm.activeFocus,"explicit Tab can reach Confirm");
+                if (view === display) {
+                    actions.actionState = "revert-pending"; input.wait(60);
+                    const revert = input.findChild(view,"displayRevert");
+                    test.check(revert.activeFocus,"temporary display approval defaults to Revert");
+                    input.keyClick(Qt.Key_Return); input.wait(60);
+                    test.check(actions.actionState === "idle","default rollback activation reverts fake change");
+                }
                 actions.actionState = "idle"; input.wait(30);
                 request.forceActiveFocus();
                 actions.actionState = "pending";
@@ -70,7 +86,7 @@ Window {
                 actions.actionState = "idle";
                 context.visible = true;
             }
-            console.log("PASS: selection and network confirmation default to Cancel, allow deliberate Confirm focus, restore request focus and ignore stale/hidden contexts; fake providers only");
+            console.log("PASS: selection, network/Bluetooth, notification and display confirmation default to Cancel, allow deliberate Confirm focus, restore request focus and ignore stale/hidden contexts; fake providers only");
             Qt.quit();
         }
     }
