@@ -1,143 +1,61 @@
 --- a/shell/quickshell/components/PerformanceDashboard.qml
 +++ b/shell/quickshell/components/PerformanceDashboard.qml
-@@ -28,6 +28,10 @@
-         {id: "storage", icon: "battery.svg", label: "STORAGE"},
-         {id: "network", icon: "wifi.svg", label: "NETWORK"},
-         {id: "processes", icon: "applications.svg", label: "PROCESSES"},
+@@ -30,0 +31,4 @@
 +        {id: "services", icon: "applications.svg", label: "SERVICES"},
 +        {id: "diagnostics", icon: "applications.svg", label: "DIAGNOSTICS"},
 +        {id: "console", icon: "applications.svg", label: "CONSOLE"},
 +        {id: "reports", icon: "applications.svg", label: "REPORTS"},
-         {id: "benchmarks", icon: "power.svg", label: "BENCHMARKS"}
-     ]
- 
-@@ -59,7 +63,13 @@
-         property: "processPageActive"
-         value: root.requestedOpen && root.state.performanceSection === "processes"
-     }
+@@ -61,0 +66,5 @@
 +    Binding {
 +        target: root.performance
 +        property: "actionContext"
 +        value: root.requestedOpen ? "performance:" + root.state.performanceSection + ":" + root.state.primaryScreen : ""
 +    }
-     Component.onDestruction: {
+@@ -62,0 +72 @@
 +        root.performance.actionContext = "";
-         root.performance.benchmarkPageActive = false;
-         root.performance.processPageActive = false;
-     }
-@@ -73,6 +83,10 @@
-             case "storage": return storagePage;
-             case "network": return networkPage;
-             case "processes": return processesPage;
+@@ -75,0 +86,4 @@
 +            case "services": return servicesPage;
 +            case "diagnostics":
 +            case "console":
 +            case "reports": return insightsBridgePage;
-             case "benchmarks": return benchmarksPage;
-             default: return overviewPage;
-             }
-@@ -81,7 +95,7 @@
- 
-     Component {
-         id: overviewPage
+@@ -84 +98 @@
 -        Flickable {
 +        FocusScrollArea {
-             contentHeight: overviewColumn.implicitHeight
-             clip: true
-             boundsBehavior: Flickable.StopAtBounds
-@@ -134,7 +148,7 @@
- 
-     Component {
-         id: cpuPage
+@@ -137 +151 @@
 -        Flickable {
 +        FocusScrollArea {
-             contentHeight: cpuColumn.implicitHeight
-             clip: true
-             boundsBehavior: Flickable.StopAtBounds
-@@ -199,7 +213,7 @@
- 
-     Component {
-         id: storagePage
+@@ -202 +216 @@
 -        Flickable {
 +        FocusScrollArea {
-             contentHeight: storageColumn.implicitHeight
-             clip: true
-             boundsBehavior: Flickable.StopAtBounds
-@@ -276,7 +290,7 @@
- 
-     Component {
-         id: networkPage
+@@ -279 +293 @@
 -        Flickable {
 +        FocusScrollArea {
-             contentHeight: networkColumn.implicitHeight
-             clip: true
-             boundsBehavior: Flickable.StopAtBounds
-@@ -379,7 +393,7 @@
-             Item {
-                 width: parent.width
-                 height: parent.height - 58
+@@ -382 +396 @@
 -                Flickable {
 +                FocusScrollArea {
-                     id: processTable
-                     width: root.performance.selectedProcessPid > 0 ? parent.width * 0.62 : parent.width
-                     height: parent.height
-@@ -412,7 +426,8 @@
-                 }
-             }
-             Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
+@@ -415 +429,2 @@
 -            ListView {
 +            FocusDeviceList {
 +                id: processList
-                 width: parent.width
-                 height: parent.height - 40
-                 spacing: 5
-@@ -422,7 +437,7 @@
-                 delegate: Rectangle {
-                     id: processRow
-                     required property var modelData
+@@ -425 +440 @@
 -                    width: ListView.view.width
 +                    width: processList.width
-                     height: 45
-                     radius: 5
-                     color: root.performance.selectedProcessPid === Number(processRow.modelData.pid)
-@@ -430,6 +445,9 @@
-                         : rowArea.containsMouse ? Config.Theme.glassHover : Config.Theme.glassRaised
-                     border.width: root.performance.selectedProcessPid === Number(processRow.modelData.pid) ? 1 : 0
-                     border.color: Config.Theme.accent
+@@ -432,0 +448,3 @@
 +                    activeFocusOnTab: true
 +                    Keys.onReturnPressed: root.performance.selectProcess(modelData.pid,modelData.name)
 +                    Keys.onSpacePressed: root.performance.selectProcess(modelData.pid,modelData.name)
-                     Accessible.role: Accessible.ListItem
-                     Accessible.name: processRow.modelData.name + ", PID " + processRow.modelData.pid
-                     MouseArea {
-@@ -478,9 +496,13 @@
-                     radius: 5
-                     color: Config.Theme.glassRaised
-                     DashboardBorder { anchors.fill: parent; active: true }
+@@ -481 +499 @@
 -                    Column {
 +                    FocusScrollArea {
-                         anchors.fill: parent
-                         anchors.margins: 18
+@@ -483,0 +502,4 @@
 +                        contentHeight: inspectorColumn.implicitHeight
 +                    Column {
 +                        id: inspectorColumn
 +                        width: parent.width
-                         spacing: 10
-                         Text { text: "PROCESS INSPECTOR"; color: Config.Theme.accent; font.family: Config.Theme.fontFamily; font.pixelSize: 9; font.weight: Font.DemiBold }
-                         Text {
-@@ -513,7 +535,7 @@
-                             maximumLineCount: 15
-                             elide: Text.ElideRight
-                         }
+@@ -516 +538 @@
 -                        Item { width: 1; height: Math.max(0, parent.height - 310) }
 +
-                         Text {
-                             visible: root.performance.processActionState !== "idle"
-                             width: parent.width
-@@ -523,6 +545,16 @@
-                             font.pixelSize: 9
-                             wrapMode: Text.WordWrap
-                         }
+@@ -525,0 +548,10 @@
 +                        SelectionActionReview { width: parent.width; actions: root.performance.managedServices.actions }
 +                        DashboardButton {
 +                            width: parent.width
@@ -148,39 +66,18 @@
 +                                && !root.performance.managedServices.actions.locked && !root.performance.managedServices.actions.blocked
 +                            onClicked: root.performance.managedServices.actions.request(root.performance.managedServices.processService)
 +                        }
-                         Row {
-                             spacing: 8
-                             DashboardButton {
-@@ -531,10 +563,12 @@
-                                 text: root.performance.processActionState === "running" ? "SIGNALLING…" : "TERMINATE"
-                                 detail: "Graceful SIGTERM"
-                                 enabled: root.performance.selectedProcess.action_allowed === true
+@@ -533,0 +566 @@
 +                                    && !root.performance.managedServices.actions.locked
-                                     && root.performance.processActionState !== "running"
-                                 onClicked: root.performance.requestProcessTermination()
-                             }
-                             DashboardButton {
+@@ -537,0 +571 @@
 +                                id: terminateCancel
-                                 visible: root.performance.processActionState === "pending"
-                                 width: 120
-                                 text: "CANCEL"
-@@ -554,6 +588,12 @@
-                                 onClicked: root.performance.selectProcess(0, "")
-                             }
-                         }
+@@ -556,0 +591,6 @@
 +                        ConfirmationFocus {
 +                            view: inspectorColumn
 +                            actions: root.performance
 +                            actionState: root.performance.processActionState
 +                            cancelButton: terminateCancel
 +                        }
-                         Text {
-                             width: parent.width
-                             text: root.performance.selectedProcess.action_allowed === false
-@@ -565,14 +605,37 @@
-                             wrapMode: Text.WordWrap
-                         }
-                     }
+@@ -568,5 +608,28 @@
 -                }
 -            }
 -        }
@@ -214,10 +111,6 @@
 +            }
 +        }
 +    }
-     Component {
-         id: benchmarksPage
+@@ -575 +638 @@
 -        Flickable {
 +        FocusScrollArea {
-             contentHeight: benchmarkColumn.implicitHeight
-             clip: true
-             boundsBehavior: Flickable.StopAtBounds

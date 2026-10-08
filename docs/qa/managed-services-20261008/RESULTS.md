@@ -28,3 +28,6 @@ pre-existing dirty consumer files; clean-checkout reproducibility remains open.
 Warned source publication reports Configuration Loaded at 13:29:24.
 Quickshell active/running PID1373; compositor configerrors empty; existing stacking
 warning remains. This is runtime health evidence, not real action acceptance.
+
+Integration patches use zero context; replay requires git apply --unidiff-zero
+after checking before/after hashes. This avoids whitespace-only patch context.
