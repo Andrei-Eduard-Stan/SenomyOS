@@ -1,3 +1,12 @@
+## D175 — Profile controls and native advanced settings remain separate (2026-10-08)
+
+Secret-free profile inventory supports explicitly reviewed disconnect/delete/
+autoconnect with UUID/snapshot revalidation and observed state. Native editor
+handoffs cover VPN/DNS/connection PAC proxy settings without claiming plugin or
+application-wide proxy support. Credentials remain outside Quickshell state.
+ConnectionFailed signals and observed link state provide failure feedback;
+unknown/timeouts remain unverified and never trigger automatic retries.
+
 ## D173 — Insights and Performance share evidence views and request policy (2026-10-08)
 
 Queued route requests and per-route loading/error/observation state prevent stale

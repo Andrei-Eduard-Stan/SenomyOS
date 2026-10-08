@@ -1,3 +1,11 @@
+## Observation — Network profile source publication, 2026-10-08
+
+Read-only native inventory reports 13 profiles and nm-connection-editor installed.
+No profile or connection was edited, disconnected, deleted or activated by QA.
+Warned source publication retains Quickshell active/running PID1373 and empty
+compositor configerrors. Physical editor/credential/VPN/DNS/PAC acceptance open.
+See docs/qa/network-profiles-20261008/.
+
 ## Observation — Insights/report source publication, 2026-10-08
 
 Warned coordinated source publication reports Configuration Loaded at 13:42:42.

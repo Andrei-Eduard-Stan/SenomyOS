@@ -138,7 +138,7 @@ Commits `af9aebc` and `568a875` are not evidence that this roadmap is complete.
 | 2. Idle and power policy | INCOMPLETE | Hypridle manifests, bounded editable timeouts, and a lock/none lid policy exist. Deployment and behavior acceptance are physical; automatic suspend remains blocked on recovery acceptance. |
 | 3. Keyboard and accessibility | INCOMPLETE | Persistent layout, repeat, pointer, and touchpad controls exist. First-run locale selection and detected Fcitx5 settings handoff exist; conditional manual OSK controls are connected. Populated-control focus coverage and physical IME/OSK/touch acceptance remain open. |
 | 4. Performance management | INCOMPLETE | Process sorting/details and confirmed ownership-checked SIGTERM exist. Allowlisted user-service restart and shared diagnostic/console/report views now have source and fixture coverage; real action/provider acceptance remains open. |
-| 5. Networking | INCOMPLETE | Native status, bounded scan/refresh, guarded connect/disconnect, and terminal-owned credential entry exist. Saved-profile management, VPN/DNS/proxy, and richer failure feedback remain incomplete. |
+| 5. Networking | INCOMPLETE | Native status, bounded scan/refresh, guarded connect/disconnect, and terminal-owned credential entry exist. Saved-profile inventory/reviewed actions, detected native VPN/DNS/PAC-proxy handoffs and connection-failure observation now have source/fixture coverage; physical/editor/plugin acceptance remains open. |
 | 6. Applications and desktop integration | INCOMPLETE | Launcher, tray, file-manager, and portal package foundations exist. Defaults, autostart, permission/portal status, and end-to-end peripheral/file integration remain incomplete. |
 | 7. Updates | INCOMPLETE | Insights update support is discovery-only. Reviewed installation and complete progress/failure/reboot/rollback/recovery flows remain incomplete. |
 | 8. Release engineering | INCOMPLETE | Bootstrap/manifests and deployment receipts exist. Versioned packages, migrations, VM/boot evidence, bootable media, and a hardware matrix remain incomplete. |
@@ -184,9 +184,9 @@ No unattended automation may perform these actions.
 
 ### 5. Networking — INCOMPLETE
 
-- [ ] Saved-network management.
-- [ ] VPN, DNS, and proxy settings.
-- [ ] Better connection failure feedback.
+- [x] Saved-network management source: secret-free inventory, reviewed delete/disconnect/autoconnect, state revalidation and observed outcomes. Physical acceptance remains open.
+- [x] Detected native VPN/profile DNS/PAC proxy editor handoffs, validated UUIDs and truthful launch states. Plugin availability, application proxy adoption and actual saving remain acceptance limits.
+- [x] Native failure reasons and observed connection outcomes; timeout/unavailable state remains unverified, separate from Internet reachability.
 - [ ] Physical scan-freshness and credential-flow testing. Physical acceptance required.
 
 ### 6. Applications and desktop integration — INCOMPLETE
@@ -409,12 +409,27 @@ No unattended automation may perform these actions.
   Compositor hosts are substituted in UI tests. Physical notification/focus and
   provider acceptance remain open. See docs/qa/insights-contract-20261008/.
 
+### Durable checkpoint — Network profiles and connection feedback, 2026-10-08
+
+- Secret-free profile inventory and reviewed delete/disconnect/autoconnect use
+  snapshot/context revalidation, safe defaults and observed result states. Active
+  deletion/unsupported types and overlapping operations are blocked.
+- Detected native editor handoffs cover profiles, VPN, DNS and connection PAC
+  proxy settings; plugins/application adoption/saved settings remain unaccepted.
+  Native connection failures and timeout/unavailable states have truthful feedback.
+- 11 mocked backend tests, 7/7/15 Qt cases, 24-profile keyboard fixture, actual
+  service guards and existing actual Control Centre routes pass. No live profile,
+  connection, policy, credential or editor mutation. Read-only inventory counts
+  13 profiles with editor installed. Evidence: docs/qa/network-profiles-20261008/.
+- Physical scan freshness/credential flow/VPN/DNS/proxy/editor acceptance remains
+  open; native tool launch is not successful settings acceptance.
+
 ## Exact next stage
 
-Section 5: saved-profile management, VPN/DNS/proxy native editor boundaries and
-connection failure feedback, with safe structured inventory and explicit reviews
-for profile deletion/disconnect/policy changes. Use fake providers; do not alter
-live networking. Then Section 6 defaults/autostart/portal status and final
-cross-surface functional regression through Insights. Keep physical acceptance
-separate. Visual redesign, update installation and release engineering remain out
-of scope.
+Section 6: default applications, reviewed autostart preferences and normalized
+portal/permission status. Use detected desktop metadata and fixed native APIs;
+never replay arbitrary application commands or auto-launch during inventory.
+Preserve autostart files and protect session infrastructure. Fake providers/private
+XDG roots only for mutation tests. Then final cross-surface functional regression
+through Insights and an explicit source-versus-physical acceptance ledger.
+Visual redesign, update installation and release engineering remain out of scope.
