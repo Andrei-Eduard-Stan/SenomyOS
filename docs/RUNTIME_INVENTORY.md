@@ -1,3 +1,10 @@
+## Observation — managed user-service source publication, 2026-10-08
+
+Read-only catalog reports PipeWire/WirePlumber active and PipeWire Pulse inactive.
+No service restart or process termination was performed. Warned publication reports
+Configuration Loaded at 13:29:24; Quickshell active PID1373, compositor errors empty.
+Existing stacking warning remains. See docs/qa/managed-services-20261008/.
+
 ## Observation — user-local OSK tools, 2026-10-08
 
 wvkbd-mobintl 0.21 (pinned commit bbecd996aae5a4dc4bc32bd643d37cefa9f63752)

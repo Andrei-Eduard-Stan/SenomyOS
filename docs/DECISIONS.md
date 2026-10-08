@@ -1,3 +1,11 @@
+## D172 — Restart uses confirmed allowlisted user services (2026-10-08)
+
+Initial restart targets are PipeWire, PipeWire Pulse and WirePlumber user services.
+Only their owned main processes support restart in the inspector; arbitrary argv
+replay is unavailable. Snapshot identity is rechecked, a new active invocation
+is required for success, and timeout/unchanged state stays failed/unverified.
+Service and process reviews cannot overlap or survive context replacement.
+
 ## D170 — Finite device lists keep every control in keyboard Tab order (2026-10-08)
 
 Populated testing reproduced clipped Wi-Fi focus. Device lists now use finite

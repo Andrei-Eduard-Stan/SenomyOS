@@ -374,12 +374,26 @@ No unattended automation may perform these actions.
   existing warnings. Source patches/hashes: docs/qa/populated-focus-20261008/.
 - Physical/compositor acceptance and large-inventory measurements remain open.
 
+### Durable checkpoint — managed user-service restart, 2026-10-08
+
+- Allowlisted user audio-service restart has explicit review, Cancel focus,
+  snapshot revalidation and new-active-invocation observation. Arbitrary process
+  argv replay and system/shell/compositor/network restarts are unavailable.
+- An owned supported service main PID exposes restart in the process inspector.
+  Twelve process rows are keyboard reachable; inspector scrolls focused controls.
+  Closing/replacing the route cancels pending termination; action reviews cannot
+  overlap. Diagnostic/Console/Report routes hand off exclusively to Insights.
+- 11 mocked Python cases, 8 Qt cases, actual Dashboard routes and actual
+  PerformanceService guards pass. No real service/process/benchmark mutation.
+  Source patches/hashes and evidence: docs/qa/managed-services-20261008/.
+- Inline diagnostic/report parity and physical audio/service acceptance remain
+  open. Pre-existing dirty consumer source remains preserved separately.
+
 ## Exact next stage
 
-Section 4: implement allowlisted user-service restart with an explicit review,
-identity/state revalidation and truthful observed outcomes; expose managed-process
-restart only where a supported owning service can be identified safely. Test fake
-providers only; do not restart desktop services. Then complete diagnostic/report
-parity and continue Network, Applications and the eight Insights routes.
-Physical acceptance gates remain open. Visual redesign/update installation/release
-engineering remain outside the authorized scope.
+Complete shared curated Diagnostics/Console/Reports views and Insights freshness,
+query routing and truthful action outcomes. Then Network saved-profile/VPN/DNS/
+proxy management and failure feedback; Applications defaults/autostart/portal
+status; remaining eight-route Insights coverage. Keep physical acceptance gates
+separate. Visual redesign, update installation and release engineering are out
+of scope. No unattended service/session/device mutation.

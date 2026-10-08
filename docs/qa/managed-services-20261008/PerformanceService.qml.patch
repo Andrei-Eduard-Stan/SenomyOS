@@ -1,0 +1,54 @@
+--- a/shell/quickshell/services/PerformanceService.qml
++++ b/shell/quickshell/services/PerformanceService.qml
+@@ -9,6 +9,9 @@
+ 
+     required property var metrics
+     property bool active: false
++    property string actionContext: ""
++    property alias managedServices: serviceControls
++    ManagedServices { id: serviceControls; active: root.active; context: root.actionContext; processPid: root.selectedProcessPid; blocked: root.processActionState === "pending" || root.processActionState === "running" }
+     property var cpuHistory: []
+     property var memoryHistory: []
+     property var rxHistory: []
+@@ -24,6 +27,7 @@
+     property var selectedProcess: ({})
+     property string processDetailError: ""
+     property string pendingProcessAction: ""
++    property string pendingProcessContext: ""
+     property int pendingProcessPid: 0
+     property string pendingProcessName: ""
+     property string pendingProcessStartTicks: ""
+@@ -86,9 +90,11 @@
+     }
+ 
+     function requestProcessTermination() {
+-        if (processActionState === "running" || processActionState === "pending"
++        if (!active || !actionContext || managedServices.actions.locked
++                || processActionState === "running" || processActionState === "pending"
+                 || selectedProcessPid < 1 || !selectedProcess.action_allowed)
+             return false;
++        pendingProcessContext = actionContext;
+         pendingProcessAction = "terminate";
+         pendingProcessPid = selectedProcessPid;
+         pendingProcessName = selectedProcessName;
+@@ -111,7 +117,9 @@
+     }
+ 
+     function confirmProcessAction() {
+-        if (processActionState !== "pending" || pendingProcessAction !== "terminate")
++        if (!active || !actionContext || pendingProcessContext !== actionContext
++                || managedServices.actions.locked || processActionProcess.running
++                || processActionState !== "pending" || pendingProcessAction !== "terminate")
+             return false;
+         const current = processes.find(item => Number(item.pid) === pendingProcessPid);
+         if (!current || String(current.name) !== pendingProcessName) {
+@@ -144,7 +152,9 @@
+         }
+     }
+ 
++    onActionContextChanged: if (processActionState === "pending") cancelProcessAction()
+     onActiveChanged: {
++        if (!active && processActionState === "pending") cancelProcessAction();
+         if (active) {
+             tick = 0;
+             sample();

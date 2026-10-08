@@ -1,0 +1,42 @@
+{
+  "scripts/managed-services.py": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "27adcd4f928cdf8f99153e3be2d0b45258f4c8753ee592a0b8963f9b1a7756f7"
+  },
+  "services/ServiceRestartActions.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "34ffe35c190ee2c74bf73293de79c020dfb6a3eb59797d9ce7c179306c190b33"
+  },
+  "services/ManagedServices.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "303c1f8f84e828c12698497f38f5f39e5be18e21b055f4733ca98e37ac1dd680"
+  },
+  "components/ManagedServicesView.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "e41b51bcdcb6200411a94bd595652bf9fa37afbcf075eba90f64f288c9fa40e8"
+  },
+  "tests/test_managed_services.py": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "0184488dfcc55314c4a44460f9f8df600f2ff0370eae715e1c513db945c03935"
+  },
+  "tests/tst_ManagedServices.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "aa881cc3420ff32f4f415960395f246f77b32ae3713eb1e80f877d3a834e4a2a"
+  },
+  "tests/fixtures/performance-routes.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "94814b03b2d32bdc71006f5c4cf7d1835c86055b9d1e7672c326cfd8ff0f50a5"
+  },
+  "performance-service-test.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "8704038a9a7f976c887457eb1351052adb7234023e4cb4d363cfc6400d132ddd"
+  },
+  "services/PerformanceService.qml": {
+    "before": "92636de4aef1a89f10f1dbe5ad27e6a1c82c1e6fd709e7b19e86622772615f69",
+    "after": "04137fdb7adb635bfb342b154cf4ceac98f23c45aea7fd8db899e41ba48b8d5a"
+  },
+  "components/PerformanceDashboard.qml": {
+    "before": "cb251f7bae19257a362355018b4c8272b5c6719ab4f421d6215ef6800846dbff",
+    "after": "371e7719d3aaf0891efd6f5c6481219d9569b90594066a8d5e1f4911c3bad958"
+  }
+}
