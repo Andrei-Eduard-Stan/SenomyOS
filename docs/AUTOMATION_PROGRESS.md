@@ -298,12 +298,20 @@ No unattended automation may perform these actions.
   https://fcitx-im.org/wiki/Configtool_%28Fcitx_5%29/en . Existing baseline changes
   remain separate; clean-checkout reproducibility remains open.
 
+### OSK investigation checkpoint — 2026-10-08
+
+- Primary wvkbd documentation/source establish explicit manual show/hide and
+  separate auto-input-method requirements. Proposed candidate and lifecycle/
+  focus/acceptance contract: docs/OSK_PROVIDER_CONTRACT.md.
+- Read-only lookup finds no wvkbd-mobintl, wvkbd-deskintl or wayland-info on the
+  reference machine. Protocol support remains unknown. No provider was started,
+  installed or represented as integrated. This is investigation, not delivery.
+
 ## Exact next stage
 
-Section 3: establish a native-Wayland on-screen keyboard provider contract from
-primary documentation and installed compositor capabilities. Define explicit
-show/hide and safe lifecycle controls, unavailable/error states, focus/occlusion
-behavior and fake-provider tests before publication. Do not install or start an
-unvalidated provider or claim touchscreen/text-entry acceptance. IME session and
-physical accessibility acceptance remain open; continue later functional domains
-only with those gaps recorded. Visual redesign/update installation stay excluded.
+Section 3: implement bounded OSK capability probing and an isolated owned-provider
+controller against OSK_PROVIDER_CONTRACT.md, with explicit show/hide requests,
+failure states and fake-provider lifecycle/focus tests. Missing native tools must
+remain unavailable/unknown; no unvalidated provider installation or activation.
+Physical IME/OSK/accessibility acceptance remains open. Later functional domains,
+visual redesign and update installation have not been declared complete.
