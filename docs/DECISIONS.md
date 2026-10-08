@@ -1,3 +1,19 @@
+## D170 — Finite device lists keep every control in keyboard Tab order (2026-10-08)
+
+Populated testing reproduced clipped Wi-Fi focus. Device lists now use finite
+Repeaters within FocusScrollArea; nested scrolling runs before outer-page
+placement. This preserves appearance and prevents virtualized rows disappearing
+from keyboard traversal. Large-inventory resource measurement remains open.
+
+## D171 — User-directed OSK tools may be installed locally (2026-10-08)
+
+Missing tools blocked manual keyboard start. The continued-completion request
+supports a user-local pinned wvkbd build and signature-verified official Arch
+wayland-info extraction when sudo is unavailable. No autostart, automatic install
+behavior or real text-entry acceptance is implied. Receipt is in docs/qa/.
+
+# SenomyOS Decision Log
+
 # SenomyOS Decision Log
 
 ## D169 — OSK uses a confirmed managed shell-session lifetime (2026-10-08)

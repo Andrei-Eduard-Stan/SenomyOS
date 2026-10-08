@@ -1,0 +1,18 @@
+{
+  "components/ControlCentre.qml": {
+    "before": "90c528b4665eee4ba3f17312529c56b669733fcd299c2b4c876950a44dc102ce",
+    "after": "cb2b04dafab9d7d5e182b5ba5b7c192d053d77330c4fac860bd58225201aae9c"
+  },
+  "components/FocusScrollArea.qml": {
+    "before": "8471c35a4c5d46f4c5935a65a0b5092cf9945feac6ba52408d0cb3ee07e16385",
+    "after": "eaf2afa2d9b3f0cc7af3a54ca7f2c1248e84ff94f446074c129714420116b320"
+  },
+  "components/FocusDeviceList.qml": {
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "321c3b5135bec04d522279798c9225725548e0aaf1b197b072e494dfb7bc778b"
+  },
+  "tests/fixtures/control-routes.qml": {
+    "before": "1fe0f3a3a1b96d3851c86c5f76ab1776f52968caa47a403601839e7d15f1d25a",
+    "after": "c30e983b26a1209a786e8e8f93733a0a358a41b887cbc3c39d7d5d753932a6e3"
+  }
+}

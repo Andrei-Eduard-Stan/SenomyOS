@@ -1,3 +1,14 @@
+## Observation — user-local OSK tools, 2026-10-08
+
+wvkbd-mobintl 0.21 (pinned commit bbecd996aae5a4dc4bc32bd643d37cefa9f63752)
+and official signed wayland-info 1.3.0-1 are installed in ~/.local/bin.
+The live shell PATH already includes that directory. Read-only detection reports
+providerInstalled=true, protocolState=advertised, manualCandidate=true,
+integrated=false. No real keyboard was launched; physical acceptance remains open.
+See docs/qa/osk-install-20261008/ for the receipt and verification limits.
+
+# SenomyOS Runtime Inventory
+
 # SenomyOS Runtime Inventory
 
 ## OSK source publication observation — 2026-10-08

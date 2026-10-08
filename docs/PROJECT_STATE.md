@@ -85,7 +85,8 @@ display rollback and session preview focus are covered by extended fake-provider
 fixtures (session compositor host substituted); full accessibility and physical acceptance
 remain open. A detected Fcitx5 editor handoff now has mocked backend and UI
 coverage; Fcitx5 is absent here. OSK read-only detection, the managed adapter and conditional manual controls
-have backend/UI and disposable-process coverage. No provider was installed or
+have backend/UI and disposable-process coverage. A user-local wvkbd provider and signed Arch wayland-info tool are now installed;
+read-only detection reports required protocols advertised. No real provider was
 started here; real text entry, touch and compositor/occlusion acceptance remain open. No schedule
 or execution while the laptop is off is implied.
 

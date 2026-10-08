@@ -361,11 +361,25 @@ No unattended automation may perform these actions.
 - Integration patches/checksums: docs/qa/osk-adapter-20261008/. Pre-existing source
   and visual work remain preserved; clean-checkout reproducibility remains open.
 
+### Durable checkpoint — installed manual OSK and populated focus, 2026-10-08
+
+- User-directed local wvkbd build and signed Arch wayland-info extraction succeed.
+  Live PATH already includes ~/.local/bin. Probe reports installed/advertised/
+  manualCandidate true, integrated false. No actual keyboard launched. Evidence:
+  docs/qa/osk-install-20261008/. Physical text entry and touch remain open.
+- Populated fixture reproduced clipped Wi-Fi focus. FocusDeviceList retains
+  finite device controls in Tab order; FocusScrollArea reveals nested focus first.
+  All 24 Wi-Fi/24 Bluetooth/32 audio controls reached at both sizes, pending
+  reviews/all routes pass without fake mutation. Targeted lint exits zero with
+  existing warnings. Source patches/hashes: docs/qa/populated-focus-20261008/.
+- Physical/compositor acceptance and large-inventory measurements remain open.
+
 ## Exact next stage
 
-Section 3: test populated Network, Audio and Device Management lists for keyboard
-reachability and inner-list focus visibility, using fake devices/endpoints and
-no provider mutation. Repair demonstrated defects while preserving current layout.
-Record physical IME/OSK/focus/touch gates separately; then continue the Section 4
-Performance management source gaps and later domains through Insights. Do not
-revisit visuals, install updates or claim whole-scope completion.
+Section 4: implement allowlisted user-service restart with an explicit review,
+identity/state revalidation and truthful observed outcomes; expose managed-process
+restart only where a supported owning service can be identified safely. Test fake
+providers only; do not restart desktop services. Then complete diagnostic/report
+parity and continue Network, Applications and the eight Insights routes.
+Physical acceptance gates remain open. Visual redesign/update installation/release
+engineering remain outside the authorized scope.
