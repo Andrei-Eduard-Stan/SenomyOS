@@ -1,0 +1,6 @@
+--- a/shell/quickshell/components/RailWindow.qml
++++ b/shell/quickshell/components/RailWindow.qml
+@@ -16,0 +17 @@
++    property var desktopSettings: null
+@@ -319,0 +321 @@
++        desktopSettings: root.desktopSettings

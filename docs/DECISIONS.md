@@ -1,5 +1,13 @@
 ## D175 — Profile controls and native advanced settings remain separate (2026-10-08)
 
+## 2026-10-08 — registered desktop preferences and portal evidence
+
+Use Gio registered handlers and reviewed, preserved XDG autostart overrides.
+Autostart enablement is an explicit future-login link, never live activation.
+Portal interface/service availability is read-only evidence, not accepted provider
+or permission behavior. See qa/desktop-settings-20261008/RESULTS.md.
+
+
 Secret-free profile inventory supports explicitly reviewed disconnect/delete/
 autoconnect with UUID/snapshot revalidation and observed state. Native editor
 handoffs cover VPN/DNS/connection PAC proxy settings without claiming plugin or

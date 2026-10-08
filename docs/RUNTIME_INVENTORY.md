@@ -1,5 +1,14 @@
 ## Observation — Network profile source publication, 2026-10-08
 
+## 2026-10-08 — desktop integration checkpoint
+
+Read-only registry reports 6 roles, 56 startup candidates and 4 protected system
+entries; future autostart hook absent. Three portal units active, seven queried
+interfaces advertised, Background absent, Flatpak unavailable. Warned Quickshell
+source load 14:21:58, PID1373 unchanged, compositor errors empty. No default,
+autostart, user-manager or portal permission mutation was performed.
+
+
 Read-only native inventory reports 13 profiles and nm-connection-editor installed.
 No profile or connection was edited, disconnected, deleted or activated by QA.
 Warned source publication retains Quickshell active/running PID1373 and empty

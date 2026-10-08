@@ -424,12 +424,22 @@ No unattended automation may perform these actions.
 - Physical scan freshness/credential flow/VPN/DNS/proxy/editor acceptance remains
   open; native tool launch is not successful settings acceptance.
 
+### Durable checkpoint — desktop defaults/autostart/portals, 2026-10-08
+
+- Six registered default roles and preserved reviewed XDG autostart preferences
+  now serve Applications. Protected infrastructure and stale/context changes are
+  rejected. Native metadata is never arbitrary command execution. Future-login
+  hook can be reviewed without activating the manager or launching applications.
+- Settings shows service/interface capability evidence and unavailable providers;
+  advertised portals are not successful permission or screencast journeys.
+- 12/4 Python cases, 7 Qt cases, populated narrow views and actual service guards
+  pass with private roots/fake mutations only. Native read-only inventory and
+  unchanged live PID after publication recorded in docs/qa/desktop-settings-20261008/.
+- Real defaults opening, fresh login/autostart and portal journeys remain open.
+
 ## Exact next stage
 
-Section 6: default applications, reviewed autostart preferences and normalized
-portal/permission status. Use detected desktop metadata and fixed native APIs;
-never replay arbitrary application commands or auto-launch during inventory.
-Preserve autostart files and protect session infrastructure. Fake providers/private
-XDG roots only for mutation tests. Then final cross-surface functional regression
-through Insights and an explicit source-versus-physical acceptance ledger.
-Visual redesign, update installation and release engineering remain out of scope.
+Final cross-surface regression through Insights. Fix discovered per-monitor
+Performance action-context ownership and collector forced-deadline behavior,
+then run the combined functional fixtures and publish a source/manual acceptance
+ledger. No visual redesign, update installation or release-engineering expansion.
