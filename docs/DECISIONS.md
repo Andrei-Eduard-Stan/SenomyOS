@@ -1,5 +1,14 @@
 # SenomyOS Decision Log
 
+## D168 — OSK advertisement is not completed integration (2026-10-08)
+
+Read-only detection distinguishes installed allowlisted providers and required
+advertised protocols; absent/failed inspection stays unknown. Input status does
+not enable launch or claim surface readiness. The controller prototype uses
+injected child ownership, serial-tagged callbacks and confirmed stopping; it is
+not wired to a live adapter. Managed-process reload/shutdown semantics must be
+resolved before a provider is launched; detached startup is not an ownership fix.
+
 ## D167 — Optional input tools report installation separately from integration (2026-10-08)
 
 Fcitx5 editor and engine detection are separate capabilities. Opening settings

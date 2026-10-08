@@ -1,7 +1,8 @@
 # Native on-screen keyboard provider contract
 
-Dated investigation: 2026-10-08. This is a proposed implementation contract,
-not delivered OSK support or a hardware acceptance result.
+Dated investigation: 2026-10-08. Read-only detection and an isolated controller
+prototype now have automated coverage. Provider launch/show/hide is not connected
+to the live shell, and this is not delivered OSK or hardware acceptance.
 
 ## Evidence and candidate
 
@@ -54,3 +55,23 @@ Attended acceptance: pointer and touch show/hide; text entry in native Qt/GTK,
 XWayland and terminal; modifier/layout behavior; multi-output placement;
 portrait/narrow occlusion; close/reopen/reload ownership; lock/recovery behavior.
 Source and mocked tests cannot close these acceptance items.
+
+## Implementation checkpoint — 2026-10-08
+
+`osk-capabilities.py` probes advertised interfaces through wayland-info with a
+five-second timeout. Unknown/malformed/failed probes do not enable a candidate.
+The conservative base requirements include wl_compositor v6, matching the current
+upstream source inspected; older provider versions may have different needs and
+are not inferred compatible. Provider installation and protocol advertisement
+remain distinct, and integrated always remains false.
+
+`OskController.qml` is a tested prototype with injected provider ownership,
+serial-tagged callbacks, startup timeout, show/hide requests, confirmed stopping
+and a primary-focus-release signal. It has no production provider adapter. Fake
+providers test its state contract; no keyboard is started or signalled by tests.
+
+Quickshell documents that a managed Process ends with configuration reload or
+shell exit. A detached process would lose direct ownership. The launch adapter
+must resolve this boundary and provide explicit lifecycle information before
+wiring show/hide to a live provider. Hiding the Input route must not terminate it.
+Reference: https://quickshell.org/docs/v0.3.0/types/Quickshell.Io/Process/ .

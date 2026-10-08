@@ -29,7 +29,10 @@ Column {
     DashboardCard {
         width: parent.width
         title: "ON-SCREEN KEYBOARD"
-        value: "NOT INTEGRATED"
-        detail: "A compatible provider, explicit show/hide controls and application text-entry testing are still required."
+        value: root.settings && root.settings.oskCapabilities && root.settings.oskCapabilities.providerInstalled === true
+            ? "PROVIDER DETECTED / NOT INTEGRATED" : "PROVIDER UNAVAILABLE / NOT INTEGRATED"
+        detail: root.settings && root.settings.oskCapabilities
+            ? root.settings.oskCapabilities.message + " Explicit controls and application text-entry acceptance remain open."
+            : "OSK capabilities have not been checked. Integration remains open."
     }
 }

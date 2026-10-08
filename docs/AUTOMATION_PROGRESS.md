@@ -307,11 +307,37 @@ No unattended automation may perform these actions.
   reference machine. Protocol support remains unknown. No provider was started,
   installed or represented as integrated. This is investigation, not delivery.
 
+### Durable checkpoint — OSK probe and isolated controller, 2026-10-08
+
+- Read-only OSK probe is connected to InputSettings route activation and the
+  existing input-tools status card. Installed provider, advertised required
+  protocols and unknown/incompatible results are separate. No provider is started
+  or installed; integrated is always false. Fcitx status remains independent.
+- Nine Python cases cover missing session/probe/provider, exact interface/version
+  parsing, missing protocols, command errors/timeouts, malformed/oversized output
+  and rejected actions. The schema fixture rejects invalid data and does not
+  promote advertised protocols to accepted integration. Prior input handoff tests
+  still pass; lint exits zero with existing metadata/unqualified diagnostics.
+- OskController is an isolated prototype with an injected owned-provider adapter.
+  Twelve behavioral cases plus setup/cleanup pass: guarded startup, ownership,
+  duplicate requests, show/hide, cancellation/confirmed stop, failures, stale
+  callbacks, capability loss, timeout and focus-release requests. No production
+  adapter is connected; no real keyboard or desktop process was signalled.
+- Reference-machine probe reports providerInstalled=false, protocolState=unknown
+  because wayland-info is unavailable. No compatibility or touchscreen claim.
+- Warned publication: Configuration Loaded observed; Quickshell active/running,
+  PID 1373 unchanged; compositor config errors empty; existing stacking warning.
+  Physical acceptance remains pending. Evidence: docs/qa/osk-20261008/.
+- Managed Quickshell processes end with reload/shell exit; detaching loses direct
+  child ownership. This remains the adapter's explicit unresolved boundary, not
+  a reason to pretend the OSK feature is delivered.
+
 ## Exact next stage
 
-Section 3: implement bounded OSK capability probing and an isolated owned-provider
-controller against OSK_PROVIDER_CONTRACT.md, with explicit show/hide requests,
-failure states and fake-provider lifecycle/focus tests. Missing native tools must
-remain unavailable/unknown; no unvalidated provider installation or activation.
-Physical IME/OSK/accessibility acceptance remains open. Later functional domains,
-visual redesign and update installation have not been declared complete.
+Section 3: implement and test the production OSK adapter's owned-child lifecycle
+and explicit show/hide/confirmed-stop UI. Resolve reload/shutdown policy against
+OSK_PROVIDER_CONTRACT.md before launch hookup; route dismissal must preserve the
+keyboard, and successful show requests must release primary focus. Use fake
+providers for failures/races and unknown/missing tools; never activate or install
+an unvalidated keyboard automatically. Physical IME/OSK/accessibility acceptance
+and the later functional domains through Insights remain open.
