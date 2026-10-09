@@ -1,0 +1,377 @@
+[
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 672,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 667,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 662,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 657,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 652,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 647,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 642,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 637,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 632,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 627,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 622,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 617,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1280,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1268,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1258,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1248,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1238,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1228,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1216,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1206,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1196,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1186,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1176,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1166,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 0,
+    "y": 612,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 5,
+    "y": 614,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 10,
+    "y": 616,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 16,
+    "y": 618,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 21,
+    "y": 620,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 27,
+    "y": 622,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 32,
+    "y": 624,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 37,
+    "y": 626,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 43,
+    "y": 628,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 48,
+    "y": 630,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 54,
+    "y": 632,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 59,
+    "y": 634,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 65,
+    "y": 636,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": false,
+    "width": 0,
+    "height": 0,
+    "x": 0,
+    "y": 0,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 65,
+    "y": 636,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": false,
+    "width": 0,
+    "height": 0,
+    "x": 0,
+    "y": 0,
+    "lockSync": true
+  },
+  {
+    "event": "geometry",
+    "visible": true,
+    "width": 1154,
+    "height": 128,
+    "x": 65,
+    "y": 636,
+    "lockSync": true
+  },
+  {
+    "event": "caps-toggle"
+  },
+  {
+    "event": "caps-toggle"
+  }
+]

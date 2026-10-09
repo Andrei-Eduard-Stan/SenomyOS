@@ -14,6 +14,8 @@ Window {
         property int processId: 424242
         property var command: []
         property var sent: []
+        property var written: []
+        function write(data) {written=written.concat([data]);}
         function signal(number) { sent=sent.concat([number]); }
     }
     QtObject { id: fakeObserver; property bool running: false; property var command: [] }
@@ -56,6 +58,14 @@ Window {
             adapter.ownerSerial=123;fakeChild.running=true;
             adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200}');
             test.check(adapter.visibilityKnown && adapter.visible,"bounded owned geometry observed");
+            adapter.signalReady=true;adapter.stopRequested=false;test.check(adapter.toggle(123) && fakeChild.sent[fakeChild.sent.length-1]===34,"toggle addresses native state with owned SIGRTMIN");
+            adapter.lockSync=true;
+            adapter.consumeLockState('{"ok":true,"available":true,"capsLock":true}');
+            test.check(fakeChild.written.length===1 && fakeChild.written[0]==="caps:1\n","owned Caps state uses fixed stdin framing");
+            adapter.consumeLockState('{"ok":true,"available":true,"capsLock":"typed input"}');
+            test.check(fakeChild.written.length===1,"invalid lock state cannot become native input");
+            adapter.lockSync=false;adapter.consumeLockState('{"ok":true,"available":true,"capsLock":false}');
+            test.check(fakeChild.written.length===1,"ordinary providers receive no Caps bridge input");
             adapter.consumeGeometry('{"event":"geometry","visible":false,"width":-1,"height":0}');
             test.check(adapter.visible,"invalid geometry rejected");
             adapter.consumeGeometry('{"event":"geometry","visible":false,"width":0,"height":0}');

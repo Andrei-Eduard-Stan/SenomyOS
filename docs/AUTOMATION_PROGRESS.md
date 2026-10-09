@@ -470,3 +470,13 @@ Native reserved-space changes drive primary-panel height constraints. This is no
 a permanent provider decision or full mobile acceptance. Next: test the shortcut,
 post-extension typing and dragging in the user's session; then touch/rotation,
 scaling and multi-output tests. Preserve all earlier recovery/deployment gates.
+
+### User-requested OSK correction — 2026-10-09
+
+User accepts starter typing/navigation and defers networking, audio and remaining
+UI refinements to the later UI pass. This does not sign off every system journey.
+Native toggle, grip movement and shared Caps Lock source/isolated integration
+are completed in qa/osk-sync-move-20261009/RESULTS.md. Caps sync is an exact-version
+Hyprland component with a receipt-checked local build, not universal OSK support.
+Next: attended physical shortcut/Caps/movement acceptance; preserve the broader
+functional/manual ledger and deferred design/release scope.

@@ -1,3 +1,16 @@
+## 2026-10-09 — OSK sync/movement revision
+
+Native and actual managed integration passed in a private nested compositor.
+Shared Caps is locally compiled for Hyprland efb50993780079460b0cbed1363e2166a2de1d9f;
+the component must be rebuilt for another compositor commit. User confirms basic
+OSK typing/navigation. Physical alternating Caps, revised shortcut and movement
+still require attended acceptance; network/audio refinements are deferred.
+Evidence and installed revision hashes: qa/osk-sync-move-20261009/.
+
+Published adapter loaded in active PID 1335; shared-Caps reports available.
+Live bound helper passed hide/show/hide with one child, final hidden. No physical
+key or real Caps action was used; no Hyprland source or service restart changed.
+
 ## 2026-10-09 — OSK shortcut/resize publication
 
 User-local wvkbd-mobintl replaced with pinned Senomy resize build after matching

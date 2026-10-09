@@ -13,6 +13,7 @@ TestCase {
         property int starts: 0
         property int shows: 0
         property int hides: 0
+        property int toggles: 0
         property int stops: 0
         property bool acceptStart: true
         property bool acceptShow: true
@@ -24,6 +25,7 @@ TestCase {
         function start(name,id) { starts++; commandName=name; if (!acceptStart) return false; owner=id; return true; }
         function show(id) { if (!owns(id)) return false; shows++; return acceptShow; }
         function hide(id) { if (!owns(id)) return false; hides++; return acceptHide; }
+        function toggle(id) { if (!owns(id)) return false; toggles++; return true; }
         function stop(id) { if (!owns(id)) return false; stops++; return acceptStop; }
     }
     OskController { id: control; provider: fake }
@@ -32,7 +34,7 @@ TestCase {
     function init() {
         control.startupTimer.stop();control.startPending=false;control.serial=0;control.state="unavailable";
         fake.visibilityKnown=false;fake.visible=false;
-        fake.owner=0;fake.starts=0;fake.shows=0;fake.hides=0;fake.stops=0;fake.commandName="";
+        fake.toggles=0;fake.owner=0;fake.starts=0;fake.shows=0;fake.hides=0;fake.stops=0;fake.commandName="";
         fake.acceptStart=true;fake.acceptShow=true;fake.acceptHide=true;fake.acceptStop=true;
         control.capabilities=candidate();control.refreshState();focus.clear();
     }
@@ -40,13 +42,13 @@ TestCase {
     function start() { requestLaunch();control.started(control.serial); }
     function test_shortcut_starts_once_and_toggles_without_stop() {
         verify(control.toggle());compare(fake.starts,1);verify(!control.toggle());
-        control.started(control.serial);verify(control.toggle());compare(fake.hides,1);
-        verify(control.toggle());compare(fake.shows,2);compare(fake.starts,1);compare(fake.stops,0);
+        control.started(control.serial);verify(control.toggle());compare(fake.toggles,1);
+        verify(control.toggle());compare(fake.toggles,2);compare(fake.shows,1);compare(fake.starts,1);compare(fake.stops,0);
     }
     function test_shortcut_respects_observed_provider_native_hide() {
         start();fake.visibilityKnown=true;fake.visible=false;
-        verify(control.toggle());compare(fake.shows,2);compare(fake.hides,0);
-        fake.visible=true;verify(control.toggle());compare(fake.hides,1);
+        verify(control.toggle());compare(fake.toggles,1);compare(fake.shows,1);compare(fake.hides,0);
+        fake.visible=true;verify(control.toggle());compare(fake.toggles,2);compare(fake.hides,0);
         verify(control.requestStop());verify(!control.toggle());compare(fake.stops,0);
     }
     function test_shortcut_rejects_absent_capability_and_pending_reviews() {

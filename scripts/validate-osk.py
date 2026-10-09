@@ -10,6 +10,7 @@ repo = Path(__file__).resolve().parents[1]
 shell = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else repo / "shell/quickshell"
 subprocess.run([sys.executable,str(shell / "tests/test_osk_capabilities.py")],check=True)
 subprocess.run([sys.executable,str(shell / "tests/test_osk_provider.py")],check=True)
+subprocess.run([sys.executable,str(shell / "tests/test_osk_lock_state.py")],check=True)
 with tempfile.TemporaryDirectory(prefix="senomy-osk-validation-") as runtime:
     env = dict(os.environ,XDG_RUNTIME_DIR=runtime,QT_QPA_PLATFORM="offscreen",QT_QUICK_BACKEND="software")
     env.pop("WAYLAND_DISPLAY",None)

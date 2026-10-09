@@ -54,6 +54,11 @@ def launch(name):
             resize=b"--senomy-resize" in metadata and b"geometry-only telemetry" in metadata
         except OSError:resize=False
         argv=[binary,"--senomy-resize","--no-popup"] if resize else [binary]
+        if resize and b"--senomy-lock-sync" in metadata:
+            lock_spec=importlib.util.spec_from_file_location("osk_lock_state",Path(__file__).with_name("osk-lock-state.py"))
+            locks=importlib.util.module_from_spec(lock_spec);lock_spec.loader.exec_module(locks)
+            # Plugin availability, not an active keyboard, enables the handshake.
+            if locks.ensure_plugin():argv.append("--senomy-lock-sync")
         os.execv(binary,argv)
     except OSError:
         return {"ok":False,"message":"Keyboard provider could not be executed."}

@@ -41,7 +41,11 @@ QtObject {
         if (startPending || ["pending-start","pending-stop","stop-requested"].indexOf(state)>=0) return false;
         if (owned) {
             const hidden = provider.visibilityKnown === true ? !provider.visible : state === "hide-requested";
-            return hidden ? requestShow() : requestHide();
+            if (!provider.toggle(serial)) { state="failed";message="OSK toggle request failed.";return false; }
+            state=hidden ? "show-requested" : "hide-requested";
+            message="Toggle requested; native provider decides from its actual visibility.";
+            if (hidden) releasePrimaryFocusRequested();
+            return true;
         }
         return requestShow() && state === "pending-start" && confirmStart();
     }

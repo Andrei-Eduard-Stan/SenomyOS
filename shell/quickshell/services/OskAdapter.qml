@@ -16,6 +16,10 @@ Scope {
     property bool stopRequested: false
     property bool visibilityKnown: false
     property bool visible: false
+    property bool lockSync: false
+    property bool lockStateKnown: false
+    property int capsRequests: 0
+    readonly property string lockMessage: !lockSync ? "Physical Caps Lock sync is unavailable for this provider." : lockStateKnown ? "Caps Lock is shared with connected physical keyboards." : "Caps Lock sync is connecting or unavailable."
     signal geometryChanged()
     signal providerStarted(int serial)
     signal providerFailed(int serial)
@@ -24,7 +28,7 @@ Scope {
     function owns(serial) { return serial === ownerSerial && ownerSerial > 0 && child.running; }
     function start(name, serial) {
         if (child.running || ["wvkbd-mobintl","wvkbd-deskintl"].indexOf(name) < 0 || serial < 1) return false;
-        visibilityKnown=false;visible=false;
+        visibilityKnown=false;visible=false;lockSync=false;lockStateKnown=false;capsRequests=0;
         ownerSerial = serial; providerName = name; signalReady = false; stopRequested = false;
         child.command = ["python3",Quickshell.shellDir+"/scripts/osk-provider.py","launch-confirmed",name];
         observing = true; child.running = true;
@@ -38,6 +42,19 @@ Scope {
     function hide(serial) {
         if (!owns(serial) || !signalReady || stopRequested) return false;
         child.signal(10); return true;
+    }
+    function toggle(serial) {
+        if (!owns(serial) || !signalReady || stopRequested) return false;
+        child.signal(34); // Linux SIGRTMIN: provider chooses from its actual state.
+        return true;
+    }
+    function consumeLockState(line) {
+        if (!lockSync || !owns(ownerSerial) || line.length>256) return;
+        try {
+            const data=JSON.parse(line);
+            lockStateKnown=data.ok===true && data.available===true && typeof data.capsLock==="boolean";
+            if (lockStateKnown) child.write(data.capsLock ? "caps:1\n" : "caps:0\n");
+        } catch (_) {}
     }
     function stop(serial) {
         if (!owns(serial) || stopRequested) return false;
@@ -64,7 +81,7 @@ Scope {
     function childExited(code) {
         const serial = ownerSerial;
         const requested = stopRequested;
-        visibilityKnown=false;visible=false;geometryChanged();
+        visibilityKnown=false;visible=false;lockSync=false;lockStateKnown=false;capsRequests=0;geometryChanged();
         observing = false; signalReady = false; watchdog.stop(); ownerSerial = 0;
         if (serial > 0) providerExited(serial, requested || code === 0);
     }
@@ -77,13 +94,31 @@ Scope {
         if (!child.running || ownerSerial < 1 || line.length>512) return;
         try {
             const data=JSON.parse(line);
+            if (data.event==="caps-toggle") {
+                if (lockSync && signalReady && capsRequests<32) {capsRequests++;if (!capsToggle.running) capsToggle.running=true;}
+                return;
+            }
             if (data.event!=="geometry" || typeof data.visible!=="boolean"
                 || !Number.isInteger(data.width) || !Number.isInteger(data.height)
                 || data.width<0 || data.width>16384 || data.height<0 || data.height>16384
                 || (data.visible && (data.width===0 || data.height===0))) return;
-            visibilityKnown=true;visible=data.visible;geometryChanged();
+            visibilityKnown=true;visible=data.visible;lockSync=data.lockSync===true;geometryChanged();
         } catch (_) { /* Only bounded geometry; never key text or arbitrary output. */ }
     }
-    Process { id: managedChild; stdout: SplitParser { onRead: data => root.consumeGeometry(data) } onExited: (code, status) => root.childExited(code) }
+    Process {
+        id: lockEvents
+        // The event bridge also arms parent-death SIGTERM for abrupt shell exit.
+        running: root.lockSync && root.child.running && root.signalReady
+        command: ["python3",Quickshell.shellDir+"/scripts/osk-lock-state.py","stream"]
+        stdout: SplitParser { onRead: data => root.consumeLockState(data) }
+    }
+    Process { id: capsToggle;
+        onExited: (code,status) => {
+            root.capsRequests=Math.max(0,root.capsRequests-1);
+            if (code!==0) root.lockStateKnown=false;
+            if (root.capsRequests>0 && root.lockSync && root.owns(root.ownerSerial)) capsToggle.running=true;
+        }
+        command: ["python3",Quickshell.shellDir+"/scripts/osk-lock-state.py","toggle"] }
+    Process { id: managedChild; stdinEnabled: true; stdout: SplitParser { onRead: data => root.consumeGeometry(data) } onExited: (code, status) => root.childExited(code) }
     Process { id: readinessProbe; stdout: StdioCollector { onStreamFinished: root.consumeObservation(text) } }
 }

@@ -1,0 +1,27 @@
+[
+  {
+    "ok": true,
+    "available": true,
+    "capsLock": false
+  },
+  {
+    "ok": true,
+    "available": true,
+    "capsLock": true
+  },
+  {
+    "ok": true,
+    "available": true,
+    "capsLock": false
+  },
+  {
+    "ok": true,
+    "available": true,
+    "capsLock": true
+  },
+  {
+    "ok": true,
+    "available": true,
+    "capsLock": false
+  }
+]

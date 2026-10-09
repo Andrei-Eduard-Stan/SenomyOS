@@ -1,3 +1,12 @@
+## 2026-10-09 — Shared Caps Lock and movable managed OSK
+
+Use native visibility toggling and a distinct move grip. Shared Caps Lock needs
+an exact-version Hyprland component; keep it modifier-only, event-driven and
+receipt-checked, with manual-OSK fallback on incompatibility. Movement reserves
+the rectangular strip below the keyboard top and protects usable application
+height. This does not select a permanent provider or establish release readiness.
+Evidence: qa/osk-sync-move-20261009/RESULTS.md.
+
 ## 2026-10-09 — explicit OSK shortcut and current-provider resize extension
 
 Super+Ctrl+K explicitly starts or shows/hides only the managed session child;

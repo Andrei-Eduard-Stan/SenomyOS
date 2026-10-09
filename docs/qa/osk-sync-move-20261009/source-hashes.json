@@ -1,0 +1,39 @@
+{
+  "services/OskAdapter.qml": {
+    "before": "a16c3795ec513316f6263ea8c41b4302307f632c4d8939cc0eb15a6b1a4e0a14",
+    "after": "764f31dedd784cbaf70ca750178785ff6e73007e460ecca0bfd2c487ae788980"
+  },
+  "services/OskController.qml": {
+    "before": "fd09870adf9015849e4a22061777155b0aacb67bcf335058d2e3127e60565422",
+    "after": "04a5cb0d9c43dc1be8b3dc160f934ffbedc3771a66da7dfceb59de030bb86889"
+  },
+  "components/OskControls.qml": {
+    "before": "cd43cae367b099efe742ba8f625bf4c61be421b1e97d825d39ec3786138fb053",
+    "after": "67dc0f8377cd64390f672da294a6dff1963586aa9c2878768c7f2e9572c48e49"
+  },
+  "scripts/osk-provider.py": {
+    "before": "3b1d1502ff1786fe16fe2a9400168417d339f883a4f5b3d811e65a203e5d3e11",
+    "after": "9e50b8932e28cea01fff95443e6a4df575f0a8187a3f98da57e085e5a74be4c7"
+  },
+  "osk-adapter-test.qml": {
+    "before": "242f7fd9132e8818795c81c00e4e666c37a9b3dc7b1ee9f6a99e214632b35c48",
+    "after": "d0a0422aba66f5e20fd997e06f43591c64a15dd3410f30641767632ded768ddd"
+  },
+  "tests/tst_OskController.qml": {
+    "before": "b74e2c2c983aecaea8fad44cd004c8e3c7a2156160d6b010cddcbb58f24f582e",
+    "after": "67c6a0d17807d2940ac6ff32a8f7597d3ca2c0a0922b3257c29562b7e8645dda"
+  },
+  "wvkbd": {
+    "before": "96c5acbdce0605014d505bc52c34030ed3b57fb63a9fcb13d7e823c71f1d68ca",
+    "after": "4492598e4e9487dbb200f8348e14e78002fcf5dc505af7b48bfdb3ac7f163f52"
+  },
+  "caps-component": {
+    "after": "da187cc3c77cce749d05d6182f0f649d60d1bf50c71ad73c3e10706d134ec13a"
+  },
+  "scripts/osk-lock-state.py": {
+    "after": "62f673df0734215fb546d9e8c4274a72e36587258a459040800167f2e27cfb3e"
+  },
+  "tests/test_osk_lock_state.py": {
+    "after": "c78b052063c228fc77ce7d36920d0b76c35afca96212ed6d915e9e93c2670f2a"
+  }
+}

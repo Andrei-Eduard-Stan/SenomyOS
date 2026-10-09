@@ -52,7 +52,7 @@ Column {
     }
     Text {
         width: parent.width; visible: root.controller && !root.pending
-        text: root.controller ? root.controller.message : "Keyboard controls are unavailable."
+        text: root.controller ? root.controller.message + (root.controller.owned && root.controller.provider.lockMessage !== undefined ? "\n" + root.controller.provider.lockMessage : "") : "Keyboard controls are unavailable."
         textFormat: Text.PlainText; color: Config.Theme.muted
         font.family: Config.Theme.fontFamily; font.pixelSize: 10; wrapMode: Text.WordWrap
     }

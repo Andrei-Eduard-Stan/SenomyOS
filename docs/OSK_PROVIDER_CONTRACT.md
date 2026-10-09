@@ -115,3 +115,14 @@ from physical presentation acceptance and never includes typed keys. Native moni
 reservations, refreshed at most once per 32ms geometry burst, constrain primary
 panels. Source watching still ends a managed child; session dimensions survive
 hide/show but are not saved preferences.
+
+## Shared Caps and placement checkpoint — 2026-10-09
+
+The owned shortcut now sends native SIGRTMIN, avoiding stale shell-visibility
+selection. Top-centre grip movement updates the bottom work-area strip while
+protecting a minimum usable application area. Caps Lock sharing uses a local,
+exact-version-checked Hyprland component, modifier-only listeners, fixed Caps IPC
+and an event-driven owned bridge. Missing/incompatible components leave manual
+OSK available and report shared-Caps unavailable. No universal key-state, Num
+Lock, compositor portability or new physical acceptance claim is made.
+Source/build/fixture evidence: qa/osk-sync-move-20261009/RESULTS.md.
