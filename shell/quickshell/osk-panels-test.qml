@@ -43,7 +43,7 @@ Scope {
                 root.check(insights.fitted.y>=258 && insights.fitted.y+insights.fitted.height<=screen.height-insights.reservedBottom,"Insights wrapper fits below top keyboard");
                 Config.OskGeometry.update({ok:true,available:true,screen:screen.name,x:0,y:0,width:screen.width,height:250,reserved:false});root.phase++;return;
             }
-            root.check(insights.WlrLayershell.layer===WlrLayer.Top && primary.WlrLayershell.layer===WlrLayer.Top && machine.WlrLayershell.layer===WlrLayer.Top,"floating OSK overlay stays above own shell panels");
+            root.check(insights.WlrLayershell.layer===WlrLayer.Top && primary.WlrLayershell.layer===WlrLayer.Top && machine.WlrLayershell.layer===WlrLayer.Overlay,"expanded Senomy retains foreground priority; other panels stay below floating OSK");
             console.log("PASS: actual expanded, dashboard and Insights PanelWindows remain in bounds above/below OSK; expanded content scrolls; float layer ordering holds");Qt.quit();
         }
     }

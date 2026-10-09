@@ -260,7 +260,7 @@ diff --git a/keyboard.c b/keyboard.c
 @@ -750 +768,3 @@
 -        kbd_init_layout(&layouts[i], kb->w, kb->h);
 +        uint32_t edge=kb->resize_edge;
-+        kbd_init_layout(&layouts[i], edge ? kb->resize_width-2*edge : kb->w, edge ? kb->resize_height-edge : kb->h);
++        kbd_init_layout(&layouts[i], edge ? kb->resize_width-2*edge : kb->w, edge ? kb->resize_height-2*edge : kb->h);
 +        if (edge) for (struct key *key=layouts[i].keys; key->type!=Last; key++) {key->x+=edge+kb->resize_x;key->y+=edge+kb->resize_y;}
 diff --git a/keyboard.h b/keyboard.h
 --- a/keyboard.h

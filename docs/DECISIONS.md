@@ -1,3 +1,7 @@
+## 2026-10-09 — Expanded Senomy foreground priority
+
+Expanded Rail Senomy stays on the Overlay layer even while the OSK floats, as requested. Other primary surfaces retain their existing Top downgrade in floating-keyboard mode. Native keys reserve a separate bottom resize gutter so the last row cannot cover the grip. See `qa/osk-bottom-front-20261009/RESULTS.md` for private-compositor validation and baseline boundaries.
+
 ## 2026-10-09 — Keyboard rectangle exclusion and explicit float mode
 
 Replace whole-monitor keyboard reservation on the supported local Hyprland

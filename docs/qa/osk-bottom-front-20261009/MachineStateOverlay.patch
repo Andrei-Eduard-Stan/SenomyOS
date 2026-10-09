@@ -1,0 +1,6 @@
+diff --git a/shell/quickshell/components/MachineStateOverlay.qml b/shell/quickshell/components/MachineStateOverlay.qml
+--- a/shell/quickshell/components/MachineStateOverlay.qml
++++ b/shell/quickshell/components/MachineStateOverlay.qml
+@@ -44 +44 @@
+-    WlrLayershell.layer: Config.OskGeometry.floatingOn(targetScreen) ? WlrLayer.Top : WlrLayer.Overlay
++    WlrLayershell.layer: WlrLayer.Overlay
