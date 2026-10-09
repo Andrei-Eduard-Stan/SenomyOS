@@ -1,8 +1,11 @@
 # Native on-screen keyboard provider contract
 
-Dated investigation: 2026-10-08. Conditional manual controls and the managed
-provider adapter now have source/automated coverage. No provider is installed on
-the reference machine, and real text-entry/touch/compositor acceptance is pending.
+Current checkpoint: 2026-10-09. The user-local wvkbd-mobintl provider is installed;
+the user reported successful typing/open/close before the resizing extension.
+Managed manual controls, Super+Ctrl+K and the pinned drag-resize extension now
+have source and isolated native coverage. Physical touch/rotation/fractional-scale/
+multi-output and post-extension real typing remain acceptance; see
+qa/osk-resize-20261009/RESULTS.md. Historical investigation checkpoints follow.
 
 ## Evidence and candidate
 
@@ -16,7 +19,7 @@ Primary references:
 - https://github.com/jjsullivan5196/wvkbd
 - https://github.com/jjsullivan5196/wvkbd/blob/master/main.c
 
-Reference machine: neither checked wvkbd executable nor wayland-info is found
+Initial investigation (superseded by installation): neither checked wvkbd executable nor wayland-info is found
 on PATH. Protocol compatibility, surface readiness and real application input
 are therefore unknown. No provider/package was installed or started.
 
@@ -102,3 +105,13 @@ started and no package was installed.
 Parent-death reference:
 https://man7.org/linux/man-pages/man2/PR_SET_PDEATHSIG.2const.html . The older
 prototype checkpoint above records the state before this adapter was connected.
+
+## Shortcut and resize boundary — 2026-10-09
+
+The dedicated shortcut is an explicit start/show/hide request and may launch an
+available owned child directly. The Input UI still reviews Start/Stop. No shortcut
+stops or restarts a provider. Provider-reported mapping/geometry is kept separate
+from physical presentation acceptance and never includes typed keys. Native monitor
+reservations, refreshed at most once per 32ms geometry burst, constrain primary
+panels. Source watching still ends a managed child; session dimensions survive
+hide/show but are not saved preferences.

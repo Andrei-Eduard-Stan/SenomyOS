@@ -47,6 +47,14 @@
           "mode": "0755"
         },
         {
+          "id": "osk-shortcut",
+          "source": "scripts/senomy-osk",
+          "target": {"root": "user_bin", "path": "senomy-osk"},
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
           "id": "fullscreen-toggle",
           "source": "components/desktop/scripts/senomy-fullscreen",
           "target": {

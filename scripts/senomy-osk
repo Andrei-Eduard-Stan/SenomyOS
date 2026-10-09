@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Explicit manual shortcut: owned provider only, no process-name matching/signals.
+set -euo pipefail
+[[ $# == 0 ]] || { printf 'senomy-osk takes no arguments\n' >&2; exit 2; }
+script_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+source_root="${SENOMY_SOURCE_ROOT:-$(cd -- "$(dirname -- "$script_path")/.." && pwd -P)}"
+exec timeout 3s "${SENOMY_QS_BIN:-/usr/bin/qs}" ipc --path "$source_root/shell/quickshell" call shell oskToggle

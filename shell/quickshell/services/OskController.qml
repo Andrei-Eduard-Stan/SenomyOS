@@ -36,6 +36,15 @@ QtObject {
     }
     onCapabilitiesChanged: refreshState()
 
+    // Shortcut is an explicit start/show/hide action; it never stops a process.
+    function toggle() {
+        if (startPending || ["pending-start","pending-stop","stop-requested"].indexOf(state)>=0) return false;
+        if (owned) {
+            const hidden = provider.visibilityKnown === true ? !provider.visible : state === "hide-requested";
+            return hidden ? requestShow() : requestHide();
+        }
+        return requestShow() && state === "pending-start" && confirmStart();
+    }
     function requestShow() {
         if (startPending || (state === "pending-start" || state === "pending-stop" || state === "stop-requested")) return false;
         if (owned) {

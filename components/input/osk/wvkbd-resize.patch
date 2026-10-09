@@ -1,0 +1,169 @@
+--- a/main.c
++++ b/main.c
+@@ -21,0 +22 @@
++#include "senomy-resize.h"
+@@ -85,0 +87,40 @@
++/* Optional SenomyOS edge resizing. No keys or surrounding text in telemetry. */
++static bool senomy_resize = false;
++static struct senomy_drag senomy_drag;
++static void senomy_geometry(bool visible) {
++    if (!senomy_resize) return;
++    printf("{\"event\":\"geometry\",\"visible\":%s,\"width\":%u,\"height\":%u}\n",
++           visible ? "true" : "false", visible ? keyboard.resize_width : 0, visible ? keyboard.resize_height : 0);
++    fflush(stdout);
++}
++static bool senomy_begin(int x, int y, int touch_id, uint32_t time) {
++    if (!senomy_resize || !layer_surface_configured || senomy_drag.edge) return false;
++    int edge = senomy_edge(x-(int)keyboard.resize_x,y-(int)keyboard.resize_y,keyboard.resize_width,keyboard.resize_height);
++    if (!edge) return false;
++    kbd_unpress_key(&keyboard,time);
++    senomy_drag = (struct senomy_drag){edge,touch_id,
++        x,y,keyboard.resize_width,keyboard.resize_height};
++    wl_surface_set_input_region(draw_surf.surf,NULL);
++    wl_surface_commit(draw_surf.surf);
++    return true;
++}
++static void senomy_input_region(void) {
++    if (!senomy_resize || !draw_surf.surf) return;
++    struct wl_region *region=wl_compositor_create_region(compositor);
++    wl_region_add(region,keyboard.resize_x,keyboard.resize_y,keyboard.resize_width,keyboard.resize_height);
++    wl_surface_set_input_region(draw_surf.surf,region);wl_region_destroy(region);
++    wl_surface_commit(draw_surf.surf);
++}
++static void senomy_motion(int x,int y) {
++    if (!senomy_drag.edge || !layer_surface) return;
++    uint32_t w,h;
++    senomy_size(&senomy_drag,x,y,keyboard.w,keyboard.h,&w,&h);
++    custom_width=w;
++    if (keyboard.landscape) landscape_height=h; else normal_height=h;
++    height=h;keyboard.resize_width=w;keyboard.resize_height=h;
++    keyboard.resize_x=(keyboard.w-w)/2;keyboard.resize_y=keyboard.h-h;
++    if (keyboard.exclusive) zwlr_layer_surface_v1_set_exclusive_zone(layer_surface,h);
++    kbd_resize(&keyboard,layouts,NumLayouts);drwsurf_attach(&draw_surf);
++    wl_surface_commit(draw_surf.surf);senomy_geometry(true);
++}
++
+@@ -259,3 +300,3 @@
+-    if(!layer_surface_configured || !popup_xdg_surface_configured) {
+-        return;
+-    }
++    if (senomy_drag.edge) return;
++    if (senomy_begin(wl_fixed_to_int(x),wl_fixed_to_int(y),id,time)) return;
++    if(!layer_surface_configured || !popup_xdg_surface_configured) return;
+@@ -284,0 +326 @@
++    if (senomy_drag.edge) { if (id == senomy_drag.touch_id) {senomy_drag.edge=0;senomy_input_region();} return; }
+@@ -295,0 +338 @@
++    if (senomy_drag.edge) { if (id == senomy_drag.touch_id) senomy_motion(wl_fixed_to_int(x),wl_fixed_to_int(y)); return; }
+@@ -315,0 +359,2 @@
++    senomy_drag.edge=0;senomy_input_region();
++    kbd_unpress_key(&keyboard,(uint32_t)(monotime()+keyboard.last_press_offset));
+@@ -334,0 +380 @@
++    cur_x=wl_fixed_to_int(surface_x);cur_y=wl_fixed_to_int(surface_y);
+@@ -341,0 +388 @@
++    if (senomy_drag.edge && senomy_drag.touch_id == -1) {senomy_drag.edge=0;cur_press=false;senomy_input_region();}
+@@ -347,0 +395,2 @@
++    cur_x=wl_fixed_to_int(surface_x); cur_y=wl_fixed_to_int(surface_y);
++    if (senomy_drag.edge) { if (senomy_drag.touch_id == -1) senomy_motion(cur_x,cur_y); return; }
+@@ -363,0 +413,2 @@
++    if (senomy_drag.edge) { if (senomy_drag.touch_id == -1 && button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_RELEASED) {senomy_drag.edge=0;cur_press=false;senomy_input_region();} return; }
++    if (button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_PRESSED && senomy_begin(cur_x,cur_y,-1,time)) return;
+@@ -583 +634,9 @@
+-    keyboard.h = height;
++    if (senomy_resize) {
++        keyboard.w=senomy_clamp(keyboard.w,320,available_width);
++        height=senomy_clamp(height,128,available_height*3/5);
++    }
++    if (senomy_resize) {
++        keyboard.resize_width=keyboard.w;keyboard.resize_height=height;
++        keyboard.w=available_width;keyboard.h=available_height;
++        keyboard.resize_x=(keyboard.w-keyboard.resize_width)/2;keyboard.resize_y=keyboard.h-keyboard.resize_height;
++    } else keyboard.h=height;
+@@ -601,5 +660,20 @@
+-    // Not what we expected, or redimension, refresh and restart
+-    if (keyboard.w != w || keyboard.h != h) {
+-        zwlr_layer_surface_v1_ack_configure(surface, serial);
+-        hide();
+-        show();
++    if (!w || !h) { zwlr_layer_surface_v1_ack_configure(surface,serial); return; }
++    bool reconfigure = layer_surface_configured;
++    keyboard.w=w; keyboard.h=h;
++    if (senomy_resize) {
++        keyboard.resize_width=senomy_clamp(keyboard.resize_width,320,w);
++        keyboard.resize_height=senomy_clamp(keyboard.resize_height,128,h*3/5);
++        keyboard.resize_x=(w-keyboard.resize_width)/2;keyboard.resize_y=h-keyboard.resize_height;
++        height=keyboard.resize_height;
++    } else height=h;
++    if (senomy_resize) {
++        if (keyboard.landscape) landscape_height=height; else normal_height=height;
++    }
++    layer_surface_configured=true;
++    if (reconfigure) {
++        zwlr_layer_surface_v1_ack_configure(surface,serial);
++        if (draw_surf_viewport) wp_viewport_set_destination(draw_surf_viewport,w,h);
++        if (popup_draw_surf_viewport) wp_viewport_set_destination(popup_draw_surf_viewport,w,h*2);
++        kbd_resize(&keyboard,layouts,NumLayouts);
++        drwsurf_attach(&draw_surf);
++        senomy_geometry(true);
+@@ -607,7 +681 @@
+-    };
+-
+-    // Swallow useless events
+-    if (layer_surface_configured) {
+-        return;
+-    };
+-    layer_surface_configured = true;
++    }
+@@ -655,0 +724,2 @@
++    if (senomy_resize && !senomy_drag.edge) senomy_input_region();
++    senomy_geometry(true);
+@@ -673,0 +744 @@
++    fprintf(stderr, "  --senomy-resize        - Drag top/sides/corners; geometry-only telemetry\n");
+@@ -790,0 +862,2 @@
++    senomy_drag.edge=0;cur_press=false;
++    senomy_geometry(false);
+@@ -832 +905,2 @@
+-    zwlr_layer_surface_v1_set_size(layer_surface, req_w, height);
++    if (senomy_resize) { anchor=ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;req_w=keyboard.w; }
++    zwlr_layer_surface_v1_set_size(layer_surface, req_w, senomy_resize ? keyboard.h : height);
+@@ -933,0 +1008,2 @@
++        if (!strcmp(argv[i],"--senomy-resize")) { senomy_resize=true;keyboard.resize_edge=SENOMY_EDGE;continue; }
++
+--- a/keyboard.c
++++ b/keyboard.c
+@@ -7,0 +8 @@
++#include <math.h>
+@@ -711,6 +712,11 @@
+-    if (kb->corner_radius > 0) {
+-        drw_do_clear(d, 0, 0, kb->w, kb->h);
+-        drw_fill_rectangle(d, kb->schemes[0].bg, 0, 0, kb->w, kb->h, kb->corner_radius);
+-    } else {
+-        drw_fill_rectangle(d, kb->schemes[0].bg, 0, 0, kb->w, kb->h, 0);
+-    }
++    if (kb->resize_edge) {
++        drw_do_clear(d,0,0,kb->w,kb->h);
++        drw_fill_rectangle(d,kb->schemes[0].bg,kb->resize_x,kb->resize_y,kb->resize_width,kb->resize_height,kb->corner_radius>0?kb->corner_radius:0);
++        uint32_t edge=kb->resize_edge,x=kb->resize_x,y=kb->resize_y,w=kb->resize_width,h=kb->resize_height;
++        drw_fill_rectangle(d,kb->schemes[0].text,x+w/2-24,y+edge/2-2,48,4,2);
++        drw_fill_rectangle(d,kb->schemes[0].text,x+edge/2-2,y+h/2-16,4,32,2);
++        drw_fill_rectangle(d,kb->schemes[0].text,x+w-edge/2-2,y+h/2-16,4,32,2);
++    } else if (kb->corner_radius > 0) {
++        drw_do_clear(d,0,0,kb->w,kb->h);
++        drw_fill_rectangle(d,kb->schemes[0].bg,0,0,kb->w,kb->h,kb->corner_radius);
++    } else drw_fill_rectangle(d,kb->schemes[0].bg,0,0,kb->w,kb->h,0);
+@@ -739,2 +745,5 @@
+-    drwsurf_resize(kb->surf, kb->w, kb->h, kb->scale);
+-    drwsurf_resize(kb->popup_surf, kb->w, kb->h * 2, kb->scale);
++    if (!kb->resize_edge || kb->surf->width != (uint32_t)ceil(kb->w*kb->scale) || kb->surf->height != (uint32_t)ceil(kb->h*kb->scale))
++        drwsurf_resize(kb->surf,kb->w,kb->h,kb->scale);
++    // Resizable mode launches without key popups: retain a minimal inert buffer.
++    if (!kb->resize_edge) drwsurf_resize(kb->popup_surf,kb->w,kb->h*2,kb->scale);
++    else if (!kb->popup_surf->width) drwsurf_resize(kb->popup_surf,1,1,1);
+@@ -750 +759,3 @@
+-        kbd_init_layout(&layouts[i], kb->w, kb->h);
++        uint32_t edge=kb->resize_edge;
++        kbd_init_layout(&layouts[i], edge ? kb->resize_width-2*edge : kb->w, edge ? kb->resize_height-edge : kb->h);
++        if (edge) for (struct key *key=layouts[i].keys; key->type!=Last; key++) {key->x+=edge+kb->resize_x;key->y+=edge+kb->resize_y;}
+--- a/keyboard.h
++++ b/keyboard.h
+@@ -106,0 +107 @@
++	uint32_t resize_edge, resize_width, resize_height, resize_x, resize_y;

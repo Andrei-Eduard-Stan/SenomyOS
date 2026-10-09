@@ -53,6 +53,16 @@ Window {
             adapter.childExited(15);test.check(control.state==="stopped" && !control.owned,"requested termination observed before success");
             test.check(!adapter.show(control.serial) && !adapter.hide(control.serial),"expired ownership cannot signal anything");
             test.check(adapter.start("arbitrary-command",99)===false,"adapter rejects unallowlisted provider");
+            adapter.ownerSerial=123;fakeChild.running=true;
+            adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200}');
+            test.check(adapter.visibilityKnown && adapter.visible,"bounded owned geometry observed");
+            adapter.consumeGeometry('{"event":"geometry","visible":false,"width":-1,"height":0}');
+            test.check(adapter.visible,"invalid geometry rejected");
+            adapter.consumeGeometry('{"event":"geometry","visible":false,"width":0,"height":0}');
+            test.check(!adapter.visible,"provider-native hiding observed");
+            fakeChild.running=false;adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200}');
+            test.check(!adapter.visible,"stale child output cannot establish visibility");
+            adapter.childExited(0);test.check(!adapter.visibilityKnown,"exit clears geometry ownership");
             console.log("PASS: OSK adapter ownership/readiness, guarded keyboard controls, route preservation and confirmed graceful stop; fake processes only");
             Qt.quit();
         }

@@ -14,6 +14,9 @@ Scope {
     property bool signalReady: false
     property bool observing: false
     property bool stopRequested: false
+    property bool visibilityKnown: false
+    property bool visible: false
+    signal geometryChanged()
     signal providerStarted(int serial)
     signal providerFailed(int serial)
     signal providerExited(int serial, bool successful)
@@ -21,6 +24,7 @@ Scope {
     function owns(serial) { return serial === ownerSerial && ownerSerial > 0 && child.running; }
     function start(name, serial) {
         if (child.running || ["wvkbd-mobintl","wvkbd-deskintl"].indexOf(name) < 0 || serial < 1) return false;
+        visibilityKnown=false;visible=false;
         ownerSerial = serial; providerName = name; signalReady = false; stopRequested = false;
         child.command = ["python3",Quickshell.shellDir+"/scripts/osk-provider.py","launch-confirmed",name];
         observing = true; child.running = true;
@@ -60,6 +64,7 @@ Scope {
     function childExited(code) {
         const serial = ownerSerial;
         const requested = stopRequested;
+        visibilityKnown=false;visible=false;geometryChanged();
         observing = false; signalReady = false; watchdog.stop(); ownerSerial = 0;
         if (serial > 0) providerExited(serial, requested || code === 0);
     }
@@ -68,6 +73,17 @@ Scope {
         id: watchdog; interval: 11000
         onTriggered: { root.observing = false; root.providerFailed(root.ownerSerial); }
     }
-    Process { id: managedChild; onExited: (code, status) => root.childExited(code) }
+    function consumeGeometry(line) {
+        if (!child.running || ownerSerial < 1 || line.length>512) return;
+        try {
+            const data=JSON.parse(line);
+            if (data.event!=="geometry" || typeof data.visible!=="boolean"
+                || !Number.isInteger(data.width) || !Number.isInteger(data.height)
+                || data.width<0 || data.width>16384 || data.height<0 || data.height>16384
+                || (data.visible && (data.width===0 || data.height===0))) return;
+            visibilityKnown=true;visible=data.visible;geometryChanged();
+        } catch (_) { /* Only bounded geometry; never key text or arbitrary output. */ }
+    }
+    Process { id: managedChild; stdout: SplitParser { onRead: data => root.consumeGeometry(data) } onExited: (code, status) => root.childExited(code) }
     Process { id: readinessProbe; stdout: StdioCollector { onStreamFinished: root.consumeObservation(text) } }
 }

@@ -47,7 +47,14 @@ def launch(name):
         if file_capabilities:
             raise OSError("Provider file capabilities are unsupported")
         arm_parent_death_signal()
-        os.execv(binary,[binary])
+        # Pinned Senomy build opts in; ordinary upstream binaries retain fixed argv.
+        try:
+            with open(binary,"rb") as executable:
+                metadata=executable.read(4*1024*1024)
+            resize=b"--senomy-resize" in metadata and b"geometry-only telemetry" in metadata
+        except OSError:resize=False
+        argv=[binary,"--senomy-resize","--no-popup"] if resize else [binary]
+        os.execv(binary,argv)
     except OSError:
         return {"ok":False,"message":"Keyboard provider could not be executed."}
 

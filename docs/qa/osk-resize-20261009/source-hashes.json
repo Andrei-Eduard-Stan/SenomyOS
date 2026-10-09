@@ -1,0 +1,26 @@
+{
+  "shell/quickshell/shell.qml": {
+    "before": "036867433f48099c22ede6ffea823435aa0b7b299e3677fa94b79059fe3011e4",
+    "after": "5598c745e286bc4d5e65e04e9a77a695fce36c440efb3c3d3b0a6e09aa3d46f3"
+  },
+  "shell/quickshell/services/InputSettings.qml": {
+    "before": "dc0044215acb481a423e5d3b67fafa3410ab1491751f351a37d764d99a824b5b",
+    "after": "e6ef96c017a0e3b17d3d9f62fbc2fffb2c46a0e39532892628af5e101a3ac5e0"
+  },
+  "shell/quickshell/components/DashboardWindow.qml": {
+    "before": "f1392560dc8e0ba5e25fbec6291f09b96a4dbbadb54ccde0c5bb8d7b2a346798",
+    "after": "3db5a4d37d6809de5265841b209ac63f79e68fa807d47e63c32185e3c55b30ab"
+  },
+  "tracked-hyprland.lua": {
+    "before": "27c4beedea090a86598f38d995e0712fa9f696983775c8757409542f8c39177d",
+    "after": "22e345366fae13a254668e3d3558004db821b27b4090b18df3f60e6af522c982"
+  },
+  "live-hyprland.lua": {
+    "before": "d195b1f5b854f3b7b2cd55a9bcf6b5eef5ea23ebab55084091c5ba72a3051897",
+    "after": "47fc4e85a69b5ec77544dc0544ff632ca7f75dba5678a526ab8cd71f75cc8a11"
+  },
+  "installed-wvkbd": {
+    "before": "8367cf744a60f6fefdbf128c1f7d044e765cc91426a22b486b8cf3dd9bcca778",
+    "after": "96c5acbdce0605014d505bc52c34030ed3b57fb63a9fcb13d7e823c71f1d68ca"
+  }
+}

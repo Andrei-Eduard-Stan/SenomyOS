@@ -175,6 +175,8 @@ hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + F", hl.dsp.exec_cmd("/usr/bin/env sh -c '$HOME/.local/bin/senomy-fullscreen'"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
+hl.bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd(home .. "/.local/bin/senomy-osk"))
+
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 hl.bind(mainMod .. " + X", hl.dsp.layout("togglesplit"))
 

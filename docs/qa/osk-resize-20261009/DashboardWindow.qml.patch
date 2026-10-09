@@ -1,0 +1,14 @@
+--- a/shell/quickshell/components/DashboardWindow.qml
++++ b/shell/quickshell/components/DashboardWindow.qml
+@@ -36,3 +36,8 @@
+-    implicitWidth: Math.max(520, Math.min(preferredWidth, targetScreen ? targetScreen.width - 40 : preferredWidth))
+-    implicitHeight: Math.max(480, Math.min(preferredHeight,
+-        targetScreen ? targetScreen.height - Config.Theme.railHeight - 34 : preferredHeight))
++    readonly property var nativeMonitor: targetScreen ? Hyprland.monitorFor(targetScreen) : null
++    readonly property var reservations: nativeMonitor ? nativeMonitor.lastIpcObject.reserved : null
++    readonly property real workWidth: Math.max(200,(targetScreen ? targetScreen.width : preferredWidth)
++        - (reservations && reservations.length===4 ? Number(reservations[0])+Number(reservations[2]) : 0) - 40)
++    readonly property real workHeight: Math.max(180,(targetScreen ? targetScreen.height : preferredHeight)
++        - (reservations && reservations.length===4 ? Number(reservations[1])+Number(reservations[3]) : Config.Theme.railHeight) - 34)
++    implicitWidth: Math.max(Math.min(520,root.workWidth), Math.min(preferredWidth,root.workWidth))
++    implicitHeight: Math.max(Math.min(480,root.workHeight),Math.min(preferredHeight,root.workHeight))

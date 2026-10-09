@@ -1,3 +1,14 @@
+## 2026-10-09 — OSK shortcut/resize publication
+
+User-local wvkbd-mobintl replaced with pinned Senomy resize build after matching
+its original receipt hash; recovery executable retained in the private stage.
+The senomy-osk wrapper link is installed; live bind modmask68/keyK, shell IPC
+oskToggle exposed. Warned Quickshell load 09:52:17, active PID1335; Hyprland errors
+empty, existing stackAfter warning remains. Tracked/live Lua preserve their lid
+binding difference. Native resize/reservation/hide/show tests used a private nested
+compositor, which was closed afterward. No real typing or shortcut activation was
+performed during publication; the user must accept the new extension in-session.
+
 ## Observation — Network profile source publication, 2026-10-08
 
 ## 2026-10-08 — user-reported OSK typing

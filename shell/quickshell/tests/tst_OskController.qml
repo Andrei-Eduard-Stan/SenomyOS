@@ -7,6 +7,8 @@ TestCase {
     when: true
     QtObject {
         id: fake
+        property bool visibilityKnown:false
+        property bool visible:false
         property int owner: 0
         property int starts: 0
         property int shows: 0
@@ -29,12 +31,28 @@ TestCase {
     function candidate() { return {providerInstalled:true,protocolState:"advertised",manualCandidate:true,provider:"wvkbd-mobintl"}; }
     function init() {
         control.startupTimer.stop();control.startPending=false;control.serial=0;control.state="unavailable";
+        fake.visibilityKnown=false;fake.visible=false;
         fake.owner=0;fake.starts=0;fake.shows=0;fake.hides=0;fake.stops=0;fake.commandName="";
         fake.acceptStart=true;fake.acceptShow=true;fake.acceptHide=true;fake.acceptStop=true;
         control.capabilities=candidate();control.refreshState();focus.clear();
     }
     function requestLaunch() { verify(control.requestShow());compare(control.state,"pending-start");verify(control.confirmStart()); }
     function start() { requestLaunch();control.started(control.serial); }
+    function test_shortcut_starts_once_and_toggles_without_stop() {
+        verify(control.toggle());compare(fake.starts,1);verify(!control.toggle());
+        control.started(control.serial);verify(control.toggle());compare(fake.hides,1);
+        verify(control.toggle());compare(fake.shows,2);compare(fake.starts,1);compare(fake.stops,0);
+    }
+    function test_shortcut_respects_observed_provider_native_hide() {
+        start();fake.visibilityKnown=true;fake.visible=false;
+        verify(control.toggle());compare(fake.shows,2);compare(fake.hides,0);
+        fake.visible=true;verify(control.toggle());compare(fake.hides,1);
+        verify(control.requestStop());verify(!control.toggle());compare(fake.stops,0);
+    }
+    function test_shortcut_rejects_absent_capability_and_pending_reviews() {
+        control.capabilities={};verify(!control.toggle());compare(fake.starts,0);
+        control.capabilities=candidate();verify(control.requestShow());verify(!control.toggle());compare(fake.starts,0);
+    }
     function test_start_confirmation_cancel_and_capability_change() {
         verify(!control.confirmStart());verify(control.requestShow());compare(control.state,"pending-start");compare(fake.starts,0);
         verify(!control.requestShow());verify(control.cancelStart());compare(control.state,"stopped");compare(fake.starts,0);

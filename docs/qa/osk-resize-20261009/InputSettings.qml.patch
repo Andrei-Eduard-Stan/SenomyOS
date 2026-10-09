@@ -1,0 +1,10 @@
+--- a/shell/quickshell/services/InputSettings.qml
++++ b/shell/quickshell/services/InputSettings.qml
+@@ -3,0 +4 @@
++import Quickshell.Hyprland
+@@ -24,0 +26 @@
++        onGeometryChanged: { if (!geometryRefresh.running) geometryRefresh.start(); }
+@@ -34,0 +37,3 @@
++    // Debounce geometry bursts; native monitor reservations include every layer.
++    property var geometryRefresh: Timer { interval: 32; onTriggered: Hyprland.refreshMonitors() }
++    Component.onCompleted: refreshOskCapabilities()

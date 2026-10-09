@@ -19,6 +19,12 @@ class OskProviderTests(unittest.TestCase):
     def test_fixed_exec_without_shell_flags_or_printed_keys(self):
         with patch.object(module.capabilities,"detect",return_value={"manualCandidate":True}),patch.object(module.shutil,"which",return_value="/fixture/wvkbd"),patch.object(module.os,"execv") as execute,patch.object(module,"arm_parent_death_signal"),patch.object(module.os,"stat",return_value=type("Mode",(),{"st_mode":0o755})()),patch.object(module.os,"getxattr",side_effect=OSError(module.errno.ENODATA,"fixture no attributes")):
             module.launch("wvkbd-mobintl");execute.assert_called_once_with("/fixture/wvkbd",["/fixture/wvkbd"])
+    def test_resize_build_uses_fixed_flag_without_executing_feature_probe(self):
+        from unittest.mock import mock_open
+        with patch.object(module.capabilities,"detect",return_value={"manualCandidate":True}),patch.object(module.shutil,"which",return_value="/fixture/wvkbd"),patch.object(module.os,"execv") as execute,patch.object(module,"arm_parent_death_signal"),patch.object(module.os,"stat",return_value=type("Mode",(),{"st_mode":0o755})()),patch.object(module.os,"getxattr",side_effect=OSError(module.errno.ENODATA,"fixture")),patch("builtins.open",mock_open(read_data=b"--senomy-resize geometry-only telemetry")) as opened:
+            module.launch("wvkbd-mobintl")
+            execute.assert_called_once_with("/fixture/wvkbd",["/fixture/wvkbd","--senomy-resize","--no-popup"])
+            opened.return_value.read.assert_called_once_with(4*1024*1024)
     def test_exec_failure_is_truthful(self):
         with patch.object(module.capabilities,"detect",return_value={"manualCandidate":True}),patch.object(module.shutil,"which",return_value="/fixture/wvkbd"),patch.object(module.os,"execv",side_effect=OSError("fixture")),patch.object(module,"arm_parent_death_signal"),patch.object(module.os,"stat",return_value=type("Mode",(),{"st_mode":0o755})()),patch.object(module.os,"getxattr",side_effect=OSError(module.errno.ENODATA,"fixture no attributes")):
             self.assertFalse(module.launch("wvkbd-mobintl")["ok"])

@@ -1,0 +1,9 @@
+--- a/shell/quickshell/shell.qml
++++ b/shell/quickshell/shell.qml
+@@ -104,0 +105,6 @@
++
++        function oskToggle(): string {
++            const accepted=inputSettingsService.oskController.toggle();
++            if (accepted && inputSettingsService.oskController.state !== "hide-requested") {shellState.closePrimary();shellState.closePopups();}
++            return JSON.stringify({accepted:accepted,state:inputSettingsService.oskController.state,message:inputSettingsService.oskController.message});
++        }

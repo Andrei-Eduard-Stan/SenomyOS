@@ -1,3 +1,14 @@
+## 2026-10-09 — explicit OSK shortcut and current-provider resize extension
+
+Super+Ctrl+K explicitly starts or shows/hides only the managed session child;
+Input UI Start/Stop reviews remain and shortcut never stops a process. Extend the
+current trial wvkbd through a pinned, reviewed source patch; this is not a permanent
+provider decision. Dragging preserves process ownership and updates native bottom
+reservation; primary panels read native monitor work areas. A transparent input
+surface is restricted to the keyboard except during an active edge gesture.
+No key text is reported. Mobile/rotation/scale acceptance and full app reflow are
+not inferred from protocol or private nested tests. See qa/osk-resize-20261009/.
+
 ## D175 — Profile controls and native advanced settings remain separate (2026-10-08)
 
 ## 2026-10-08 — one Performance owner and forced collector deadlines

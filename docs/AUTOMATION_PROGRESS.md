@@ -461,3 +461,12 @@ automatic suspend. The full acceptance ledger names each remaining journey.
 Do not run these session/device actions unattended or expand into visual redesign,
 update installation or release engineering. Preserve dated source checks and the
 large dirty baseline; no clean-checkout/release claim, schedule or push is implied.
+
+### User-requested extension — OSK shortcut/resize, 2026-10-09
+
+Super+Ctrl+K and pointer/touch resize handles are implemented for the current
+trial wvkbd provider; source/nested native evidence is in qa/osk-resize-20261009/.
+Native reserved-space changes drive primary-panel height constraints. This is not
+a permanent provider decision or full mobile acceptance. Next: test the shortcut,
+post-extension typing and dragging in the user's session; then touch/rotation,
+scaling and multi-output tests. Preserve all earlier recovery/deployment gates.
