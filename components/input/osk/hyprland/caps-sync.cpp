@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include "avoidance.hpp"
+
 static HANDLE handle;
 static CHyprSignalListener tick;
 struct Watch { WP<IKeyboard> keyboard; CHyprSignalListener listener; };
@@ -79,7 +81,8 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE h) {
     if (!HyprlandAPI::registerHyprCtlCommand(handle,{"senomy-caps-state",true,[](eHyprCtlOutputFormat,std::string){
         reconcile();return std::string("{\"ok\":true,\"available\":")+(active?"true":"false")+",\"capsLock\":"+(caps?"true":"false")+"}";
     }})) throw std::runtime_error("Cannot register Caps sync state");
-    tick=Event::bus()->m_events.tick.listen(reconcile);reconcile();
+    SenomyAvoidance::init(handle);
+    tick=Event::bus()->m_events.tick.listen([]{reconcile();SenomyAvoidance::tick();});reconcile();
     return {"senomy-caps-sync","Session-scoped shared Caps Lock for wvkbd","SenomyOS","1"};
 }
-APICALL EXPORT void PLUGIN_EXIT() { tick.reset();watches.clear();active=false;publish(); }
+APICALL EXPORT void PLUGIN_EXIT() { tick.reset();SenomyAvoidance::exit();watches.clear();active=false;publish(); }

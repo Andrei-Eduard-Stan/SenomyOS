@@ -1,2 +1,3 @@
 module Senomy.Config
 singleton Theme 1.0 Theme.qml
+singleton OskGeometry 1.0 OskGeometry.qml

@@ -126,3 +126,15 @@ and an event-driven owned bridge. Missing/incompatible components leave manual
 OSK available and report shared-Caps unavailable. No universal key-state, Num
 Lock, compositor portability or new physical acceptance claim is made.
 Source/build/fixture evidence: qa/osk-sync-move-20261009/RESULTS.md.
+
+## Rectangle fitting and float mode — 2026-10-09
+
+The current local extension resizes from every edge and corner, moves throughout
+the work area, and exposes native FLOAT/REFIT plus Input UI mode controls. The
+exact-version component fits normal tiled clients around the actual rectangle
+without changing layout membership, and restores the latest layout on float,
+hide or exit. Expanded Rail and primary panels independently select free regions
+and constrain scrollable content. Floating/fullscreen clients and impossible
+minimum-size fits are excluded. Whole-strip reservation remains the unsupported
+component fallback. Super+Ctrl+K remains visibility-only. Evidence and attended
+acceptance: qa/osk-avoidance-20261009/RESULTS.md.

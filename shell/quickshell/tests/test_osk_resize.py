@@ -14,10 +14,12 @@ class ResizeTests(unittest.TestCase):
 int main(void) {
  assert(senomy_edge(-1,1,800,250)==0);assert(senomy_edge(1,1,800,250)==3);
  assert(senomy_edge(799,1,800,250)==5);assert(senomy_edge(400,100,800,250)==0);
+ assert(senomy_edge(400,249,800,250)==16);assert(senomy_edge(799,249,800,250)==20);
  struct senomy_drag d={5,-1,800,700,800,250};uint32_t w,h;
  senomy_size(&d,700,600,1000,1000,&w,&h);assert(w==600&&h==350);
  senomy_size(&d,9999,-9999,1000,1000,&w,&h);assert(w==1000&&h==600);
  senomy_size(&d,-9999,9999,1000,1000,&w,&h);assert(w==320&&h==128);
+ d.edge=16;senomy_size(&d,800,760,1000,1000,&w,&h);assert(w==800&&h==310);
  d.edge=2;senomy_size(&d,900,700,1000,1000,&w,&h);assert(w==600&&h==250);
  senomy_size(&d,-9999,9999,240,200,&w,&h);assert(w==240&&h==120);
  return 0;

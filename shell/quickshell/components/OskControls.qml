@@ -25,6 +25,13 @@ Column {
             onClicked: root.controller.requestStop()
         }
     }
+    DashboardButton {
+        objectName: "oskMode"; width: parent.width
+        visible: root.controller && root.controller.owned && root.controller.provider.modeSupported === true
+        text: root.controller && root.controller.provider.floating ? "FLOATING · SWITCH TO WINDOW REFIT" : "WINDOW REFIT · SWITCH TO FLOATING"
+        enabled: root.controller && !root.pending && root.controller.provider.signalReady
+        onClicked: root.controller.provider.toggleMode(root.controller.serial)
+    }
     Column {
         id: review
         width: parent.width; spacing: 8; visible: root.pending

@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../config" as Config
 
 Scope {
     id: root
@@ -16,6 +17,10 @@ Scope {
     property bool stopRequested: false
     property bool visibilityKnown: false
     property bool visible: false
+    property bool avoidance: false
+    property bool modeSupported: false
+    property bool floating: false
+    property var lastGeometry: null
     property bool lockSync: false
     property bool lockStateKnown: false
     property int capsRequests: 0
@@ -28,7 +33,7 @@ Scope {
     function owns(serial) { return serial === ownerSerial && ownerSerial > 0 && child.running; }
     function start(name, serial) {
         if (child.running || ["wvkbd-mobintl","wvkbd-deskintl"].indexOf(name) < 0 || serial < 1) return false;
-        visibilityKnown=false;visible=false;lockSync=false;lockStateKnown=false;capsRequests=0;
+        visibilityKnown=false;visible=false;lockSync=false;lockStateKnown=false;capsRequests=0;modeSupported=false;
         ownerSerial = serial; providerName = name; signalReady = false; stopRequested = false;
         child.command = ["python3",Quickshell.shellDir+"/scripts/osk-provider.py","launch-confirmed",name];
         observing = true; child.running = true;
@@ -47,6 +52,13 @@ Scope {
         if (!owns(serial) || !signalReady || stopRequested) return false;
         child.signal(34); // Linux SIGRTMIN: provider chooses from its actual state.
         return true;
+    }
+    function toggleMode(serial) {
+        if (!owns(serial) || !signalReady || stopRequested || !modeSupported) return false;
+        child.signal(35); return true;
+    }
+    function consumeFit(line) {
+        try {const result=JSON.parse(line);if(visible) Config.OskGeometry.update(result);else Config.OskGeometry.clear();} catch (_) {Config.OskGeometry.clear();}
     }
     function consumeLockState(line) {
         if (!lockSync || !owns(ownerSerial) || line.length>256) return;
@@ -81,7 +93,7 @@ Scope {
     function childExited(code) {
         const serial = ownerSerial;
         const requested = stopRequested;
-        visibilityKnown=false;visible=false;lockSync=false;lockStateKnown=false;capsRequests=0;geometryChanged();
+        visibilityKnown=false;visible=false;lockSync=false;lockStateKnown=false;capsRequests=0;modeSupported=false;avoidance=false;lastGeometry=null;Config.OskGeometry.clear();geometryChanged();
         observing = false; signalReady = false; watchdog.stop(); ownerSerial = 0;
         if (serial > 0) providerExited(serial, requested || code === 0);
     }
@@ -102,8 +114,24 @@ Scope {
                 || !Number.isInteger(data.width) || !Number.isInteger(data.height)
                 || data.width<0 || data.width>16384 || data.height<0 || data.height>16384
                 || (data.visible && (data.width===0 || data.height===0))) return;
-            visibilityKnown=true;visible=data.visible;lockSync=data.lockSync===true;geometryChanged();
+            visibilityKnown=true;visible=data.visible;lockSync=data.lockSync===true;
+            modeSupported=typeof data.floating==="boolean" && typeof data.avoidance==="boolean";
+            avoidance=data.avoidance===true;floating=data.floating===true;
+            if (Number.isInteger(data.x) && Number.isInteger(data.y) && data.x>=0 && data.y>=0 && data.x+data.width<=16384 && data.y+data.height<=16384) {
+                lastGeometry=data;
+                if (fitBridge.running) fitBridge.write(JSON.stringify(data)+"\n");
+            }
+            if (!visible) Config.OskGeometry.clear();
+            geometryChanged();
         } catch (_) { /* Only bounded geometry; never key text or arbitrary output. */ }
+    }
+    Process {
+        id: fitBridge
+        running: root.avoidance && root.child.running && root.signalReady
+        stdinEnabled: true
+        command: ["python3",Quickshell.shellDir+"/scripts/osk-geometry.py",String(root.child.processId)]
+        onStarted: {if(root.lastGeometry) write(JSON.stringify(root.lastGeometry)+"\n");}
+        stdout: SplitParser {onRead: data => root.consumeFit(data)}
     }
     Process {
         id: lockEvents

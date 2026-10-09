@@ -1,0 +1,35 @@
+diff --git a/shell/quickshell/components/MachineStateOverlay.qml b/shell/quickshell/components/MachineStateOverlay.qml
+--- a/shell/quickshell/components/MachineStateOverlay.qml
++++ b/shell/quickshell/components/MachineStateOverlay.qml
+@@ -3,0 +4 @@
++import Quickshell.Hyprland
+@@ -25 +26,13 @@
+-    implicitHeight: stage.height + 8
++    readonly property var nativeMonitor: targetScreen ? Hyprland.monitorFor(targetScreen) : null
++    readonly property var reservations: nativeMonitor ? nativeMonitor.lastIpcObject.reserved : null
++    readonly property real reservedLeft: reservations && reservations.length===4 ? Number(reservations[0]) : 0
++    readonly property real reservedRight: reservations && reservations.length===4 ? Number(reservations[2]) : 0
++    readonly property real reservedTop: reservations && reservations.length===4 ? Number(reservations[1]) : 0
++    readonly property real reservedBottom: reservations && reservations.length===4 ? Number(reservations[3]) : Config.Theme.railHeight
++    readonly property real availableHeight: Math.max(1,(targetScreen ? targetScreen.height : 860)-reservedTop-reservedBottom-16)
++    readonly property real panelWidth: Math.max(1,Math.min(900,(targetScreen ? targetScreen.width : 924)-reservedLeft-reservedRight-24))
++    readonly property var fitted: Config.OskGeometry.place(targetScreen, {
++        x:reservedLeft+12,y:reservedTop+8,width:(targetScreen ? targetScreen.width : 924)-reservedLeft-reservedRight-24,height:availableHeight},
++        panelWidth,content.implicitHeight+8,anchorCenterX)
++    implicitHeight: fitted.height
++    margins.bottom: Math.max(0,(targetScreen ? targetScreen.height : 860)-reservedBottom-fitted.y-fitted.height)
+@@ -31 +44 @@
+-    WlrLayershell.layer: WlrLayer.Overlay
++    WlrLayershell.layer: Config.OskGeometry.floatingOn(targetScreen) ? WlrLayer.Top : WlrLayer.Overlay
+@@ -37,0 +51 @@
++        objectName: "machineStage"
+@@ -42 +56 @@
+-        x: (root.width - width) / 2
++        x: root.fitted.x
+@@ -44,2 +58,2 @@
+-        width: Math.min(900, root.width - 24)
+-        height: Math.min(content.implicitHeight, root.targetScreen ? root.targetScreen.height - 100 : 760)
++        width: root.fitted.width
++        height: Math.max(1,root.fitted.height-8)
+@@ -51,0 +66 @@
++            objectName: "machineScroll"

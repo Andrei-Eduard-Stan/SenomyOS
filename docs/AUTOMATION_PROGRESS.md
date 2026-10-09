@@ -480,3 +480,14 @@ are completed in qa/osk-sync-move-20261009/RESULTS.md. Caps sync is an exact-ver
 Hyprland component with a receipt-checked local build, not universal OSK support.
 Next: attended physical shortcut/Caps/movement acceptance; preserve the broader
 functional/manual ledger and deferred design/release scope.
+
+### OSK refit/float correction — 2026-10-09
+
+Completed native bottom resizing and FLOAT/REFIT controls, per-window rectangle
+fitting for normal tiled clients, and bounded expanded Rail/primary placement.
+Private native pointer, managed lifecycle/geometry, updated-layout restoration
+and actual panel fixtures pass; live revision loaded with the Rail present and
+no compositor configuration errors. The previous whole-strip mechanism is now
+only the unsupported-component fallback. See qa/osk-avoidance-20261009/RESULTS.md.
+Next: attended VS Code/browser, physical keyboard and touch/hardware acceptance.
+The broader deferred UI/network/audio and release ledger remains unchanged.

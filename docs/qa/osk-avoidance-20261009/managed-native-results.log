@@ -1,0 +1,5 @@
+  INFO: Launching config: "/home/Duku/.local/state/senomyos/development/osk-avoidance-20261009/shell/quickshell/osk-native-session-test.qml"
+  INFO: Shell ID: "b643ee18437117757a2ffd257750866e" Path ID "b643ee18437117757a2ffd257750866e"
+  INFO: Saving logs to "/tmp/so-sync-vfh4l1c9/quickshell/by-id/s3gjz8nmt/log.qslog"
+  INFO: Configuration Loaded
+ DEBUG qml: PASS: real native managed startup/Caps handshake/four visibility toggles/same-child lifecycle/confirmed cleanup; private compositor only

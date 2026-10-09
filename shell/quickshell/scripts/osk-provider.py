@@ -58,7 +58,13 @@ def launch(name):
             lock_spec=importlib.util.spec_from_file_location("osk_lock_state",Path(__file__).with_name("osk-lock-state.py"))
             locks=importlib.util.module_from_spec(lock_spec);lock_spec.loader.exec_module(locks)
             # Plugin availability, not an active keyboard, enables the handshake.
-            if locks.ensure_plugin():argv.append("--senomy-lock-sync")
+            if locks.ensure_plugin():
+                argv.append("--senomy-lock-sync")
+                if b"--senomy-avoidance" in metadata:
+                    try:
+                        fitting=json.loads(locks.request("senomy-osk-state"))
+                        if fitting.get("ok") is True and fitting.get("protocol")==1:argv.append("--senomy-avoidance")
+                    except (OSError,ValueError,AttributeError):pass
         os.execv(binary,argv)
     except OSError:
         return {"ok":False,"message":"Keyboard provider could not be executed."}

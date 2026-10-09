@@ -1,0 +1,22 @@
+{
+  "components/input/osk/wvkbd-resize.patch": "9f24d049ac0d18d21cf3073982c469ae49bee75790ed717f6d2579a71f457b65",
+  "components/input/osk/senomy-resize.h": "5b68192d68454e552131919458569b647389e9b74b35cc2da01e6566816a437a",
+  "components/input/osk/hyprland/caps-sync.cpp": "81eb4cd219f851016e3a863671f89ed1e755075535491aebe0b49dfe3ea881ab",
+  "components/input/osk/hyprland/avoidance.hpp": "ba29020c3792b2730ea70ca981fe58f8c8d289e8454596539aa6d8f18337be29",
+  "shell/quickshell/services/OskAdapter.qml": "6356dd936ef97176c4d7f0ff4840596d56ce1adb949c462c98e1110ec1ba0eb3",
+  "shell/quickshell/components/OskControls.qml": "59d10fd613af848455538f38557fb8e1cddf2c03bbc46a2e2907804433625e2e",
+  "shell/quickshell/config/qmldir": "e7074358ed0e571d74aacf1beb4a89364778a4caa2522316adcffbddcc61009f",
+  "shell/quickshell/config/OskGeometry.qml": "94a3b410be61e532003d2ba2390cf432ea2d8cb81f136e71f0fccbc971e46778",
+  "shell/quickshell/components/DashboardWindow.qml": "773f59b0c648f51147215b55cb69a04957e87548908d8968eb3e534f09eb791d",
+  "shell/quickshell/components/MachineStateOverlay.qml": "d84aafb7bd52575269d4388c4fa7f5513504e5f65283995013e39a68f80ef9f3",
+  "shell/quickshell/services/InputSettings.qml": "2be413a6f40626a98d485cc6376fed805b1b26fa4a5f27c3c86702e4b9864c44",
+  "shell/quickshell/scripts/osk-provider.py": "adbabcebc469d059a0db7230d616fe04bf26b1005fe233641110b5afcbec0fd9",
+  "shell/quickshell/scripts/osk-lock-state.py": "9c95dee27795b7cc62700031bd0ac081281e533df58f02a34f1b8f035cb53c5c",
+  "shell/quickshell/scripts/osk-geometry.py": "4a10d7c2c3142f2153bbe6c60448a0bd239bc2aa4973f2b09af693165bac368a",
+  "shell/quickshell/osk-adapter-test.qml": "3538b04ef0964ca50f5d71b9ec0c840b579482000012495d42f77c312f143673",
+  "shell/quickshell/tests/test_osk_resize.py": "550c8a0285f12ca63b87cbf88e6c6ed0fdc88ce5502059368b894c1a520f3e7d",
+  "shell/quickshell/osk-panels-test.qml": "6d0807fa4a62789bfa73285e7fe298aa804cd2120d189bfb076749bc02d13309",
+  "shell/quickshell/components/PrimarySurfaceWindow.qml": "a23699f01db8edb39fc6d25dd60a91633808dc07d78b009e3e5813b32772e70a",
+  "shell/quickshell/components/CompanionPanel.qml": "ac5c1bf8a82667917c697dd96be84d4e9c2fa73849bded1f0b4fa566ddc9260e",
+  "shell/quickshell/components/NotificationToast.qml": "7a41d32bc01cd17f0eb405db28ce5bcec8c827ea5f518613581290a9998eb92f"
+}

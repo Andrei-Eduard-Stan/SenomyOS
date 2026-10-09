@@ -1,0 +1,42 @@
+diff --git a/shell/quickshell/components/PrimarySurfaceWindow.qml b/shell/quickshell/components/PrimarySurfaceWindow.qml
+--- a/shell/quickshell/components/PrimarySurfaceWindow.qml
++++ b/shell/quickshell/components/PrimarySurfaceWindow.qml
+@@ -21,0 +22 @@
++    readonly property int sidebarWidth: implicitWidth < 650 ? 120 : 190
+@@ -31,4 +31,0 @@
+-    readonly property real surfaceLeft: Math.max(Config.Theme.screenInset,
+-        Math.min((targetScreen ? targetScreen.width : implicitWidth) - implicitWidth - Config.Theme.screenInset,
+-            anchorCenterX - implicitWidth / 2))
+-
+@@ -36,3 +33,13 @@
+-    implicitWidth: Math.max(520, Math.min(preferredWidth, targetScreen ? targetScreen.width - 40 : preferredWidth))
+-    implicitHeight: Math.max(480, Math.min(preferredHeight,
+-        targetScreen ? targetScreen.height - Config.Theme.railHeight - 34 : preferredHeight))
++    readonly property var nativeMonitor: targetScreen ? Hyprland.monitorFor(targetScreen) : null
++    readonly property var reservations: nativeMonitor ? nativeMonitor.lastIpcObject.reserved : null
++    readonly property real reservedLeft: reservations && reservations.length===4 ? Number(reservations[0]) : 0
++    readonly property real reservedTop: reservations && reservations.length===4 ? Number(reservations[1]) : 0
++    readonly property real reservedRight: reservations && reservations.length===4 ? Number(reservations[2]) : 0
++    readonly property real reservedBottom: reservations && reservations.length===4 ? Number(reservations[3]) : Config.Theme.railHeight
++    readonly property real workWidth: Math.max(1,(targetScreen ? targetScreen.width : preferredWidth)-reservedLeft-reservedRight-40)
++    readonly property real workHeight: Math.max(1,(targetScreen ? targetScreen.height : preferredHeight)-reservedTop-reservedBottom-34)
++    readonly property var fitted: Config.OskGeometry.place(targetScreen, {
++        x:reservedLeft+20,y:reservedTop+17,width:workWidth,height:workHeight}, preferredWidth,preferredHeight,anchorCenterX)
++    readonly property real surfaceLeft: fitted.x
++    implicitWidth: fitted.width
++    implicitHeight: fitted.height
+@@ -51 +58 @@
+-        bottom: 0
++        bottom: Math.max(0,(root.targetScreen ? root.targetScreen.height : root.preferredHeight)-root.reservedBottom-root.fitted.y-root.fitted.height)
+@@ -55 +62 @@
+-    WlrLayershell.layer: WlrLayer.Overlay
++    WlrLayershell.layer: Config.OskGeometry.floatingOn(targetScreen) ? WlrLayer.Top : WlrLayer.Overlay
+@@ -142 +149 @@
+-                    width: 190
++                    width: root.sidebarWidth
+@@ -189 +196 @@
+-                        height: parent.height - 112
++                        height: Math.max(0,parent.height - 112)
+@@ -222 +229 @@
+-                    width: parent.width - 207
++                    width: Math.max(1,parent.width - root.sidebarWidth - 17)

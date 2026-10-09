@@ -1,0 +1,8 @@
+PASS actual keyboard rectangle leaves left tile full height and fits right tile above {'event': 'geometry', 'visible': True, 'width': 578, 'height': 128, 'x': 651, 'y': 560, 'lockSync': False, 'avoidance': True, 'floating': False}
+PASS bottom resize keeps top fixed and reflows keys {'event': 'geometry', 'visible': True, 'width': 578, 'height': 188, 'x': 651, 'y': 560, 'lockSync': False, 'avoidance': True, 'floating': False}
+PASS actual top placement moves right tile below {'event': 'geometry', 'visible': True, 'width': 578, 'height': 188, 'x': 651, 'y': 0, 'lockSync': False, 'avoidance': True, 'floating': False}
+PASS actual FLOAT button restores both tiles without keyboard restart
+PASS actual REFIT button re-applies exclusion
+PASS hide restores and show preserves moved rectangle
+PASS adding a tiled client while keyboard is open preserves the updated layout on hide
+PASS owned provider exit restores current layout

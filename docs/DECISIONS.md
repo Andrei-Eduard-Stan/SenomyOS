@@ -1,3 +1,14 @@
+## 2026-10-09 — Keyboard rectangle exclusion and explicit float mode
+
+Replace whole-monitor keyboard reservation on the supported local Hyprland
+component with bounded, owned-PID rectangle exclusion for normal tiled clients.
+Preserve tiling membership and the latest layout, restore on float/hide/exit,
+and leave floating/fullscreen clients under their existing geometry controls.
+Use explicit FLOAT/REFIT controls and bottom resizing. Keep the previous strip
+fallback on unsupported compositor builds. Expanded Rail and primary panels
+choose free work-area regions and bound scrollable contents.
+Evidence: qa/osk-avoidance-20261009/RESULTS.md.
+
 ## 2026-10-09 — Shared Caps Lock and movable managed OSK
 
 Use native visibility toggling and a distinct move grip. Shared Caps Lock needs

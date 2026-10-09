@@ -4,6 +4,7 @@ import QtTest
 import Quickshell
 import "services"
 import "components"
+import "config" as Config
 Window {
     id: test
     visible: true; width: 560; height: 420
@@ -59,6 +60,10 @@ Window {
             adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200}');
             test.check(adapter.visibilityKnown && adapter.visible,"bounded owned geometry observed");
             adapter.signalReady=true;adapter.stopRequested=false;test.check(adapter.toggle(123) && fakeChild.sent[fakeChild.sent.length-1]===34,"toggle addresses native state with owned SIGRTMIN");
+            test.check(!adapter.toggleMode(123),"ordinary provider rejects unsupported mode signals");
+            adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200,"x":0,"y":0,"floating":false,"avoidance":false}');
+            test.check(adapter.toggleMode(123) && fakeChild.sent[fakeChild.sent.length-1]===35,"mode toggle addresses owned native child");
+            test.check(!adapter.toggleMode(122),"mode toggle rejects obsolete ownership");
             adapter.lockSync=true;
             adapter.consumeLockState('{"ok":true,"available":true,"capsLock":true}');
             test.check(fakeChild.written.length===1 && fakeChild.written[0]==="caps:1\n","owned Caps state uses fixed stdin framing");
@@ -73,6 +78,18 @@ Window {
             fakeChild.running=false;adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200}');
             test.check(!adapter.visible,"stale child output cannot establish visibility");
             adapter.childExited(0);test.check(!adapter.visibilityKnown,"exit clears geometry ownership");
+            const screen={name:"test-screen"},area={x:12,y:8,width:1256,height:728};
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:300,y:450,width:900,height:128,reserved:true});
+            let panel=Config.OskGeometry.place(screen,area,900,428,640);
+            test.check(panel.height===428 && panel.y>=area.y && panel.y+panel.height<=442,"panel moves fully above middle keyboard without top clipping");
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:0,y:0,width:1280,height:200,reserved:true});
+            panel=Config.OskGeometry.place(screen,area,900,428,640);
+            test.check(panel.y>=208 && panel.y+panel.height<=736,"panel fits below top keyboard");
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:300,y:450,width:900,height:128,reserved:false});
+            panel=Config.OskGeometry.place(screen,area,900,428,640);
+            test.check(panel.y===308 && panel.height===428,"floating mode does not displace panels");
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:-1,y:0,width:1280,height:200,reserved:true});
+            test.check(Config.OskGeometry.rectangle===null,"malformed panel geometry rejected");
             console.log("PASS: OSK adapter ownership/readiness, guarded keyboard controls, route preservation and confirmed graceful stop; fake processes only");
             Qt.quit();
         }

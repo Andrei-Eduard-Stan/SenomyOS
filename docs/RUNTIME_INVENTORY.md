@@ -1,3 +1,13 @@
+## 2026-10-09 — OSK window-fitting revision
+
+Published all-edge native resize and FLOAT/REFIT controls; the local exact-version
+Caps component now also provides protocol-1 rectangle geometry IPC. Actual native
+and managed private-compositor integration passed, including layout changes while
+the OSK is open. Live shell PID 1335 loaded the revision, Rail remains visible,
+and Hyprland configerrors is empty. User-window, touch and hardware acceptance
+remain attended. Source reload closes the prior owned keyboard session.
+Hashes, consumer patches and limitations: qa/osk-avoidance-20261009/.
+
 ## 2026-10-09 — OSK sync/movement revision
 
 Native and actual managed integration passed in a private nested compositor.

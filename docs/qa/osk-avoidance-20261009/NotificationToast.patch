@@ -1,0 +1,6 @@
+diff --git a/shell/quickshell/components/NotificationToast.qml b/shell/quickshell/components/NotificationToast.qml
+--- a/shell/quickshell/components/NotificationToast.qml
++++ b/shell/quickshell/components/NotificationToast.qml
+@@ -34 +34 @@
+-    WlrLayershell.layer: WlrLayer.Overlay
++    WlrLayershell.layer: Config.OskGeometry.floatingOn(targetScreen) ? WlrLayer.Top : WlrLayer.Overlay
