@@ -22,7 +22,7 @@ def directory():
 
 def request(command):
     plugin=Path.home()/'.local/lib/senomyos/osk/caps-sync.so'
-    if command not in ('senomy-caps-state','senomy-caps-toggle','senomy-osk-state','j/version','plugin load '+str(plugin)):
+    if command not in ('senomy-caps-state','senomy-caps-toggle','senomy-osk-state','senomy-osk-auto-state','j/version','plugin load '+str(plugin)):
         raise ValueError('Unsupported Caps operation')
     with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as client:
         client.settimeout(2);client.connect(str(directory()/'.socket.sock'));client.sendall(command.encode())

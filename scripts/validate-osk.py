@@ -11,6 +11,7 @@ shell = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else repo / "shell/quic
 subprocess.run([sys.executable,str(shell / "tests/test_osk_capabilities.py")],check=True)
 subprocess.run([sys.executable,str(shell / "tests/test_osk_provider.py")],check=True)
 subprocess.run([sys.executable,str(shell / "tests/test_osk_lock_state.py")],check=True)
+subprocess.run([sys.executable,str(shell / "tests/test_osk_automatic.py")],check=True)
 with tempfile.TemporaryDirectory(prefix="senomy-osk-validation-") as runtime:
     env = dict(os.environ,XDG_RUNTIME_DIR=runtime,QT_QPA_PLATFORM="offscreen",QT_QUICK_BACKEND="software")
     env.pop("WAYLAND_DISPLAY",None)
@@ -27,3 +28,11 @@ with tempfile.TemporaryDirectory(prefix="senomy-osk-validation-") as runtime:
         for line in output.splitlines():
             if "PASS:" in line:print(line)
         if "WARN" in output:print("Passed with Qt diagnostics; not warning-free.")
+
+with tempfile.TemporaryDirectory(prefix="senomy-osk-auto-validation-") as runtime:
+    env=dict(os.environ,XDG_RUNTIME_DIR=runtime,QT_QPA_PLATFORM="offscreen",QT_QUICK_BACKEND="software")
+    env.pop("WAYLAND_DISPLAY",None)
+    result=subprocess.run(["/usr/lib/qt6/bin/qmltestrunner","-input",str(shell/"tests/tst_OskAutomatic.qml")],env=env,capture_output=True,text=True,timeout=20)
+    output=result.stdout+result.stderr
+    if result.returncode or "FAIL!" in output or not re.search(r"Totals: \d+ passed, 0 failed",output):print(output);raise SystemExit("Automatic OSK policy failed")
+    print(next(line for line in output.splitlines() if line.startswith("Totals:")))

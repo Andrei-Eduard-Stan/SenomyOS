@@ -1,0 +1,8 @@
+diff --git a/shell/quickshell/services/InputSettings.qml b/shell/quickshell/services/InputSettings.qml
+--- a/shell/quickshell/services/InputSettings.qml
++++ b/shell/quickshell/services/InputSettings.qml
+@@ -24,0 +25,2 @@
++    readonly property var oskAutomatic: automaticKeyboard
++    OskAutomatic { id: automaticKeyboard; controller: keyboardController }
+@@ -26,0 +29 @@
++        onTextFocusEvent: active => automaticKeyboard.textFocusEvent(active)

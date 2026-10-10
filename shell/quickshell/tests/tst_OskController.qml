@@ -40,6 +40,13 @@ TestCase {
     }
     function requestLaunch() { verify(control.requestShow());compare(control.state,"pending-start");verify(control.confirmStart()); }
     function start() { requestLaunch();control.started(control.serial); }
+    function test_automatic_hidden_start_and_busy_manual_requests() {
+        verify(control.prepareAutomatic());verify(control.startPending);compare(fake.shows,0);
+        verify(!control.toggle());verify(!control.requestShow());verify(control.automaticStartup);
+        control.started(control.serial);compare(control.state,"hide-requested");compare(fake.shows,0);compare(focus.count,0);
+        verify(control.showAutomatic());compare(fake.shows,1);compare(focus.count,0);
+        verify(control.hideAutomatic());compare(fake.hides,1);compare(fake.stops,0);
+    }
     function test_shortcut_starts_once_and_toggles_without_stop() {
         verify(control.toggle());compare(fake.starts,1);verify(!control.toggle());
         control.started(control.serial);verify(control.toggle());compare(fake.toggles,1);

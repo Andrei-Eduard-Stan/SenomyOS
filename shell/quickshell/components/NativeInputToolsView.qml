@@ -30,12 +30,23 @@ Column {
         width: parent.width
         title: "ON-SCREEN KEYBOARD"
         value: root.settings && root.settings.oskCapabilities && root.settings.oskCapabilities.providerInstalled === true
-            ? root.settings.oskCapabilities.manualCandidate === true ? "MANUAL CONTROLS / UNVERIFIED"
+            ? root.settings.oskCapabilities.manualCandidate === true ? root.settings.oskAutomatic && root.settings.oskAutomatic.available ? "AUTO / MANUAL CONTROLS" : "MANUAL CONTROLS"
               : root.settings.oskCapabilities.protocolState === "incompatible" ? "PROTOCOLS INCOMPATIBLE" : "COMPATIBILITY UNKNOWN"
             : "PROVIDER UNAVAILABLE"
         detail: root.settings && root.settings.oskCapabilities
-            ? root.settings.oskCapabilities.message + " Manual controls require an installed provider and advertised protocols. Application text-entry acceptance remains open."
+            ? root.settings.oskCapabilities.message + " Auto opens in supported text fields when no usable physical keyboard is detected. Super+Ctrl+K still opens or hides it manually."
             : "OSK capabilities have not been checked. Integration remains open."
+    }
+    DashboardButton {
+        width: parent.width
+        text: root.settings && root.settings.oskAutomatic && root.settings.oskAutomatic.mode === "auto" ? "AUTO OPEN · SWITCH TO MANUAL" : "MANUAL · ENABLE AUTO OPEN"
+        enabled: root.settings && root.settings.oskAutomatic && !root.settings.oskAutomatic.settingMode
+        onClicked: root.settings.oskAutomatic.setMode(root.settings.oskAutomatic.mode === "auto" ? "manual" : "auto")
+    }
+    Text {
+        width: parent.width; wrapMode: Text.WordWrap
+        text: root.settings && root.settings.oskAutomatic ? root.settings.oskAutomatic.status : "Automatic opening is unavailable."
+        color: Config.Theme.muted; font.family: Config.Theme.fontFamily; font.pixelSize: 10
     }
     OskControls { width: parent.width; controller: root.settings && root.settings.oskController ? root.settings.oskController : null }
 }

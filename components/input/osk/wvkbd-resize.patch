@@ -3,7 +3,11 @@ diff --git a/main.c b/main.c
 +++ b/main.c
 @@ -21,0 +22 @@
 +#include "senomy-resize.h"
-@@ -85,0 +87,81 @@
+@@ -76,0 +78,3 @@
++static bool senomy_auto_focus = false;
++static struct zwp_input_method_v2 *senomy_input_method;
++static void senomy_focus_observer(void);
+@@ -85,0 +90,83 @@
 +/* Optional SenomyOS edge resizing. No keys or surrounding text in telemetry. */
 +static bool senomy_resize = false;
 +static bool senomy_lock_sync = false;
@@ -26,6 +30,8 @@ diff --git a/main.c b/main.c
 +                uint32_t next=(keyboard.mods & ~CapsLock) | (line[5]=='1'?CapsLock:0);
 +                if (next!=keyboard.mods) {keyboard.mods=next;if(layer_surface_configured) {kbd_draw_layout(&keyboard);drwsurf_attach(&draw_surf);wl_surface_commit(draw_surf.surf);}}
 +            }
++            if (!overflow && used==8 && !memcmp(line,"focus:on",8) && senomy_resize) senomy_focus_observer();
++            if (!overflow && used==9 && !memcmp(line,"focus:off",9) && senomy_input_method) {zwp_input_method_v2_destroy(senomy_input_method);senomy_input_method=NULL;}
 +            used=0;overflow=false;
 +        } else if (used<sizeof(line)) line[used++]=bytes[i]; else overflow=true;
 +    }
@@ -85,31 +91,52 @@ diff --git a/main.c b/main.c
 +    wl_surface_commit(draw_surf.surf);senomy_geometry(true);
 +}
 +
-@@ -259,3 +341,3 @@
+@@ -259,3 +346,3 @@
 -    if(!layer_surface_configured || !popup_xdg_surface_configured) {
 -        return;
 -    }
 +    if (senomy_drag.edge) return;
 +    if (senomy_begin(wl_fixed_to_int(x),wl_fixed_to_int(y),id,time)) return;
 +    if(!layer_surface_configured || !popup_xdg_surface_configured) return;
-@@ -284,0 +367 @@
+@@ -284,0 +372 @@
 +    if (senomy_drag.edge) { if (id == senomy_drag.touch_id) {senomy_drag.edge=0;senomy_input_region();} return; }
-@@ -295,0 +379 @@
+@@ -295,0 +384 @@
 +    if (senomy_drag.edge) { if (id == senomy_drag.touch_id) senomy_motion(wl_fixed_to_int(x),wl_fixed_to_int(y)); return; }
-@@ -315,0 +400,2 @@
+@@ -315,0 +405,2 @@
 +    senomy_drag.edge=0;senomy_input_region();
 +    kbd_unpress_key(&keyboard,(uint32_t)(monotime()+keyboard.last_press_offset));
-@@ -334,0 +421 @@
+@@ -334,0 +426 @@
 +    cur_x=wl_fixed_to_int(surface_x);cur_y=wl_fixed_to_int(surface_y);
-@@ -341,0 +429 @@
+@@ -341,0 +434 @@
 +    if (senomy_drag.edge && senomy_drag.touch_id == -1) {senomy_drag.edge=0;cur_press=false;senomy_input_region();}
-@@ -347,0 +436,2 @@
+@@ -347,0 +441,2 @@
 +    cur_x=wl_fixed_to_int(surface_x); cur_y=wl_fixed_to_int(surface_y);
 +    if (senomy_drag.edge) { if (senomy_drag.touch_id == -1) senomy_motion(cur_x,cur_y); return; }
-@@ -363,0 +454,2 @@
+@@ -363,0 +459,2 @@
 +    if (senomy_drag.edge) { if (senomy_drag.touch_id == -1 && button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_RELEASED) {senomy_drag.edge=0;cur_press=false;senomy_input_region();} return; }
 +    if (button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_PRESSED && senomy_begin(cur_x,cur_y,-1,time)) return;
-@@ -583 +675,10 @@
+@@ -472 +569 @@
+-    } else if (im_auto && strcmp(interface, zwp_input_method_manager_v2_interface.name) == 0) {
++    } else if ((im_auto || senomy_resize) && strcmp(interface, zwp_input_method_manager_v2_interface.name) == 0) {
+@@ -527 +624,2 @@
+-    show();
++    if (!senomy_auto_focus) show();
++    else {printf("{\"event\":\"text-focus\",\"active\":true}\n");fflush(stdout);}
+@@ -533 +631,2 @@
+-    hide();
++    if (!senomy_auto_focus) hide();
++    else {printf("{\"event\":\"text-focus\",\"active\":false}\n");fflush(stdout);}
+@@ -559,0 +659,9 @@
++    if (senomy_auto_focus && senomy_input_method==zwp_input_method_v2) {
++        zwp_input_method_v2_destroy(senomy_input_method);senomy_input_method=NULL;
++    }
++}
++static void senomy_focus_observer(void) {
++    if (!im_mgr || !seat || senomy_input_method) return;
++    senomy_auto_focus=true;
++    senomy_input_method=zwp_input_method_manager_v2_get_input_method(im_mgr,seat);
++    zwp_input_method_v2_add_listener(senomy_input_method,&input_method_listener,NULL);
+@@ -583 +691,10 @@
 -    keyboard.h = height;
 +    if (senomy_resize) {
 +        keyboard.w=senomy_clamp(keyboard.w,320,available_width);
@@ -121,12 +148,17 @@ diff --git a/main.c b/main.c
 +        if (!senomy_positioned) {keyboard.resize_x=(keyboard.w-keyboard.resize_width)/2;keyboard.resize_y=keyboard.h-keyboard.resize_height;}
 +        else {keyboard.resize_x=senomy_clamp(keyboard.resize_x,0,keyboard.w-keyboard.resize_width);keyboard.resize_y=senomy_clamp(keyboard.resize_y,0,keyboard.h-keyboard.resize_height);}
 +    } else keyboard.h=height;
-@@ -601,5 +702,22 @@
+@@ -601,10 +718,22 @@
 -    // Not what we expected, or redimension, refresh and restart
 -    if (keyboard.w != w || keyboard.h != h) {
 -        zwlr_layer_surface_v1_ack_configure(surface, serial);
 -        hide();
 -        show();
+-        return;
+-    };
+-
+-    // Swallow useless events
+-    if (layer_surface_configured) {
 +    if (surface != layer_surface) return;
 +    if (!w || !h) { zwlr_layer_surface_v1_ack_configure(surface,serial); return; }
 +    bool reconfigure = layer_surface_configured;
@@ -149,47 +181,49 @@ diff --git a/main.c b/main.c
 +        kbd_resize(&keyboard,layouts,NumLayouts);
 +        drwsurf_attach(&draw_surf);
 +        senomy_geometry(true);
-@@ -607,7 +725 @@
--    };
--
--    // Swallow useless events
--    if (layer_surface_configured) {
--        return;
+@@ -612,2 +741 @@
 -    };
 -    layer_surface_configured = true;
 +    }
-@@ -655,0 +768,2 @@
+@@ -655,0 +784,2 @@
 +    if (senomy_resize && !senomy_drag.edge) senomy_input_region();
 +    senomy_geometry(true);
-@@ -673,0 +788 @@
+@@ -673,0 +804 @@
 +    fprintf(stderr, "  --senomy-resize        - Drag all edges/corners; geometry-only telemetry\n");
-@@ -790,0 +906,2 @@
+@@ -790,0 +922,2 @@
 +    senomy_drag.edge=0;cur_press=false;
 +    senomy_geometry(false);
-@@ -832 +949,2 @@
+@@ -832 +965,2 @@
 -    zwlr_layer_surface_v1_set_size(layer_surface, req_w, height);
 +    if (senomy_resize) { anchor=ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;req_w=keyboard.w; }
 +    zwlr_layer_surface_v1_set_size(layer_surface, req_w, senomy_resize ? keyboard.h : height);
-@@ -835 +953 @@
+@@ -835 +969 @@
 -        zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, height);
 +        zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, senomy_resize ? ((keyboard.senomy_float || senomy_avoidance) ? 0 : keyboard.h-keyboard.resize_y) : height);
-@@ -933,0 +1052,4 @@
+@@ -933,0 +1068,4 @@
 +        if (!strcmp(argv[i],"--senomy-avoidance")) {senomy_avoidance=true;continue;}
 +        if (!strcmp(argv[i],"--senomy-lock-sync")) { senomy_lock_sync=true;keyboard.lock_sync=true;continue; }
 +        if (!strcmp(argv[i],"--senomy-resize")) { senomy_resize=true;keyboard.resize_edge=SENOMY_EDGE;continue; }
 +
-@@ -1274 +1396,2 @@
+@@ -1112,0 +1251,2 @@
++        } else if (!strcmp(argv[i], "--senomy-auto-focus")) {
++            senomy_auto_focus = true; im_auto = true; hidden = true;
+@@ -1260 +1400,2 @@
+-    if (im_mgr != NULL) {
++    if (senomy_auto_focus) senomy_focus_observer();
++    else if (im_auto && im_mgr != NULL) {
+@@ -1274 +1415,2 @@
 -    struct pollfd fds[2];
 +    struct pollfd fds[3];
-+    fds[2]=(struct pollfd){.fd=senomy_lock_sync?STDIN_FILENO:-1,.events=POLLIN};
-@@ -1289,0 +1413 @@
++    fds[2]=(struct pollfd){.fd=senomy_resize?STDIN_FILENO:-1,.events=POLLIN};
+@@ -1289,0 +1432 @@
 +    sigaddset(&signal_mask, SIGRTMIN+1);
-@@ -1302 +1426,3 @@
+@@ -1302 +1445,3 @@
 -        poll(fds, 2, -1);
 +        poll(fds, 3, -1);
 +        if (fds[2].revents & POLLIN) senomy_read_state();
 +        if (fds[2].revents & (POLLHUP|POLLERR)) fds[2].fd=-1;
-@@ -1323,0 +1450,2 @@
+@@ -1323,0 +1469,2 @@
 +            else if (si.ssi_signo == SIGRTMIN+1)
 +                senomy_toggle_mode();
 diff --git a/keyboard.c b/keyboard.c

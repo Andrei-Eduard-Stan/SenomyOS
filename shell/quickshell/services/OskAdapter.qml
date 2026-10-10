@@ -25,17 +25,18 @@ Scope {
     property bool lockStateKnown: false
     property int capsRequests: 0
     readonly property string lockMessage: !lockSync ? "Physical Caps Lock sync is unavailable for this provider." : lockStateKnown ? "Caps Lock is shared with connected physical keyboards." : "Caps Lock sync is connecting or unavailable."
+    signal textFocusEvent(bool active)
     signal geometryChanged()
     signal providerStarted(int serial)
     signal providerFailed(int serial)
     signal providerExited(int serial, bool successful)
 
     function owns(serial) { return serial === ownerSerial && ownerSerial > 0 && child.running; }
-    function start(name, serial) {
+    function start(name, serial, automatic=false) {
         if (child.running || ["wvkbd-mobintl","wvkbd-deskintl"].indexOf(name) < 0 || serial < 1) return false;
         visibilityKnown=false;visible=false;lockSync=false;lockStateKnown=false;capsRequests=0;modeSupported=false;
         ownerSerial = serial; providerName = name; signalReady = false; stopRequested = false;
-        child.command = ["python3",Quickshell.shellDir+"/scripts/osk-provider.py","launch-confirmed",name];
+        child.command = ["python3",Quickshell.shellDir+"/scripts/osk-provider.py",automatic ? "launch-auto" : "launch-confirmed",name];
         observing = true; child.running = true;
         watchdog.restart();
         return true;
@@ -52,6 +53,14 @@ Scope {
         if (!owns(serial) || !signalReady || stopRequested) return false;
         child.signal(34); // Linux SIGRTMIN: provider chooses from its actual state.
         return true;
+    }
+    function disableAutoFocus(serial) {
+        if (!owns(serial) || !signalReady || stopRequested || !modeSupported) return false;
+        child.write("focus:off\n");return true;
+    }
+    function enableAutoFocus(serial) {
+        if (!owns(serial) || !signalReady || stopRequested || !modeSupported) return false;
+        child.write("focus:on\n");return true;
     }
     function toggleMode(serial) {
         if (!owns(serial) || !signalReady || stopRequested || !modeSupported) return false;
@@ -106,6 +115,7 @@ Scope {
         if (!child.running || ownerSerial < 1 || line.length>512) return;
         try {
             const data=JSON.parse(line);
+            if (data.event==="text-focus" && typeof data.active==="boolean") {textFocusEvent(data.active);return;}
             if (data.event==="caps-toggle") {
                 if (lockSync && signalReady && capsRequests<32) {capsRequests++;if (!capsToggle.running) capsToggle.running=true;}
                 return;

@@ -1,0 +1,184 @@
+[
+  {
+    "case": "keyboard-free session prearms hidden provider",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": false,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 1
+      },
+      "mode": "auto",
+      "state": "starting",
+      "owned": true,
+      "visible": false,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "text-input-v3 enable automatically shows owned keyboard",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": true,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 3
+      },
+      "mode": "auto",
+      "state": "show-requested",
+      "owned": true,
+      "visible": true,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "text-input-v3 disable automatically hides keyboard",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": false,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 5
+      },
+      "mode": "auto",
+      "state": "hide-requested",
+      "owned": true,
+      "visible": false,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "second focus reuses same owned keyboard",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": true,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 7
+      },
+      "mode": "auto",
+      "state": "show-requested",
+      "owned": true,
+      "visible": true,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "manual hide respected",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": true,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 7
+      },
+      "mode": "auto",
+      "state": "hide-requested",
+      "owned": true,
+      "visible": false,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "next text focus opens after dismissal",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": true,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 9
+      },
+      "mode": "auto",
+      "state": "show-requested",
+      "owned": true,
+      "visible": true,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "physical keyboard becoming usable hides automatic OSK",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": true,
+        "textActive": false,
+        "inputMethod": false,
+        "locked": false,
+        "focusEpoch": 10
+      },
+      "mode": "auto",
+      "state": "hide-requested",
+      "owned": true,
+      "visible": false,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "keyboard becoming unavailable resumes automatic OSK",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": true,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 11
+      },
+      "mode": "auto",
+      "state": "show-requested",
+      "owned": true,
+      "visible": true,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "manual preference disables automatic opening",
+    "state": {
+      "snapshot": null,
+      "mode": "manual",
+      "state": "hide-requested",
+      "owned": true,
+      "visible": false,
+      "pid": 28392
+    }
+  },
+  {
+    "case": "manual show remains available",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "manual",
+        "physicalKeyboard": false,
+        "textActive": false,
+        "inputMethod": false,
+        "locked": false,
+        "focusEpoch": 12
+      },
+      "mode": "manual",
+      "state": "show-requested",
+      "owned": true,
+      "visible": true,
+      "pid": 28392
+    }
+  }
+]

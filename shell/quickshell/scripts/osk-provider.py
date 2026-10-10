@@ -27,7 +27,7 @@ def arm_parent_death_signal():
         raise OSError("Shell parent changed during startup")
 
 
-def launch(name):
+def launch(name, automatic=False):
     if name not in capabilities.PROVIDERS:
         return {"ok":False,"message":"Unsupported keyboard provider."}
     result = capabilities.detect()
@@ -65,6 +65,16 @@ def launch(name):
                         fitting=json.loads(locks.request("senomy-osk-state"))
                         if fitting.get("ok") is True and fitting.get("protocol")==1:argv.append("--senomy-avoidance")
                     except (OSError,ValueError,AttributeError):pass
+        if automatic:
+            try:
+                eligibility=json.loads(locks.request("senomy-osk-auto-state"))
+                if eligibility.get("ok") is not True or eligibility.get("protocol") != 1 or eligibility.get("physicalKeyboard") is not False or eligibility.get("locked") is not False:
+                    return {"ok":False,"message":"Automatic keyboard is not needed or cannot be verified."}
+            except (OSError,ValueError,AttributeError,UnboundLocalError):
+                return {"ok":False,"message":"Automatic keyboard eligibility is unavailable."}
+            if not resize or b"--senomy-auto-focus" not in metadata:
+                return {"ok":False,"message":"Automatic focus is unsupported by this provider."}
+            argv.append("--senomy-auto-focus")
         os.execv(binary,argv)
     except OSError:
         return {"ok":False,"message":"Keyboard provider could not be executed."}
@@ -96,6 +106,8 @@ def observe(pid,name):
 def main(args):
     if len(args)==2 and args[0]=="launch-confirmed":
         result=launch(args[1])
+    elif len(args)==2 and args[0]=="launch-auto":
+        result=launch(args[1],automatic=True)
     elif len(args)==3 and args[0]=="observe":
         result=observe(args[1],args[2])
     else:

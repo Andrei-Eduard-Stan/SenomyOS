@@ -1,0 +1,59 @@
+[
+  {
+    "case": "existing input method keeps ownership; no unnecessary OSK pre-arm",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": false,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 15
+      },
+      "mode": "auto",
+      "state": "stopped",
+      "owned": false,
+      "visible": false,
+      "pid": null
+    }
+  },
+  {
+    "case": "existing input method focus opens managed OSK",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": true,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 17
+      },
+      "mode": "auto",
+      "state": "show-requested",
+      "owned": true,
+      "visible": true,
+      "pid": 28532
+    }
+  },
+  {
+    "case": "existing input method disable hides managed OSK",
+    "state": {
+      "snapshot": {
+        "ok": true,
+        "mode": "auto",
+        "physicalKeyboard": false,
+        "textActive": false,
+        "inputMethod": true,
+        "locked": false,
+        "focusEpoch": 19
+      },
+      "mode": "auto",
+      "state": "hide-requested",
+      "owned": true,
+      "visible": false,
+      "pid": 28532
+    }
+  }
+]

@@ -1,3 +1,7 @@
+## 2026-10-10 — Automatic OSK publication
+
+Published conditional automatic focus policy, user Auto/Manual preference, pinned native focus observer and exact-version compositor focus/device telemetry. Protocol-client and existing-IME integration pass privately; live Quickshell PID1467 loads, Rail is visible and configerrors is empty. The reference laptop reports a usable physical keyboard, so Auto stays paused. Touch, real hotplug and individual application acceptance remain open; no universal smartphone behavior claim. Evidence: `qa/osk-auto-20261010/RESULTS.md`.
+
 ## 2026-10-09 — OSK window-fitting revision
 
 Published all-edge native resize and FLOAT/REFIT controls; the local exact-version

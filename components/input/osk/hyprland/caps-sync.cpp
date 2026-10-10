@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "avoidance.hpp"
+#include "automatic.hpp"
 
 static HANDLE handle;
 static CHyprSignalListener tick;
@@ -81,8 +82,8 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE h) {
     if (!HyprlandAPI::registerHyprCtlCommand(handle,{"senomy-caps-state",true,[](eHyprCtlOutputFormat,std::string){
         reconcile();return std::string("{\"ok\":true,\"available\":")+(active?"true":"false")+",\"capsLock\":"+(caps?"true":"false")+"}";
     }})) throw std::runtime_error("Cannot register Caps sync state");
-    SenomyAvoidance::init(handle);
-    tick=Event::bus()->m_events.tick.listen([]{reconcile();SenomyAvoidance::tick();});reconcile();
+    SenomyAvoidance::init(handle);SenomyAutomatic::init(handle);
+    tick=Event::bus()->m_events.tick.listen([]{reconcile();SenomyAvoidance::tick();SenomyAutomatic::tick();});reconcile();
     return {"senomy-caps-sync","Session-scoped shared Caps Lock for wvkbd","SenomyOS","1"};
 }
-APICALL EXPORT void PLUGIN_EXIT() { tick.reset();SenomyAvoidance::exit();watches.clear();active=false;publish(); }
+APICALL EXPORT void PLUGIN_EXIT() { tick.reset();SenomyAutomatic::exit();SenomyAvoidance::exit();watches.clear();active=false;publish(); }

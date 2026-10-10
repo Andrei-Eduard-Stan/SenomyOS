@@ -1,3 +1,7 @@
+## 2026-10-10 — Conditional automatic OSK
+
+Auto mode follows reported text-input focus only without a usable physical keyboard. Physical presence is capability-based and excludes virtual/power-button devices; unknown physical backends suppress automatic opening. Manual visibility overrides and persisted Manual mode remain. An optional native IME observer fills the missing-IME case without taking an existing IME's seat; it releases its own connection when automatic mode is inactive. Focus generations capture rapid v3 transitions for new objects. No typed text enters telemetry. See `qa/osk-auto-20261010/RESULTS.md` for protocol integration, toolkit limits and physical acceptance still required.
+
 ## 2026-10-09 — Expanded Senomy foreground priority
 
 Expanded Rail Senomy stays on the Overlay layer even while the OSK floats, as requested. Other primary surfaces retain their existing Top downgrade in floating-keyboard mode. Native keys reserve a separate bottom resize gutter so the last row cannot cover the grip. See `qa/osk-bottom-front-20261009/RESULTS.md` for private-compositor validation and baseline boundaries.

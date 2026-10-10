@@ -1,0 +1,26 @@
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.019s
+
+OK
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 0.027s
+
+OK
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.198s
+
+OK
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.005s
+
+OK
+Totals: 19 passed, 0 failed, 0 skipped, 0 blacklisted, 53ms
+ DEBUG qml: PASS: OSK capability schema rejects invalid data and never claims completed integration; isolated provider only
+Passed with Qt diagnostics; not warning-free.
+ DEBUG qml: PASS: OSK adapter ownership/readiness, guarded keyboard controls, route preservation and confirmed graceful stop; fake processes only
+Passed with Qt diagnostics; not warning-free.
+Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 8ms

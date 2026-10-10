@@ -15,6 +15,9 @@ QtObject {
     readonly property bool owned: serial > 0 && provider && provider.owns(serial)
     property string requestedProvider: ""
     property string previousState: "stopped"
+    signal manualAction(bool showing)
+    signal manualStop()
+    property bool automaticStartup: false
     signal releasePrimaryFocusRequested()
 
     function available() {
@@ -42,6 +45,7 @@ QtObject {
         if (owned) {
             const hidden = provider.visibilityKnown === true ? !provider.visible : state === "hide-requested";
             if (!provider.toggle(serial)) { state="failed";message="OSK toggle request failed.";return false; }
+            manualAction(hidden);
             state=hidden ? "show-requested" : "hide-requested";
             message="Toggle requested; native provider decides from its actual visibility.";
             if (hidden) releasePrimaryFocusRequested();
@@ -53,16 +57,39 @@ QtObject {
         if (startPending || (state === "pending-start" || state === "pending-stop" || state === "stop-requested")) return false;
         if (owned) {
             if (!provider.show(serial)) { state = "failed"; message = "OSK show request failed."; return false; }
+            automaticStartup=false;manualAction(true);
             state = "show-requested";
             message = "Show requested; surface visibility and text entry are unverified.";
             releasePrimaryFocusRequested();
             return true;
         }
         if (!available()) { state = "unavailable"; message = "OSK capability is unavailable or unknown."; return false; }
+        automaticStartup=false;manualAction(true);
         requestedProvider = capabilities.provider;
         state = "pending-start";
         message = "Start the keyboard for this shell session? It stays open when this panel closes and ends when the shell reloads or exits.";
         return true;
+    }
+    function prepareAutomatic() {
+        if (owned || startPending || state !== "stopped" || !available()) return false;
+        automaticStartup=true;requestedProvider=capabilities.provider;state="pending-start";
+        return confirmStart();
+    }
+    function disableAutomaticFocus() {
+        return owned && !startPending && provider.disableAutoFocus !== undefined && provider.disableAutoFocus(serial);
+    }
+    function enableAutomaticFocus() {
+        return owned && !startPending && provider.enableAutoFocus !== undefined && provider.enableAutoFocus(serial);
+    }
+    function showAutomatic() {
+        if (!owned || startPending || ["pending-stop","stop-requested","pending-start"].indexOf(state)>=0) return false;
+        if (!provider.show(serial)) return false;
+        state="show-requested";message="Keyboard opened for the focused text field.";return true;
+    }
+    function hideAutomatic() {
+        if (!owned || startPending || ["pending-stop","stop-requested","pending-start"].indexOf(state)>=0) return false;
+        if (!provider.hide(serial)) return false;
+        state="hide-requested";message="Automatic keyboard hidden.";return true;
     }
     function cancelStart() {
         if (state !== "pending-start") return false;
@@ -80,7 +107,7 @@ QtObject {
         startPending = true;
         state = "starting";
         message = "Starting owned keyboard provider…";
-        if (!provider.start(capabilities.provider, serial)) {
+        if (!provider.start(capabilities.provider, serial, automaticStartup)) {
             startPending = false; state = "failed"; message = "Keyboard provider could not be started.";
             return false;
         }
@@ -93,7 +120,8 @@ QtObject {
         startPending = false;
         if (!owned) { state = "failed"; message = "Provider did not establish child ownership."; return; }
         state = "running";
-        requestShow();
+        if (automaticStartup) {state="hide-requested";message="Automatic keyboard ready; waiting for a text field.";}
+        else requestShow();
     }
     function failed(id) {
         if (id !== serial) return;
@@ -109,6 +137,7 @@ QtObject {
     function requestHide() {
         if (startPending || (state === "pending-start" || state === "pending-stop" || state === "stop-requested") || !owned) return false;
         if (!provider.hide(serial)) { state = "failed"; message = "OSK hide request failed."; return false; }
+        manualAction(false);
         state = "hide-requested"; message = "Hide requested; surface visibility is unverified.";
         return true;
     }
@@ -128,6 +157,7 @@ QtObject {
         if (state !== "pending-stop") return false;
         if (!owned) { state = "failed"; message = "Owned keyboard is no longer available."; return false; }
         if (!provider.stop(serial)) { state = "failed"; message = "Owned keyboard stop request failed."; return false; }
+        manualAction(false);manualStop();
         state = "stop-requested"; message = "Stop requested; waiting for owned provider exit.";
         return true;
     }
