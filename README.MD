@@ -1,121 +1,119 @@
 # SenomyOS
 
-SenomyOS is a custom Arch Linux desktop shell built around Hyprland. Eww is the
-current login-time shell and rollback path; Quickshell V2 is the live-selectable
-migration target. The long-term target is a reproducibly deployable Arch-based
-operating-system experience.
+My personal desktop project, built on Arch Linux with Hyprland and Quickshell.
 
-The intended product should install on supported laptops, desktops, mini PCs,
-touch devices, and eventually compatible phone-sized Linux hardware with as
-little manual configuration as practical. The current T480 is reference
-hardware, not the final hardware specification.
+I started this because I wanted a desktop that felt like mine, from the system
+bar and settings to the login screen and file manager. The look is dark glass,
+silver frames, sharp corners and metalheart-inspired artwork. I'm building the
+everyday controls around that, so it feels like one desktop when I use it.
 
-The project is being revived around four coordinated surfaces and one ambient
-companion overlay:
+It's a working desktop that I'm still developing. The name is where I want to
+take it eventually: a reproducible system with its own setup, updates and
+recovery. Right now, this repo is the shell, integrations, themes and the work
+towards that.
 
-1. A compact bottom system bar.
-2. A unified contextual Control Centre.
-3. A separate full Performance Dashboard.
-4. A separate Senomy Insights system briefing.
-5. A single edge-mounted Senomy companion opened from the Rail avatar.
+![The SenomyOS bottom Rail](docs/design/design-intelligence/evidence/rail-background-20261115.png)
 
-The approved everyday direction is the compact **Obsidian Rail** design. The
-expanded **Cathedral Deck** direction is reserved for the Performance
-Dashboard, opened by clicking the CPU/MEM/UP telemetry area.
+## What it is now
 
-## Repository location
+The shell runs natively in **Quickshell / QML**, with **Hyprland** handling the
+Wayland session. Earlier versions used Eww; the current desktop has moved on
+from that.
 
-The authoritative V2 source worktree is:
+- **Obsidian Rail** — the bottom bar for workspaces, system readings, quick
+  controls, notifications, the clock and power.
+- **Control Centre and Settings** — quick controls and a full resizable settings
+  window, sharing the same pages, search and saved preferences.
+- **Performance** — a separate dashboard for CPU, memory, storage, network,
+  processes, services and diagnostics.
+- **Senomy Insights** — local system briefings, notifications, updates, reports
+  and a searchable wiki. I want it to explain what the system actually knows.
+- **Command Lens** — a native launcher for apps, files, windows and actions,
+  with local app-use sorting.
+- **Everyday panels** — audio and media, Wi-Fi, Bluetooth, batteries, calendar,
+  notifications, app tray and session controls.
+- **Native file manager** — Thunar with a custom GTK3 theme, silver framing,
+  Places navigation and an object inspector, keeping its normal file tools.
+- **Login and lock** — a custom SDDM greeter and matching Hyprlock styling,
+  alongside Plymouth boot artwork.
 
-```text
-/home/Duku/SenomyOS
-```
+There's also a persistent local calendar service, on-screen keyboard support,
+multi-battery handling, display/workspace management, and deployment tools with
+receipts and rollback. Features still depend on the available system providers
+and hardware; having the UI in place doesn't mean every device path is finished.
 
-The known-good live Eww fallback remains a detached checkout at:
+## Screenshots
 
-```text
-/home/Duku/.config/eww
-```
+These are captures of the native interfaces. The Rail is a live desktop capture;
+the larger panels, Thunar and SDDM below are native previews with test data.
+They show the recent design work without publishing my notifications or files.
+The SDDM image is a greeter preview, rather than a real sign-in test.
 
-The actual live Hyprland configuration is separate and currently uses Lua:
+### Settings
 
-```text
-/home/Duku/.config/hypr/hyprland.lua
-```
+![SenomyOS Settings with audio, network, battery and device controls](docs/screenshots/settings.png)
 
-The repository contains tracked Lua and compatibility `.conf` mirrors. Live and
-tracked files must be compared and synchronized deliberately.
+### Performance
 
-## Current structure
+![Performance dashboard with resource history and a process list](docs/design/design-intelligence/evidence/performance-tree-20261115.png)
 
-```text
-.
-├── eww.yuck                 Eww entry point, includes, polls, and state
-├── shell/quickshell/        Quickshell V2 shell and native services
-├── eww.scss                 Current global styling
-├── windows/                 Eww window definitions
-├── widgets/                 Reusable bar widgets
-├── scripts/                 Data collectors and workspace updater
-├── systemd/                 Legacy and V2 user-service sources
-├── appearance/              Canonical tokens and native projections
-├── assets/                  Canonical shared artwork and Rail icons
-├── hyprland.lua             Tracked mirror of the active Hyprland config
-├── AGENTS.md                Repository rules for coding agents
-└── docs/                    Product, architecture, design, and workflow docs
-```
+### Senomy Insights
 
-The original workspace listener and dual-battery collector remain preserved.
-The current shell now connects all ten Control Centre routes, the separate
-Performance Dashboard, the eight-route Senomy Insights surface, responsive
-Rail profiles, the single-avatar companion foundation, guarded recovery, and
-structured data/action contracts. The
-legacy deadlocking update loop is no longer part of startup.
+![Insights briefing with local observations and update-check status](docs/screenshots/insights.png)
 
-This is still a live configuration, not a finished OS release. Physical
-multi-monitor/touch/non-T480 validation, clean-machine deployment, packaging,
-installer/recovery media, and final avatar artwork remain release work.
+### Files
 
-## Documentation
+![The native Thunar workspace with silver framing and an object inspector](docs/screenshots/files.jpg)
 
-- [Product specification](docs/PRODUCT_SPEC.md)
-- [Project handbook](docs/HANDBOOK.md)
-- [Deployment and platform strategy](docs/PLATFORM_STRATEGY.md)
-- [Architecture and state model](docs/ARCHITECTURE.md)
-- [Design system](docs/DESIGN_SYSTEM.md)
-- [Launcher and file workspace](docs/LAUNCHER_FILE_MANAGER.md)
-- [Data sources and command policy](docs/DATA_SOURCES.md)
-- [Development and validation workflow](docs/DEVELOPMENT.md)
-- [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
-- [Decision log](docs/DECISIONS.md)
-- [Runtime inventory](docs/RUNTIME_INVENTORY.md)
-- [Quickshell V2 foundation](docs/QUICKSHELL_V2_FOUNDATION.md)
+### SDDM login
 
-Anyone changing the live shell should read `AGENTS.md` first.
+![SenomyOS SDDM login preview with session and keyboard choices](docs/design/design-intelligence/evidence/auth-login-desktop-20261116.png)
 
-## Long-term deliverables
+More captures and design notes are in the
+[design library](docs/design/design-intelligence/INDEX.md) and the
+[UI/UX atlas](docs/design/uiux-atlas/README.md).
+[Screenshot notes](docs/screenshots/README.md) record the gallery sources.
 
-The project should grow in layers:
+## The plan
 
-1. a reliable portable shell configuration;
-2. declarative package and service manifests;
-3. hardware and form-factor profiles;
-4. an automated installer or reproducible system deployment;
-5. a bootable installation/recovery image;
-6. documented updates, rollback, diagnostics, and recovery.
+I want to keep improving the desktop I use while making it easier to run on
+another machine. The next steps are:
 
-Pointer, keyboard, and touch interaction are product requirements. Phone-class
-support remains hardware-dependent and should be treated as an explicit
-compatibility tier rather than assumed to work everywhere.
+1. Keep refining the existing UI: layout, motion, keyboard focus, readability
+   and how the panels behave at different sizes.
+2. Finish testing real everyday workflows: Bluetooth audio, network recovery,
+   external displays, suspend/resume, input settings and battery behaviour.
+3. Make installation and updates repeatable, with versioned releases and a
+   rollback path that has been tested from a clean environment.
+4. Test fresh-user and VM setups, then build up a realistic hardware list.
+   My ThinkPad T480 is the reference machine, not the only intended target.
+5. Work towards installer and recovery media once the underlying setup is ready.
+   Touch and convertible layouts are part of that direction; ARM and smaller
+   devices are longer-term experiments.
 
-## Development status
+There isn't a release date yet. Clean installation, recovery, long-running
+resource use and wider hardware testing still need work. The
+[project state](docs/PROJECT_STATE.md) keeps the detailed progress, known limits
+and next work in one place.
 
-V2 integration work belongs on `quickshell-v2`; Eww revival fixes belong on
-`revival/live`. Before every commit:
+## Looking around the repo
 
-1. inspect the complete diff;
-2. validate changed shell and JSON output;
-3. check Eww or Hyprland errors as applicable;
-4. warn before any live reload or service restart;
-5. keep the commit limited to one recoverable stage.
+| Path | What's in it |
+| --- | --- |
+| `shell/quickshell/` | Native shell, panels, shared state and service adapters |
+| `components/` | Calendar, input, session, launcher and desktop integrations |
+| `appearance/` and `assets/` | Themes, artwork, frames, fonts and shared appearance tokens |
+| `scripts/` | Checks, diagnostics, deployment and system-action helpers |
+| `deploy/` and `systemd/` | Package/service definitions and deployment transactions |
+| `hyprland.lua` | Tracked Hyprland configuration |
+| `docs/` and `wiki/` | Project documentation, design evidence and user help |
 
-Do not push directly to `main`.
+For setup and development, start with the [development guide](docs/DEVELOPMENT.md)
+and [deployment guide](deploy/README.md). This is still a personal development
+setup, so installation needs a review of the configuration and dependencies.
+
+The other main docs are the [product spec](docs/PRODUCT_SPEC.md),
+[architecture](docs/ARCHITECTURE.md), [design system](docs/DESIGN_SYSTEM.md),
+[project state](docs/PROJECT_STATE.md) and [working rules](AGENTS.md).
+Detailed contracts live in [docs/reference](docs/reference/README.md), and the
+[wiki](wiki/welcome.md) covers using the desktop.
