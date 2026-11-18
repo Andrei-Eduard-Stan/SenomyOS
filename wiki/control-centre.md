@@ -3,33 +3,32 @@ title: Control Centre
 category: Shell
 category_order: 20
 order: 20
-summary: Ten stable contextual routes in one 888px desktop panel with guarded actions and truthful states.
+summary: Compact controls and full resizable Settings share one workspace and guarded operations.
 ---
 
-# Control Centre
+# Control Centre and Settings
 
-The Control Centre is one shared panel. A Rail control opens its matching
-route, a different control switches in place, and repeating the active control
-closes it. On wide desktops every route uses the same 888 by 700 geometry; the
-panel caps and reflows on smaller focused monitors.
+Compact Control Centre offers contextual controls. Full Settings is the same
+workspace in a normal resizable window, with shared pages, search and edit guards.
+Use the visible mode control to change presentation. Detailed links preserve the
+current task; leaving an edited form uses its Keep/Discard/Cancel review.
 
-## Stable routes
-
-| Route | Current responsibility |
+| Area | Responsibility |
 | --- | --- |
-| Overview | CPU, memory, network, power, and direct specialist routes |
-| Network | NetworkManager state, nearby Wi-Fi, profiles, and guarded connection actions |
-| Audio | PipeWire endpoints, levels, mute, and route controls |
-| Power | Dual-battery detail, brightness, health, and confirmed TLP profiles |
-| Calendar | Local calendar, locale, timezone, and synchronization evidence |
-| Input | Hyprland keyboards, pointers, touchscreens, and tablets |
-| Devices | Displays, interfaces, audio hardware, batteries, and BlueZ devices |
-| Applications | Native tray evidence and managed background applications |
-| Appearance | Validated typography, density, accent, and edge preferences |
-| Settings | Shell state, recovery routes, Wiki, and GTK inspection |
+| Overview | Observed system summary and relevant specialist destinations |
+| Network | NetworkManager connectivity, Wi-Fi, profiles and reviewed actions |
+| Audio | PipeWire endpoints, levels, mute and reviewed routing |
+| Power | Battery/energy detail, supported TLP policies and guarded session controls |
+| Calendar | Local organizer, events, notes, reminders and provider availability |
+| Input | Keyboard, pointer, OSK and accessibility/device capabilities |
+| Device Management | Displays/workspaces, interfaces and other available hardware |
+| Applications | Registered apps, defaults, background activity and integrations |
+| Appearance | Validated presentation preferences and existing authored skins |
+| Settings | General desktop/runtime maintenance and recovery destinations |
 
-Appearance intentionally stays separate from Settings so presentation options
-can grow without mixing them with recovery and runtime maintenance. Neither
-route accepts arbitrary CSS or silently edits privileged system configuration.
+Performance opens separately from telemetry; Insights opens from the identity
+dialogue. One quick popover may coexist with the workspace. Provider absence is
+shown explicitly. A review or accepted request does not itself mean a device was
+changed. No fixed panel size is a hardware-support promise.
 
 Continue to [[panels|Contextual panels]] or [[recovery|Shell recovery]].

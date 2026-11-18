@@ -1,6 +1,0 @@
---- a/deploy/packages.json
-+++ b/deploy/packages.json
-@@ -21,0 +22,3 @@
-+    {"package":"python-gobject","tier":"runtime","required":true,"reason":"Native registered application defaults through Gio"},
-+    {"package":"nm-connection-editor","tier":"feature","required":true,"reason":"Native saved profile, VPN, DNS and connection proxy settings"},
-+    {"package":"wayland-utils","tier":"feature","required":false,"reason":"Read-only compositor protocol probe for optional on-screen keyboard"},

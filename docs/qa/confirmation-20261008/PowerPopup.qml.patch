@@ -1,7 +1,0 @@
---- a/shell/quickshell/components/PowerPopup.qml
-+++ b/shell/quickshell/components/PowerPopup.qml
-@@ -62,0 +63 @@
-+        ConfirmationFocus { view: card; actions: root.powerService; actionState: root.powerService.state; cancelButton: cancel }
-@@ -163,0 +165,2 @@
-+                            id: cancel
-+                            objectName: "powerCancel"

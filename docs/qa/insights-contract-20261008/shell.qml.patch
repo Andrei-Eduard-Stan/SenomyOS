@@ -1,6 +1,0 @@
---- a/shell/quickshell/shell.qml
-+++ b/shell/quickshell/shell.qml
-@@ -73 +73,2 @@
--        section: shellState.insightsSection
-+            || (shellState.dashboardActive && ["diagnostics","console","reports"].indexOf(shellState.performanceSection) >= 0)
-+        section: shellState.dashboardActive ? shellState.performanceSection : shellState.insightsSection

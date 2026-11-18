@@ -1,1 +1,0 @@
-PASS: actual managed-process startup/readiness, owned show/hide, panel survival, confirmed exit, reload cleanup and shell-exit cleanup; disposable stub only

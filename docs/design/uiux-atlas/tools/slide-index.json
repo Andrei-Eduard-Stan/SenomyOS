@@ -1,0 +1,952 @@
+[
+  {
+    "number": 1,
+    "section": "A · Master interface overview",
+    "title": "SenomyOS UI/UX Design Atlas"
+  },
+  {
+    "number": 2,
+    "section": "A · Master interface overview",
+    "title": "Desktop and quick controls"
+  },
+  {
+    "number": 3,
+    "section": "A · Master interface overview",
+    "title": "Core settings pages"
+  },
+  {
+    "number": 4,
+    "section": "A · Master interface overview",
+    "title": "Devices and display management"
+  },
+  {
+    "number": 5,
+    "section": "A · Master interface overview",
+    "title": "Briefings and productivity"
+  },
+  {
+    "number": 6,
+    "section": "A · Master interface overview",
+    "title": "Notifications, session and companion"
+  },
+  {
+    "number": 7,
+    "section": "A · Master interface overview",
+    "title": "Surface ownership and navigation"
+  },
+  {
+    "number": 8,
+    "section": "A · Master interface overview",
+    "title": "Capture key and coverage boundaries"
+  },
+  {
+    "number": 9,
+    "section": "B · Current-state gallery",
+    "title": "Obsidian Rail"
+  },
+  {
+    "number": 10,
+    "section": "B · Current-state gallery",
+    "title": "Rail modules at inspection scale"
+  },
+  {
+    "number": 11,
+    "section": "B · Current-state gallery",
+    "title": "Compact Control Centre"
+  },
+  {
+    "number": 12,
+    "section": "B · Current-state gallery",
+    "title": "OVERVIEW"
+  },
+  {
+    "number": 13,
+    "section": "B · Current-state gallery",
+    "title": "NETWORK / CONNECTION"
+  },
+  {
+    "number": 14,
+    "section": "B · Current-state gallery",
+    "title": "NETWORK / WI-FI"
+  },
+  {
+    "number": 15,
+    "section": "B · Current-state gallery",
+    "title": "NETWORK / SAVED CONNECTIONS"
+  },
+  {
+    "number": 16,
+    "section": "B · Current-state gallery",
+    "title": "NETWORK / VPN & ADVANCED"
+  },
+  {
+    "number": 17,
+    "section": "B · Current-state gallery",
+    "title": "AUDIO / OVERVIEW"
+  },
+  {
+    "number": 18,
+    "section": "B · Current-state gallery",
+    "title": "AUDIO / MIXER / PLAYBACK"
+  },
+  {
+    "number": 19,
+    "section": "B · Current-state gallery",
+    "title": "AUDIO / MIXER / RECORDING"
+  },
+  {
+    "number": 20,
+    "section": "B · Current-state gallery",
+    "title": "AUDIO / DEVICES"
+  },
+  {
+    "number": 21,
+    "section": "B · Current-state gallery",
+    "title": "AUDIO / MEDIA"
+  },
+  {
+    "number": 22,
+    "section": "B · Current-state gallery",
+    "title": "AUDIO / DIAGNOSTICS"
+  },
+  {
+    "number": 23,
+    "section": "B · Current-state gallery",
+    "title": "POWER / OVERVIEW"
+  },
+  {
+    "number": 24,
+    "section": "B · Current-state gallery",
+    "title": "POWER / BATTERY PACKS"
+  },
+  {
+    "number": 25,
+    "section": "B · Current-state gallery",
+    "title": "POWER / POWER PROFILES"
+  },
+  {
+    "number": 26,
+    "section": "B · Current-state gallery",
+    "title": "INPUT / POINTER & TOUCHPAD"
+  },
+  {
+    "number": 27,
+    "section": "B · Current-state gallery",
+    "title": "INPUT / KEYBOARD LAYOUTS"
+  },
+  {
+    "number": 28,
+    "section": "B · Current-state gallery",
+    "title": "INPUT / INPUT METHODS & OSK"
+  },
+  {
+    "number": 29,
+    "section": "B · Current-state gallery",
+    "title": "DEVICE MANAGEMENT"
+  },
+  {
+    "number": 30,
+    "section": "B · Current-state gallery",
+    "title": "DEVICE MANAGEMENT / INPUT DEVICES"
+  },
+  {
+    "number": 31,
+    "section": "B · Current-state gallery",
+    "title": "DEVICE MANAGEMENT / AUDIO ENDPOINTS"
+  },
+  {
+    "number": 32,
+    "section": "B · Current-state gallery",
+    "title": "DEVICE MANAGEMENT / NETWORK INTERFACES"
+  },
+  {
+    "number": 33,
+    "section": "B · Current-state gallery",
+    "title": "DEVICE MANAGEMENT / BATTERIES"
+  },
+  {
+    "number": 34,
+    "section": "B · Current-state gallery",
+    "title": "APPLICATIONS"
+  },
+  {
+    "number": 35,
+    "section": "B · Current-state gallery",
+    "title": "APPLICATIONS / DEFAULT APPLICATIONS"
+  },
+  {
+    "number": 36,
+    "section": "B · Current-state gallery",
+    "title": "APPLICATIONS / STARTUP APPLICATIONS"
+  },
+  {
+    "number": 37,
+    "section": "B · Current-state gallery",
+    "title": "APPLICATIONS / COMMAND LENS"
+  },
+  {
+    "number": 38,
+    "section": "B · Current-state gallery",
+    "title": "APPEARANCE / SURFACE BACKGROUNDS"
+  },
+  {
+    "number": 39,
+    "section": "B · Current-state gallery",
+    "title": "APPEARANCE / Motion & Readability"
+  },
+  {
+    "number": 40,
+    "section": "B · Current-state gallery",
+    "title": "System"
+  },
+  {
+    "number": 41,
+    "section": "B · Current-state gallery",
+    "title": "System / ABOUT & RECOVERY"
+  },
+  {
+    "number": 42,
+    "section": "B · Current-state gallery",
+    "title": "System / NOTIFICATIONS"
+  },
+  {
+    "number": 43,
+    "section": "B · Current-state gallery",
+    "title": "System / IDLE & LOCK"
+  },
+  {
+    "number": 44,
+    "section": "B · Current-state gallery",
+    "title": "System / SHELL & DESKTOP"
+  },
+  {
+    "number": 45,
+    "section": "B · Current-state gallery",
+    "title": "Command Lens"
+  },
+  {
+    "number": 46,
+    "section": "B · Current-state gallery",
+    "title": "Audio quick panel"
+  },
+  {
+    "number": 47,
+    "section": "B · Current-state gallery",
+    "title": "Network quick panel"
+  },
+  {
+    "number": 48,
+    "section": "B · Current-state gallery",
+    "title": "Battery and power quick panel"
+  },
+  {
+    "number": 49,
+    "section": "B · Current-state gallery",
+    "title": "Bluetooth quick panel"
+  },
+  {
+    "number": 50,
+    "section": "B · Current-state gallery",
+    "title": "Calendar quick panel"
+  },
+  {
+    "number": 51,
+    "section": "B · Current-state gallery",
+    "title": "Application tray and native menus"
+  },
+  {
+    "number": 52,
+    "section": "B · Current-state gallery",
+    "title": "Notification history and DND"
+  },
+  {
+    "number": 53,
+    "section": "B · Current-state gallery",
+    "title": "Notification toast"
+  },
+  {
+    "number": 54,
+    "section": "B · Current-state gallery",
+    "title": "Senomy companion"
+  },
+  {
+    "number": 55,
+    "section": "B · Current-state gallery",
+    "title": "Expanded machine briefing"
+  },
+  {
+    "number": 56,
+    "section": "B · Current-state gallery",
+    "title": "Users and accounts"
+  },
+  {
+    "number": 57,
+    "section": "B · Current-state gallery",
+    "title": "Power and battery profiles"
+  },
+  {
+    "number": 58,
+    "section": "B · Current-state gallery",
+    "title": "Dual-pack battery care"
+  },
+  {
+    "number": 59,
+    "section": "B · Current-state gallery",
+    "title": "Displays / projection"
+  },
+  {
+    "number": 60,
+    "section": "B · Current-state gallery",
+    "title": "Displays / arrangement"
+  },
+  {
+    "number": 61,
+    "section": "B · Current-state gallery",
+    "title": "Displays / settings"
+  },
+  {
+    "number": 62,
+    "section": "B · Current-state gallery",
+    "title": "Displays / workspaces"
+  },
+  {
+    "number": 63,
+    "section": "B · Current-state gallery",
+    "title": "Displays / profiles"
+  },
+  {
+    "number": 64,
+    "section": "B · Current-state gallery",
+    "title": "Displays / diagnostics"
+  },
+  {
+    "number": 65,
+    "section": "B · Current-state gallery",
+    "title": "Display draft review"
+  },
+  {
+    "number": 66,
+    "section": "B · Current-state gallery",
+    "title": "Keep, Revert and recovery failure"
+  },
+  {
+    "number": 67,
+    "section": "B · Current-state gallery",
+    "title": "Performance / benchmarks"
+  },
+  {
+    "number": 68,
+    "section": "B · Current-state gallery",
+    "title": "Performance / console"
+  },
+  {
+    "number": 69,
+    "section": "B · Current-state gallery",
+    "title": "Performance / cpu"
+  },
+  {
+    "number": 70,
+    "section": "B · Current-state gallery",
+    "title": "Performance / diagnostics"
+  },
+  {
+    "number": 71,
+    "section": "B · Current-state gallery",
+    "title": "Performance / gpu"
+  },
+  {
+    "number": 72,
+    "section": "B · Current-state gallery",
+    "title": "Performance / memory"
+  },
+  {
+    "number": 73,
+    "section": "B · Current-state gallery",
+    "title": "Performance / network"
+  },
+  {
+    "number": 74,
+    "section": "B · Current-state gallery",
+    "title": "Performance / overview"
+  },
+  {
+    "number": 75,
+    "section": "B · Current-state gallery",
+    "title": "Performance / processes"
+  },
+  {
+    "number": 76,
+    "section": "B · Current-state gallery",
+    "title": "Performance / reports"
+  },
+  {
+    "number": 77,
+    "section": "B · Current-state gallery",
+    "title": "Performance / services"
+  },
+  {
+    "number": 78,
+    "section": "B · Current-state gallery",
+    "title": "Performance / storage"
+  },
+  {
+    "number": 79,
+    "section": "B · Current-state gallery",
+    "title": "Process termination review"
+  },
+  {
+    "number": 80,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / briefing"
+  },
+  {
+    "number": 81,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / console"
+  },
+  {
+    "number": 82,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / diagnostics"
+  },
+  {
+    "number": 83,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / notifications"
+  },
+  {
+    "number": 84,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / reports"
+  },
+  {
+    "number": 85,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / timeline"
+  },
+  {
+    "number": 86,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / updates"
+  },
+  {
+    "number": 87,
+    "section": "B · Current-state gallery",
+    "title": "Senomy Insights / wiki"
+  },
+  {
+    "number": 88,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / briefing"
+  },
+  {
+    "number": 89,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / agenda"
+  },
+  {
+    "number": 90,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / month"
+  },
+  {
+    "number": 91,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / week"
+  },
+  {
+    "number": 92,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / day"
+  },
+  {
+    "number": 93,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / calendars"
+  },
+  {
+    "number": 94,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / reminders"
+  },
+  {
+    "number": 95,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / transfer"
+  },
+  {
+    "number": 96,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / accounts"
+  },
+  {
+    "number": 97,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / preferences"
+  },
+  {
+    "number": 98,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / editor"
+  },
+  {
+    "number": 99,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / editor-errors"
+  },
+  {
+    "number": 100,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / details"
+  },
+  {
+    "number": 101,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / note-editor"
+  },
+  {
+    "number": 102,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / note-details"
+  },
+  {
+    "number": 103,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / bulk-import"
+  },
+  {
+    "number": 104,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / bulk-review"
+  },
+  {
+    "number": 105,
+    "section": "B · Current-state gallery",
+    "title": "Calendar / date-actions"
+  },
+  {
+    "number": 106,
+    "section": "B · Current-state gallery",
+    "title": "Session actions and scheduling"
+  },
+  {
+    "number": 107,
+    "section": "B · State comparisons",
+    "title": "Audio states / 1"
+  },
+  {
+    "number": 108,
+    "section": "B · State comparisons",
+    "title": "Audio states / 2"
+  },
+  {
+    "number": 109,
+    "section": "B · State comparisons",
+    "title": "Launcher scopes and search / 1"
+  },
+  {
+    "number": 110,
+    "section": "B · State comparisons",
+    "title": "Launcher scopes and search / 2"
+  },
+  {
+    "number": 111,
+    "section": "B · State comparisons",
+    "title": "Notification history, DND and review"
+  },
+  {
+    "number": 112,
+    "section": "B · State comparisons",
+    "title": "Tray menus and feedback / 1"
+  },
+  {
+    "number": 113,
+    "section": "B · State comparisons",
+    "title": "Tray menus and feedback / 2"
+  },
+  {
+    "number": 114,
+    "section": "B · State comparisons",
+    "title": "Bluetooth connection and management states / 1"
+  },
+  {
+    "number": 115,
+    "section": "B · State comparisons",
+    "title": "Bluetooth connection and management states / 2"
+  },
+  {
+    "number": 116,
+    "section": "B · State comparisons",
+    "title": "Session review and schedule states / 1"
+  },
+  {
+    "number": 117,
+    "section": "B · State comparisons",
+    "title": "Session review and schedule states / 2"
+  },
+  {
+    "number": 118,
+    "section": "B · State comparisons",
+    "title": "Session feedback states / 1"
+  },
+  {
+    "number": 119,
+    "section": "B · State comparisons",
+    "title": "Session feedback states / 2"
+  },
+  {
+    "number": 120,
+    "section": "B · State comparisons",
+    "title": "Accounts and administration states / 1"
+  },
+  {
+    "number": 121,
+    "section": "B · State comparisons",
+    "title": "Accounts and administration states / 2"
+  },
+  {
+    "number": 122,
+    "section": "C · Current versus redesign intention",
+    "title": "Obsidian Rail"
+  },
+  {
+    "number": 123,
+    "section": "C · Current versus redesign intention",
+    "title": "Compact Control Centre"
+  },
+  {
+    "number": 124,
+    "section": "C · Current versus redesign intention",
+    "title": "OVERVIEW"
+  },
+  {
+    "number": 125,
+    "section": "C · Current versus redesign intention",
+    "title": "Command Lens"
+  },
+  {
+    "number": 126,
+    "section": "C · Current versus redesign intention",
+    "title": "Audio quick panel"
+  },
+  {
+    "number": 127,
+    "section": "C · Current versus redesign intention",
+    "title": "Network quick panel"
+  },
+  {
+    "number": 128,
+    "section": "C · Current versus redesign intention",
+    "title": "Calendar quick panel"
+  },
+  {
+    "number": 129,
+    "section": "C · Current versus redesign intention",
+    "title": "Application tray and native menus"
+  },
+  {
+    "number": 130,
+    "section": "C · Current versus redesign intention",
+    "title": "Notification history and DND"
+  },
+  {
+    "number": 131,
+    "section": "C · Current versus redesign intention",
+    "title": "Notification toast"
+  },
+  {
+    "number": 132,
+    "section": "C · Current versus redesign intention",
+    "title": "Displays / arrangement"
+  },
+  {
+    "number": 133,
+    "section": "C · Current versus redesign intention",
+    "title": "Keep, Revert and recovery failure"
+  },
+  {
+    "number": 134,
+    "section": "C · Current versus redesign intention",
+    "title": "Bluetooth device inspector"
+  },
+  {
+    "number": 135,
+    "section": "C · Current versus redesign intention",
+    "title": "Users and accounts"
+  },
+  {
+    "number": 136,
+    "section": "C · Current versus redesign intention",
+    "title": "Power and battery profiles"
+  },
+  {
+    "number": 137,
+    "section": "C · Current versus redesign intention",
+    "title": "Dual-pack battery care"
+  },
+  {
+    "number": 138,
+    "section": "C · Current versus redesign intention",
+    "title": "Calendar / month"
+  },
+  {
+    "number": 139,
+    "section": "C · Current versus redesign intention",
+    "title": "Calendar / editor"
+  },
+  {
+    "number": 140,
+    "section": "C · Current versus redesign intention",
+    "title": "Session actions and scheduling"
+  },
+  {
+    "number": 141,
+    "section": "C · Current versus redesign intention",
+    "title": "Performance / cpu"
+  },
+  {
+    "number": 142,
+    "section": "C · Current versus redesign intention",
+    "title": "Performance / processes"
+  },
+  {
+    "number": 143,
+    "section": "C · Current versus redesign intention",
+    "title": "Senomy Insights / briefing"
+  },
+  {
+    "number": 144,
+    "section": "C · Current versus redesign intention",
+    "title": "Senomy companion"
+  },
+  {
+    "number": 145,
+    "section": "C · Current versus redesign intention",
+    "title": "Blank surface comparison"
+  },
+  {
+    "number": 146,
+    "section": "C · Current versus redesign intention",
+    "title": "Blank component comparison"
+  },
+  {
+    "number": 147,
+    "section": "C · Current versus redesign intention",
+    "title": "Blank state comparison"
+  },
+  {
+    "number": 148,
+    "section": "D · Component system and anatomy",
+    "title": "Form controls"
+  },
+  {
+    "number": 149,
+    "section": "D · Component system and anatomy",
+    "title": "Navigation and hierarchy"
+  },
+  {
+    "number": 150,
+    "section": "D · Component system and anatomy",
+    "title": "Settings visual anatomy"
+  },
+  {
+    "number": 151,
+    "section": "D · Component system and anatomy",
+    "title": "Notification anatomy"
+  },
+  {
+    "number": 152,
+    "section": "D · Component system and anatomy",
+    "title": "Buttons and action groups"
+  },
+  {
+    "number": 153,
+    "section": "D · Component system and anatomy",
+    "title": "Current typography roles"
+  },
+  {
+    "number": 154,
+    "section": "D · Component system and anatomy",
+    "title": "Existing colour roles"
+  },
+  {
+    "number": 155,
+    "section": "D · Component system and anatomy",
+    "title": "Spacing, frame geometry and control density"
+  },
+  {
+    "number": 156,
+    "section": "D · Component system and anatomy",
+    "title": "Responsive layouts and readability"
+  },
+  {
+    "number": 157,
+    "section": "D · Component system and anatomy",
+    "title": "Feedback, empty and disabled states"
+  },
+  {
+    "number": 158,
+    "section": "D · Component system and anatomy",
+    "title": "Dialogs, reviews and destructive actions"
+  },
+  {
+    "number": 159,
+    "section": "C · Current versus redesign intention",
+    "title": "Dropdown selector / component worksheet"
+  },
+  {
+    "number": 160,
+    "section": "C · Current versus redesign intention",
+    "title": "Text field / component worksheet"
+  },
+  {
+    "number": 161,
+    "section": "C · Current versus redesign intention",
+    "title": "Checkbox / component worksheet"
+  },
+  {
+    "number": 162,
+    "section": "C · Current versus redesign intention",
+    "title": "Metric card / component worksheet"
+  },
+  {
+    "number": 163,
+    "section": "E · SDDM and Hyprlock",
+    "title": "SDDM / login-1920x1080"
+  },
+  {
+    "number": 164,
+    "section": "E · SDDM and Hyprlock",
+    "title": "SDDM / login-1366x768"
+  },
+  {
+    "number": 165,
+    "section": "E · SDDM and Hyprlock",
+    "title": "SDDM / portrait and narrow layouts"
+  },
+  {
+    "number": 166,
+    "section": "C · Current versus redesign intention",
+    "title": "SDDM login / redesign worksheet"
+  },
+  {
+    "number": 167,
+    "section": "E · SDDM and Hyprlock",
+    "title": "Hyprlock / limited source projection"
+  },
+  {
+    "number": 168,
+    "section": "C · Current versus redesign intention",
+    "title": "Hyprlock / redesign worksheet"
+  },
+  {
+    "number": 169,
+    "section": "E · SDDM and Hyprlock",
+    "title": "Desktop and authentication comparison"
+  },
+  {
+    "number": 170,
+    "section": "F · Redesign planning",
+    "title": "Current patterns to review"
+  },
+  {
+    "number": 171,
+    "section": "F · Redesign planning",
+    "title": "Redesign classification matrix"
+  },
+  {
+    "number": 172,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 1"
+  },
+  {
+    "number": 173,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 2"
+  },
+  {
+    "number": 174,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 3"
+  },
+  {
+    "number": 175,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 4"
+  },
+  {
+    "number": 176,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 5"
+  },
+  {
+    "number": 177,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 6"
+  },
+  {
+    "number": 178,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 7"
+  },
+  {
+    "number": 179,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 8"
+  },
+  {
+    "number": 180,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 9"
+  },
+  {
+    "number": 181,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 10"
+  },
+  {
+    "number": 182,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 11"
+  },
+  {
+    "number": 183,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 12"
+  },
+  {
+    "number": 184,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 13"
+  },
+  {
+    "number": 185,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 14"
+  },
+  {
+    "number": 186,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 15"
+  },
+  {
+    "number": 187,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 16"
+  },
+  {
+    "number": 188,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 17"
+  },
+  {
+    "number": 189,
+    "section": "F · Redesign planning",
+    "title": "Surface tracker 18"
+  },
+  {
+    "number": 190,
+    "section": "F · Redesign planning",
+    "title": "Uncaptured and conditional interfaces"
+  }
+]

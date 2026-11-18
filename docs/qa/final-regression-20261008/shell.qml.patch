@@ -1,6 +1,0 @@
---- a/shell/quickshell/shell.qml
-+++ b/shell/quickshell/shell.qml
-@@ -68,0 +69,3 @@
-+        processPageActive: active && shellState.performanceSection === "processes"
-+        benchmarkPageActive: active && shellState.performanceSection === "benchmarks"
-+        actionContext: active ? "performance:" + shellState.performanceSection + ":" + shellState.primaryScreen : ""

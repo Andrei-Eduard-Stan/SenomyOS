@@ -1,6 +1,0 @@
-diff --git a/shell/quickshell/components/CompanionPanel.qml b/shell/quickshell/components/CompanionPanel.qml
---- a/shell/quickshell/components/CompanionPanel.qml
-+++ b/shell/quickshell/components/CompanionPanel.qml
-@@ -46 +46 @@
--    WlrLayershell.layer: WlrLayer.Overlay
-+    WlrLayershell.layer: Config.OskGeometry.floatingOn(targetScreen) ? WlrLayer.Top : WlrLayer.Overlay

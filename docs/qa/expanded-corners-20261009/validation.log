@@ -1,4 +1,0 @@
- DEBUG qml: PASS: disk baseline, activity, partition exclusion and reset
- DEBUG qml: PASS: closed-panel sampling, reopen retention and 60-second eviction
- DEBUG qml: PASS: playback, seek, disabled seek, two navigation routes, reduced motion
- DEBUG qml: PASS: expanded renders wide, narrow, long media and empty states

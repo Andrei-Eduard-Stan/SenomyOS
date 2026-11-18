@@ -1,5 +1,0 @@
-  INFO: Launching config: "/home/Duku/.local/state/senomyos/development/osk-avoidance-20261009/shell/quickshell/osk-panels-test.qml"
-  INFO: Shell ID: "63f94de4c071a0882a128c5b218d1ecc" Path ID "63f94de4c071a0882a128c5b218d1ecc"
-  INFO: Saving logs to "/tmp/so-sync-vfh4l1c9/quickshell/by-id/o6gw29nmt/log.qslog"
-  INFO: Configuration Loaded
- DEBUG qml: PASS: actual expanded, dashboard and Insights PanelWindows remain in bounds above/below OSK; expanded content scrolls; float layer ordering holds

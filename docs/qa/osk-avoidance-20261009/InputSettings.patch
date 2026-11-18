@@ -1,5 +1,0 @@
-diff --git a/shell/quickshell/services/InputSettings.qml b/shell/quickshell/services/InputSettings.qml
---- a/shell/quickshell/services/InputSettings.qml
-+++ b/shell/quickshell/services/InputSettings.qml
-@@ -23,0 +24 @@
-+    readonly property var oskAdapter: keyboardAdapter

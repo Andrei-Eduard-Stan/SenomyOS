@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "pptxgenjs": "4.0.1",
+    "sharp": "0.34.5"
+  },
+  "name": "senomyos-uiux-atlas",
+  "private": true,
+  "description": "Local editable SenomyOS visual atlas builder"
+}

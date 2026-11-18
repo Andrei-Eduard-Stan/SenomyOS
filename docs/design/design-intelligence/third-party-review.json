@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-09",
+  "execution": "None; no third-party installation requested by this setup.",
+  "packages": [
+    {
+      "name": "impeccable",
+      "version": "4.8.2",
+      "commit": "a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe",
+      "review_scope": "Scoped static source inspection; no installer/search/engine/hook executed; not exhaustive.",
+      "files": [
+        {
+          "path": ".codex/hooks.json",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/.codex/hooks.json",
+          "sha256": "1953c6b4bfd5261bbc77e636b11ee2cc53f280a7c812e9300bd93a7946b64a55"
+        },
+        {
+          "path": "cli/bin/cli.js",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/cli/bin/cli.js",
+          "sha256": "caa5a7d48addb1ef939a7e9391264e7e9faa0e214f830a4a16613ecd94530648"
+        },
+        {
+          "path": "crates/cli/src/main.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/cli/src/main.rs",
+          "sha256": "cdc915c2bd2c8242efb8adb08925ee9ba81fc4926dce351c93d3c824804e7110"
+        },
+        {
+          "path": "crates/context/src/hook_wiring.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/context/src/hook_wiring.rs",
+          "sha256": "6364e1506c5afb0bf685c7a20e6bae7b9d7ad598dcb1b1b8bdedbf5118574c86"
+        },
+        {
+          "path": "crates/hook/src/hook.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/hook/src/hook.rs",
+          "sha256": "a0f9acb7966974260ea9e181b6072e95bd0b35d53856c975993962e4f17db2c8"
+        },
+        {
+          "path": "crates/hook/src/stop_discovery.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/hook/src/stop_discovery.rs",
+          "sha256": "ce91eeffecb10e610c40607168c482999a2b1533c3a9fcb85e05db1199114030"
+        },
+        {
+          "path": "crates/skills/src/bundle.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/skills/src/bundle.rs",
+          "sha256": "39c2cf7fdf3c777ca5fecf84824478d7e9cb909502ebbad0992bc0fa3db54f80"
+        },
+        {
+          "path": "crates/skills/src/commands.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/skills/src/commands.rs",
+          "sha256": "55d32f10703bf104327c2720f4869e7fa658e23b1456ef0bb44f295bda35f4ab"
+        },
+        {
+          "path": "crates/skills/src/engine_binary.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/skills/src/engine_binary.rs",
+          "sha256": "6b59cc39075424f65df8d477e5552f8b8e5a9ef5015ada26b9ef9e5da334b0ab"
+        },
+        {
+          "path": "crates/skills/src/hook_manifest.rs",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/crates/skills/src/hook_manifest.rs",
+          "sha256": "b0a104bcbda8ab9b8e273c95af9d70c537469749403b4fbc7d708f82fa697b3f"
+        },
+        {
+          "path": "package.json",
+          "url": "https://raw.githubusercontent.com/pbakaus/impeccable/a49e3e9be2daccdf96ccf1a081b73d7dd9f456fe/package.json",
+          "sha256": "c438c68a716deedcf46ff9474cfaf98eb165448aa12a4a32fe4449f449cb8766"
+        }
+      ]
+    },
+    {
+      "name": "ui-ux-pro-max-skill",
+      "version": "2.5.0",
+      "commit": "4f2dbb67e64969a9a30ab00742f2d55d66ddec2b",
+      "review_scope": "Scoped static source inspection; no installer/search/engine/hook executed; not exhaustive.",
+      "files": [
+        {
+          "path": ".claude/skills/ui-ux-pro-max/SKILL.md",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/.claude/skills/ui-ux-pro-max/SKILL.md",
+          "sha256": "14f43337edfbf7822e091428e4ae0c6f92f86e3353deda6a30f6613121e2cf2d"
+        },
+        {
+          "path": "cli/package.json",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/cli/package.json",
+          "sha256": "437708e28cb24f148eeacc16a8af4b33e6b7ee9879b099ccb3f059b81ad962dc"
+        },
+        {
+          "path": "cli/src/commands/init.ts",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/cli/src/commands/init.ts",
+          "sha256": "774e91be2618c8e321b6c1e40a69b1877c12084cd853ce7222bf61765b71acd3"
+        },
+        {
+          "path": "cli/src/types/index.ts",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/cli/src/types/index.ts",
+          "sha256": "f48c30d5cf5dddbb75196cbf41caa1d8bc40d85dd692cabae30f055d29a7573c"
+        },
+        {
+          "path": "cli/src/utils/extract.ts",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/cli/src/utils/extract.ts",
+          "sha256": "b4f8fc7a166dabdb4c9563e350c56ac8dffd60b00b083733b9265c5867affa67"
+        },
+        {
+          "path": "cli/src/utils/github.ts",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/cli/src/utils/github.ts",
+          "sha256": "78ed9417edf0c912b60e421cc0bfc776df917d3d97c8eeabbac085ecfa87dc41"
+        },
+        {
+          "path": "cli/src/utils/template.ts",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/cli/src/utils/template.ts",
+          "sha256": "adbd5e50f745fd1a8c1fc63b7c06b05c2a32578ee9d54380d29a833f32ef5cff"
+        },
+        {
+          "path": "src/ui-ux-pro-max/scripts/core.py",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/src/ui-ux-pro-max/scripts/core.py",
+          "sha256": "caf92bdcf2579c9a7d6af4f53c54ee9d3c8f05472cfab77aaec38bef120ec63e"
+        },
+        {
+          "path": "src/ui-ux-pro-max/scripts/search.py",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/src/ui-ux-pro-max/scripts/search.py",
+          "sha256": "9fd5acc991142fd43c3afe7be0f6720911b668f3988b34e74b5cbc41d58e7947"
+        },
+        {
+          "path": "src/ui-ux-pro-max/templates/platforms/codex.json",
+          "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/src/ui-ux-pro-max/templates/platforms/codex.json",
+          "sha256": "ad0b3eaf4c4bd04d4db1e949cab512dabec93cd11933c5a53a4d8cbb2f6e77d7"
+        }
+      ]
+    },
+    {
+      "name": "impeccable-installed-plugin",
+      "version": "4.3.1",
+      "review_scope": "Installed instructions, launcher and hook guidance inspected without execution.",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "source": "Installed plugin impeccable@4.3.1/SKILL.md",
+          "sha256": "5ce02fc8f353d7f659535fb80e453963dc047a07c4396adf098fe010b479e7c0"
+        },
+        {
+          "path": "scripts/impeccable",
+          "source": "Installed plugin impeccable@4.3.1/scripts/impeccable",
+          "sha256": "39d9600489073e227e4f4d55c451ce4252a6632ed7ae37923efbbcbc91f16d07"
+        },
+        {
+          "path": "reference/hooks.md",
+          "source": "Installed plugin impeccable@4.3.1/reference/hooks.md",
+          "sha256": "5b30a06646ad5e453d6b5ed1b8d446f69fca3cd13b8aeda28f0d0b2cbe8f62d1"
+        }
+      ]
+    }
+  ],
+  "official_frontend_source": "https://developers.openai.com/blog/designing-delightful-frontends-with-gpt-5-4",
+  "official_frontend_scope": "Published inline skill read; not an installed artifact/hook audit."
+}

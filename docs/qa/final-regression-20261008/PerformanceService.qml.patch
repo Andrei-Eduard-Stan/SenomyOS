@@ -1,5 +1,0 @@
---- a/shell/quickshell/services/PerformanceService.qml
-+++ b/shell/quickshell/services/PerformanceService.qml
-@@ -14 +14 @@
--    ManagedServices { id: serviceControls; active: root.active; context: root.actionContext; processPid: root.selectedProcessPid; blocked: root.processActionState === "pending" || root.processActionState === "running" }
-+    ManagedServices { id: serviceControls; active: root.active && (root.processPageActive || root.actionContext.startsWith("performance:services:")); context: root.actionContext; processPid: root.selectedProcessPid; blocked: root.processActionState === "pending" || root.processActionState === "running" }

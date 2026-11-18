@@ -1,5 +1,0 @@
---- a/shell/quickshell/services/NetworkActions.qml
-+++ b/shell/quickshell/services/NetworkActions.qml
-@@ -45 +45 @@
--        if (locked || ["disable", "disconnect"].indexOf(verb) < 0) return false;
-+        if (locked || provider.profileActionsLocked || provider.connectionAttemptBusy || ["disable", "disconnect"].indexOf(verb) < 0) return false;

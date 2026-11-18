@@ -1,5 +1,0 @@
---- a/hyprland.lua
-+++ b/hyprland.lua
-@@ -179,0 +180,2 @@
-+hl.bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd(home .. "/.local/bin/senomy-osk"))
-+

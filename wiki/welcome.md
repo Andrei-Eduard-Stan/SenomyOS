@@ -9,7 +9,7 @@ summary: Current orientation for the Obsidian Rail, its three primary surfaces, 
 # Welcome
 
 This is the local knowledge base for SenomyOS: an Arch and Hyprland desktop
-shell built around the Obsidian Rail and Eww. Markdown under `wiki/` refreshes
+shell built around the Obsidian Rail and Quickshell. Markdown under `wiki/` refreshes
 while this route is open. The T480 is reference hardware, not a permanent
 machine-specific target.
 
@@ -20,11 +20,9 @@ machine-specific target.
 | Control Centre | Rail system controls | Ten contextual system and appearance routes |
 | Performance Dashboard | CPU, MEM, and UP telemetry | Deep metrics, processes, diagnostics, and bounded benchmarks |
 | Senomy Insights | Dialogue beside the Senomy avatar | Briefing, notifications, timeline, updates, diagnostics, console, reports, and Wiki |
-| Senomy companion | The single Rail avatar | Large reactive character, current evidence, and a route into Insights |
 
 Only one primary surface may exist at a time. Volume and tray are smaller
-transient flyouts governed by the same lifecycle coordinator. The companion is
-an ambient overlay and may coexist with one primary surface.
+transient flyouts governed by the same lifecycle coordinator.
 
 ## What Markdown becomes
 
@@ -44,7 +42,5 @@ an ambient overlay and may coexist with one primary surface.
 - Read [[notifications|Notification history]] for retention and privacy.
 - Read [[recovery|Shell recovery]] before resetting a frozen or duplicated Rail.
 - Read [[avatars|Avatar states]] before replacing character artwork.
-- Read [[companion|Senomy companion]] for pinning, minimizing, edge switching,
-  and reaction sources.
 
 > Documentation is local evidence. It is never sent to a remote service by this parser.

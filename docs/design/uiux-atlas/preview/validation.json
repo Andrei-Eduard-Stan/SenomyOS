@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "slides": 190,
+  "native_shapes_and_text": 3025,
+  "native_tables": 24,
+  "pictures": 263,
+  "image_aspects_checked": 263,
+  "comparison_worksheets": 32,
+  "source_drift": [],
+  "problems": [],
+  "limits": "Structural/source checks. Visual review and office rendering are recorded separately. No Microsoft PowerPoint claim."
+}

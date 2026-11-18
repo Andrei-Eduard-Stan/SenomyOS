@@ -1,7 +1,0 @@
-Ran 9 capability tests: OK
-Ran 13 provider tests: OK
-Ran 4 Caps schema/receipt/parent-death tests: OK
-Totals: 18 Qt controller passed, 0 failed
-PASS: capability fixture
-PASS: owned adapter/readiness/lock framing/native toggle fixture
-Existing Qt warnings remain.

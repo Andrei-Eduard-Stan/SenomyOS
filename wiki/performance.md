@@ -3,39 +3,32 @@ title: Performance and Benchmarks
 category: System
 category_order: 40
 order: 10
-summary: Live telemetry, five-minute retained history, guarded processes, and bounded Quick or Standard benchmark profiles.
+summary: Shared bounded session telemetry, guarded diagnostics and benchmarks.
 ---
 
 # Performance and benchmarks
 
-The Performance Dashboard opens from the Rail CPU, MEM, and UP group. It owns
-Overview, CPU and GPU, Memory, Storage, Network, Processes, and Benchmarks.
-Detailed power policy stays in Control Centre Power.
+Open Performance from the Rail CPU/MEM/UP telemetry. Its current routes include
+Overview, CPU, GPU, Memory, Storage, Network, Processes, Services, Diagnostics,
+Console, Reports and Benchmarks. Detailed energy policy remains in Settings Power.
 
-## Evidence model
+CPU/memory/network history uses the shared session sampler and retains up to
+15 minutes in memory while panels are closed. Available views select a history
+window. A shell restart begins a new collection epoch. Missing sensors, gaps and
+warm-up are unavailable values, never fabricated zeroes.
 
-- Synchronized live telemetry refreshes from bounded procfs and system tools.
-- Five-minute rate history persists across dashboard close and Eww restart.
-- Expensive inventory and process collectors run only while needed.
-- Process actions and diagnostic tasks remain allowlisted and confirmed.
+Expensive inventory/process collection runs only when needed. Process/service
+actions, diagnostics and workloads use existing allowlists, exact targets and
+confirmation. A diagnostic field is not an unrestricted shell. Reports retain
+source, units and freshness and remain local/private.
 
-## Benchmark profiles
-
-| Profile | Approximate time | Storage scratch | Intended use |
-| --- | --- | --- | --- |
-| Quick | 70 seconds | 256 MiB | First comparison and basic stability evidence |
-| Standard | 210 seconds | 512 MiB | Sustained local evidence and richer report |
-
-Both profiles cap workers and memory, avoid network and root, and stop on
-unsafe low memory, low battery, or observed high temperature. Reports are
-private Markdown and PDF artifacts with SHA-256 checksums and sanitized system
-specification evidence.
+Quick and Standard benchmark plans can be inspected without starting a workload:
 
 ```bash
 scripts/benchmark-action.sh plan quick | jq .
 scripts/benchmark-action.sh plan standard | jq .
 ```
 
-Run workloads only from the confirmed Benchmark interface and keep the stop
-control available. Continue to [[recovery|Shell recovery]] if the dashboard
-cannot close.
+Run a workload only through its reviewed Benchmark flow; keep Stop available.
+A score or short resource snapshot does not certify hardware reliability.
+Continue to [[recovery|Shell recovery]] if the surface cannot close.
