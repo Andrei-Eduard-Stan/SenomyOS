@@ -1,0 +1,97 @@
+import QtQuick
+import QtQuick.Window
+import QtTest
+import Quickshell
+import "services"
+import "components"
+import "config" as Config
+Window {
+    id: test
+    visible: true; width: 560; height: 420
+    property int releases: 0
+    QtObject {
+        id: fakeChild
+        property bool running: false
+        property int processId: 424242
+        property var command: []
+        property var sent: []
+        property var written: []
+        function write(data) {written=written.concat([data]);}
+        function signal(number) { sent=sent.concat([number]); }
+    }
+    QtObject { id: fakeObserver; property bool running: false; property var command: [] }
+    InputSettings { id: settings; active: false; onReleasePrimaryFocusRequested: { test.releases++; context.visible=false; } }
+    Item { id: context; anchors.fill: parent; OskControls { id: controls; width: parent.width; controller: settings.oskController } }
+    TestCase { id: input; when: false }
+    function check(ok,message) { if(!ok){console.error("FAIL: "+message);Qt.exit(1);throw new Error(message);} }
+    Timer {
+        running: true; interval: 500
+        onTriggered: {
+            const control=settings.oskController;
+            const adapter=control.provider;
+            adapter.child=fakeChild;adapter.observer=fakeObserver;
+            const show=input.findChild(controls,"oskShow"),hide=input.findChild(controls,"oskHide"),stop=input.findChild(controls,"oskStop");
+            const cancel=input.findChild(controls,"oskCancel"),confirm=input.findChild(controls,"oskConfirm");
+            test.check(!show.enabled,"absent provider disabled");
+            settings.consumeOskCapabilities(JSON.stringify({ok:true,providerInstalled:true,provider:"wvkbd-mobintl",protocolState:"advertised",manualCandidate:true,message:"Fake candidate"}));input.wait(30);
+            show.forceActiveFocus();input.keyClick(Qt.Key_Return);input.wait(40);
+            test.check(control.state==="pending-start" && cancel.activeFocus && !fakeChild.running,"start preview defaults Cancel and launches nothing");
+            input.keyClick(Qt.Key_Return);input.wait(40);test.check(control.state==="stopped" && !fakeChild.running,"default start activation cancels");
+            input.mouseClick(show);input.wait(40);settings.cancelOskReviews();input.wait(20);test.check(control.state==="stopped","route dismissal cancels start preview");
+            input.mouseClick(show);input.wait(40);input.keyClick(Qt.Key_Tab);input.wait(30);
+            test.check(confirm.activeFocus,"deliberate keyboard movement reaches Start confirmation");
+            input.keyClick(Qt.Key_Return);input.wait(40);
+            test.check(control.startPending && fakeChild.running && test.releases===0,"confirmed start waits for process readiness");
+            test.check(fakeChild.command.length===4 && fakeChild.command[2]==="launch-confirmed" && fakeChild.command[3]==="wvkbd-mobintl","fixed provider argv");
+            adapter.probe();adapter.consumeObservation('{"ok":true,"ready":false}');test.check(fakeChild.sent.length===0 && test.releases===0,"no signals before readiness");
+            fakeObserver.running=false;adapter.probe();adapter.consumeObservation('{"ok":true,"ready":true}');input.wait(40);
+            test.check(control.state==="show-requested" && fakeChild.sent[0]===12 && test.releases===1,"owned ready provider receives show request and releases primary context");
+            test.check(fakeChild.running && !context.visible,"route close preserves child");
+            context.visible=true;input.wait(40);input.mouseClick(hide);test.check(fakeChild.sent[1]===10 && control.state==="hide-requested","hide addresses same child");
+            input.mouseClick(stop);input.wait(40);test.check(cancel.activeFocus && fakeChild.running,"stop preview defaults Cancel");
+            input.keyClick(Qt.Key_Return);input.wait(30);test.check(fakeChild.running && control.state==="hide-requested","default stop cancels");
+            input.mouseClick(stop);input.wait(30);settings.cancelOskReviews();test.check(fakeChild.running,"route dismissal cancels stop without killing");
+            input.mouseClick(stop);input.wait(30);input.keyClick(Qt.Key_Tab);input.keyClick(Qt.Key_Return);input.wait(30);
+            test.check(!fakeChild.running && control.state==="stop-requested","confirmed stop requests graceful termination");
+            adapter.childExited(15);test.check(control.state==="stopped" && !control.owned,"requested termination observed before success");
+            test.check(!adapter.show(control.serial) && !adapter.hide(control.serial),"expired ownership cannot signal anything");
+            test.check(adapter.start("arbitrary-command",99)===false,"adapter rejects unallowlisted provider");
+            adapter.ownerSerial=123;fakeChild.running=true;
+            adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200}');
+            test.check(adapter.visibilityKnown && adapter.visible,"bounded owned geometry observed");
+            adapter.signalReady=true;adapter.stopRequested=false;test.check(adapter.toggle(123) && fakeChild.sent[fakeChild.sent.length-1]===34,"toggle addresses native state with owned SIGRTMIN");
+            test.check(!adapter.toggleMode(123),"ordinary provider rejects unsupported mode signals");
+            adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200,"x":0,"y":0,"floating":false,"avoidance":false}');
+            test.check(adapter.toggleMode(123) && fakeChild.sent[fakeChild.sent.length-1]===35,"mode toggle addresses owned native child");
+            test.check(!adapter.toggleMode(122),"mode toggle rejects obsolete ownership");
+            adapter.lockSync=true;
+            adapter.consumeLockState('{"ok":true,"available":true,"capsLock":true}');
+            test.check(fakeChild.written.length===1 && fakeChild.written[0]==="caps:1\n","owned Caps state uses fixed stdin framing");
+            adapter.consumeLockState('{"ok":true,"available":true,"capsLock":"typed input"}');
+            test.check(fakeChild.written.length===1,"invalid lock state cannot become native input");
+            adapter.lockSync=false;adapter.consumeLockState('{"ok":true,"available":true,"capsLock":false}');
+            test.check(fakeChild.written.length===1,"ordinary providers receive no Caps bridge input");
+            adapter.consumeGeometry('{"event":"geometry","visible":false,"width":-1,"height":0}');
+            test.check(adapter.visible,"invalid geometry rejected");
+            adapter.consumeGeometry('{"event":"geometry","visible":false,"width":0,"height":0}');
+            test.check(!adapter.visible,"provider-native hiding observed");
+            fakeChild.running=false;adapter.consumeGeometry('{"event":"geometry","visible":true,"width":500,"height":200}');
+            test.check(!adapter.visible,"stale child output cannot establish visibility");
+            adapter.childExited(0);test.check(!adapter.visibilityKnown,"exit clears geometry ownership");
+            const screen={name:"test-screen"},area={x:12,y:8,width:1256,height:728};
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:300,y:450,width:900,height:128,reserved:true});
+            let panel=Config.OskGeometry.place(screen,area,900,428,640);
+            test.check(panel.height===428 && panel.y>=area.y && panel.y+panel.height<=442,"panel moves fully above middle keyboard without top clipping");
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:0,y:0,width:1280,height:200,reserved:true});
+            panel=Config.OskGeometry.place(screen,area,900,428,640);
+            test.check(panel.y>=208 && panel.y+panel.height<=736,"panel fits below top keyboard");
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:300,y:450,width:900,height:128,reserved:false});
+            panel=Config.OskGeometry.place(screen,area,900,428,640);
+            test.check(panel.y===308 && panel.height===428,"floating mode does not displace panels");
+            Config.OskGeometry.update({ok:true,available:true,screen:"test-screen",x:-1,y:0,width:1280,height:200,reserved:true});
+            test.check(Config.OskGeometry.rectangle===null,"malformed panel geometry rejected");
+            console.log("PASS: OSK adapter ownership/readiness, guarded keyboard controls, route preservation and confirmed graceful stop; fake processes only");
+            Qt.quit();
+        }
+    }
+}

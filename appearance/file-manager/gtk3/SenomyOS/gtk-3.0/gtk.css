@@ -1,0 +1,774 @@
+/*
+ * SenomyOS GTK 3 prototype.
+ *
+ * Keep GTK's built-in Adwaita mechanics and accessibility behavior, then
+ * apply the Obsidian visual tokens. This is a namespaced test theme; it is not
+ * a Thunar-only stylesheet and is not a global preference by itself.
+ */
+@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained.css");
+@import url("senomy-tokens.css");
+
+/* Thunar's application-priority CSS reads GTK's public semantic colour names.
+ * Define the complete dark contract so inactive panes and native checked
+ * controls cannot inherit Adwaita's light values over the Senomy foreground. */
+@define-color theme_bg_color @senomy_surface;
+@define-color theme_fg_color @senomy_fg;
+@define-color theme_base_color @senomy_bg;
+@define-color theme_text_color @senomy_fg;
+@define-color theme_selected_bg_color mix(@senomy_accent, @senomy_bg, .76);
+@define-color theme_selected_fg_color @senomy_fg;
+@define-color theme_unfocused_bg_color alpha(@senomy_bg, .50);
+@define-color theme_unfocused_fg_color @senomy_fg;
+@define-color theme_unfocused_base_color @senomy_bg;
+@define-color theme_unfocused_text_color @senomy_fg;
+@define-color theme_unfocused_selected_bg_color mix(@senomy_accent, @senomy_bg, .82);
+@define-color theme_unfocused_selected_fg_color @senomy_fg;
+@define-color insensitive_bg_color @senomy_surface;
+@define-color insensitive_fg_color @senomy_dim;
+@define-color insensitive_base_color @senomy_bg;
+@define-color borders @senomy_border;
+@define-color unfocused_borders @senomy_border;
+@define-color warning_color @senomy_warning;
+@define-color error_color @senomy_danger;
+@define-color success_color @senomy_success;
+
+* {
+  color: @senomy_fg;
+  caret-color: @senomy_accent;
+  -gtk-icon-shadow: none;
+  -gtk-icon-theme: "SenomyOS-Files";
+}
+
+.background,
+window {
+  color: @senomy_fg;
+  background-color: rgba(8, 9, 11, 0.90);
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono", monospace;
+  font-size: 13px;
+}
+
+/* Native Thunar dialogs place their page content in plain GtkStack and
+ * GtkViewport containers. Adwaita's light defaults otherwise remain visible
+ * behind SenomyOS foreground text. Keep those content planes explicit. */
+dialog,
+dialog stack,
+dialog viewport,
+dialog scrolledwindow,
+stack,
+viewport {
+  color: @senomy_fg;
+  background-color: @senomy_bg;
+  background-image: none;
+}
+
+window decoration {
+  border: 1px solid @senomy_border_strong;
+  border-radius: 6px;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.52);
+}
+
+headerbar,
+.titlebar,
+toolbar,
+.toolbar {
+  color: @senomy_fg;
+  background-color: @senomy_surface;
+  background-image: none;
+  border-color: @senomy_border;
+  box-shadow: none;
+}
+
+headerbar,
+.titlebar {
+  min-height: 38px;
+  padding: 5px 10px;
+  border-bottom: 1px solid @senomy_border;
+  border-radius: 0;
+}
+
+toolbar,
+.toolbar {
+  padding: 4px 8px;
+}
+
+actionbar,
+.actionbar,
+.inline-toolbar {
+  padding: 5px 8px;
+  color: @senomy_fg;
+  background-color: @senomy_surface;
+  background-image: none;
+  border-top: 1px solid @senomy_border;
+  box-shadow: none;
+}
+
+actionbar button,
+.actionbar button,
+.inline-toolbar button {
+  background-color: transparent;
+  background-image: none;
+  border-color: @senomy_border;
+}
+
+button,
+modelbutton {
+  min-height: 34px;
+  min-width: 34px;
+  padding: 3px 9px;
+  color: @senomy_fg;
+  background-color: transparent;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+button:hover,
+modelbutton:hover {
+  color: @senomy_fg;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: @senomy_border;
+}
+
+button:active,
+button:checked,
+modelbutton:active,
+modelbutton:checked {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-color: @senomy_accent;
+}
+
+button:focus,
+entry:focus,
+spinbutton:focus,
+combobox:focus,
+treeview.view:focus {
+  border-color: @senomy_accent;
+  box-shadow: inset 0 0 0 1px rgba(152, 146, 232, 0.28);
+}
+
+button:disabled,
+entry:disabled,
+combobox:disabled {
+  color: @senomy_dim;
+  background-color: rgba(255, 255, 255, 0.015);
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+actionbar button:disabled,
+.actionbar button:disabled,
+.inline-toolbar button:disabled,
+.linked button:disabled {
+  color: @senomy_dim;
+  background-color: rgba(255, 255, 255, 0.015);
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+}
+
+toolbar.inline-toolbar toolbutton > button,
+toolbar.inline-toolbar button,
+.inline-toolbar toolbutton > button,
+.inline-toolbar .linked button {
+  color: @senomy_fg;
+  background-color: transparent;
+  background-image: none;
+  border-color: @senomy_border;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+toolbar.inline-toolbar toolbutton > button:disabled,
+toolbar.inline-toolbar button:disabled,
+.inline-toolbar toolbutton > button:disabled,
+.inline-toolbar .linked button:disabled {
+  color: @senomy_dim;
+  background-color: rgba(255, 255, 255, 0.015);
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+entry,
+spinbutton,
+combobox button.combo,
+searchbar entry {
+  min-height: 34px;
+  padding: 3px 10px;
+  color: @senomy_fg;
+  background-color: @senomy_surface_raised;
+  background-image: none;
+  border: 1px solid @senomy_border;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+entry selection,
+textview text selection,
+treeview.view:selected,
+treeview.view:selected:focus,
+.view:selected,
+.view:selected:focus {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+}
+
+.view,
+iconview,
+textview,
+textview text,
+treeview.view {
+  color: @senomy_fg;
+  background-color: @senomy_bg;
+}
+
+treeview.view {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+treeview.view header button {
+  min-height: 30px;
+  color: @senomy_muted;
+  background-color: @senomy_surface;
+  border-color: @senomy_border;
+  border-radius: 0;
+}
+
+.sidebar,
+placessidebar,
+stacksidebar,
+stackswitcher {
+  color: @senomy_muted;
+  background-color: @senomy_surface;
+  border-color: @senomy_border;
+}
+
+placessidebar row,
+.sidebar row {
+  min-height: 34px;
+  padding: 1px 8px;
+  border-left: 2px solid transparent;
+}
+
+placessidebar row:hover,
+.sidebar row:hover {
+  color: @senomy_fg;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+placessidebar row:selected,
+.sidebar row:selected {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-left-color: @senomy_accent;
+}
+
+notebook,
+notebook > stack,
+notebook > stack:not(:only-child),
+notebook > stack > box {
+  color: @senomy_fg;
+  background-color: @senomy_bg;
+  background-image: none;
+  border-color: @senomy_border;
+}
+
+notebook > header {
+  background-color: @senomy_surface;
+  border-color: @senomy_border;
+}
+
+notebook > header > tabs > tab {
+  min-height: 32px;
+  padding: 2px 10px;
+  color: @senomy_muted;
+  background-color: transparent;
+  border-bottom: 2px solid transparent;
+}
+
+notebook > header > tabs > tab:hover {
+  color: @senomy_fg;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+notebook > header > tabs > tab:checked {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-bottom-color: @senomy_accent;
+}
+
+menubar,
+menu,
+.menu,
+popover,
+popover.background {
+  color: @senomy_fg;
+  background-color: @senomy_surface_raised;
+  border-color: @senomy_border;
+}
+
+menuitem,
+modelbutton.flat {
+  min-height: 30px;
+  padding: 3px 10px;
+}
+
+menuitem:hover,
+modelbutton.flat:hover {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+}
+
+separator {
+  min-width: 1px;
+  min-height: 1px;
+  background-color: @senomy_border;
+}
+
+scrollbar {
+  background-color: transparent;
+}
+
+scrollbar trough {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+scrollbar slider {
+  min-width: 6px;
+  min-height: 28px;
+  background-color: rgba(255, 255, 255, 0.24);
+  border: 2px solid transparent;
+  border-radius: 4px;
+}
+
+scrollbar slider:hover {
+  background-color: rgba(152, 146, 232, 0.62);
+}
+
+scale trough,
+progressbar trough {
+  min-height: 4px;
+  background-color: rgba(255, 255, 255, 0.10);
+  border-radius: 2px;
+}
+
+scale highlight,
+progressbar progress {
+  min-height: 4px;
+  background-color: @senomy_accent;
+  border-radius: 2px;
+}
+
+tooltip,
+tooltip.background {
+  color: @senomy_fg;
+  background-color: @senomy_surface_raised;
+  border: 1px solid @senomy_border_strong;
+  border-radius: 0;
+}
+
+.dim-label,
+.subtitle,
+label:disabled {
+  color: @senomy_muted;
+}
+
+.error,
+.destructive-action {
+  color: @senomy_danger;
+}
+
+.suggested-action {
+  color: @senomy_fg;
+  background-color: @senomy_accent_surface;
+  border-color: @senomy_accent;
+}
+
+/* SenomyOS file workspace: native navigation and a dedicated reading plane.
+ * Original fixed Island corners own the perimeter. No synthetic overlay UI. */
+window.thunar {
+  font-family: sans-serif; font-size: 14px;
+  padding: 0; border: 0; border-radius: 0; background-color: transparent;
+  background-image:
+    url("assets/utility-corner-tl.svg"), url("assets/utility-corner-tr.svg"),
+    url("assets/utility-corner-bl.svg"), url("assets/utility-corner-br.svg"),
+    linear-gradient(to right, @senomy_frame_silver, @senomy_frame_steel),
+    linear-gradient(to right, @senomy_frame_steel, @senomy_frame_silver),
+    linear-gradient(to bottom, @senomy_frame_silver, @senomy_frame_steel),
+    linear-gradient(to bottom, @senomy_frame_steel, @senomy_frame_silver),
+    linear-gradient(@senomy_bg, @senomy_bg),
+    linear-gradient(@senomy_bg, @senomy_bg),
+    linear-gradient(@senomy_bg, @senomy_bg);
+  background-repeat: no-repeat;
+  background-position: left top, right top, left bottom, right bottom,
+    center top, center bottom, left center, right center, center top, center bottom, center center;
+  background-size: 24px 24px, 24px 24px, 24px 24px, 24px 24px,
+    calc(100% - 48px) 2.12px, calc(100% - 48px) 2.12px,
+    2.08px calc(100% - 48px), 2.08px calc(100% - 48px),
+    calc(100% - 48px) 24px, calc(100% - 48px) 24px, 100% calc(100% - 48px);
+}
+window.thunar decoration { border: 0; border-radius: 0; box-shadow: none; }
+window.thunar > grid {
+  margin: 18px;
+  background-color: @senomy_bg;
+  background-image: linear-gradient(rgba(8,9,11,.40), rgba(8,9,11,.55)), url("assets/island-material.png");
+  background-size: 100% 100%, cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+window.thunar > box, window.thunar grid grid, window.thunar paned {
+  background-color: transparent;
+}
+window.thunar menubar {
+  padding: 0 0 6px; margin: 0; min-height: 28px;
+  background-color: transparent; border: 0;
+}
+window.thunar menubar > menuitem {
+  min-height: 28px; padding: 0 10px; color: @senomy_muted;
+}
+window.thunar toolbar {
+  padding: 6px 0 12px; margin: 0 0 12px;
+  background-color: transparent; border: 0; border-bottom: 1px solid @senomy_border;
+}
+window.thunar toolbar button {
+  min-width: 28px; min-height: 32px; padding: 3px 5px;
+  color: @senomy_fg; background-color: transparent;
+  border: 1px solid transparent; border-radius: 0; box-shadow: none;
+}
+window.thunar toolbar button:hover { background-color: transparent; border-color: transparent; }
+window.thunar toolbar button:active { background-color: @senomy_glass_hover; background-image: none; }
+window.thunar toolbar button:checked {
+  background-image: none;
+  color: @senomy_frame_ivory; background-color: rgba(221,224,234,.09);
+  box-shadow: inset 0 -1px @senomy_frame_silver;
+}
+window.thunar toolbar button:focus {
+  outline: 1px solid @senomy_frame_silver; outline-offset: -2px;
+}
+window.thunar toolbar button:disabled { color: @senomy_dim; background-color: transparent; }
+window.thunar toolbar button.location-button {
+  padding: 3px 10px; font-size: 14px; min-width: 0;
+}
+window.thunar toolbar entry {
+  min-height: 32px; padding: 3px 10px;
+  font-family: sans-serif; font-size: 14px;
+  background-color: rgba(8,9,11,.76); border: 1px solid @senomy_border;
+}
+window.thunar toolbar entry:focus { border-color: @senomy_frame_silver; box-shadow: none; }
+window.thunar paned > separator {
+  min-width: 12px; min-height: 12px;
+  background-color: transparent; border: 0;
+}
+window.thunar paned > separator:hover { background-color: rgba(221,224,234,.04); }
+window.thunar scrolledwindow, window.thunar notebook, window.thunar notebook > stack,
+window.thunar notebook > stack > box, window.thunar .standard-view,
+window.thunar viewport, window.thunar iconview, window.thunar treeview.view {
+  background-color: transparent; background-image: none; border: 0;
+}
+window.thunar treeview.view, window.thunar iconview { background-color: rgba(8,9,11,.50); }
+window.thunar treeview.view {
+  font-family: sans-serif; font-size: 14px;
+  -GtkTreeView-horizontal-separator: 12;
+  -GtkTreeView-vertical-separator: 12;
+  -gtk-icon-effect: none;
+}
+window.thunar treeview.view:hover { background-color: rgba(8,9,11,.50); }
+window.thunar treeview.view:selected, window.thunar treeview.view:selected:focus,
+window.thunar iconview:selected, window.thunar iconview:selected:focus {
+  color: @senomy_frame_ivory; background-color: rgba(152,146,232,.24);
+}
+window.thunar treeview.view:focus, window.thunar iconview:focus {
+  outline: 1px solid @senomy_frame_silver; outline-offset: -2px; box-shadow: none;
+}
+window.thunar treeview.view header button {
+  min-height: 30px; padding: 4px 10px;
+  font-family: sans-serif; font-size: 12px;
+  color: @senomy_muted; background-color: rgba(15,17,21,.28);
+  border: 0; border-bottom: 1px solid @senomy_border; box-shadow: none;
+}
+window.thunar treeview.view header button:hover { color: @senomy_fg; }
+window.thunar .sidebar { background-color: transparent; color: @senomy_muted; }
+window.thunar .sidebar treeview.view {
+  color: @senomy_muted; background-color: transparent;
+  -GtkTreeView-vertical-separator: 14;
+}
+window.thunar .sidebar treeview.view:selected { color: @senomy_fg; background-color: rgba(221,224,234,.10); }
+window.thunar .preview-pane {
+  min-width: 120px; padding: 0; margin: 0;
+  background-color: rgba(10,12,15,.84); border-left: 1px solid @senomy_border;
+}
+window.thunar .preview-pane box, window.thunar .preview-pane grid, window.thunar .preview-pane viewport { background-color: transparent; }
+window.thunar .preview-pane image { padding: 12px; margin: 0; }
+window.thunar .preview-pane label { font-family: sans-serif; color: @senomy_muted; font-size: 13px; padding: 4px; }
+window.thunar notebook > header { background-color: transparent; border: 0; }
+window.thunar notebook > header > tabs > tab {
+  min-height: 32px; padding: 3px 14px;
+  color: @senomy_muted; background-color: transparent; border: 0; border-bottom: 1px solid transparent;
+}
+window.thunar notebook > header > tabs > tab:checked {
+  box-shadow: inset 0 -1px @senomy_frame_silver; background-image: none;
+  color: @senomy_fg; background-color: rgba(221,224,234,.06); border-bottom-color: transparent;
+}
+window.thunar statusbar {
+  min-height: 26px; padding: 8px 0 0; margin: 10px 0 0;
+  font-family: sans-serif; font-size: 12px; color: @senomy_muted;
+  background-color: transparent; border: 0; border-top: 1px solid @senomy_border;
+}
+/* Native popups remain real GTK menus with keyboard navigation and tooltips. */
+menu, popover.background {
+  font-family: sans-serif; font-size: 14px;
+  padding: 6px; border: 1px solid @senomy_border_strong; border-radius: 0;
+  background-color: @senomy_surface_raised; background-image: none;
+}
+menuitem { min-height: 30px; padding: 4px 10px; border-radius: 0; }
+menuitem:disabled { color: @senomy_dim; }
+menuitem:hover, menuitem:focus { background-color: @senomy_glass_hover; color: @senomy_fg; }
+menuitem:checked { background-color: @senomy_accent_surface; }
+menuitem accelerator { color: @senomy_muted; font-size: 12px; }
+menu separator { margin: 4px 8px; background-color: @senomy_border; }
+tooltip, tooltip.background {
+  opacity: 1; padding: 8px 10px; font-family: sans-serif; font-size: 13px;
+  color: @senomy_fg; background-color: @senomy_surface_raised;
+  border: 1px solid @senomy_border_strong; border-radius: 0;
+}
+tooltip label { color: @senomy_fg; }
+dialog .dialog-action-area { padding: 12px; }
+button.destructive-action { color: @senomy_danger; border-color: @senomy_danger; }
+button.destructive-action:hover { background-color: alpha(@senomy_danger,.16); }
+progressbar progress { background-color: @senomy_accent; }
+.view:drop(active) { border: 2px solid @senomy_accent; }
+
+/* GTK's inherited light backdrop palette must never wash out an unfocused
+ * workspace or dialog. Values match the active surface's material policy. */
+.background:backdrop { color: @senomy_fg; background-color: rgba(8,9,11,.90); }
+window.thunar:backdrop { background-color: transparent; }
+window.thunar:backdrop > grid { background-color: @senomy_bg; }
+menubar:backdrop, toolbar:backdrop, statusbar:backdrop { color: @senomy_muted; background-color: transparent; }
+.sidebar:backdrop { background-color: rgba(10,12,15,.79); }
+.view:backdrop, treeview.view:backdrop, iconview:backdrop { color: @senomy_fg; background-color: rgba(8,9,11,.84); }
+.view:selected:backdrop { color: @senomy_fg; background-color: @senomy_accent_surface; }
+button:backdrop, modelbutton:backdrop { color: @senomy_muted; background-image: none; background-color: transparent; }
+button:checked:backdrop { background-color: @senomy_accent_surface; }
+button:disabled, button:disabled:backdrop { color: @senomy_dim; background-color: transparent; background-image: none; }
+entry:backdrop { color: @senomy_fg; background-color: @senomy_glass_surface; background-image: none; }
+menuitem:backdrop, label:backdrop { color: @senomy_muted; }
+
+/* GTK message dialogs use a default-decoration titlebar with higher selector
+ * specificity than Adwaita's ordinary headerbar. Keep its title readable. */
+headerbar.titlebar, headerbar.default-decoration,
+headerbar.titlebar:backdrop, headerbar.default-decoration:backdrop {
+  color: @senomy_fg; background-color: @senomy_surface;
+  background-image: none; border: 0; border-bottom: 1px solid @senomy_border;
+  border-radius: 0; box-shadow: none; text-shadow: none;
+}
+headerbar.titlebar label, headerbar.default-decoration label,
+headerbar.titlebar label:backdrop, headerbar.default-decoration label:backdrop {
+  color: @senomy_fg; background-image: none;
+}
+menu menuitem { padding: 5px 12px; }
+
+messagedialog .titlebar, messagedialog .titlebar:backdrop,
+.titlebar:not(headerbar), .titlebar:backdrop:not(headerbar) {
+  color: @senomy_fg; background-color: @senomy_surface;
+  background-image: none; border-radius: 0; box-shadow: none;
+}
+messagedialog .titlebar label, messagedialog .titlebar label:backdrop {
+  color: @senomy_fg;
+}
+
+/* GTK's inherited menu selector is more specific than a plain menuitem state.
+ * Keep native pointer/keyboard selection visible within the same silver palette. */
+menu menuitem:hover, menu menuitem:focus, menu menuitem:selected,
+menu menuitem:checked {
+  color: @senomy_fg; background-color: rgba(221,224,234,.12);
+  background-image: none; text-shadow: none;
+}
+
+/* Filled native workspace. One perimeter, one navigation band, one reading plane. */
+window.thunar .senomy-files-heading { margin: 0 0 12px; min-height: 36px; }
+window.thunar .senomy-files-title { font-family: "Bruno Ace SC"; font-size: 20px; color: @senomy_frame_ivory; }
+window.thunar .senomy-files-heading separator { background-color: @senomy_border; min-height: 1px; }
+window.thunar .senomy-places-toggle {
+  min-height: 30px; min-width: 64px; padding: 2px 12px;
+  font-size: 13px; background-color: @senomy_glass_hover;
+  border: 1px solid @senomy_border; border-radius: 0;
+}
+window.thunar .senomy-places-toggle:hover { background-color: @senomy_glass_hover; border-color: @senomy_border; }
+window.thunar .senomy-places-toggle:focus { outline: 1px solid @senomy_frame_silver; outline-offset: -3px; box-shadow: none; }
+window.thunar toolbar {
+  padding: 6px; margin: 0 0 14px; background-color: alpha(@senomy_surface, .18);
+  border: 0; border-bottom: 1px solid @senomy_border;
+}
+window.thunar toolbar button { min-width: 28px; min-height: 30px; padding: 3px 5px; }
+window.thunar toolbar button.location-button { font-size: 14px; padding: 3px 12px; }
+window.thunar toolbar button.location-button:checked { background-color: @senomy_glass_hover; box-shadow: inset 0 -1px @senomy_frame_silver; }
+window.thunar toolbar image { padding: 0; min-width: 16px; min-height: 16px; }
+window.thunar .sidebar { border: 0; background-color: alpha(@senomy_surface, .12); }
+window.thunar .sidebar treeview.view { font-size: 14px; background-color: transparent; -GtkTreeView-vertical-separator: 18; }
+window.thunar .sidebar treeview.view:selected { background-color: rgba(221,224,234,.12); color: @senomy_frame_ivory; }
+window.thunar paned > separator { min-width: 16px; background-color: transparent; }
+window.thunar .standard-view > .view, window.thunar treeview.view,
+window.thunar treeview.view:hover { background-color: alpha(@senomy_bg, .18); }
+window.thunar .sidebar treeview.view, window.thunar .sidebar treeview.view:hover { background-color: transparent; }
+window.thunar treeview.view:selected, window.thunar treeview.view:selected:focus,
+window.thunar iconview:selected, window.thunar iconview:selected:focus { background-color: rgba(221,224,234,.12); color: @senomy_frame_ivory; }
+window.thunar treeview.view header button { min-height: 32px; padding: 4px 12px; font-size: 12px; background-color: alpha(@senomy_surface, .18); }
+window.thunar statusbar { min-height: 28px; padding: 8px 0 0; margin: 8px 0 0; }
+
+/* Senomy × Metalheart states: dark translucent controls, silver feedback.
+ * Keep native targets stable; pointer feedback never paints an opaque white tile. */
+window.thunar button, window.thunar toolbar button,
+window.thunar .senomy-places-toggle {
+  color: @senomy_fg;
+  background-color: rgba(8,9,11,.18); background-image: none;
+  border: 1px solid rgba(221,224,234,.10);
+  box-shadow: none; text-shadow: none;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out;
+}
+window.thunar toolbar button {
+  background-color: transparent; border-color: transparent;
+}
+window.thunar toolbar .path-bar button { border-color: transparent; }
+window.thunar button:hover, window.thunar toolbar button:hover,
+window.thunar .senomy-places-toggle:hover,
+window.thunar treeview.view header button:hover {
+  color: @senomy_frame_ivory; background-image: none;
+  background-color: rgba(221,224,234,.065);
+  border-color: rgba(221,224,234,.30); box-shadow: none;
+}
+window.thunar button:checked, window.thunar toolbar button:checked,
+window.thunar toolbar button.location-button:checked {
+  color: @senomy_frame_ivory; background-image: none;
+  background-color: rgba(221,224,234,.09);
+  border-color: rgba(221,224,234,.20);
+  box-shadow: inset 0 -1px @senomy_frame_silver;
+}
+window.thunar button:active, window.thunar toolbar button:active {
+  color: @senomy_frame_ivory; background-image: none;
+  background-color: rgba(221,224,234,.13); border-color: rgba(221,224,234,.38);
+}
+window.thunar button:focus, window.thunar toolbar button:focus {
+  outline: 1px solid @senomy_frame_silver; outline-offset: -3px;
+}
+window.thunar button:disabled, window.thunar toolbar button:disabled {
+  color: @senomy_dim; background-image: none; background-color: rgba(8,9,11,.10);
+  border-color: rgba(221,224,234,.045); box-shadow: none;
+}
+window.thunar treeview.view header button {
+  background-color: rgba(8,9,11,.20); border: 0;
+  border-bottom: 1px solid rgba(221,224,234,.16);
+}
+window.thunar treeview.view.cell:hover,
+window.thunar .standard-view > .view.cell:hover {
+  color: @senomy_fg; background-color: rgba(221,224,234,.055);
+  background-image: none; -gtk-icon-effect: none;
+}
+window.thunar treeview.view.cell:selected,
+window.thunar treeview.view.cell:selected:hover,
+window.thunar .standard-view > .view.cell:selected,
+window.thunar .standard-view > .view.cell:selected:hover {
+  color: @senomy_frame_ivory; background-color: rgba(221,224,234,.12);
+  background-image: none; -gtk-icon-effect: none;
+}
+window.thunar .sidebar treeview.view.cell:hover { background-color: rgba(221,224,234,.055); }
+window.thunar .sidebar treeview.view.cell:selected,
+window.thunar .sidebar treeview.view.cell:selected:hover { background-color: rgba(221,224,234,.12); }
+
+/* The dark native fallback remains readable when the optional module is absent.
+ * Only the module's installed paint handler enables the translucent projection. */
+window.thunar.senomy-material, window.thunar.senomy-material:backdrop {
+  background-color: transparent;
+  background-image:
+    url("assets/utility-corner-tl.svg"), url("assets/utility-corner-tr.svg"),
+    url("assets/utility-corner-bl.svg"), url("assets/utility-corner-br.svg"),
+    linear-gradient(to right, @senomy_frame_silver, @senomy_frame_steel),
+    linear-gradient(to right, @senomy_frame_steel, @senomy_frame_silver),
+    linear-gradient(to bottom, @senomy_frame_silver, @senomy_frame_steel),
+    linear-gradient(to bottom, @senomy_frame_steel, @senomy_frame_silver);
+  background-repeat: no-repeat;
+  background-position: left top, right top, left bottom, right bottom,
+    center top, center bottom, left center, right center;
+  background-size: 24px 24px, 24px 24px, 24px 24px, 24px 24px,
+    calc(100% - 48px) 2.12px, calc(100% - 48px) 2.12px,
+    2.08px calc(100% - 48px), 2.08px calc(100% - 48px);
+}
+window.thunar.senomy-material > grid, window.thunar.senomy-material:backdrop > grid {
+  background-color: transparent; background-image: none;
+}
+
+/* Sculpted workspace: replace the old wallpaper composition with real chrome zones. */
+window.thunar.senomy-sculpted > grid { margin: 12px; }
+window.thunar.senomy-sculpted .senomy-files-heading {
+  padding: 2px 20px 6px; margin: 0; min-height: 0;
+  background-color: transparent; border-bottom: 1px solid rgba(221,224,234,.60);
+}
+window.thunar.senomy-sculpted .workspace-brand { font-family: "Bruno Ace SC"; font-size: 12px; color: @senomy_frame_ivory; }
+window.thunar.senomy-sculpted .senomy-files-title { font-family: "Bruno Ace SC"; font-size: 27px; color: @senomy_frame_ivory; }
+window.thunar.senomy-sculpted .workspace-path { font-family: "JetBrainsMono Nerd Font"; font-size: 12px; color: #b5c5d2; }
+window.thunar.senomy-sculpted .workspace-window-action { min-width: 28px; min-height: 22px; padding: 2px; border-color: transparent; background-color: rgba(8,9,11,.50); }
+window.thunar.senomy-sculpted toolbar {
+  padding: 7px 12px; margin: 0 0 12px;
+  background-color: rgba(8,12,16,.84); border-bottom: 1px solid rgba(221,224,234,.45);
+}
+window.thunar.senomy-sculpted toolbar button { min-width: 30px; min-height: 30px; padding: 3px 5px; }
+window.thunar.senomy-sculpted .file-commands { padding: 7px 12px; margin-bottom: 12px; background-color: rgba(8,12,16,.84); border-bottom: 1px solid rgba(221,224,234,.45); }
+window.thunar.senomy-sculpted .file-commands button { min-width: 30px; min-height: 30px; padding: 3px; background-color: transparent; border-color: transparent; }
+window.thunar.senomy-sculpted .sidebar { padding: 8px 10px 0 4px; background-color: rgba(5,9,13,.74); }
+window.thunar.senomy-sculpted .sidebar treeview.view { font-size: 14px; -GtkTreeView-vertical-separator: 19; background-color: transparent; }
+window.thunar.senomy-sculpted .sidebar treeview.view.cell:selected,
+window.thunar.senomy-sculpted .sidebar treeview.view.cell:selected:hover {
+  color: #101820; background-color: transparent;
+  background-image: linear-gradient(to bottom right,#d7e0e7,#8295a5 45%,#c3d0db 49%,#e1e8ec);
+}
+window.thunar.senomy-sculpted .standard-view {
+  border: 1px solid rgba(190,205,218,.55); padding: 0;
+  background-color: rgba(4,8,12,.94);
+}
+window.thunar.senomy-sculpted .standard-view > .view,
+window.thunar.senomy-sculpted treeview.view { background-color: transparent; background-image: none; }
+window.thunar.senomy-sculpted treeview.view { font-size: 14px; -GtkTreeView-vertical-separator: 8; -GtkTreeView-grid-line-width: 1; border-color: rgba(143,169,189,.23); }
+window.thunar.senomy-sculpted treeview.view header button { min-height: 34px; font-size: 13px; padding: 2px 12px; color: @senomy_fg; background-color: rgba(5,9,13,.90); border-bottom: 1px solid rgba(190,205,218,.45); }
+window.thunar.senomy-sculpted .standard-view > .view.cell:selected,
+window.thunar.senomy-sculpted treeview.view.cell:selected,
+window.thunar.senomy-sculpted treeview.view.cell:selected:hover {
+  color: @senomy_frame_ivory; background-color: transparent;
+  background-image: linear-gradient(to bottom right,rgba(147,173,193,.45),rgba(48,70,89,.74) 45%,rgba(143,166,185,.38) 51%,rgba(24,38,50,.92));
+}
+window.thunar.senomy-sculpted .standard-view > .view.cell:hover { background-color: rgba(190,205,218,.07); background-image: none; }
+window.thunar.senomy-sculpted .inspector-dock { margin-left: 12px; }
+window.thunar.senomy-sculpted .object-inspector,
+popover .object-inspector { padding: 14px; background-color: rgba(5,10,15,.95); border: 1px solid rgba(190,205,218,.55); }
+.object-inspector .inspector-band { font-family: "Bruno Ace SC"; font-size: 12px; padding: 10px 6px; color: #101820; background-image: linear-gradient(to bottom right,#e2e9ed,#9daebb 45%,#d8e1e8); }
+.object-inspector .inspector-name { font-family: sans-serif; font-weight: bold; font-size: 21px; color: @senomy_frame_ivory; }
+.object-inspector .inspector-kind,.object-inspector .inspector-key { font-family: "JetBrainsMono Nerd Font"; font-size: 11px; color: #b5c5d2; }
+.object-inspector .inspector-value { font-family: "JetBrainsMono Nerd Font"; font-size: 12px; color: @senomy_fg; }
+.object-inspector .inspector-child,.object-inspector .inspector-muted { font-family: sans-serif; font-size: 13px; color: @senomy_fg; }
+window.thunar.senomy-sculpted statusbar { min-height: 30px; margin: 8px 0 0; padding: 8px 12px; background-color: rgba(5,9,13,.88); border-top: 1px solid rgba(190,205,218,.45); }
+
+window.thunar.senomy-sculpted .senomy-files-heading button { background-color: rgba(5,9,13,.88); border-color: rgba(190,205,218,.28); }
+window.thunar.senomy-sculpted .standard-view { border-color: transparent; }
+window.thunar.senomy-sculpted .object-inspector { border-color: transparent; }
+window.thunar.senomy-sculpted .file-commands image { min-width: 18px; min-height: 18px; }
+
+window.thunar.senomy-sculpted .standard-view {
+  border: 12px solid transparent;
+  border-image: url("assets/workspace-pane.svg") 12 stretch;
+}
+window.thunar.senomy-sculpted .object-inspector {
+  border: 12px solid transparent;
+  border-image: url("assets/workspace-pane.svg") 12 stretch;
+  padding: 8px;
+}
+
+window.thunar.senomy-sculpted treeview.view { font-size: 15px; }
+
+window.thunar.senomy-sculpted .senomy-files-heading button:hover { background-color: rgba(5,9,13,.94); border-color: rgba(221,224,234,.65); }
+
+window.thunar.senomy-sculpted .workspace-brand,
+window.thunar.senomy-sculpted .senomy-files-title,
+window.thunar.senomy-sculpted .workspace-path { background-color: rgba(4,8,12,.96); }
+popover .object-inspector { border: 12px solid transparent; border-image: url("assets/workspace-pane.svg") 12 stretch; padding: 8px; }

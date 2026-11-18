@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: senomy-command-lens [--mode all|apps|files|windows|actions]
+
+Open the SenomyOS Command Lens. Apps is the default native scope.
+For the explicit Rofi fallback, set SENOMY_LENS_NATIVE=0.
+EOF
+}
+
+mode="apps"
+case "$#" in
+  0) ;;
+  1)
+    case "$1" in
+      -h | --help) usage; exit 0 ;;
+      *) printf 'Unknown argument: %s\n' "$1" >&2; usage >&2; exit 2 ;;
+    esac
+    ;;
+  2)
+    [[ "$1" == --mode ]] || { printf 'Unknown argument: %s\n' "$1" >&2; usage >&2; exit 2; }
+    mode="$2"
+    ;;
+  *) usage >&2; exit 2 ;;
+esac
+
+case "$mode" in
+  all | apps) rofi_mode="drun" ;;
+  files) rofi_mode="files" ;;
+  windows) rofi_mode="window" ;;
+  actions) rofi_mode="actions" ;;
+  *) printf 'Unknown Command Lens mode: %s\n' "$mode" >&2; exit 2 ;;
+esac
+
+if [[ "${SENOMY_LENS_NATIVE:-1}" != 0 ]]; then
+  source_root="${SENOMY_SOURCE_ROOT:-}"
+  selection="${XDG_CONFIG_HOME:-$HOME/.config}/senomyos/shell.json"
+  if [[ -z "$source_root" && -r "$selection" ]] && command -v jq >/dev/null 2>&1; then
+    source_root="$(jq -r '.source_root // empty' "$selection" 2>/dev/null || true)"
+  fi
+  if [[ -z "$source_root" ]]; then
+    source_root="$(cd -- "$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")/../../../.." && pwd)"
+  fi
+  [[ -r "$source_root/scripts/senomy-ipc.sh" ]] || { printf 'Command Lens routing helper unavailable. No fallback was opened.\n' >&2; exit 1; }
+  source "$source_root/scripts/senomy-ipc.sh"
+  senomy_ipc_init || exit 1
+  native_result="$(senomy_ipc_call commandLens "$mode")" || { printf 'Command Lens IPC failed. No second launcher was opened. Use senomy-surface recover or inspect service logs.\n' >&2; exit 1; }
+  case "$native_result" in
+    accepted) exit 0 ;;
+    blocked) printf 'Command Lens is blocked by a protected review. Use senomy-surface recover to restore its window.\n' >&2; exit 3 ;;
+    *) printf 'Unexpected Command Lens reply: %s. No second launcher was opened.\n' "$native_result" >&2; exit 1 ;;
+  esac
+fi
+
+xdg_config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+user_bin_home="${SENOMY_USER_BIN_HOME:-$HOME/.local/bin}"
+config_file="${SENOMY_ROFI_CONFIG:-$xdg_config_home/rofi/config.rasi}"
+files_mode="${SENOMY_ROFI_FILES_MODE:-$user_bin_home/senomy-rofi-files}"
+actions_mode="${SENOMY_ROFI_ACTIONS_MODE:-$user_bin_home/senomy-rofi-actions}"
+rofi_bin="${SENOMY_ROFI_BIN:-rofi}"
+
+[[ -r "$config_file" ]] || { printf 'Command Lens config is unavailable: %s\n' "$config_file" >&2; exit 1; }
+command -v "$rofi_bin" >/dev/null 2>&1 || { printf 'Rofi is unavailable: %s\n' "$rofi_bin" >&2; exit 1; }
+
+theme_dir="$(dirname -- "$config_file")/themes"
+[[ -d "$theme_dir" ]] || { printf 'Command Lens theme directory is unavailable: %s\n' "$theme_dir" >&2; exit 1; }
+
+logical_width="${SENOMY_ROFI_MONITOR_WIDTH:-}"
+logical_height="${SENOMY_ROFI_MONITOR_HEIGHT:-}"
+if command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 && command -v timeout >/dev/null 2>&1; then
+  read -r detected_width detected_height < <(
+    timeout 1s hyprctl monitors -j 2>/dev/null | jq -r '
+      first(.[] | select(.focused == true) |
+        (if (.transform % 2) == 1 then [.height,.width] else [.width,.height] end) as $size |
+        [($size[0] / .scale - (.reserved[0] // 0) - (.reserved[2] // 0) | floor),
+         ($size[1] / .scale - (.reserved[1] // 0) - (.reserved[3] // 0) | floor)] | @tsv) // empty
+    ' 2>/dev/null || true
+  ) || true
+fi
+[[ "$logical_width" =~ ^[1-9][0-9]{0,4}$ ]] || logical_width="${detected_width:-800}"
+[[ "$logical_height" =~ ^[1-9][0-9]{0,4}$ ]] || logical_height="${detected_height:-600}"
+panel_width=$((logical_width - 24))
+((panel_width <= 800)) || panel_width=800
+((panel_width >= 160)) || { printf 'Work area is too narrow for Command Lens.\n' >&2; exit 1; }
+y_offset=24
+((logical_height < 650)) || y_offset=48
+panel_height=$((logical_height - y_offset - 24))
+((panel_height <= 650)) || panel_height=650
+((panel_height >= 240)) || { printf 'Work area is too short for Command Lens.\n' >&2; exit 1; }
+result_lines=$(((panel_height - 210) / 58))
+((result_lines >= 1)) || result_lines=1
+((result_lines <= 7)) || result_lines=7
+
+density="${SENOMY_ROFI_DENSITY:-auto}"
+if [[ "$density" == auto ]]; then
+  density=standard
+  profile="$xdg_config_home/senomyos/profile.json"
+  if [[ -r "$profile" ]] && command -v jq >/dev/null 2>&1 &&
+      jq -e '.capabilities.touch_preferred == true or .appearance.font_scale == "touch"' "$profile" >/dev/null 2>&1; then
+    density=touch
+  fi
+fi
+[[ "$density" == standard || "$density" == touch ]] || { printf 'Invalid launcher density.\n' >&2; exit 2; }
+theme_override="window { width: ${panel_width}px; y-offset: ${y_offset}px; height: ${panel_height}px; } listview { lines: ${result_lines}; }"
+if ((panel_width < 560)); then
+  theme_override+=' mainbox { padding: 18px 12px; spacing: 6px; } textbox-heading { font: "Bruno Ace SC 10"; } textbox-query-label { enabled: false; } textbox-num-sep { enabled: false; } num-rows { enabled: false; } inputbar { spacing: 6px; padding: 0px 6px; } button { padding: 12px 2px; } textbox-footer { content: "↑↓ SELECT · ENTER OPEN · ESC CLOSE"; font: "JetBrainsMono Nerd Font 8"; }'
+fi
+if [[ "$density" == touch ]]; then
+  theme_override+=' button { padding: 16px 6px; } element { padding: 14px 10px; } element-icon { size: 32px; }'
+fi
+
+# Render only dimensions into the trusted SVG template. No application or
+# search text enters a command or SVG. mktemp avoids shared-cache races.
+frame_template="$(dirname -- "$config_file")/assets/utility-frame.svg.in"
+frame_file=''
+if [[ -r "$frame_template" ]] && command -v python3 >/dev/null 2>&1; then
+  frame_file="$(mktemp "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/senomy-lens-frame.XXXXXX.svg")"
+  trap 'rm -f -- "$frame_file"' EXIT
+  python3 - "$frame_template" "$frame_file" "$panel_width" "$panel_height" <<'PYFRAME'
+from pathlib import Path
+import sys
+source,target,width,height=sys.argv[1:];w,h=int(width),int(height)
+values={"WIDTH":w,"HEIGHT":h,"RIGHT":w-24,"BOTTOM":h-24,"CUTRIGHT":w-12,
+        "CUTBOTTOM":h-12,"RIGHTRULE":w-2.08,"BOTTOMRULE":h-2.12}
+svg=Path(source).read_text()
+for key,value in values.items():svg=svg.replace("@"+key+"@",str(value))
+Path(target).write_text(svg)
+PYFRAME
+  # Encode the filename as a Rasi string, including unusual runtime paths.
+  frame_url="$(python3 - "$frame_file" <<'PYURL'
+import json,sys
+print(json.dumps(sys.argv[1]))
+PYURL
+)"
+  theme_override="window { background-color: transparent; background-image: url($frame_url, both); } $theme_override"
+else
+  printf 'Command Lens frame unavailable; using the native dark fallback.\n' >&2
+fi
+
+# Rasi 2.0 quoted strings are greedy within a line. Keep each property on
+# its own line, including runtime overrides and non-default paths.
+theme_override="${theme_override//; /;$'\n'}"
+
+# Rofi resolves image widget filenames from its current working directory.
+# Enter the deployed theme directory so portable relative frame URLs resolve
+# without embedding the current user's home path in the theme.
+cd -- "$theme_dir"
+
+# Detached, bounded refresh: directory traversal never delays the first frame.
+# The provider serializes refreshes and keeps a snapshot fresh for 30 seconds.
+if [[ -x "$files_mode" ]] && command -v setsid >/dev/null 2>&1; then
+  setsid --fork "$files_mode" --refresh-cache </dev/null >/dev/null 2>&1
+fi
+
+modes="drun"
+declare -a availability_args=()
+if [[ -x "$files_mode" ]]; then
+  modes+=",files:$files_mode --cached"
+elif [[ "$mode" == files ]]; then
+  rofi_mode=drun
+  availability_args=(-mesg 'Files provider unavailable. Application search is available.')
+fi
+modes+=",window"
+if [[ -x "$actions_mode" ]]; then
+  modes+=",actions:$actions_mode"
+elif [[ "$mode" == actions ]]; then
+  rofi_mode=drun
+  availability_args=(-mesg 'Actions provider unavailable. Application search is available.')
+fi
+"$rofi_bin" \
+  -config "$config_file" \
+  -modes "$modes" \
+  -show "$rofi_mode" \
+  -m -4 \
+  -theme-str "$theme_override" "${availability_args[@]}"

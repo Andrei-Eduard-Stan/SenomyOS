@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+export LC_ALL=C
+
+readonly CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprlock.conf"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+if ! command -v hyprlock >/dev/null 2>&1; then
+  printf 'SenomyOS lock: hyprlock is not installed.\n' >&2
+  command -v notify-send >/dev/null 2>&1 &&
+    notify-send --urgency=critical 'SenomyOS lock unavailable' 'Install the hyprlock package, then apply the lock appearance.'
+  exit 69
+fi
+
+[[ -f "$CONFIG" && ! -L "$CONFIG" ]] || {
+  printf 'SenomyOS lock: deployed configuration is unavailable: %s\n' "$CONFIG" >&2
+  exit 78
+}
+
+if pgrep -x hyprlock >/dev/null 2>&1; then
+  exit 0
+fi
+
+lock_config="$CONFIG"
+readonly LIVE_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprlock-live.conf"
+# Live translucency is used only when this compositor explicitly provides blur.
+# An absent/older compositor, missing parser or disabled option uses screenshot blur.
+if [[ -f "$LIVE_CONFIG" && ! -L "$LIVE_CONFIG" ]] &&
+   command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1 &&
+   hyprctl -j getoption misc:session_lock_xray 2>/dev/null | jq -e '.bool == true' >/dev/null 2>&1 &&
+   hyprctl -j getoption misc:session_lock_blur 2>/dev/null | jq -e '.bool == true' >/dev/null 2>&1; then
+  lock_config="$LIVE_CONFIG"
+fi
+exec hyprlock --config "$lock_config"

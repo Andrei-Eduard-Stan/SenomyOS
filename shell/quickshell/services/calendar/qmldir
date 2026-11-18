@@ -1,0 +1,4 @@
+module Senomy.Calendar
+singleton Navigation 1.0 CalendarNavigation.qml
+CalendarService 1.0 CalendarService.qml
+CalendarQuickModel 1.0 CalendarQuickModel.qml

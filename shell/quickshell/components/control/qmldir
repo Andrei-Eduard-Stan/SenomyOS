@@ -1,0 +1,10 @@
+ControlApplicationsPage 1.0 ControlApplicationsPage.qml
+ControlCalendarPage 1.0 ControlCalendarPage.qml
+ControlDevicesPage 1.0 ControlDevicesPage.qml
+ControlInputPage 1.0 ControlInputPage.qml
+ControlInventoryList 1.0 ControlInventoryList.qml
+ControlNetworkPage 1.0 ControlNetworkPage.qml
+ControlPowerPage 1.0 ControlPowerPage.qml
+ControlRouteTiles 1.0 ControlRouteTiles.qml
+ControlSettingsPage 1.0 ControlSettingsPage.qml
+BatteryCareEditor 1.0 BatteryCareEditor.qml

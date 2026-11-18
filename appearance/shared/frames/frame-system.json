@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "name": "SenomyOS Luminous Reliquary Frame System",
+  "palette_source": "appearance/tokens.json#/frame_system/colors",
+  "asset_root": "appearance/shared/frames/generated",
+  "edge_rule": "Only the neutral centre of an edge may stretch. Corners, nodes, junctions, motifs, and crests remain fixed optical sizes.",
+  "anchors": {
+    "top_start": {"x": "safe_start", "y": "top"},
+    "top_center": {"x": "50%", "y": "top"},
+    "top_end": {"x": "safe_end", "y": "top"},
+    "bottom_center": {"x": "50%", "y": "bottom"},
+    "left_center": {"x": "left", "y": "50%"},
+    "right_center": {"x": "right", "y": "50%"}
+  },
+  "states": {
+    "idle": {"luminance": "L1", "structure_opacity": 0.72, "bloom_alpha": 0.02},
+    "normal": {"luminance": "L2", "structure_opacity": 0.86, "bloom_alpha": 0.04},
+    "hover": {"luminance": "L3", "structure_opacity": 0.96, "bloom_alpha": 0.12},
+    "focused": {"luminance": "L4", "structure_opacity": 1.0, "bloom_alpha": 0.18},
+    "attention": {"luminance": "L5", "structure_opacity": 1.0, "bloom_alpha": 0.24},
+    "warning": {"luminance": "L6", "semantic": "warning"},
+    "critical": {"luminance": "L6", "semantic": "danger"}
+  },
+  "tiers": {
+    "compact": {
+      "usage": ["rail", "tiny_controls"],
+      "minimum": {"width": 40, "height": 44},
+      "optical_height": 44,
+      "corner": {"width": 16, "height": 16},
+      "edge": {
+        "horizontal": {"width": 32, "height": 6, "behaviour": "stretch_neutral_center"},
+        "vertical": {"width": 6, "height": 24, "behaviour": "stretch_neutral_center"}
+      },
+      "slice_insets": {"top": 14, "right": 14, "bottom": 14, "left": 14},
+      "content_safe": {"top": 7, "right": 9, "bottom": 7, "left": 9},
+      "workspace_bay": {"minimum_label_width": 14, "horizontal_padding": 5, "endpoint_width": 5},
+      "motif_clearance": 6,
+      "supported_motifs": ["workspace", "identity", "telemetry", "controls", "clock-notification", "power", "diagnostic-tick", "junction"],
+      "motif_minimum": {
+        "workspace": {"width": 40, "height": 44},
+        "identity": {"width": 96, "height": 44},
+        "telemetry": {"width": 120, "height": 44},
+        "controls": {"width": 120, "height": 44},
+        "clock-notification": {"width": 100, "height": 44},
+        "power": {"width": 52, "height": 44}
+      },
+      "crest": {"name": "mini", "width": 32, "height": 10}
+    },
+    "standard": {
+      "usage": ["popover", "launcher", "panel", "card"],
+      "minimum": {"width": 120, "height": 88},
+      "corner": {"width": 32, "height": 32},
+      "edge": {
+        "horizontal": {"width": 48, "height": 9, "behaviour": "stretch_neutral_center"},
+        "vertical": {"width": 9, "height": 48, "behaviour": "stretch_neutral_center"}
+      },
+      "slice_insets": {"top": 28, "right": 28, "bottom": 28, "left": 28},
+      "content_safe": {"top": 14, "right": 16, "bottom": 14, "left": 16},
+      "workspace_bay": {"minimum_label_width": 22, "horizontal_padding": 7, "endpoint_width": 7},
+      "motif_clearance": 10,
+      "supported_motifs": ["identity", "telemetry", "controls", "clock-notification", "diagnostic-tick", "junction"],
+      "motif_minimum": {
+        "identity": {"width": 180, "height": 88},
+        "telemetry": {"width": 160, "height": 88},
+        "controls": {"width": 160, "height": 88}
+      },
+      "crest": {"name": "medium", "width": 96, "height": 28}
+    },
+    "large": {
+      "usage": ["control_centre", "insights", "performance", "window", "overlay"],
+      "minimum": {"width": 220, "height": 120},
+      "corner": {"width": 48, "height": 48},
+      "edge": {
+        "horizontal": {"width": 64, "height": 12, "behaviour": "stretch_neutral_center"},
+        "vertical": {"width": 12, "height": 64, "behaviour": "stretch_neutral_center"}
+      },
+      "slice_insets": {"top": 42, "right": 42, "bottom": 42, "left": 42},
+      "content_safe": {"top": 22, "right": 24, "bottom": 22, "left": 24},
+      "workspace_bay": {"minimum_label_width": 28, "horizontal_padding": 9, "endpoint_width": 9},
+      "motif_clearance": 16,
+      "supported_motifs": ["identity", "telemetry", "diagnostic-tick", "junction"],
+      "motif_minimum": {
+        "identity": {"width": 320, "height": 180},
+        "telemetry": {"width": 300, "height": 180}
+      },
+      "crest": {"name": "wide", "width": 180, "height": 48}
+    }
+  },
+  "motifs": {
+    "workspace": {"width": 10, "height": 6, "default_anchor": "bottom_center"},
+    "identity": {"width": 24, "height": 10, "default_anchor": "top_center"},
+    "telemetry": {"width": 18, "height": 6, "default_anchor": "bottom_center"},
+    "controls": {"width": 10, "height": 6, "default_anchor": "top_center"},
+    "clock-notification": {"width": 10, "height": 6, "default_anchor": "bottom_center"},
+    "power": {"width": 8, "height": 8, "default_anchor": "bottom_center"},
+    "diagnostic-tick": {"width": 28, "height": 8, "default_anchor": "bottom_center"},
+    "junction": {"width": 6, "height": 6, "default_anchor": "top_center"}
+  },
+  "crests": {
+    "mini": {"width": 32, "height": 10, "tiers": ["compact", "standard"]},
+    "medium": {"width": 96, "height": 28, "tiers": ["standard", "large"]},
+    "wide": {"width": 180, "height": 48, "tiers": ["large"]}
+  },
+  "rail_validation_sizes": [[68, 44], [120, 44], [200, 44], [280, 44], [397, 44]],
+  "standard_validation_sizes": [[160, 88], [240, 120], [420, 180]],
+  "large_validation_sizes": [[240, 120], [480, 320], [1480, 760]]
+}

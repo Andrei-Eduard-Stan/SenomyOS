@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd -P)}"
+
+case "${1:-}" in
+  shell)
+    exec "$SOURCE_ROOT/scripts/senomy-shell" use quickshell
+    ;;
+  restart)
+    exec "$SOURCE_ROOT/scripts/senomy-shell" restart
+    ;;
+  check)
+    "$SOURCE_ROOT/scripts/senomy-appearance.sh" check
+    exec qmllint -I "$SOURCE_ROOT/shell/quickshell" "$SOURCE_ROOT/shell/quickshell/shell.qml"
+    ;;
+  *)
+    printf 'usage: senomy-dev {shell|restart|check}\n' >&2
+    exit 64
+    ;;
+esac

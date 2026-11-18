@@ -1,0 +1,58 @@
+# SenomyOS GRUB theme. Staged only; activation and grub.cfg regeneration are gated.
+title-text: "SENOMY // BOOT"
+title-font: "Unifont Regular 16"
+title-color: "#d0cbff"
+desktop-image: "background.png"
+desktop-image-scale-method: "crop"
+desktop-image-h-align: "center"
+desktop-image-v-align: "center"
+desktop-color: "#08090b"
+terminal-border: "0"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+
++ image {
+  left = 8%
+  top = 7%
+  width = 72
+  height = 72
+  file = "logo.png"
+}
+
++ label {
+  top = 10%
+  left = 14%
+  width = 78%
+  height = 24
+  text = "SELECT STARTUP TARGET"
+  font = "Unifont Regular 12"
+  color = "#92959f"
+  align = "left"
+}
+
++ boot_menu {
+  left = 8%
+  top = 20%
+  width = 84%
+  height = 52%
+  item_font = "Unifont Regular 16"
+  item_color = "#f1f1f4"
+  selected_item_color = "#d0cbff"
+  item_height = 40
+  item_padding = 12
+  item_spacing = 4
+  scrollbar = true
+}
+
++ label {
+  id = "__timeout__"
+  left = 8%
+  top = 82%
+  width = 84%
+  height = 24
+  font = "Unifont Regular 12"
+  color = "#92959f"
+  align = "left"
+}

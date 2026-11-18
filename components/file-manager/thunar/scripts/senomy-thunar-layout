@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""Explicit one-time native Thunar layout; never invoked by the workspace launcher."""
+import argparse
+import base64
+import hashlib
+import datetime
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import uuid
+
+
+def fail(message):
+    raise RuntimeError(message)
+
+
+def run(arguments, check=True):
+    result = subprocess.run(arguments, capture_output=True, text=True, timeout=10)
+    if check and result.returncode:
+        fail(result.stderr.strip() or "Native preference provider failed.")
+    return result
+
+
+def query(*arguments, check=True):
+    return run(["xfconf-query", "-c", "thunar", *arguments], check)
+
+
+def read_properties(keys):
+    listed = query("-l").stdout.splitlines()
+    result = {}
+    for key in keys:
+        result[key] = query("-p", key).stdout.rstrip("\n") if key in listed else None
+    return result
+
+
+def put(key, kind, value, current):
+    if value is None:
+        if current is not None:
+            query("-p", key, "-r")
+        return
+    arguments = ["-p", key]
+    if current is None:
+        arguments += ["-n", "-t", kind]
+    query(*arguments, "-s", value)
+
+
+def write_receipt(path, document):
+    temporary = path.with_name(path.name + ".tmp")
+    with temporary.open("x", encoding="utf-8") as stream:
+        json.dump(document, stream, indent=2)
+        stream.write("\n")
+    os.chmod(temporary, 0o600)
+    temporary.replace(path)
+
+
+def profile_path():
+    source = Path(__file__).resolve().parent.parent / "workspace.json"
+    installed = Path(os.environ.get("XDG_DATA_HOME", str(Path.home()/".local/share"))) / "senomyos/thunar/workspace.json"
+    return source if source.is_file() else installed
+
+
+def bookmarks_path():
+    return Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home()/".config"))) / "gtk-3.0/bookmarks"
+
+
+def read_bookmarks(path):
+    if path.is_symlink() or (path.exists() and not path.is_file()):
+        fail("Native bookmarks must be a regular non-symlink file.")
+    if path.exists() and path.stat().st_size > 1024*1024:
+        fail("Native bookmark file exceeds the 1 MiB review limit.")
+    return path.read_bytes() if path.exists() else None
+
+
+def prepare_bookmarks():
+    path=bookmarks_path();before=read_bookmarks(path)
+    text=(before or b"").decode("utf-8")
+    home=Path.home();home_uri=home.as_uri()
+    kept=[];seen=set();removed=0
+    for line in text.splitlines(keepends=True):
+        value=line.rstrip("\r\n")
+        # Native Home already exists. Preserve an explicitly labelled alias.
+        if value==home_uri:
+            removed+=1
+            continue
+        kept.append(line)
+        if value:seen.add(value.split(" ",1)[0])
+    additions=[]
+    for key,name in [("DOCUMENTS","Documents"),("DOWNLOAD","Downloads"),("PICTURES","Pictures"),(None,"Projects")]:
+        directory=None
+        if key and shutil.which("xdg-user-dir"):
+            result=run(["xdg-user-dir",key],check=False)
+            if result.returncode==0 and result.stdout.strip().startswith("/"):
+                candidate=Path(result.stdout.strip())
+                if candidate!=home and candidate.is_dir():directory=candidate
+        if directory is None and (home/name).is_dir():directory=home/name
+        if directory is None:continue
+        uri=directory.as_uri()
+        if uri not in seen:
+            additions.append(uri);seen.add(uri)
+    after="".join(kept)
+    if additions:
+        if after and not after.endswith("\n"):after+="\n"
+        after+="".join(uri+"\n" for uri in additions)
+    data=after.encode("utf-8")
+    changed=data!=(before or b"")
+    return {"path":str(path),"before":base64.b64encode(before).decode() if before is not None else None,
+            "after":base64.b64encode(data).decode(),"after_hash":hashlib.sha256(data).hexdigest(),
+            "mode":(path.stat().st_mode & 0o777) if path.exists() else 0o600,
+            "changed":changed,"added":additions,"removed_duplicate_home":removed}
+
+
+def put_bookmarks(bookmarks, restore=False):
+    path=Path(bookmarks["path"])
+    if path!=bookmarks_path():fail("Bookmark receipt targets a different native configuration.")
+    current=read_bookmarks(path)
+    if restore:
+        if hashlib.sha256(current or b"").hexdigest()!=bookmarks["after_hash"]:
+            fail("Native bookmarks changed during restoration; no overwrite was performed.")
+    else:
+        expected=base64.b64decode(bookmarks["before"],validate=True) if bookmarks["before"] is not None else None
+        if current!=expected:fail("Native bookmarks changed during application; no overwrite was performed.")
+    encoded=bookmarks["before"] if restore else bookmarks["after"]
+    if encoded is None:
+        path.unlink(missing_ok=True)
+        return
+    data=base64.b64decode(encoded,validate=True)
+    path.parent.mkdir(parents=True,exist_ok=True)
+    temporary=path.with_name(".bookmarks-senomy-"+uuid.uuid4().hex)
+    try:
+        with temporary.open("xb") as stream:stream.write(data)
+        temporary.chmod(bookmarks["mode"])
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=["plan", "apply", "rollback"])
+    parser.add_argument("receipt", nargs="?", type=Path)
+    parser.add_argument("--yes", action="store_true")
+    args = parser.parse_args()
+    for command in ["xfconf-query", "pgrep"]:
+        if not shutil.which(command):
+            fail(f"{command} is unavailable.")
+    if args.action != "plan":
+        running = run(["pgrep", "-i", "-x", "thunar"], check=False)
+        if running.returncode != 1:
+            fail("Close every Thunar window and its background daemon before changing layout; no process was stopped.")
+        if not args.yes:
+            fail("Inspect the plan, then use --yes to apply the explicit one-time layout.")
+    if args.action == "rollback":
+        if args.receipt is None or args.receipt.is_symlink() or not args.receipt.is_file():
+            fail("Provide a regular layout receipt to restore.")
+        document = json.loads(args.receipt.read_text())
+        if document.get("schema_version") != 1 or document.get("status") != "applied":
+            fail("This is not an applied layout receipt.")
+        properties = document["properties"]
+        current = read_properties(properties)
+        bookmarks=document.get("bookmarks")
+        if bookmarks and bookmarks.get("changed"):
+            if Path(bookmarks["path"])!=bookmarks_path():fail("Bookmark receipt target differs.")
+            if hashlib.sha256(read_bookmarks(bookmarks_path()) or b"").hexdigest()!=bookmarks["after_hash"]:
+                fail("Native bookmarks changed since application; rollback refused to overwrite them.")
+        if any(current[key] != value["after"] for key, value in properties.items()):
+            fail("Native preferences changed since application; automatic rollback refused to overwrite them.")
+        for key, value in reversed(list(properties.items())):
+            put(key, value["type"], value["before"], current[key])
+        expected = {key: value["before"] for key, value in properties.items()}
+        if read_properties(properties) != expected:
+            fail("Restore verification failed; the receipt retains exact original values.")
+        if bookmarks and bookmarks.get("changed"):put_bookmarks(bookmarks,restore=True)
+        document["status"] = "rolled_back"
+        write_receipt(args.receipt, document)
+        print("Restored exact managed preferences; other native choices were untouched.")
+        return
+    if args.receipt is not None:
+        fail("A receipt argument is only valid for rollback.")
+    profile = json.loads(profile_path().read_text())
+    properties = profile["properties"]
+    toolbar_key = "/last-toolbar-items"
+    current = read_properties([*properties, toolbar_key])
+    # Keep custom actions and all other existing toolbar choices after the core group.
+    managed = {item.split(":", 1)[0] for item in profile["toolbar"]}
+    extra = [item for item in (current[toolbar_key] or "").split(",") if item and item.split(":", 1)[0] not in managed]
+    properties[toolbar_key] = {"type": "string", "value": ",".join([*profile["toolbar"], *extra])}
+    changes = {key: {"type": value["type"], "before": current[key], "after": value["value"]}
+               for key, value in properties.items() if current[key] != value["value"]}
+    bookmarks=prepare_bookmarks()
+    if args.action == "plan":
+        summary={key:bookmarks[key] for key in ["path","changed","added","removed_duplicate_home"]}
+        print(json.dumps({"properties":changes,"bookmarks":summary}, indent=2))
+        return
+    if not changes and not bookmarks["changed"]:
+        print("Native workspace layout already matches; no preferences were written.")
+        return
+    state = Path(os.environ.get("XDG_STATE_HOME", str(Path.home()/".local/state"))) / "senomyos/thunar-layouts"
+    if state.is_symlink():
+        fail("Layout state directory must not be a symbolic link.")
+    state.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(state, 0o700)
+    path = state / (datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8] + ".json")
+    document = {"schema_version": 1, "status": "prepared", "properties": changes, "bookmarks":bookmarks}
+    write_receipt(path, document)
+    written = []
+    bookmarks_written=False
+    try:
+        for key, value in changes.items():
+            put(key, value["type"], value["after"], value["before"])
+            written.append(key)
+        if read_properties(changes) != {key: value["after"] for key, value in changes.items()}:
+            fail("Native preference verification failed.")
+        if bookmarks["changed"]:
+            put_bookmarks(bookmarks);bookmarks_written=True
+            if hashlib.sha256(read_bookmarks(bookmarks_path()) or b"").hexdigest()!=bookmarks["after_hash"]:
+                fail("Native bookmark verification failed.")
+    except Exception:
+        if bookmarks_written:put_bookmarks(bookmarks,restore=True)
+        for key in reversed(written):
+            value = changes[key]
+            put(key, value["type"], value["before"], value["after"])
+        document["status"] = "failed_restored"
+        write_receipt(path, document)
+        raise
+    document["status"] = "applied"
+    write_receipt(path, document)
+    print(f"Applied one-time native layout. Exact preimages: {path}")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (RuntimeError, ValueError, OSError, subprocess.SubprocessError) as error:
+        print(f"senomy-thunar-layout: {error}", file=sys.stderr)
+        sys.exit(1)

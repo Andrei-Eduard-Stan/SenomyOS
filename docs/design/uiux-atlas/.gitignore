@@ -1,0 +1,4 @@
+tools/node_modules/
+tools/__pycache__/
+tools/.build/
+preview/.thumbs/

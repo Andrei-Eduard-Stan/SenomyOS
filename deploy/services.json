@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "system": [
+    {
+      "unit": "NetworkManager.service",
+      "policy": "enable",
+      "required": true,
+      "reason": "Network provider"
+    },
+    {
+      "unit": "sddm.service",
+      "policy": "enable",
+      "required": true,
+      "reason": "Graphical login manager"
+    },
+    {
+      "unit": "bluetooth.service",
+      "policy": "optional",
+      "required": false,
+      "reason": "Only required when Bluetooth is supported and enabled"
+    }
+  ],
+  "user": [
+    {
+      "unit": "senomy-calendar.service",
+      "policy": "enable",
+      "required": false,
+      "managed": true,
+      "reason": "Persistent local calendars and reminders; starts only after explicit private runtime setup"
+    },
+    {
+      "unit": "hypridle.service",
+      "policy": "optional",
+      "required": false,
+      "managed": true,
+      "reason": "Disabled by user policy; never enabled by release deployment or first boot"
+    },
+    {
+      "unit": "pipewire.socket",
+      "policy": "preset",
+      "required": true,
+      "managed": false,
+      "reason": "Package-managed audio activation"
+    },
+    {
+      "unit": "pipewire-pulse.socket",
+      "policy": "preset",
+      "required": true,
+      "managed": false,
+      "reason": "Package-managed Pulse compatibility activation"
+    },
+    {
+      "unit": "wireplumber.service",
+      "policy": "preset",
+      "required": true,
+      "managed": false,
+      "reason": "Package-managed audio policy"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+
+# Local capture and validation output; keep screenshots and structured receipts.
+*.log

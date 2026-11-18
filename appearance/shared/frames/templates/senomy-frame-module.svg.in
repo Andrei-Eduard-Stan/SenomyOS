@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="@WIDTH@" height="@HEIGHT@" viewBox="0 0 @WIDTH@ @HEIGHT@"
+     preserveAspectRatio="@PRESERVE_ASPECT_RATIO@">
+  <title>@TITLE@</title>
+  <metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="@IVORY@"/>
+      <stop offset="0.48" stop-color="@COLD_SILVER@"/>
+      <stop offset="1" stop-color="@STEEL@"/>
+    </linearGradient>
+    <linearGradient id="senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="@VIOLET_LIGHT@"/>
+      <stop offset="1" stop-color="@VIOLET@"/>
+    </linearGradient>
+  </defs>
+  <g id="@ASSET_ID@" fill="none" stroke-linecap="round" stroke-linejoin="round">
+@GEOMETRY@
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+[Unit]
+Description=SenomyOS Quickshell shell
+Wants=graphical-session.target
+After=graphical-session.target
+Conflicts=swaync.service
+StartLimitIntervalSec=20
+StartLimitBurst=3
+
+[Service]
+Type=simple
+Environment=SENOMY_NOTIFICATION_OWNER=quickshell
+ExecStart=%h/.local/bin/senomy-quickshell-run
+Restart=on-failure
+RestartMode=direct
+RestartSec=1
+TimeoutStopSec=8
+
+# Hyprland starts this through the verified selector after importing its session
+# environment. Keeping the unit non-enabled avoids a race with compositor startup.

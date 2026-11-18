@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+CALENDAR_SETUP_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+CALENDAR_SETUP_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$CALENDAR_SETUP_PATH")/.." && pwd -P)}"
+CALENDAR_ENV="${SENOMY_CALENDAR_ENV:-${XDG_DATA_HOME:-$HOME/.local/share}/senomyos/calendar/runtime}"
+umask 077
+python3 -m venv "$CALENDAR_ENV"
+"$CALENDAR_ENV/bin/python" -m pip install --only-binary=:all: --require-hashes -r "$CALENDAR_SETUP_ROOT/components/calendar/requirements.lock"
+printf '%s\n' 'Private calendar runtime installed. System Python was not changed.'

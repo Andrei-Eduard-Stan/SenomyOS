@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=SenomyOS
+Comment=SenomyOS Obsidian GTK 3 theme
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=SenomyOS
+MetacityTheme=Adwaita
+IconTheme=SenomyOS-Files
+CursorTheme=Adwaita
+ButtonLayout=menu:minimize,maximize,close

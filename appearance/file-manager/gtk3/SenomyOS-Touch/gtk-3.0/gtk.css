@@ -1,0 +1,19 @@
+/* Touch density inherits the native workspace, with at least 44px toolbar targets. */
+@import url("../../SenomyOS/gtk-3.0/gtk.css");
+.background, window { font-size: 14px; }
+button, modelbutton, entry, spinbutton, combobox button.combo { min-width: 40px; min-height: 40px; padding: 3px 10px; }
+window.thunar { font-size: 16px; }
+window.thunar toolbar button { min-width: 38px; min-height: 38px; padding: 2px; }
+window.thunar toolbar button.location-button { min-width: 0; min-height: 38px; padding: 2px 10px; font-size: 16px; }
+window.thunar toolbar entry { min-height: 38px; padding: 2px 10px; font-size: 16px; }
+window.thunar menubar > menuitem { min-height: 42px; padding: 1px 10px; }
+window.thunar treeview.view { font-size: 16px; -GtkTreeView-vertical-separator: 20; }
+window.thunar .sidebar treeview.view { font-size: 16px; -GtkTreeView-vertical-separator: 26; }
+window.thunar treeview.view header button { min-height: 38px; }
+window.thunar notebook > header > tabs > tab { min-height: 40px; padding: 2px 12px; }
+window.thunar .preview-pane label { font-size: 14px; }
+window.thunar statusbar { min-height: 34px; font-size: 13px; }
+menuitem, menu menuitem, modelbutton.flat { min-height: 36px; padding: 4px 12px; }
+scrollbar slider { min-width: 12px; min-height: 36px; }
+
+window.thunar .senomy-places-toggle { min-height: 40px; padding: 2px 10px; font-size: 14px; }

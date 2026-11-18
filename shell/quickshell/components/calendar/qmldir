@@ -1,0 +1,25 @@
+module Senomy.CalendarComponents
+CalendarBrowser 1.0 CalendarBrowser.qml
+CalendarQuickView 1.0 CalendarQuickView.qml
+CalendarQuickGrid 1.0 CalendarQuickGrid.qml
+CalendarDayCell 1.0 CalendarDayCell.qml
+CalendarQuickAgenda 1.0 CalendarQuickAgenda.qml
+EventEditor 1.0 EventEditor.qml
+CalendarAgenda 1.0 CalendarAgenda.qml
+CalendarTools 1.0 CalendarTools.qml
+CalendarTimetable 1.0 CalendarTimetable.qml
+
+CalendarDayActions 1.0 CalendarDayActions.qml
+CalendarDateField 1.0 CalendarDateField.qml
+CalendarImport 1.0 CalendarImport.qml
+
+ReminderControl 1.0 ReminderControl.qml
+
+CalendarFieldMessage 1.0 CalendarFieldMessage.qml
+
+CalendarTextField 1.0 CalendarTextField.qml
+
+CalendarPopupView 1.0 CalendarPopupView.qml
+CalendarPopupAgenda 1.0 CalendarPopupAgenda.qml
+CalendarPopupGrid 1.0 CalendarPopupGrid.qml
+CalendarPopupDay 1.0 CalendarPopupDay.qml

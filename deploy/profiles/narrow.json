@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "narrow",
+  "label": "Narrow and portrait",
+  "form_factor": "narrow",
+  "display": {
+    "scale": 1.0
+  },
+  "shell": {
+    "density": "narrow"
+  },
+  "appearance": {
+    "font_scale": "large"
+  },
+  "file_manager": {
+    "density": "touch"
+  },
+  "wallpaper": {
+    "asset": "obsidian-default",
+    "mode": "fill"
+  },
+  "capabilities": {
+    "touch_preferred": true,
+    "orientation": "portrait"
+  }
+}

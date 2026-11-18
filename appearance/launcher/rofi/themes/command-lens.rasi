@@ -1,0 +1,148 @@
+/* Command Lens — one authored perimeter, a search field and an open ledger.
+ * The wrapper fits the frame to the focused logical work area. */
+@import "senomy-tokens.rasi"
+* { background-color: transparent;
+    text-color: var(text-primary);
+    spacing: 0px;
+    }
+window {
+    location: north;
+    anchor: north;
+    y-offset: 48px;
+    width: 800px;
+    padding: 0px;
+    border: 0px;
+    border-radius: 0px;
+    background-color: var(background-base);
+}
+mainbox {
+    children: [ wrapper-heading, inputbar, mode-switcher, listview, message, textbox-footer ];
+    padding: 24px;
+    spacing: 8px;
+    border: 0px;
+}
+wrapper-heading { orientation: horizontal;
+    expand: false;
+    children: [ textbox-heading, button-close ];
+    }
+textbox-heading { content: "COMMAND LENS";
+    font: "Bruno Ace SC 12";
+    vertical-align: 0.5;
+    }
+button-close { content: "Close";
+    action: "kb-cancel";
+    expand: false;
+    width: 60px;
+    }
+inputbar {
+    children: [ textbox-query-label, entry, button-clear, num-filtered-rows, textbox-num-sep, num-rows ];
+    expand: false;
+    padding: 0px 10px;
+    spacing: 10px;
+    border: 0px 0px 1px;
+    border-color: var(border-soft);
+    background-color: var(frame-glass);
+}
+textbox-query-label { content: "SEARCH";
+    expand: false;
+    vertical-align: 0.5;
+    text-color: var(text-muted);
+    }
+entry {
+    padding: 12px 0px;
+    placeholder: "Search the selected scope…";
+    placeholder-color: var(text-muted);
+    cursor-color: var(frame-ivory);
+    cursor: text;
+}
+button-clear { content: "Clear";
+    action: "kb-clear-line";
+    expand: false;
+    vertical-align: 0.5;
+    }
+num-filtered-rows, num-rows, textbox-num-sep { expand: false;
+    vertical-align: 0.5;
+    text-color: var(text-muted);
+    }
+textbox-num-sep { content: "/";
+    }
+mode-switcher { expand: false;
+    spacing: 4px;
+    border: 0px 0px 1px;
+    border-color: var(border-muted);
+    }
+button {
+    padding: 12px 6px;
+    border: 0px 0px 2px;
+    border-color: transparent;
+    border-radius: 0px;
+    text-color: var(text-muted);
+    cursor: pointer;
+    vertical-align: 0.5;
+}
+button normal { background-color: transparent;
+    }
+button selected { background-color: var(frame-glass-focus);
+    border-color: var(accent);
+    text-color: var(frame-ivory);
+    }
+button selected.normal { background-color: var(frame-glass-hover);
+    text-color: var(frame-ivory);
+    }
+listview {
+    lines: 7;
+    columns: 1;
+    fixed-height: true;
+    dynamic: false;
+    expand: true;
+    scrollbar: true;
+    spacing: 2px;
+    padding: 2px 0px;
+}
+scrollbar { handle-width: 8px;
+    handle-color: var(frame-steel);
+    handle-rounded-corners: false;
+    padding: 0px 0px 0px 6px;
+    }
+element {
+    children: [element-icon, element-text];
+    orientation: horizontal;
+    padding: 10px 12px;
+    spacing: 12px;
+    border: 0px 0px 0px 2px;
+    border-color: transparent;
+    border-radius: 0px;
+    cursor: pointer;
+}
+element normal.normal, element alternate.normal { background-color: transparent;
+    }
+element selected.normal, element selected.active, element selected.urgent {
+    border-color: var(accent);
+    background-color: var(surface-selected);
+    text-color: var(frame-ivory);
+}
+element normal.urgent { text-color: var(danger);
+    }
+element-icon { size: 28px;
+    background-color: transparent;
+    }
+element-text { vertical-align: 0.5;
+    background-color: transparent;
+    text-color: inherit;
+    highlight: bold underline;
+    }
+message { expand: false;
+    }
+textbox { padding: 10px;
+    text-color: var(text-muted);
+    background-color: var(surface-raised);
+    }
+textbox-footer {
+    content: "↑↓  SELECT    ENTER  OPEN    CTRL+TAB  SCOPE    ESC  CLOSE";
+    expand: false;
+    padding: 10px 0px 0px;
+    border: 1px 0px 0px;
+    border-color: var(border-muted);
+    text-color: var(text-muted);
+    font: "JetBrainsMono Nerd Font 9";
+}

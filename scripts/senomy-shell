@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# Quickshell is the only desktop backend. Recovery uses the independent
+# Senomy Recovery login session or a TTY.
+set -euo pipefail
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd -P)}"
+CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/senomyos"
+CONFIG_FILE="$CONFIG_ROOT/shell.json"
+RUNTIME_ROOT="${XDG_RUNTIME_DIR:-/tmp}/senomyos"
+LOCK_FILE="$RUNTIME_ROOT/shell-selector.lock"
+LOCK_TIMEOUT="${SENOMY_SHELL_LOCK_TIMEOUT:-10}"
+QS_UNIT=senomy-quickshell.service
+NOTIFICATION_UNITS=(swaync.service dunst.service)
+QS_BIN="${SENOMY_QS_BIN:-/usr/bin/qs}"
+HYPRCTL_BIN="${SENOMY_HYPRCTL_BIN:-/usr/bin/hyprctl}"
+BUSCTL_BIN="${SENOMY_BUSCTL_BIN:-/usr/bin/busctl}"
+QS_NAMESPACE=senomy-v2-rail
+LOGIN_DEFAULT=quickshell
+fail() {
+  printf 'senomy-shell: %s\n' "$*" >&2
+  exit 1
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || fail "required command is unavailable: $1"
+}
+
+layer_count() {
+  local namespace="$1"
+  "$HYPRCTL_BIN" -j layers 2>/dev/null |
+    /usr/bin/jq --arg namespace "$namespace" '[.[]?.levels[][]? | select(.namespace == $namespace)] | length' 2>/dev/null || printf '0\n'
+}
+
+monitor_count() {
+  "$HYPRCTL_BIN" -j monitors 2>/dev/null | /usr/bin/jq 'length' 2>/dev/null || printf '0\n'
+}
+
+wait_until() {
+  local description="$1"
+  shift
+  for _attempt in {1..60}; do
+    "$@" && return 0
+    sleep 0.1
+  done
+  printf 'senomy-shell: %s\n' "$description" >&2
+  return 1
+}
+
+write_mode() {
+  local mode="$1" reason="${2:-user-selection}" temporary
+  mkdir -p "$CONFIG_ROOT"
+  temporary="$(mktemp "$CONFIG_ROOT/.shell.json.XXXXXX")"
+  /usr/bin/jq -n \
+    --arg mode "$mode" \
+    --arg source "$SOURCE_ROOT" \
+    --arg reason "$reason" \
+    --arg login_default "$LOGIN_DEFAULT" \
+    --arg changed "$(date --iso-8601=seconds)" \
+    '{schema_version:1,selected_backend:$mode,source_root:$source,login_default:$login_default,reason:$reason,changed_at:$changed}' >"$temporary"
+  chmod 600 "$temporary"
+  mv -f "$temporary" "$CONFIG_FILE"
+}
+
+notification_owner() {
+  local owner
+  owner="$("$BUSCTL_BIN" --user call org.freedesktop.DBus /org/freedesktop/DBus \
+    org.freedesktop.DBus GetNameOwner s org.freedesktop.Notifications 2>/dev/null |
+    /usr/bin/sed -n 's/^s "\(.*\)"$/\1/p' || true)"
+  printf '%s\n' "${owner:-unowned}"
+}
+
+notification_owner_pid() {
+  local owner pid
+  owner="$(notification_owner)"
+  [[ "$owner" != unowned ]] || { printf '0\n'; return; }
+  pid="$(
+    "$BUSCTL_BIN" --user call org.freedesktop.DBus /org/freedesktop/DBus \
+      org.freedesktop.DBus GetConnectionUnixProcessID s "$owner" 2>/dev/null |
+      /usr/bin/awk '$1 == "u" {print $2}' || true
+  )"
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] && printf '%s\n' "$pid" || printf '0\n'
+}
+
+unit_main_pid() {
+  local unit="$1" pid
+  pid="$(systemctl --user show "$unit" --property MainPID --value 2>/dev/null || true)"
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] && printf '%s\n' "$pid" || printf '0\n'
+}
+
+selected_mode() { printf 'quickshell\n'; }
+notification_provider() {
+  local owner_pid qs_pid
+  owner_pid="$(notification_owner_pid)"; qs_pid="$(unit_main_pid "$QS_UNIT")"
+  if [[ "$owner_pid" -gt 0 && "$owner_pid" -eq "$qs_pid" ]]; then printf 'quickshell\n'
+  elif [[ "$owner_pid" -gt 0 ]]; then printf 'external\n'
+  else printf 'unowned\n'; fi
+}
+detected_mode() {
+  local qs
+  qs="$(layer_count "$QS_NAMESPACE")"
+  if [[ "$qs" -gt 0 ]] || systemctl --user is-active --quiet "$QS_UNIT"; then printf 'quickshell\n'
+  else printf 'none\n'; fi
+}
+quickshell_ready() {
+  systemctl --user is-active --quiet "$QS_UNIT" &&
+    "$QS_BIN" ipc --path "$SOURCE_ROOT/shell/quickshell" show 2>/dev/null | /usr/bin/grep -q '^target shell$' &&
+    [[ "$(notification_provider)" == quickshell ]]
+}
+preflight() {
+  local command
+  for command in jq hyprctl systemctl flock busctl; do require_command "$command"; done
+  [[ -x "$QS_BIN" && -f "$SOURCE_ROOT/shell/quickshell/shell.qml" ]] || fail 'Quickshell runtime or source is missing'
+  systemctl --user cat "$QS_UNIT" >/dev/null 2>&1 || fail 'Quickshell unit missing; run senomy-v2-deploy apply'
+  [[ -n "${WAYLAND_DISPLAY:-}" && -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || fail 'Hyprland session environment unavailable'
+}
+prepare_notification_units() {
+  local unit
+  # Check all services before changing any masks. Startup never silently stops
+  # another provider; an existing owner requires the explicit handover below.
+  for unit in "${NOTIFICATION_UNITS[@]}"; do
+    if systemctl --user is-active --quiet "$unit"; then
+      fail "$unit is active; use notifications --confirmed for native handover. No service was stopped"
+    fi
+  done
+  [[ "$(notification_provider)" != external ]] || fail 'An external notification owner is active; no service was stopped'
+  systemctl --user mask --runtime "${NOTIFICATION_UNITS[@]}" >/dev/null
+}
+claim_notifications() {
+  local owner_pid native_pid known=false unit
+  preflight
+  systemctl --user is-active --quiet "$QS_UNIT" || fail 'Quickshell must already be running; no provider was stopped'
+  "$QS_BIN" ipc --path "$SOURCE_ROOT/shell/quickshell" show 2>/dev/null | /usr/bin/grep -q '^target shell$' || fail 'Quickshell IPC is unavailable; no provider was stopped'
+  # The running service must explicitly request the native notification server.
+  [[ " $(systemctl --user show "$QS_UNIT" --property Environment --value) " == *'SENOMY_NOTIFICATION_OWNER=quickshell'* ]] || fail 'Native notification server is not configured; no provider was stopped'
+  owner_pid="$(notification_owner_pid)"; native_pid="$(unit_main_pid "$QS_UNIT")"
+  if [[ "$owner_pid" -eq 0 || "$owner_pid" -eq "$native_pid" ]]; then known=true; fi
+  for unit in "${NOTIFICATION_UNITS[@]}"; do
+    if [[ "$owner_pid" -gt 0 && "$owner_pid" -eq "$(unit_main_pid "$unit")" ]]; then known=true; fi
+  done
+  [[ "$known" == true ]] || fail 'Notification owner is not a known managed provider; nothing was stopped or masked'
+  # This is the durable, explicitly confirmed native-provider selection. Mask
+  # first so D-Bus activation cannot race the native server when an owner exits.
+  systemctl --user mask "${NOTIFICATION_UNITS[@]}" >/dev/null
+  for unit in "${NOTIFICATION_UNITS[@]}"; do
+    if systemctl --user is-active --quiet "$unit"; then systemctl --user stop "$unit"; fi
+  done
+  wait_until 'Native notification ownership was not observed; inspect status. Quickshell was not restarted.' quickshell_ready || return 1
+  printf 'Quickshell owns notifications; competing provider units are masked for this user.\n'
+}
+use_quickshell() {
+  preflight
+  prepare_notification_units
+  if quickshell_ready; then printf 'Quickshell is ready.\n'; return; fi
+  systemctl --user reset-failed "$QS_UNIT" >/dev/null 2>&1 || true
+  systemctl --user start "$QS_UNIT" || fail 'Quickshell failed. Use the Senomy Recovery login session or a TTY.'
+  wait_until 'Quickshell failed readiness; inspect journalctl --user -u senomy-quickshell.service. No alternate shell was started.' quickshell_ready || return 1
+  write_mode quickshell
+  printf 'Quickshell owns the shell and notifications.\n'
+}
+show_status() {
+  /usr/bin/jq -n --arg selected quickshell --arg detected "$(detected_mode)" \
+    --arg service "$(systemctl --user is-active "$QS_UNIT" 2>/dev/null || true)" \
+    --arg owner "$(notification_owner)" --argjson pid "$(notification_owner_pid)" \
+    --arg provider "$(notification_provider)" --arg source "$SOURCE_ROOT" \
+    --argjson layers "$(layer_count "$QS_NAMESPACE")" \
+    '{selected_backend:$selected,detected_backend:$detected,login_default:"quickshell",services:{quickshell:$service},notifications:{dbus_name:"org.freedesktop.Notifications",owner:$owner,owner_pid:$pid,provider:$provider},layers:{quickshell:$layers},source_root:$source}'
+}
+doctor() {
+  show_status
+  if ! quickshell_ready; then
+    printf 'Quickshell service, IPC or notification ownership is not ready. Use logs; recovery is the independent login session or a TTY.\n' >&2
+    return 1
+  fi
+}
+# Informational calls stay side-effect free and never acquire mutation locks.
+case "${1:-}" in
+  status) show_status; exit 0 ;;
+  doctor) doctor; exit $? ;;
+  logs) journalctl --user -u "$QS_UNIT" -n "${2:-120}" --no-pager; exit $? ;;
+  use) [[ $# -eq 2 && "$2" == quickshell ]] || fail 'Quickshell is the only supported backend' ;;
+  restart) [[ $# -eq 1 ]] || fail 'restart takes no arguments' ;;
+  notifications) [[ $# -eq 2 && "$2" == --confirmed ]] || fail 'notifications requires --confirmed: masks SwayNC/Dunst for this user and stops their running services' ;;
+  *) fail 'usage: senomy-shell {use quickshell|notifications --confirmed|status|restart|logs [LINES]|doctor}' ;;
+esac
+mkdir -p "$RUNTIME_ROOT"
+exec 9>"$LOCK_FILE"
+/usr/bin/flock -w "$LOCK_TIMEOUT" 9 || fail 'another shell operation is still running'
+if [[ "$1" == notifications ]]; then
+  claim_notifications
+elif [[ "$1" == restart ]]; then
+  "$SOURCE_ROOT/scripts/senomy-app-launch" check-restart || fail 'Application lifetime migration is required; the shell was not restarted'
+  preflight
+  prepare_notification_units
+  systemctl --user reset-failed "$QS_UNIT" >/dev/null 2>&1 || true
+  systemctl --user restart "$QS_UNIT"
+  wait_until 'Quickshell restart failed readiness; use logs or independent recovery' quickshell_ready
+else
+  use_quickshell
+fi

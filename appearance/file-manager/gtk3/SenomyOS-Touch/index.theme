@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=SenomyOS Touch
+Comment=Touch-density variant of the SenomyOS Obsidian GTK 3 theme
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=SenomyOS-Touch
+MetacityTheme=Adwaita
+IconTheme=SenomyOS-Files
+CursorTheme=Adwaita
+ButtonLayout=menu:minimize,maximize,close

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <!-- Editable SenomyOS wallpaper master. Colors are projected from tokens.json. -->
+  <defs>
+    <radialGradient id="violet-halo" cx="50%" cy="42%" r="55%">
+      <stop offset="0" stop-color="@ACCENT@" stop-opacity="0.22"/>
+      <stop offset="0.42" stop-color="@ACCENT@" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="@BACKGROUND@" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyan-halo" cx="53%" cy="48%" r="43%">
+      <stop offset="0" stop-color="@CYAN@" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="@BACKGROUND@" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="@SURFACE@" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="@BACKGROUND@" stop-opacity="0.94"/>
+    </linearGradient>
+    <pattern id="grid" width="96" height="96" patternUnits="userSpaceOnUse">
+      <path d="M96 0H0V96" fill="none" stroke="@MUTED@" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
+    <filter id="soft-glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="@BACKGROUND@"/>
+  <rect width="1920" height="1080" fill="url(#violet-halo)"/>
+  <rect width="1920" height="1080" fill="url(#cyan-halo)"/>
+  <rect width="1920" height="1080" fill="url(#grid)"/>
+
+  <!-- Restrained cathedral aperture: atmosphere rather than literal wallpaper art. -->
+  <path d="M710 820V512C710 326 822 210 960 132C1098 210 1210 326 1210 512V820"
+        fill="none" stroke="@ACCENT@" stroke-opacity="0.10" stroke-width="2"/>
+  <path d="M760 820V526C760 372 848 276 960 204C1072 276 1160 372 1160 526V820"
+        fill="none" stroke="@CYAN@" stroke-opacity="0.075" stroke-width="1"/>
+  <path d="M840 820V554C840 456 892 380 960 324C1028 380 1080 456 1080 554V820"
+        fill="none" stroke="@MUTED@" stroke-opacity="0.07" stroke-width="1"/>
+  <circle cx="960" cy="474" r="5" fill="@ACCENT@" fill-opacity="0.58" filter="url(#soft-glow)"/>
+  <circle cx="960" cy="474" r="2" fill="@ACCENT@" fill-opacity="0.86"/>
+
+  <path d="M0 814H1920" stroke="@MUTED@" stroke-opacity="0.10"/>
+  <rect y="815" width="1920" height="265" fill="url(#floor)"/>
+  <path d="M430 930H1490" stroke="@ACCENT@" stroke-opacity="0.075"/>
+  <path d="M610 982H1310" stroke="@CYAN@" stroke-opacity="0.05"/>
+</svg>

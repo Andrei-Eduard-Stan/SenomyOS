@@ -1,0 +1,957 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-09",
+  "basis": "Actual dirty working tree; historical evidence, no fresh live capture or runtime mutation.",
+  "evidence": [
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/rail-20261109.png",
+      "sha256": "b0f37133222fc5815042dafcad3cfd1fb7850056a7197786b801b01fbb8b9640",
+      "dimensions": [
+        1920,
+        72
+      ],
+      "origin_path": "docs/qa/button-feedback-20261109/live/rail-eDP-1.png",
+      "origin_sha256": "b0f37133222fc5815042dafcad3cfd1fb7850056a7197786b801b01fbb8b9640",
+      "transform": "Exact byte copy; dated historical capture, not a new runtime capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/audio-before-after.png",
+      "sha256": "383851ebc5787b64907c9dfd428920aa75fb67717225812fbab4a0679994706d",
+      "dimensions": [
+        974,
+        465
+      ],
+      "origin_path": "docs/qa/audio-design-20261023/before-after.png",
+      "origin_sha256": "383851ebc5787b64907c9dfd428920aa75fb67717225812fbab4a0679994706d",
+      "transform": "Exact byte copy; dated historical capture, not a new runtime capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/sddm-before.png",
+      "sha256": "31a619e9744f13980550ad55d8b42e05f530a110da355cf13a8baaabb1d3554d",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "origin_path": "docs/qa/refinement-direction-20261103/sddm-1920x1080.png",
+      "origin_sha256": "31a619e9744f13980550ad55d8b42e05f530a110da355cf13a8baaabb1d3554d",
+      "transform": "Exact byte copy; dated historical capture, not a new runtime capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/settings-wide.png",
+      "sha256": "f16a5f1931d3aa7ea40300ad1f04f25aebf2f0bb2d479dc4b63d85e6f5a44f0a",
+      "dimensions": [
+        1120,
+        820
+      ],
+      "origin_path": "docs/qa/control-centre-close-20261109/directory/directory-appearance-1120.png",
+      "origin_sha256": "f16a5f1931d3aa7ea40300ad1f04f25aebf2f0bb2d479dc4b63d85e6f5a44f0a",
+      "transform": "Exact byte copy; dated historical capture, not a new runtime capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/settings-narrow.png",
+      "sha256": "91db663a801b1e968ce299ef06887025d923d6564e4a2f27d2fd550568ae446f",
+      "dimensions": [
+        390,
+        640
+      ],
+      "origin_path": "docs/qa/control-centre-close-20261109/directory/directory-appearance-390.png",
+      "origin_sha256": "91db663a801b1e968ce299ef06887025d923d6564e4a2f27d2fd550568ae446f",
+      "transform": "Exact byte copy; dated historical capture, not a new runtime capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/power-hover.png",
+      "sha256": "184ffd6ba2e6b8c23ec6534ec4855106bc08b6ddc70ec7182d211557d653fb9d",
+      "dimensions": [
+        64,
+        64
+      ],
+      "origin_path": "docs/qa/button-feedback-20261109/validation/uniform/11-power-hover.png",
+      "origin_sha256": "184ffd6ba2e6b8c23ec6534ec4855106bc08b6ddc70ec7182d211557d653fb9d",
+      "transform": "Exact byte copy; dated historical capture, not a new runtime capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/illustrator-rail.png",
+      "sha256": "0a2b1db296884b0b9a03e4839bc44fb1bd8ce4fbb09120e6e0fe0bbaf28a87fe",
+      "dimensions": [
+        2048,
+        192
+      ],
+      "origin_path": "assets/mockups/senomyui/senomy [Recovered].ai",
+      "origin_sha256": "c355f8ed5dfbba85cf93cb30e423623e0ac019640b1ad810768ce8dcf1e73dad",
+      "transform": "PDF-compatible preview: pdftoppm -f 1 -singlefile -scale-to 2048 -x 0 -y 960 -W 2048 -H 192 -png. Crop in scaled preview pixels; no artwork edited.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/control-overview-a-20261110.png",
+      "sha256": "9e16b3691d68ebd9dd788c42ca1b1441b7bb528b57da9cc38ef6f23b04fd8eeb",
+      "dimensions": [
+        960,
+        760
+      ],
+      "origin_path": "docs/qa/control-centre-a-20261110/native/overview-960.png",
+      "origin_sha256": "9e16b3691d68ebd9dd788c42ca1b1441b7bb528b57da9cc38ef6f23b04fd8eeb",
+      "transform": "Exact byte copy of 10 November staged production QML render; synthetic providers, private offscreen Qt; not a live desktop capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/briefing-underdeveloped-20261114.png",
+      "sha256": "dc30d4ef633908cb8c52bac38186b3e29002825e280521dcaae8736cfac94c1b",
+      "dimensions": [
+        1700,
+        900
+      ],
+      "origin_path": "docs/qa/insights-composition-20261114/renders/baseline/briefing-1700.png",
+      "origin_sha256": "dc30d4ef633908cb8c52bac38186b3e29002825e280521dcaae8736cfac94c1b",
+      "transform": "Exact byte copy of same-provider native baseline. Owner critique is scoped to composition, not all implementation traits.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/audio-island-20261115.png",
+      "sha256": "b8ea55afb9d6f742bb15a638317562306a155b3b574bab6c19a3493c2bd6f80f",
+      "dimensions": [
+        432,
+        457
+      ],
+      "origin_path": "private publication receipt audio-publication-20261115/audio-checks/00-user-state.png",
+      "origin_sha256": "b8ea55afb9d6f742bb15a638317562306a155b3b574bab6c19a3493c2bd6f80f",
+      "transform": "Exact byte copy; isolated native fake-provider capture, not the private live desktop image.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/audio-media-20261115.png",
+      "sha256": "6e043f186dc45b914df8e54918eca6ebebe805818c7de50b5bf1db8d45aeec03",
+      "dimensions": [
+        432,
+        691
+      ],
+      "origin_path": "private receipt audio-media-20261115/checks/10-media-expanded.png",
+      "origin_sha256": "6e043f186dc45b914df8e54918eca6ebebe805818c7de50b5bf1db8d45aeec03",
+      "transform": "Exact byte copy of isolated native fake-player capture; not live media metadata.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/network-popup-20261115.png",
+      "sha256": "d3c270b148241da7820fa3eb4a2908568e62e65b629e5e5592af72ae811f2053",
+      "dimensions": [
+        460,
+        587
+      ],
+      "origin_path": "private publication receipt network-publication-20261115/checks/01-standard.png",
+      "origin_sha256": "d3c270b148241da7820fa3eb4a2908568e62e65b629e5e5592af72ae811f2053",
+      "transform": "Exact byte copy of fake-network native capture, not private live SSIDs.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/battery-popup-20261115.png",
+      "sha256": "0a924e7f18594cfe3cccaafa11e28aae6bc9efacc446128b2712ac35813939b5",
+      "dimensions": [
+        460,
+        456
+      ],
+      "origin_path": "private publication receipt battery-publication-20261115/candidate-captures/01-standard.png",
+      "origin_sha256": "0a924e7f18594cfe3cccaafa11e28aae6bc9efacc446128b2712ac35813939b5",
+      "transform": "Exact byte copy of native fake-UPower/energy capture, not live hardware diagnostics.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/tray-unified-20261115.png",
+      "sha256": "ce673d1b2be3abebfd72b7141d8adaf53b57e7a3b75f979c0f87330492012e0c",
+      "dimensions": [
+        1000,
+        542
+      ],
+      "origin_path": "private proposal receipt tray-unified-20261115/comparison.png",
+      "origin_sha256": "ce673d1b2be3abebfd72b7141d8adaf53b57e7a3b75f979c0f87330492012e0c",
+      "transform": "Exact comparison board of fake native list and app-menu captures; no live app state.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/calendar-popup-20261115.png",
+      "sha256": "60d23503abbe2bb0998852242de12eecd02ef0eb33ea1db35efa4762f3c841af",
+      "dimensions": [
+        1304,
+        861
+      ],
+      "origin_path": "private proposal receipt calendar-20261115/comparison.png",
+      "origin_sha256": "60d23503abbe2bb0998852242de12eecd02ef0eb33ea1db35efa4762f3c841af",
+      "transform": "Exact board of fake native baseline/candidate; no private live schedule.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/notification-inbox-20261115.png",
+      "sha256": "8a0c60f08b1f36d4c35ce34f44979de89d4c6d59ff075c3939ab1ae5e5b03fbc",
+      "dimensions": [
+        1104,
+        817
+      ],
+      "origin_path": "private proposal receipt notifications-20261115/comparison.png",
+      "origin_sha256": "8a0c60f08b1f36d4c35ce34f44979de89d4c6d59ff075c3939ab1ae5e5b03fbc",
+      "transform": "Exact board of synthetic native inbox captures; no private messages.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/power-chooser-revision-20261115.png",
+      "sha256": "2939cd2dd52ddabd071eeee0ed6270d82a9c49c3c8975a686fa8141674c0bf13",
+      "dimensions": [
+        1104,
+        657
+      ],
+      "origin_path": "private proposal receipt power-compact-20261115/comparison.png",
+      "origin_sha256": "2939cd2dd52ddabd071eeee0ed6270d82a9c49c3c8975a686fa8141674c0bf13",
+      "transform": "Exact board of prior rejected/native compact revision; no live action data.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/tray-compact-20261115.png",
+      "sha256": "cb65383099fdd555bc2f503ed72988f7dfae5385adf46dbb862b1656081be632",
+      "dimensions": [
+        1024,
+        532
+      ],
+      "origin_path": "private proposal receipt tray-compact-20261115/comparison.png",
+      "origin_sha256": "cb65383099fdd555bc2f503ed72988f7dfae5385adf46dbb862b1656081be632",
+      "transform": "Exact same-scale comparison board of actual native QML fixture captures, rendered before owner approval/publication; no real app action data.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/insights-workspace-20261115.png",
+      "sha256": "6b2f82f818978355a956b2dbe2c12077abddf3511046624528b512f277a20087",
+      "dimensions": [
+        1456,
+        1050
+      ],
+      "origin_path": "private proposal receipt insights-revamp-20261115/review.png",
+      "origin_sha256": "6b2f82f818978355a956b2dbe2c12077abddf3511046624528b512f277a20087",
+      "transform": "Exact copy of four-view board. Actual native software fixture captures embedded at 0.52 scale before owner approval/publication; synthetic evidence, no live machine content.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/performance-tree-20261115.png",
+      "sha256": "cb55899dd1dbec62b69f0a053ec7950ad6e1c0222ac74030b9ef14ac1ef39c22",
+      "dimensions": [
+        1560,
+        840
+      ],
+      "origin_path": "private performance-publication-20261115/navigation-refinement/candidate-captures/wide-overview.png",
+      "origin_sha256": "cb55899dd1dbec62b69f0a053ec7950ad6e1c0222ac74030b9ef14ac1ef39c22",
+      "transform": "Exact native software fixture capture; synthetic observations, original size, no live machine content.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/performance-tree-narrow-20261115.png",
+      "sha256": "adb676a7316e23784b13c482a16e9577aa390ce1af76c5e5f2a2869928cd06a9",
+      "dimensions": [
+        680,
+        840
+      ],
+      "origin_path": "private performance-publication-20261115/navigation-refinement/candidate-captures/directory-narrow-search.png",
+      "origin_sha256": "adb676a7316e23784b13c482a16e9577aa390ce1af76c5e5f2a2869928cd06a9",
+      "transform": "Exact native software fixture capture; synthetic observations, original size, no live machine content.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/control-workspace-20261115.png",
+      "sha256": "205fd091be00402c6f4c293b913e2f8febfcb2d890d29317a9afa85ff9559fc0",
+      "dimensions": [
+        1640,
+        1340
+      ],
+      "origin_path": "private Control Centre proposal/publication receipt review.png",
+      "origin_sha256": "205fd091be00402c6f4c293b913e2f8febfcb2d890d29317a9afa85ff9559fc0",
+      "transform": "Exact staged four-view native capture board, reduced scale; synthetic observations before owner application.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/control-overview-20261115.png",
+      "sha256": "77e0fecf2d671d134b56c32378e29fe7d75c5f8468696ca0d36c604423e28c32",
+      "dimensions": [
+        1120,
+        800
+      ],
+      "origin_path": "private Control Centre proposal/publication receipt overview-1120.png",
+      "origin_sha256": "77e0fecf2d671d134b56c32378e29fe7d75c5f8468696ca0d36c604423e28c32",
+      "transform": "Exact native fixture capture after equivalent standard-primitives hot-reload correction; synthetic observations, original size.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/remaining-panels-20261115.png",
+      "sha256": "8d20804fffc3b90d9fd7d2b1db65f39182b1e63e46458411bf40ea5f028c63d6",
+      "dimensions": [
+        1400,
+        930
+      ],
+      "origin_path": "private remaining-panel publication receipt applied-review.png",
+      "origin_sha256": "8d20804fffc3b90d9fd7d2b1db65f39182b1e63e46458411bf40ea5f028c63d6",
+      "transform": "Exact board of native isolated captures after companion removal; synthetic data, scaled navigation aid.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/rail-background-20261115.png",
+      "sha256": "6ab03083b01241911dcacf3dc74da340bd65ccc93c00817c402a89a3a3870152",
+      "dimensions": [
+        1920,
+        72
+      ],
+      "origin_path": "private Rail-background publication receipt live-after-eDP-1.png",
+      "origin_sha256": "6ab03083b01241911dcacf3dc74da340bd65ccc93c00817c402a89a3a3870152",
+      "transform": "Exact live Rail screenshot at native output scale, original size.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/auth-login-desktop-20261116.png",
+      "sha256": "7a88034bc67cde57b4f34b545c4f31c8351cf79573b80c1259d42b40cf9a2561",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "origin_path": "private auth-publication-20261116/captures/login-1920x1080.png",
+      "origin_sha256": "7a88034bc67cde57b4f34b545c4f31c8351cf79573b80c1259d42b40cf9a2561",
+      "transform": "Exact byte copy of actual isolated login QML capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/auth-login-narrow-20261116.png",
+      "sha256": "50b7fe329015f2eea0a751d4f48724a394318dba81fe6f932bc8a7ebd5b2f538",
+      "dimensions": [
+        360,
+        640
+      ],
+      "origin_path": "private auth-publication-20261116/captures/login-360x640.png",
+      "origin_sha256": "50b7fe329015f2eea0a751d4f48724a394318dba81fe6f932bc8a7ebd5b2f538",
+      "transform": "Exact byte copy of actual isolated login QML capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/auth-lock-projection-20261116.png",
+      "sha256": "f634183a99b6c3786ef8cb4651a730372b8fcc58afa896d9a8c62cac38b80908",
+      "dimensions": [
+        360,
+        640
+      ],
+      "origin_path": "private auth-publication-20261116/captures/lock-360x640.png",
+      "origin_sha256": "f634183a99b6c3786ef8cb4651a730372b8fcc58afa896d9a8c62cac38b80908",
+      "transform": "Exact byte copy of offline lock-config projection; not native Hyprlock rendering.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/thunar-rejected-fixture-20261117.png",
+      "sha256": "0b7e6e6d056e9e0a8d4aca3ca121d02758f3d72e638b0848ccd9eb8295ef58c2",
+      "dimensions": [
+        1200,
+        817
+      ],
+      "origin_path": "private thunar-revamp-20261117/captures/desktop.png",
+      "origin_sha256": "0b7e6e6d056e9e0a8d4aca3ca121d02758f3d72e638b0848ccd9eb8295ef58c2",
+      "transform": "Exact public native fixture capture of rejected style; NOT the owner screenshot or private Home capture.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/thunar-native-workspace-20261117.png",
+      "sha256": "ebfa405f87718c27caa9d7abb53516da2b7b3f6cf515b690231e1ddeec8b94cf",
+      "dimensions": [
+        955,
+        1039
+      ],
+      "origin_path": "private thunar-rework-20261117/captures/native-user-width.png",
+      "origin_sha256": "ebfa405f87718c27caa9d7abb53516da2b7b3f6cf515b690231e1ddeec8b94cf",
+      "transform": "Exact native GTK production-module fixture capture; not the private Home screenshot.",
+      "original_tracked_at_setup": false
+    },
+    {
+      "archive_path": "docs/design/design-intelligence/evidence/thunar-native-split-20261117.png",
+      "sha256": "4ccdbf5d812dbe20bcadd3e9f51ca2dc08af3d20d07cb71f03427807dfab48ec",
+      "dimensions": [
+        1200,
+        817
+      ],
+      "origin_path": "private thunar-rework-20261117/captures/native-split.png",
+      "origin_sha256": "4ccdbf5d812dbe20bcadd3e9f51ca2dc08af3d20d07cb71f03427807dfab48ec",
+      "transform": "Exact native GTK production-module fixture capture; not the private Home screenshot.",
+      "original_tracked_at_setup": false
+    }
+  ],
+  "sources": [
+    {
+      "path": "appearance/tokens.json",
+      "sha256": "5191c7a8e0fb5fadf2a4638f00da2bfd0075271bc6a897340b5e98aa27b21862"
+    },
+    {
+      "path": "appearance/skins/default.json",
+      "sha256": "e0e03e6d852c5d428fd35f1a760f70276b523b68547bae2e74905ce7dc507825"
+    },
+    {
+      "path": "appearance/shared/frames/frame-system.json",
+      "sha256": "3728ccfd8613bee3780b40774fe0c2c0a1a03a5afaaafb3e6dd35c15a9a4b665"
+    },
+    {
+      "path": "shell/quickshell/config/Theme.qml",
+      "sha256": "6a7120c912fe57186b674830fa8ecff244adca7c3c4382fb4079b323b22a8517"
+    },
+    {
+      "path": "shell/quickshell/config/DirectoryStyle.qml",
+      "sha256": "83a79a815a35dd7bab2d5adb231d3bf6549ef7f774370b8d90f341c60f9e2369"
+    },
+    {
+      "path": "shell/quickshell/config/QuickPanelStyle.qml",
+      "sha256": "6fe51c6b18a5c5e54a2a5b23fc7dc73893063ab2909a76706114b91edeff67aa"
+    },
+    {
+      "path": "shell/quickshell/config/Motion.qml",
+      "sha256": "9c26277eb8523c7827e2271181e6510385aacb2438401c2687e46471d60e6956"
+    },
+    {
+      "path": "shell/quickshell/config/Skin.qml",
+      "sha256": "54bc5665ad7178e89e93e5bbd8b64179d8a9447dd96d884e59ec31f3aa1c4067"
+    },
+    {
+      "path": "shell/quickshell/components/ArtFrame.qml",
+      "sha256": "ca879e8ff4d2cbfa28f8395d47bc2c2dd95d6cd14463f0ae479779332ad6d86e"
+    },
+    {
+      "path": "shell/quickshell/components/SurfaceOutline.qml",
+      "sha256": "ce0e552a91a6674074646db5411f38809e45e1fa02c602f12997ca57e4551db1"
+    },
+    {
+      "path": "shell/quickshell/components/ButtonHoverFrame.qml",
+      "sha256": "770576b13197e068bc02307baf528a9feb5ba4ecb2e35321d9404e8dc1c77cb6"
+    },
+    {
+      "path": "docs/design-references/obsidian-rail-approved.png",
+      "sha256": "579aebd37cb8d345429a58bf320a451281126d38b3a448b290d2625516b29970"
+    },
+    {
+      "path": "docs/design-references/cathedral-deck-approved.png",
+      "sha256": "3e800f6fa189428939b49c42bdf238bf85c45e95c59acac97e998dac298e9730"
+    },
+    {
+      "path": "assets/senomy_island_expanded/SVG/Asset 51.svg",
+      "sha256": "362d42d34f004e3e6d21889bcfdf3503f1ef99659826d26b63f303142390d390"
+    },
+    {
+      "path": "assets/senomy_island_expanded/SVG/Asset 50.svg",
+      "sha256": "5e8a610310b89029ff6311f8bef05ce4ede66455c63d7f68def382752fa499fe"
+    },
+    {
+      "path": "assets/senomy_island_expanded/SVG/Asset 52.svg",
+      "sha256": "ab2d7e119ecd0b645f4c89583e325e8d54a954aa9c12aacb070f487ae7bd7955"
+    },
+    {
+      "path": "assets/senomy_island_expanded/SVG/Asset 54.svg",
+      "sha256": "d94e1c35a5af16fd073a4622d5004d56d79af48a58d51b2cc7433f3455a91cd3"
+    },
+    {
+      "path": "shell/quickshell/components/ControlCentre.qml",
+      "sha256": "9ea4655bf2a1b433b3df0b75cc395035b541621844722ad3c3e9f1e6ada860db"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlOverview.qml",
+      "sha256": "795bd8f94e8d1646efd78a058793bfdac6a75c1be6e49f2ba65032bf35d06f77"
+    },
+    {
+      "path": "shell/quickshell/components/IslandPopupFrame.qml",
+      "sha256": "714f457f99b86e93eec4346947a17b2677af046b1c1aba8c6c476db608da1568"
+    },
+    {
+      "path": "shell/quickshell/components/audio/AudioMuteButton.qml",
+      "sha256": "8f42b8babe0809e874530b8c17cd3e16f0f2e8691143946e04200a02c0726a2f"
+    },
+    {
+      "path": "shell/quickshell/components/audio/AudioButton.qml",
+      "sha256": "0717c1433ec040c4c453c525da7296e4e3158338800eb5bf6d2dacf412e060e6"
+    },
+    {
+      "path": "shell/quickshell/components/audio/AudioQuickMedia.qml",
+      "sha256": "8fc0ba103e8d0efb9f22be0d648b3a2bf00b7b30622306dc03ad6dd3e3fbd0f0"
+    },
+    {
+      "path": "shell/quickshell/components/NetworkPopup.qml",
+      "sha256": "de6f6e211bf38b8560fb1da400128b0bc508de90c7d4a070e833ad29ec8aba11"
+    },
+    {
+      "path": "shell/quickshell/components/NetworkQuickChoiceRow.qml",
+      "sha256": "fcc97f09b90e37d731383e1c2c7d280889957e72b35f09c3c23fae2931bafe2e"
+    },
+    {
+      "path": "shell/quickshell/components/QuietButton.qml",
+      "sha256": "7d5492c40aa9cc945a945a0140355695387b98c272893edffcf18f90e03c1b9c"
+    },
+    {
+      "path": "shell/quickshell/components/BatteryPopup.qml",
+      "sha256": "d2b1e1c4df97f9a6593d4194f45a255a6833e5f6a4fa12cc9749f61ed8493f94"
+    },
+    {
+      "path": "shell/quickshell/components/BatteryQuickProfileReview.qml",
+      "sha256": "d2e747993939584315cd386f5e74523f02a8051f601f51414c54aa807decb5a6"
+    },
+    {
+      "path": "shell/quickshell/services/BatteryService.qml",
+      "sha256": "0b4d19f549e95a433e5957868763fb633156e6966c13fe06df6724921d6e52ad"
+    },
+    {
+      "path": "shell/quickshell/components/TrayPopup.qml",
+      "sha256": "890d323302e249f72249bffeb58bc019aeb4725cd913d7c1ad2e81907f1a33e5"
+    },
+    {
+      "path": "shell/quickshell/components/TrayContents.qml",
+      "sha256": "b40eda3f3989cf455cbf8da6937e5243d53739da9abc9618ac4ee3a546c4d0b8"
+    },
+    {
+      "path": "shell/quickshell/components/TrayQuickItemButton.qml",
+      "sha256": "58250a55d17cc254b619d446b6de8cfda5b6bb5c9c50450befb8167987157139"
+    },
+    {
+      "path": "shell/quickshell/components/tray/TrayQuickMenuRow.qml",
+      "sha256": "3896d4052eaa1efd63f0a17473bb32037ae740df3d930acd81fe58350fb123df"
+    },
+    {
+      "path": "shell/quickshell/components/CalendarPopup.qml",
+      "sha256": "9fef67a1b4237210ea2ed904309c4e9836c3ab34ca3b12faf7def9c3df1c0e5c"
+    },
+    {
+      "path": "shell/quickshell/components/calendar/CalendarPopupView.qml",
+      "sha256": "d008733c66a279f9a742b066d3d71e0fa1bce82eaaae1f0b9bce62537f5ed77c"
+    },
+    {
+      "path": "shell/quickshell/components/calendar/CalendarPopupAgenda.qml",
+      "sha256": "967bc7c687f311896d3a3ec95b10d7c944af7e05d2f9a0fa44014fb8e3de8250"
+    },
+    {
+      "path": "shell/quickshell/components/calendar/CalendarPopupGrid.qml",
+      "sha256": "3178fad3fb0b8b9d962ba26e17d0cfd9790af4d305785d55d2e40d0ef983de5f"
+    },
+    {
+      "path": "shell/quickshell/components/calendar/CalendarPopupDay.qml",
+      "sha256": "b6283d05fb08cfed036de0da580c385701cdd832a4de391cf2e29138bab65547"
+    },
+    {
+      "path": "shell/quickshell/components/calendar/qmldir",
+      "sha256": "f975ff76ed869dc02e0f3743d8581e62db7b500e6a32548cae1c6ffcdc5e474c"
+    },
+    {
+      "path": "shell/quickshell/components/NotificationCenter.qml",
+      "sha256": "8a6d9856da847c1511cf0d48bcafd2bdc6abea2a88653382437789b9903741de"
+    },
+    {
+      "path": "shell/quickshell/components/NotificationQuickClearReview.qml",
+      "sha256": "f585c019853123790153eaadcbc8c2cc7a6d26dd69939b2303e59f87f8368683"
+    },
+    {
+      "path": "shell/quickshell/components/NotificationQuickCommitment.qml",
+      "sha256": "1ca10b1d4738159a541bf972868074d13537dbb79e367e9e3981de8ed703947f"
+    },
+    {
+      "path": "shell/quickshell/components/notifications/NotificationQuickList.qml",
+      "sha256": "d35424359459005aaee6e7969ce87ffa2e268376da8204b344dbd09342118b36"
+    },
+    {
+      "path": "shell/quickshell/components/notifications/qmldir",
+      "sha256": "b9891ed5ef503c699c90161e9e152982be4f4c3d547be935daf3597ef5e86346"
+    },
+    {
+      "path": "shell/quickshell/components/PowerPopup.qml",
+      "sha256": "813ef0edd098812aaaada41aa44b933500b2e14d2d23ac1ecb49329bcb3fa39f"
+    },
+    {
+      "path": "shell/quickshell/components/PowerQuickContents.qml",
+      "sha256": "f895beec608e5f91ddb3a2aa663b12e4a0579f03eb584b13e21d3b737964c019"
+    },
+    {
+      "path": "shell/quickshell/components/PowerQuickSegments.qml",
+      "sha256": "d3a4d5cafa6f364c5086219d2389645c08149c93bc2ba771119f569cc768e656"
+    },
+    {
+      "path": "shell/quickshell/components/PowerQuickScheduleMonitor.qml",
+      "sha256": "dd201b3181c07e18c11e460e72b5734c2aab744ddb3fae36113a7f56f9668e71"
+    },
+    {
+      "path": "shell/quickshell/components/PowerQuickCountdownField.qml",
+      "sha256": "7208bd9e1753727dbe8de9fa07b041481b9a2abdf3275970afd5b228ae8e036e"
+    },
+    {
+      "path": "shell/quickshell/components/PowerQuickDateField.qml",
+      "sha256": "13e0034ec3f4bb0aab69adc2eaa98936647661905772580b2002638f57ecbeb7"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsPanel.qml",
+      "sha256": "d7aa3290667b73c210af382f79f37688a62d4d6769f201a48615119c15bff7d5"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceBriefing.qml",
+      "sha256": "7db7343cb4ea6bb3b9d861603292abc8903d3ca7f2205366cb911fa645b46fda"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceChoice.qml",
+      "sha256": "a75fe567698cdf5d78332cf73a415568b6169c0378752821773a35dabf2dfb75"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceInbox.qml",
+      "sha256": "d0a46c3742a705cdd7af011ee565694d26b96c1025d839b01f484dcac98dc41b"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceNavigation.qml",
+      "sha256": "fd9643c225f634b866fd6577cb1a2b0e9549b4b25989525a377793417eb1a21f"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceReports.qml",
+      "sha256": "6e79156677870eef4d92e3c126b64a8b626c7c0f788dc25b21e737017f74b45b"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceSearch.qml",
+      "sha256": "ddf84a479dd24b9366a9ceea6b8c5d1a31ad2f0705011502319382ea8c2cf07e"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceStatus.qml",
+      "sha256": "e8d5834706e9c28a4c94759522513e1dd56c8d24112f5f534d380f369d2e6194"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceTasks.qml",
+      "sha256": "41764db8b444875d81c1567d9155e2d139db317aa83eba34bd0996ed3c9466b7"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceTimeline.qml",
+      "sha256": "837d0830d1be1c750d62d815f981b669e4aa6677fa75c7c8005f07234b3372ee"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceTitle.qml",
+      "sha256": "4a59b3bd7eec29efd420a5fe777c098d8daed2d73e60cad01599076bf2137ddb"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceUpdates.qml",
+      "sha256": "ce1acb9404f8834c0715aa2e7d2311f8809a692e017527a9238c2af55cd60b3d"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceWiki.qml",
+      "sha256": "a785e981077ff656a1e26625f3d41ee5ab23d0bd57e4171759d782dd0e8dd478"
+    },
+    {
+      "path": "shell/quickshell/components/InsightsWorkspaceWindow.qml",
+      "sha256": "d7d3b3b56f6449102f1d1d21b98b988a2aa427094242aacbc5b4eff9dbd0923e"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceDashboard.qml",
+      "sha256": "adcb82a61ab113e4d52a37608baa927454d798161a586f62954b4eace418684a"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceBenchmarks.qml",
+      "sha256": "bd7f1399590b0e3ae0ba66d3a802f09bb9b2eae36244e7dc0cb99a3fd2e7c194"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceChart.qml",
+      "sha256": "af51d1da3c427a3740289e7b258cbc41568f45865b0d3b460f0132e0146baee5"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceFacts.qml",
+      "sha256": "5975cd1bedbfd9b4b80e3951abc7a2f8392c30b821260b971806b5f93a65f333"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceInspector.qml",
+      "sha256": "a0505da054c3369453b05b6a8e7c1f8e3da9b01fb10b1dcc0365741e8944012b"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceNavigation.qml",
+      "sha256": "62c121ad8c5fd1715238f48322b67dadecd51f7078af0b061dc1896ec57772f4"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceOverview.qml",
+      "sha256": "edb499235374df17e726664131b5612faf16d541522104738ed6ac46cc4db885"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceProcesses.qml",
+      "sha256": "4d12ba46ceb203860597c08bdc48b7220a788772cb604190d6190bd0f30ff7b2"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceResource.qml",
+      "sha256": "4c71a1a9db013e473b70ab57fbdea35d3b6557dc746dff32432e696d07a903b5"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceServiceReview.qml",
+      "sha256": "d1bfe06d20ef79e8089af20381f7f3cb18bee97f249aee7df6bbcd8640c321ec"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceServices.qml",
+      "sha256": "ce020eeda0acbf5e621727f72e6793477b0385d3d43c1126f2c732c21f6468d0"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceTopProcesses.qml",
+      "sha256": "70afbaa8697e9582a8118d0215990d7f57352270cc93694b81345d99bc1c8c2d"
+    },
+    {
+      "path": "shell/quickshell/components/PerformanceWorkspaceWindow.qml",
+      "sha256": "7fc3dc73dade687b1c2e307c9410d8f52a176513344fb1579f3ec64658a108dd"
+    },
+    {
+      "path": "shell/quickshell/services/PerformanceService.qml",
+      "sha256": "510e6c5bc5b2f7692ba34c6507cf910826f153606e53f97e32341b4fd5d75053"
+    },
+    {
+      "path": "shell/quickshell/components/ControlWorkspaceSearch.qml",
+      "sha256": "c692179747f04453a2464a191f1a8b3d585692ae7541941bde0e874b8d961b65"
+    },
+    {
+      "path": "shell/quickshell/components/ControlWorkspaceButton.qml",
+      "sha256": "f712cdb0d674bc8e5a6dc0dda0f173452d1e3dbabdabfbbd6f9b546033b550a4"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlAccountsPage.qml",
+      "sha256": "9196336d15bb1d3d8d5017ba05155c5c02eb5930464900733f47d89553373227"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlApplicationsPage.qml",
+      "sha256": "e67ab902e6c92c2159d519b32ec0edc5d7a5a119d45d99536070351c65526106"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlCalendarPage.qml",
+      "sha256": "541efec84867c9f4f4181de58be9eb105268ca6dc84892a61a1429e9cf7b5a0d"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlDevicesPage.qml",
+      "sha256": "a5eaeba9c5032df170e2285a796771785dadd834bfca676e0caba1d151d2eec8"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlInputPage.qml",
+      "sha256": "4fae942e081421188406963b855906daeb4d335750b6bb6de550d9118dd6471e"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlInventoryList.qml",
+      "sha256": "03ac59a7e83018851b6cd00ab827b6f61857b116d56e847fe52812bf915123a7"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlNetworkPage.qml",
+      "sha256": "210819f40690ac094ff0ba011112258c011a82704c40c1d04c5c89fea362122e"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlPowerPage.qml",
+      "sha256": "683bd4ad7d9e59c66f7890bbcdd46cca1f89fc12aa951f8d977ba9ffcd4409b8"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlRouteTiles.qml",
+      "sha256": "8a409b214b5f0bc2923e418485b4c54f3352c4b41686b6eda3db58ae0a0d22cc"
+    },
+    {
+      "path": "shell/quickshell/components/control/ControlSettingsPage.qml",
+      "sha256": "c88d629d3b0a83b59969b35606f17856a27456e7bb98951f0ba9b6bdd3afac79"
+    },
+    {
+      "path": "shell/quickshell/components/ControlNavigation.qml",
+      "sha256": "3d00f0f9861972ca63f73ee1d36b923a0fc88a972244bab7e5db263ef6992d23"
+    },
+    {
+      "path": "shell/quickshell/components/DashboardWindow.qml",
+      "sha256": "af5eb9d27044208983a6387b32b43d206d977749cd0839c94d39041658b04ba8"
+    },
+    {
+      "path": "shell/quickshell/components/BluetoothPopup.qml",
+      "sha256": "bd298636e478576d887a9ce73b0a06eb18db3e5ea8fecf2bc553e2fffdafcedb"
+    },
+    {
+      "path": "shell/quickshell/components/DirectorySurfaceWindow.qml",
+      "sha256": "814ee830a1bf47bc315ac9ac55cb88dda7b6aead35d68568470c29935c3aeec0"
+    },
+    {
+      "path": "shell/quickshell/components/DisplaySettings.qml",
+      "sha256": "a27ae4dc8a8fe176b8651510ad1a0de6c7e909db1d41f76d77cabe512b757280"
+    },
+    {
+      "path": "shell/quickshell/components/ExpandedSenomyPanel.qml",
+      "sha256": "fc728531b21a7d5b64f1db894b85fe30a25ee9cb8657d288f6f3a8678022bfb9"
+    },
+    {
+      "path": "shell/quickshell/components/MachineDiagram.qml",
+      "sha256": "3122d8207170026772daaf164cef10d0701770bec9ef9bf5953f99c91240fb16"
+    },
+    {
+      "path": "shell/quickshell/components/MachineStateIsland.qml",
+      "sha256": "672d5668bc556c7498e39df2be98e45198d69c87ec8d162510d4aea5a1e47bbc"
+    },
+    {
+      "path": "shell/quickshell/components/MachineStateOverlay.qml",
+      "sha256": "9fce23b521a02953e163ce4c571cd18033482cdfa67e2ecf1dc41dc813105404"
+    },
+    {
+      "path": "shell/quickshell/components/NativeInputToolsView.qml",
+      "sha256": "4c5016421bb395f28c0fb6cdb90450d212fbafc4625953758af3461981804242"
+    },
+    {
+      "path": "shell/quickshell/components/NotificationToast.qml",
+      "sha256": "48a5ce53b43b5c61bcc6ad7dca898bc374900e5cacac431ba15bc0463690c28a"
+    },
+    {
+      "path": "shell/quickshell/components/OskControls.qml",
+      "sha256": "817d07c1a4a2ddb99aa0692f280397fb02a47edd0b81a2101d849c13cb7d8085"
+    },
+    {
+      "path": "shell/quickshell/components/PrimarySurfaceWindow.qml",
+      "sha256": "27213c218f0239df59484c488ba4b97dc9116c63447044104078e4bdd310116b"
+    },
+    {
+      "path": "shell/quickshell/components/RailWindow.qml",
+      "sha256": "209883b581880e286da648fabc7d792641fd742fa95d951449dfde313b4b8266"
+    },
+    {
+      "path": "shell/quickshell/components/WorkspaceChip.qml",
+      "sha256": "1126d1ea779402e227fff03d8329e8f7d3510b28d2cbb779a6595d976d87b66d"
+    },
+    {
+      "path": "shell/quickshell/components/WorkspaceRail.qml",
+      "sha256": "891dbe908726243b0df104ab5a07e5b984140757eac0a165032a44ea143dbd5d"
+    },
+    {
+      "path": "shell/quickshell/components/audio/AudioMixerPage.qml",
+      "sha256": "3e112424d304926d5464a4ed5496af7110ff9f958592dfa73a0e1e8ca1cd503b"
+    },
+    {
+      "path": "shell/quickshell/components/audio/AudioStreamRow.qml",
+      "sha256": "cc2314297f7a744b5aa200c95b9b2a7b9b160faa97bf7c03a1db59c469370094"
+    },
+    {
+      "path": "shell/quickshell/components/audio/AudioVolumeControl.qml",
+      "sha256": "a939c58724da51f8dc6569f8540ae1a6c0640680c9f32822e96587579e1e3818"
+    },
+    {
+      "path": "shell/quickshell/components/bluetooth/BluetoothAudioSection.qml",
+      "sha256": "9eb99685e47bef3f0daf2c79d003f6e1282d10c2e07b5679808cf57b79169646"
+    },
+    {
+      "path": "shell/quickshell/components/bluetooth/BluetoothInspector.qml",
+      "sha256": "e5d8395f51dd89a5829fc312b135afc44b5cce3d5929c827ef685b34b664cb2d"
+    },
+    {
+      "path": "shell/quickshell/components/bluetooth/BluetoothPage.qml",
+      "sha256": "6d8fb5f71a74e253e07906dbb0ade9ab23d37374614d84268ffa3ff5344efe61"
+    },
+    {
+      "path": "shell/quickshell/components/bluetooth/BluetoothPairingReview.qml",
+      "sha256": "691e3c5378abfbe6d0bc627ffeb7af35ca2bfce82fb599f6217aa9273179d695"
+    },
+    {
+      "path": "shell/quickshell/components/bluetooth/BluetoothRow.qml",
+      "sha256": "5a41db8599cdc122e57f5a4cc66c174c2717c8ecf2572c3bcb7ab202d1de4a32"
+    },
+    {
+      "path": "shell/quickshell/components/bluetooth/BluetoothSetting.qml",
+      "sha256": "d636420c169e4ec9190a4d20c223d133941d11467809f778fc7289421c53401d"
+    },
+    {
+      "path": "shell/quickshell/services/ScreenLifecycle.js",
+      "sha256": "0956eef8f8d91d131a3eb548c450ada1ed4619822fb64b65bb05cf27617996a9"
+    },
+    {
+      "path": "shell/quickshell/services/ShellState.qml",
+      "sha256": "9a3c44acb692cccc0fcbde0a39f1abfa9029a04c02973db5b5e4c7e6b6a59110"
+    },
+    {
+      "path": "shell/quickshell/shell.qml",
+      "sha256": "7fc5be02009c685d3379b5100f0ca22b8d2604abe18eb73ed39564cfa5dd8a71"
+    },
+    {
+      "path": "shell/quickshell/components/ClockIsland.qml",
+      "sha256": "036c32885c2c59449908f037163fac642d351c97bc00444b7be104678dafe77b"
+    },
+    {
+      "path": "shell/quickshell/components/PowerIsland.qml",
+      "sha256": "ae8a619ae397c2b90b68302663ee3d4022750ad2abc2d3e941b7677a2b076086"
+    },
+    {
+      "path": "shell/quickshell/components/RailIslandBackground.qml",
+      "sha256": "da11d5c1c0655c778a0fa8411e2ba0e7c3d222ee61f4503a058807d92ece3ea6"
+    },
+    {
+      "path": "shell/quickshell/components/SenomyFrame.qml",
+      "sha256": "c46e62fa2133c7c5b2beeace0d4851f02545dab7b0ca41dd8dc6a18598ef6591"
+    },
+    {
+      "path": "shell/quickshell/components/SilverIslandFrame.qml",
+      "sha256": "43453738a7a90a142bf97c9ac4bed79fcf98d186f266f6b2ee2670026c1373f7"
+    },
+    {
+      "path": "shell/quickshell/components/SystemControlsIsland.qml",
+      "sha256": "9319a69c5b5fde32e16aaa34820a425dd89bf6fa4a6f998a905991402ce3d0c6"
+    },
+    {
+      "path": "appearance/login/sddm/senomyos/CompactLogin.qml",
+      "sha256": "791eafd8a57163e2a98f5ca7440acbb8788be1ff5390dbf25a517fc32a4349e5"
+    },
+    {
+      "path": "appearance/lock/hyprlock.conf.in",
+      "sha256": "8b4af381dbc07851cca0679fa835fe0e549e9b6c20880505520aa616aeb7b7ee"
+    },
+    {
+      "path": "appearance/login/sddm/senomyos/AuthBackdrop.qml",
+      "sha256": "a3f8df071b0c21020d712c433063275558b4780b2891a8f80ba84a77a7c8cce5"
+    },
+    {
+      "path": "appearance/login/sddm/senomyos/GreeterField.qml",
+      "sha256": "7c225e648a2ac635037b4580415dcb97fe69329644955bfaac8dbff89651bb11"
+    },
+    {
+      "path": "appearance/login/sddm/senomyos/GreeterButton.qml",
+      "sha256": "0ada436283af0452a101ad12d09421342eb452228e7e89910ab114acfc4c64cb"
+    },
+    {
+      "path": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/gtk.css",
+      "sha256": "105bbcd982b4b68f34f5f5b3091fe4c2059fe403122e503cf4f10def11d3c71f"
+    },
+    {
+      "path": "appearance/file-manager/gtk3/SenomyOS-Touch/gtk-3.0/gtk.css",
+      "sha256": "4bc89b8f4758ac9e8c4e6c9054428a3f39a3b4407f9ea92608e4c9c84f2d7b42"
+    },
+    {
+      "path": "components/file-manager/thunar/native/senomy-thunar.c",
+      "sha256": "f5e0407c1285a39fc26f53ae954bb7259972ce6f750de851206300a88cf21408"
+    },
+    {
+      "path": "components/file-manager/thunar/scripts/senomy-file-workspace",
+      "sha256": "bf290b4f43ada81c7c6a6b0aae5bd4c3c23c913d1bf80363707227bef02fe44c"
+    },
+    {
+      "path": "components/file-manager/thunar/workspace.json",
+      "sha256": "c7ae57d823df7872af37e0158e48f16de88a90e2a509cec195cdc774464fb0a9"
+    }
+  ],
+  "external_inspections": [
+    {
+      "url": "https://www.nps.gov/subjects/hfc/images/SAMO_S1.jpg?autorotate=false&maxwidth=1300",
+      "inspected_on": "2026-11-09",
+      "result": "Published illustration downloaded and visually inspected; not a running interaction.",
+      "sha256": "29c8aae95e4b7f799275dfe96972ac8740e2ee0cf5a24441b6c1e0bfdc7de32e",
+      "archive": "Not vendored; reopen primary source for visual study. Analysis retained in CASES.md.",
+      "publisher": "National Park Service, Harpers Ferry Center; individual image illustrator not established in this audit."
+    },
+    {
+      "url": "https://developer.gnome.org/hig/_images/adaptive-sidebar-wide.png",
+      "inspected_on": "2026-11-09",
+      "result": "Published illustration downloaded and visually inspected; not a running interaction.",
+      "sha256": "c39d4b46072d5d1ef8468eac936114ffb5b7026451d170b5c504db6fa2eb1657",
+      "archive": "Not vendored; reopen primary source for visual study. Analysis retained in CASES.md.",
+      "publisher": "GNOME Project; published HIG/libadwaita documentation illustration."
+    },
+    {
+      "url": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/adaptive-navigation-sidebar-wide.png",
+      "inspected_on": "2026-11-09",
+      "result": "Published illustration downloaded and visually inspected; not a running interaction.",
+      "sha256": "89c067abdf343655f7767f8610b04c34e4fafd0f2d07e7dca8b8fbbf49f4d4a3",
+      "archive": "Not vendored; reopen primary source for visual study. Analysis retained in CASES.md.",
+      "publisher": "GNOME Project; published HIG/libadwaita documentation illustration."
+    },
+    {
+      "url": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/adaptive-navigation-sidebar-narrow-2.png",
+      "inspected_on": "2026-11-09",
+      "result": "Published illustration downloaded and visually inspected; not a running interaction.",
+      "sha256": "98dc1a3c3cf772124d60817d64daf63fe5a71d26dbebd07f7f8fa2e3bbee4ba2",
+      "archive": "Not vendored; reopen primary source for visual study. Analysis retained in CASES.md.",
+      "publisher": "GNOME Project; published HIG/libadwaita documentation illustration."
+    },
+    {
+      "url": "https://cdn.carbondesignsystem.com/cxp-prod-payload-cms/datatable-style-1.png",
+      "inspected_on": "2026-11-09",
+      "result": "Image fetch failed: 403/timeout. Specifications read; documentary only.",
+      "publisher": "IBM Carbon Design System; image was not retrieved."
+    }
+  ]
+}

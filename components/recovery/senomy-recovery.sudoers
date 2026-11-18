@@ -1,0 +1,2 @@
+Defaults:senomy-recovery env_reset,secure_path=/usr/local/sbin:/usr/local/bin:/usr/bin
+senomy-recovery ALL=(root) NOPASSWD: /usr/local/libexec/senomy-password-reset-helper ""

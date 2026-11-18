@@ -1,0 +1,1396 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-11-09",
+  "entries": [
+    {
+      "id": "A01",
+      "title": "Obsidian Rail contextual hierarchy",
+      "status": "approved-direction",
+      "tags": [
+        "rail",
+        "control",
+        "hierarchy",
+        "composition"
+      ],
+      "scope": "Historical concept direction; native source supersedes detail.",
+      "authority": {
+        "kind": "project-record",
+        "decision": "DESIGN_SYSTEM.md approves Obsidian grouping/contextual direction."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#a01",
+      "evidence": [
+        "docs/design-references/obsidian-rail-approved.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Concept still; no native behavior or pixel target."
+      },
+      "transfer": [
+        "Instrument group cadence",
+        "Connection before discovery inventory"
+      ],
+      "exclude": [
+        "Performance inside Control Centre",
+        "Historical all-mono default"
+      ]
+    },
+    {
+      "id": "A02",
+      "title": "Cathedral Deck evidence composition",
+      "status": "approved-direction",
+      "tags": [
+        "performance",
+        "insights",
+        "tables",
+        "density"
+      ],
+      "scope": "Separate expanded evidence workspace.",
+      "authority": {
+        "kind": "project-record",
+        "decision": "PRODUCT_SPEC.md and DESIGN_SYSTEM.md approve information architecture, not a second theme."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#a02",
+      "evidence": [
+        "docs/design-references/cathedral-deck-approved.png"
+      ],
+      "sources": [
+        "docs/PRODUCT_SPEC.md",
+        "docs/DESIGN_SYSTEM.md"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Concept still; values and actions are not runtime evidence."
+      },
+      "transfer": [
+        "History/process/health columns",
+        "Task-specific density"
+      ],
+      "exclude": [
+        "Garnet second palette",
+        "Repeated portrait in health card"
+      ]
+    },
+    {
+      "id": "A03",
+      "title": "Illustrator and original Island frame grammar",
+      "status": "authored-reference",
+      "tags": [
+        "rail",
+        "assets",
+        "frames",
+        "illustrator",
+        "typography"
+      ],
+      "scope": "Artwork construction and optical proportions.",
+      "authority": {
+        "kind": "authored-source",
+        "decision": "Existing master and SVG consumers; blanket aesthetic approval not inferred."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#a03",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/illustrator-rail.png"
+      ],
+      "sources": [
+        "shell/quickshell/components/ArtFrame.qml",
+        "shell/quickshell/components/SurfaceOutline.qml",
+        "appearance/skins/default.json"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "PDF-compatible preview/PNG inspected; editable layers and interaction not verified."
+      },
+      "transfer": [
+        "Fixed caps and central motifs",
+        "Intentional instrument grouping"
+      ],
+      "exclude": [
+        "Whole-image stretching",
+        "Baked live labels",
+        "Fixed-screen layout"
+      ]
+    },
+    {
+      "id": "A04",
+      "title": "Current native Rail instrument relationships",
+      "status": "approved-decision",
+      "tags": [
+        "rail",
+        "identity",
+        "assets",
+        "density"
+      ],
+      "scope": "9 November user-directed published Rail changes.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Latest DESIGN_SYSTEM.md and button-feedback record document scoped user changes, not whole-screen approval."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#a04",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/rail-20261109.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Dated live 1920x72 capture; pointer-warp probe failed."
+      },
+      "transfer": [
+        "Independent authored instruments",
+        "Role-specific type"
+      ],
+      "exclude": [
+        "Invented workspaces to fill gaps",
+        "Physical hover claims from a still"
+      ]
+    },
+    {
+      "id": "A05",
+      "title": "Finite inset feedback and Rail exceptions",
+      "status": "approved-decision",
+      "tags": [
+        "buttons",
+        "hover",
+        "motion",
+        "focus",
+        "rail",
+        "selection"
+      ],
+      "scope": "Latest 9 November feedback rules.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Newest DESIGN_SYSTEM.md update records user-directed no-wash/inset/workspace/Power decisions."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#a05",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/power-hover.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/ButtonHoverFrame.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Native fixture plus source/QA; physical hover/GPU timing unverified."
+      },
+      "transfer": [
+        "Finite passive feedback",
+        "Separate true selection and keyboard focus"
+      ],
+      "exclude": [
+        "Extra wash/focus rectangle",
+        "Power halo everywhere",
+        "Continuous decoration"
+      ]
+    },
+    {
+      "id": "P01",
+      "title": "Audio output-first readable quick control",
+      "status": "implemented-review-pending",
+      "tags": [
+        "audio",
+        "quick-panel",
+        "hierarchy",
+        "typography"
+      ],
+      "scope": "Audio-only composition; aesthetic acceptance remains open.",
+      "authority": {
+        "kind": "implementation-review",
+        "decision": "Audio review explicitly keeps user acceptance open; later refinement removes singleton duplication."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p01",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/audio-before-after.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/config/QuickPanelStyle.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Dated live comparison; later refinements need current source. No hardware routing test."
+      },
+      "transfer": [
+        "Opaque reading plane",
+        "Aligned gain and wrapping endpoint",
+        "Subordinate microphone"
+      ],
+      "exclude": [
+        "Automatic migration of all popups",
+        "Outdated button paint"
+      ]
+    },
+    {
+      "id": "R01",
+      "title": "Audio bleed and equal-weight stacking",
+      "status": "rejected",
+      "tags": [
+        "audio",
+        "quick-panel",
+        "anti-pattern",
+        "glass"
+      ],
+      "scope": "Left-side baseline traits replaced by P01.",
+      "authority": {
+        "kind": "agent-observed",
+        "decision": "Audio review confirms bleed/flattened priority, not user-wide rejection of glass."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#r01",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/audio-before-after.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Historical left baseline; reusable authored frame is not rejected."
+      },
+      "transfer": [
+        "Task-oriented groups",
+        "Busy-background inspection"
+      ],
+      "exclude": [
+        "Application text under copy",
+        "Always-present diagnostics at primary weight"
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "Fragmented installed login composition",
+      "status": "rejected",
+      "tags": [
+        "login",
+        "lock",
+        "authentication",
+        "anti-pattern"
+      ],
+      "scope": "Historical installed-theme grouping only.",
+      "authority": {
+        "kind": "agent-observed",
+        "decision": "REFINEMENT_DIRECTION.md critiques peer modules and detached credentials."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#r02",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/sddm-before.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Fake installed-theme fixture; later maintained refinement exists and is not judged here."
+      },
+      "transfer": [
+        "Identity credential action grouping",
+        "Subordinate utilities"
+      ],
+      "exclude": [
+        "Fixed wide-screen geometry",
+        "Treating inert fixture controls as auth failure"
+      ]
+    },
+    {
+      "id": "P02",
+      "title": "Native Settings directory and readiness limits",
+      "status": "observed",
+      "tags": [
+        "settings",
+        "navigation",
+        "control",
+        "directory",
+        "responsive"
+      ],
+      "scope": "1120/390px current fixture evidence.",
+      "authority": {
+        "kind": "agent-observed",
+        "decision": "Current source/QA observed; owner whole-screen approval not inferred."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p02",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/settings-wide.png",
+        "docs/design/design-intelligence/evidence/settings-narrow.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/config/DirectoryStyle.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Wide ready; narrow loading/truncation. Matching baseline provider warnings remain."
+      },
+      "transfer": [
+        "Shared alignment",
+        "Compact/full route continuity"
+      ],
+      "exclude": [
+        "Repeated dominant titles",
+        "Loading capture as ready-layout proof"
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "Discarded duplicate button signals",
+      "status": "rejected",
+      "tags": [
+        "buttons",
+        "hover",
+        "focus",
+        "anti-pattern",
+        "motion"
+      ],
+      "scope": "Precisely superseded traits; A05 replaces them.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "8\u20139 November project records document removed washes/boxes/workspace outline/competing sheen."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#r03",
+      "evidence": [],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/ButtonHoverFrame.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": false,
+        "limits": "Documented decision anti-reference; no invented rejected image."
+      },
+      "transfer": [
+        "One meaningful engagement cue"
+      ],
+      "exclude": [
+        "Duplicate fill/border/marker",
+        "Removing functional input semantics"
+      ]
+    },
+    {
+      "id": "E01",
+      "title": "NPS Unigrid: shared grammar, distinct compositions",
+      "status": "external",
+      "tags": [
+        "graphic",
+        "composition",
+        "grid",
+        "identity"
+      ],
+      "scope": "Graphic principle only.",
+      "authority": {
+        "kind": "curator",
+        "decision": "Curator selection; no owner approval."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#e01",
+      "evidence": [],
+      "sources": [],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Published illustration inspected; print has no interaction evidence."
+      },
+      "transfer": [
+        "Consistent alignment with varied compositions",
+        "Quiet text region"
+      ],
+      "exclude": [
+        "NPS artwork/palette/fonts as assets",
+        "Poster layout everywhere"
+      ],
+      "primary_urls": [
+        "https://www.nps.gov/subjects/hfc/a-brief-history-of-the-unigrid.htm"
+      ]
+    },
+    {
+      "id": "E02",
+      "title": "GNOME adaptive sidebar and return path",
+      "status": "external",
+      "tags": [
+        "interaction",
+        "navigation",
+        "responsive",
+        "settings"
+      ],
+      "scope": "Navigation topology principle, not toolkit styling.",
+      "authority": {
+        "kind": "curator",
+        "decision": "Primary wide/narrow diagrams selected and inspected."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#e02",
+      "evidence": [],
+      "sources": [],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Published diagrams/guidance only; no running focus/keyboard/motion test."
+      },
+      "transfer": [
+        "Route continuity across topology changes",
+        "Visible narrow return control"
+      ],
+      "exclude": [
+        "GTK migration",
+        "GNOME chrome/breakpoints"
+      ],
+      "primary_urls": [
+        "https://developer.gnome.org/hig/patterns/nav/sidebars.html",
+        "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/adaptive-layouts.html"
+      ]
+    },
+    {
+      "id": "E03",
+      "title": "Carbon table structure and density specifications",
+      "status": "documentary",
+      "tags": [
+        "performance",
+        "tables",
+        "density",
+        "external"
+      ],
+      "scope": "Specification reference until actual visual is available.",
+      "authority": {
+        "kind": "curator",
+        "decision": "Primary specifications read; image retrieval failed."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#e03",
+      "evidence": [],
+      "sources": [],
+      "visual_inspection": {
+        "images_viewed": false,
+        "limits": "403/timeout prevented image inspection; no rendered result judged."
+      },
+      "transfer": [
+        "Content-driven columns",
+        "Separate focus and selection semantics"
+      ],
+      "exclude": [
+        "Carbon/React implementation",
+        "24px interactive targets"
+      ],
+      "primary_urls": [
+        "https://www.carbondesignsystem.com/building-blocks/core/components/data-table/specifications"
+      ]
+    },
+    {
+      "id": "A06",
+      "title": "Owner-selected Control Centre split operational overview",
+      "status": "approved-direction",
+      "tags": [
+        "control",
+        "settings",
+        "overview",
+        "hierarchy",
+        "composition",
+        "responsive"
+      ],
+      "scope": "Historical 10 November split, superseded by P13 for current composition. Retain provider/action/navigation lessons; physical/hardware acceptance separate.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner approved Control Centre A for the next implementation stage on 2026-11-10; see docs/qa/control-centre-a-20261110/APPROVAL.md."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#a06",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/control-overview-a-20261110.png"
+      ],
+      "sources": [],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual isolated and live QML inspected. Live native ownership/navigation/placement verified on reference output; physical touch and multi-monitor acceptance remain open."
+      },
+      "transfer": [
+        "Operational rows before passive telemetry",
+        "Curated destinations reuse the shared directory",
+        "Content-aware wrapped height and focus-aware stacked scrolling"
+      ],
+      "exclude": [
+        "This exact split for every panel",
+        "A second route or popup coordinator",
+        "Treating staged source as published",
+        "New palette or authored-frame replacement"
+      ],
+      "superseded_by": "P13"
+    },
+    {
+      "id": "R04",
+      "title": "Briefing precision pass: composition still underdeveloped",
+      "status": "rejected",
+      "tags": [
+        "insights",
+        "briefing",
+        "composition",
+        "navigation",
+        "anti-pattern"
+      ],
+      "scope": "Owner rejection of the published Briefing composition and generic outlined navigation; preserve precision/data safety and established identity.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "14 November owner brief explicitly calls the precision candidate visually underdeveloped and asks to rethink composition; see OWNER_REQUEST.md."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#r04",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/briefing-underdeveloped-20261114.png"
+      ],
+      "sources": [],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Exact native baseline QML with synthetic providers; not a fresh live screenshot. Selected reconstruction was later explicitly authorized for publication; exhaustive hardware/whole-interface acceptance remains open."
+      },
+      "transfer": [
+        "A compile/layout pass does not establish composition quality",
+        "Differentiate assessment, evidence coverage and actionable attention",
+        "Persistent route location differs from action feedback"
+      ],
+      "exclude": [
+        "Rejecting the authored frame or typography identity",
+        "Treating stale checks as proof packages are outdated",
+        "Replacing the approved Control Overview",
+        "Claiming a candidate is accepted without owner direction"
+      ]
+    },
+    {
+      "id": "P03",
+      "title": "Owner-approved Audio Island quick control",
+      "status": "approved-decision",
+      "tags": [
+        "audio",
+        "island",
+        "quick-panel",
+        "hierarchy",
+        "mute",
+        "clipping"
+      ],
+      "scope": "15 November owner-approved Audio proposal and publication; original expanded reference unchanged.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner said apply after viewing the native side-by-side Audio proposal on 15 November 2026. The owner then explicitly requested removal of hover outlines, equal controls and inline expandable media with a scrolling title; see the scoped P03 refinement."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p03",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/audio-island-20261115.png",
+        "docs/design/design-intelligence/evidence/audio-media-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/VolumePopup.qml",
+        "shell/quickshell/components/IslandPopupFrame.qml",
+        "shell/quickshell/components/audio/AudioMuteButton.qml",
+        "shell/quickshell/components/audio/AudioQuickMedia.qml",
+        "shell/quickshell/components/audio/AudioButton.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Native isolated states and live compositor Audio panel inspected; no live audio-device mutation or broad hardware qualification."
+      },
+      "transfer": [
+        "Output level leads; microphone is subordinate",
+        "Shared authored clipped Island material",
+        "Zero gain differs from muted; level is retained",
+        "Explicit shaped mute control and quiet current-device fill"
+      ],
+      "exclude": [
+        "Blanket adoption across all popovers",
+        "Claim that mic mute stops all recording",
+        "Unverified hardware routing or physical touch acceptance"
+      ]
+    },
+    {
+      "id": "P04",
+      "title": "Owner-approved connection-first Network popup",
+      "status": "approved-decision",
+      "tags": [
+        "network",
+        "wifi",
+        "island",
+        "filter",
+        "quick-panel"
+      ],
+      "scope": "15 November owner-approved Network popup; provider/authentication/review contracts retained.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner requested publication after reviewing the native comparison: looks gfeat make it happen."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p04",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/network-popup-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/NetworkPopup.qml",
+        "shell/quickshell/components/NetworkQuickChoiceRow.qml",
+        "shell/quickshell/components/QuietButton.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Native fake-network states and final live panel inspected; no real scan, connection, authentication, portal or radio action exercised."
+      },
+      "transfer": [
+        "Connection and internet status lead; signal secondary",
+        "Local name and All/Saved filters",
+        "Details disclosure keeps Disconnect out of the initial view",
+        "Quiet shared controls and authored clipped material"
+      ],
+      "exclude": [
+        "SSID fixtures as runtime state",
+        "Automatic scan from typing",
+        "Changed provider or authentication semantics",
+        "Replacement of full Settings/Bluetooth row contracts"
+      ]
+    },
+    {
+      "id": "P05",
+      "title": "Owner-approved charge-first Battery popup",
+      "status": "approved-decision",
+      "tags": [
+        "battery",
+        "power",
+        "island",
+        "quick-panel",
+        "disclosure"
+      ],
+      "scope": "15 November approved Battery popup and quiet Island controls; existing power/care guards retained.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner said apply the changes after the native battery/power before-and-after proposal."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p05",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/battery-popup-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/BatteryPopup.qml",
+        "shell/quickshell/components/BatteryQuickProfileReview.qml",
+        "shell/quickshell/services/BatteryService.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Native fake-device states/reviews and actual live popup inspected; live profile provider unavailable. No real policy/threshold/session mutation or native keyboard/touch acceptance."
+      },
+      "transfer": [
+        "Charge/source/estimate lead; packs disclosed",
+        "Capacity-weighted aggregate and truthful unavailable states",
+        "Equal quiet profile controls with guarded reviews",
+        "Shared authored Island material and clipped geometry"
+      ],
+      "exclude": [
+        "Automatic policy changes at low charge",
+        "Fixed internal/removable pack assumptions",
+        "New threshold editing in the quick popup",
+        "Fixture values as live hardware evidence"
+      ]
+    },
+    {
+      "id": "P06",
+      "title": "Owner-approved unified application tray and inline menus",
+      "status": "approved-decision",
+      "tags": [
+        "tray",
+        "applications",
+        "island",
+        "menus",
+        "quick-panel"
+      ],
+      "scope": "Historical unified popup rows; P09 supersedes their composition/density. Native app/menu contracts remain; compact Rail icons unchanged.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner requested one app/menu row, left activation and right menu with matching menu style, then said apply."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p06",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/tray-unified-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/TrayPopup.qml",
+        "shell/quickshell/components/TrayContents.qml",
+        "shell/quickshell/components/TrayQuickItemButton.qml",
+        "shell/quickshell/components/tray/TrayQuickMenuRow.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Fake native app/menu states and private live tray inspected. Exactly-once private D-Bus actions tested, no real app commands sent."
+      },
+      "transfer": [
+        "One continuous app row with distinct native primary/context behavior",
+        "Matching inline app menus and per-app identity",
+        "Quiet hover with visible keyboard focus",
+        "Touch menu action lives inside unified row"
+      ],
+      "exclude": [
+        "Guessing executables from tray names",
+        "Changing compact Rail icons",
+        "Menu-only SNI as app activation",
+        "Whole-app/hardware acceptance from fake tests"
+      ]
+    },
+    {
+      "id": "P07",
+      "title": "Owner-approved month/day Calendar popup revamp",
+      "status": "approved-decision",
+      "tags": [
+        "calendar",
+        "agenda",
+        "island",
+        "preview",
+        "quick-panel"
+      ],
+      "scope": "15 November Calendar popup composition and read-only preview flow; providers/full editor/reminders unchanged.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner requested a full popup UI revamp, reviewed the native month/day proposal and said yes apply that."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p07",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/calendar-popup-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/CalendarPopup.qml",
+        "shell/quickshell/components/calendar/CalendarPopupView.qml",
+        "shell/quickshell/components/calendar/CalendarPopupAgenda.qml",
+        "shell/quickshell/components/calendar/CalendarPopupGrid.qml",
+        "shell/quickshell/components/calendar/CalendarPopupDay.qml",
+        "shell/quickshell/components/calendar/qmldir"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Native fake-event layouts and final live empty-day render inspected; private actual calendar service passed, no live event/reminder writes."
+      },
+      "transfer": [
+        "Simultaneous month/day panes earn wider popup",
+        "Agenda-first narrow layout with disclosed date picker",
+        "Read-only inline preview before explicit editor route",
+        "Truthful today/selection/focus/timezone and availability states"
+      ],
+      "exclude": [
+        "New full editor in quick popup",
+        "Changed event storage/reminder policy",
+        "Fixture events as actual user schedule",
+        "Claim of live editor/touch acceptance"
+      ]
+    },
+    {
+      "id": "P08",
+      "title": "Owner-approved notification inbox",
+      "status": "approved-decision",
+      "tags": [
+        "notifications",
+        "inbox",
+        "island",
+        "unread",
+        "confirmation"
+      ],
+      "scope": "15 November quick inbox and guarded action presentation; shared Insights/toast/providers unchanged.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner reviewed the native proposal and requested apply notification proposed."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p08",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/notification-inbox-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/NotificationCenter.qml",
+        "shell/quickshell/components/NotificationQuickClearReview.qml",
+        "shell/quickshell/components/NotificationQuickCommitment.qml",
+        "shell/quickshell/components/notifications/NotificationQuickList.qml",
+        "shell/quickshell/components/notifications/qmldir"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Fake native inbox/action/review states and separate live inbox inspected; no real message read/dismiss/clear, DND toggle or app action sent."
+      },
+      "transfer": [
+        "Keep opened read item visible in Unread until closed",
+        "Distinguish reading, single dismiss, bulk read and guarded clear",
+        "Exact live version/action identity and separate session commitment",
+        "Quiet state with truthful suppression explanation"
+      ],
+      "exclude": [
+        "Auto-reading panel on open",
+        "Treating attribution as trust",
+        "Changing full Insights/toast/server policy",
+        "Hardware/client acceptance from fake tests"
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "Power descriptive chooser list rejected",
+      "status": "rejected",
+      "tags": [
+        "power",
+        "session",
+        "density",
+        "chooser",
+        "clutter"
+      ],
+      "scope": "Only the descriptive vertical Power proposal, not other lists or the authored frame. Compact revision was owner-accepted and explicitly published; see P10.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner rejected the descriptive list and unnecessary sub-descriptions, then accepted the compact revision with \u201cyes that works\u201d and requested the same treatment for the application tray."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#r05",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/power-chooser-revision-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Two isolated native proposals. Right side subsequently accepted and published as P10; this board alone is not live or hardware evidence."
+      },
+      "transfer": [
+        "Familiar session actions need compact icons/short names",
+        "Put consequences in review rather than repeating them in chooser/options",
+        "Retain safe separate selection and confirmation"
+      ],
+      "exclude": [
+        "Rejecting all list-based interfaces",
+        "Removing consequential review text",
+        "Treating visual direction approval as publication or hardware acceptance"
+      ]
+    },
+    {
+      "id": "P09",
+      "title": "Owner-approved compact application tray",
+      "status": "approved-decision",
+      "tags": [
+        "tray",
+        "applications",
+        "density",
+        "island",
+        "menus",
+        "quick-panel"
+      ],
+      "scope": "Compact icon/name popup replaces P06 discovery rows; native action/menu contracts and compact Rail icons remain.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner requested the compact Power treatment for the tray, accepted the comparison and said perfect apply that."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p09",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/tray-compact-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/TrayPopup.qml",
+        "shell/quickshell/components/TrayContents.qml",
+        "shell/quickshell/components/TrayQuickItemButton.qml",
+        "shell/quickshell/components/tray/TrayQuickMenuRow.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual native fixture/constrained states and private live two-app tray inspected. Private actual SNI/menu events tested; no real app commands or physical input acceptance."
+      },
+      "transfer": [
+        "Compact icon/name discovery without repetitive descriptions",
+        "Unified native primary/context action and integrated touch menu",
+        "Preserve readable native command menus and exact identities",
+        "Grid keyboard focus remains visible after resize"
+      ],
+      "exclude": [
+        "Turning app command menus into a grid",
+        "Guessing executable names or changing native menu-only primary",
+        "Changing compact Rail icons",
+        "Claiming physical input or app action acceptance from private fixtures"
+      ]
+    },
+    {
+      "id": "P10",
+      "title": "Owner-approved compact Power panel",
+      "status": "approved-decision",
+      "tags": [
+        "power",
+        "session",
+        "density",
+        "chooser",
+        "island",
+        "confirmation",
+        "schedule"
+      ],
+      "scope": "Compact Power quick popup and scoped helpers; shared PowerService/scheduler/fields, compact tray and Rail remain unchanged.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner accepted compact Power direction then explicitly requested apply the proposed for the power panel as well."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p10",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/power-chooser-revision-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/PowerPopup.qml",
+        "shell/quickshell/components/PowerQuickContents.qml",
+        "shell/quickshell/components/PowerQuickSegments.qml",
+        "shell/quickshell/components/PowerQuickScheduleMonitor.qml",
+        "shell/quickshell/components/PowerQuickCountdownField.qml",
+        "shell/quickshell/components/PowerQuickDateField.qml",
+        "shell/quickshell/services/PowerService.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Native inert-helper chooser/options/review/timer/constrained states and actual live idle chooser inspected. No live action, timer, authentication or physical-input acceptance."
+      },
+      "transfer": [
+        "Compact icon/label dock without repeating action descriptions",
+        "Selection opens options before explicit consequential review",
+        "Retain authoritative timer identity and recovery states",
+        "Scoped native fields preserve shared Calendar/Session controls"
+      ],
+      "exclude": [
+        "Immediate dispatch from chooser selection",
+        "Removing consequences/authentication/replacement from review",
+        "Changing scheduler semantics or shared controls",
+        "Inferring real action/hardware acceptance from inert checks"
+      ]
+    },
+    {
+      "id": "P11",
+      "title": "Owner-approved eight-route Insights workspace",
+      "status": "approved-decision",
+      "tags": [
+        "insights",
+        "briefing",
+        "island",
+        "workbench",
+        "reading",
+        "navigation",
+        "evidence"
+      ],
+      "scope": "Insights native primary workspace and route-specific UI. Existing coordinator/providers/action/export ownership, Performance/shared controls and expanded Senomy preserved.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner requested full Insights revamp, reviewed the implemented native proposal and explicitly said apply the redesign."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p11",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/insights-workspace-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "docs/reference/PERFORMANCE_INSIGHTS.md",
+        "shell/quickshell/components/InsightsPanel.qml",
+        "shell/quickshell/components/InsightsWorkspaceBriefing.qml",
+        "shell/quickshell/components/InsightsWorkspaceChoice.qml",
+        "shell/quickshell/components/InsightsWorkspaceInbox.qml",
+        "shell/quickshell/components/InsightsWorkspaceNavigation.qml",
+        "shell/quickshell/components/InsightsWorkspaceReports.qml",
+        "shell/quickshell/components/InsightsWorkspaceSearch.qml",
+        "shell/quickshell/components/InsightsWorkspaceStatus.qml",
+        "shell/quickshell/components/InsightsWorkspaceTasks.qml",
+        "shell/quickshell/components/InsightsWorkspaceTimeline.qml",
+        "shell/quickshell/components/InsightsWorkspaceTitle.qml",
+        "shell/quickshell/components/InsightsWorkspaceUpdates.qml",
+        "shell/quickshell/components/InsightsWorkspaceWiki.qml",
+        "shell/quickshell/components/InsightsWorkspaceWindow.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Native synthetic matrix plus separate read-only live Briefing/Console/Wiki inspection. Live all-route opening, not action/hardware acceptance. Separate shared Performance test fails identically on unchanged baseline."
+      },
+      "transfer": [
+        "Attention and source uncertainty before optional telemetry",
+        "Compact stable navigation with distinct workbench and reading layouts",
+        "Local filters and exact selection/result identity before explicit action",
+        "Narrow Back/drawer/focus and bounded keyboard output",
+        "Retain notification clear/read and separate commitment semantics"
+      ],
+      "exclude": [
+        "Replacing Performance or generic shared controls",
+        "Automatic checks/dispatch from navigation or task selection",
+        "Treating source absence as healthy or zero updates",
+        "Changing expanded Senomy artwork",
+        "Claiming combined Performance runner or physical/hardware acceptance is green"
+      ]
+    },
+    {
+      "id": "P12",
+      "title": "Performance workspace with retained searchable system tree",
+      "status": "approved-decision",
+      "tags": [
+        "performance",
+        "tree",
+        "search",
+        "processes",
+        "island",
+        "telemetry",
+        "navigation"
+      ],
+      "scope": "Owner-directed native Performance composition and preserved tree/search; action contracts and approved Insights remain separate.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner said apply, then explicitly requested retaining the file-tree directory/search while improving design."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p12",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/performance-tree-20261115.png",
+        "docs/design/design-intelligence/evidence/performance-tree-narrow-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "docs/reference/PERFORMANCE_INSIGHTS.md",
+        "shell/quickshell/components/PerformanceDashboard.qml",
+        "shell/quickshell/components/PerformanceWorkspaceBenchmarks.qml",
+        "shell/quickshell/components/PerformanceWorkspaceChart.qml",
+        "shell/quickshell/components/PerformanceWorkspaceFacts.qml",
+        "shell/quickshell/components/PerformanceWorkspaceInspector.qml",
+        "shell/quickshell/components/PerformanceWorkspaceNavigation.qml",
+        "shell/quickshell/components/PerformanceWorkspaceOverview.qml",
+        "shell/quickshell/components/PerformanceWorkspaceProcesses.qml",
+        "shell/quickshell/components/PerformanceWorkspaceResource.qml",
+        "shell/quickshell/components/PerformanceWorkspaceServiceReview.qml",
+        "shell/quickshell/components/PerformanceWorkspaceServices.qml",
+        "shell/quickshell/components/PerformanceWorkspaceTopProcesses.qml",
+        "shell/quickshell/components/PerformanceWorkspaceWindow.qml",
+        "shell/quickshell/services/PerformanceService.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual synthetic wide/narrow captures and separate read-only live views. Inert guarded action tests; real action/hardware/physical input remain separate."
+      },
+      "transfer": [
+        "Preserve searchable hierarchy and direct resource leaves",
+        "Comparable histories beside process evidence",
+        "Shared tab/tree view identity and sidebar/drawer search",
+        "Stable roving process focus and pinned narrow review",
+        "Truthful missing/unsupported observations"
+      ],
+      "exclude": [
+        "Replacing the tree with a flat menu",
+        "Restyling approved Insights or generic DirectoryNavigation",
+        "Navigation or selection dispatching actions",
+        "New palette/sampler/action protocol",
+        "Treating native fixtures as broad hardware acceptance"
+      ]
+    },
+    {
+      "id": "P13",
+      "title": "Owner-approved Control Centre operating workspace",
+      "status": "approved-decision",
+      "tags": [
+        "control",
+        "settings",
+        "island",
+        "tree",
+        "search",
+        "audio",
+        "navigation",
+        "forms"
+      ],
+      "scope": "Control Centre compact/full workspace, direct operating overview and scoped commands; existing providers/actions and unrelated primary surfaces preserved.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner requested full Control Centre revamp, reviewed the native proposal and explicitly said apply."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p13",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/control-workspace-20261115.png",
+        "docs/design/design-intelligence/evidence/control-overview-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "docs/ARCHITECTURE.md",
+        "shell/quickshell/components/ControlWorkspaceSearch.qml",
+        "shell/quickshell/components/ControlWorkspaceButton.qml",
+        "shell/quickshell/components/control/ControlAccountsPage.qml",
+        "shell/quickshell/components/control/ControlApplicationsPage.qml",
+        "shell/quickshell/components/control/ControlCalendarPage.qml",
+        "shell/quickshell/components/control/ControlDevicesPage.qml",
+        "shell/quickshell/components/control/ControlInputPage.qml",
+        "shell/quickshell/components/control/ControlInventoryList.qml",
+        "shell/quickshell/components/control/ControlNetworkPage.qml",
+        "shell/quickshell/components/control/ControlOverview.qml",
+        "shell/quickshell/components/control/ControlPowerPage.qml",
+        "shell/quickshell/components/control/ControlRouteTiles.qml",
+        "shell/quickshell/components/control/ControlSettingsPage.qml",
+        "shell/quickshell/components/ControlNavigation.qml",
+        "shell/quickshell/components/DashboardWindow.qml",
+        "shell/quickshell/components/ControlCentre.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual synthetic matrix and separate live compact/full/native geometry inspection. First inline-type reload error corrected with equivalent primitives. Real actions/physical/hardware acceptance remain separate."
+      },
+      "transfer": [
+        "Direct controls before optional telemetry",
+        "Retained searchable tree/exact dynamic destinations in both modes",
+        "Compact familiar shortcut dock without description clutter",
+        "Truthful current/unsupported and explicit DND state",
+        "Shared native window/draft/modal lifecycle"
+      ],
+      "exclude": [
+        "New primary or duplicate Settings workspace",
+        "Unconfirmed mutations from navigation or mode switching",
+        "Replacing device/action engines or shared palette",
+        "Reading synthetic captures as real machine observations",
+        "Broad physical/hardware approval"
+      ]
+    },
+    {
+      "id": "P14",
+      "title": "Remaining Island panels and removal of the independent companion",
+      "status": "approved-decision",
+      "tags": [
+        "bluetooth",
+        "toast",
+        "keyboard",
+        "osk",
+        "settings",
+        "mixer",
+        "accounts",
+        "display",
+        "workspace",
+        "island"
+      ],
+      "scope": "Remaining reviewed panels, deeper editors and workspace keyboard focus; independent companion explicitly removed. Expanded Island composition/art and Insights retained.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner: ok apply all of them but delete the companion entirely its a redundant function."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p14",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/remaining-panels-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "docs/PRODUCT_SPEC.md",
+        "docs/ARCHITECTURE.md",
+        "shell/quickshell/components/BluetoothPopup.qml",
+        "shell/quickshell/components/DashboardWindow.qml",
+        "shell/quickshell/components/DirectorySurfaceWindow.qml",
+        "shell/quickshell/components/DisplaySettings.qml",
+        "shell/quickshell/components/ExpandedSenomyPanel.qml",
+        "shell/quickshell/components/InsightsWorkspaceWindow.qml",
+        "shell/quickshell/components/MachineDiagram.qml",
+        "shell/quickshell/components/MachineStateIsland.qml",
+        "shell/quickshell/components/MachineStateOverlay.qml",
+        "shell/quickshell/components/NativeInputToolsView.qml",
+        "shell/quickshell/components/NotificationToast.qml",
+        "shell/quickshell/components/OskControls.qml",
+        "shell/quickshell/components/PerformanceWorkspaceWindow.qml",
+        "shell/quickshell/components/PrimarySurfaceWindow.qml",
+        "shell/quickshell/components/RailWindow.qml",
+        "shell/quickshell/components/WorkspaceChip.qml",
+        "shell/quickshell/components/WorkspaceRail.qml",
+        "shell/quickshell/components/audio/AudioMixerPage.qml",
+        "shell/quickshell/components/audio/AudioStreamRow.qml",
+        "shell/quickshell/components/audio/AudioVolumeControl.qml",
+        "shell/quickshell/components/bluetooth/BluetoothAudioSection.qml",
+        "shell/quickshell/components/bluetooth/BluetoothInspector.qml",
+        "shell/quickshell/components/bluetooth/BluetoothPage.qml",
+        "shell/quickshell/components/bluetooth/BluetoothPairingReview.qml",
+        "shell/quickshell/components/bluetooth/BluetoothRow.qml",
+        "shell/quickshell/components/bluetooth/BluetoothSetting.qml",
+        "shell/quickshell/components/control/ControlAccountsPage.qml",
+        "shell/quickshell/services/ScreenLifecycle.js",
+        "shell/quickshell/services/ShellState.qml",
+        "shell/quickshell/shell.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual isolated native matrix after removal and read-only live Bluetooth/six Settings captures; no real device/auth/session or physical input acceptance."
+      },
+      "transfer": [
+        "Local filtering is separate from explicit discovery",
+        "Bound exact toast actions separately from readable content",
+        "Observed OSK ownership with reviewed start/stop and default Cancel",
+        "Readable scoped account fields and retained draft guards",
+        "Workspace focus/overflow reveal without activation"
+      ],
+      "exclude": [
+        "Companion staged redesign or active companion surface",
+        "Expanded Island artwork redesign",
+        "New action engines or shared palette",
+        "Synthetic data presented as real observations",
+        "Broad hardware/authentication acceptance"
+      ]
+    },
+    {
+      "id": "P15",
+      "title": "Shared expanded-Island material across compact Rail sections",
+      "status": "approved-decision",
+      "tags": [
+        "rail",
+        "background",
+        "collapsed",
+        "island",
+        "chamfer",
+        "contrast"
+      ],
+      "scope": "Background-only transfer to workspace, collapsed/message Senomy, controls, clock/bell and Power. Expanded composition, input/feedback and geometry retained.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner asked to add background across the bottom islands, including collapsed Senomy."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p15",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/rail-background-20261115.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "shell/quickshell/components/ClockIsland.qml",
+        "shell/quickshell/components/MachineStateIsland.qml",
+        "shell/quickshell/components/PowerIsland.qml",
+        "shell/quickshell/components/RailIslandBackground.qml",
+        "shell/quickshell/components/SenomyFrame.qml",
+        "shell/quickshell/components/SilverIslandFrame.qml",
+        "shell/quickshell/components/SystemControlsIsland.qml",
+        "shell/quickshell/components/WorkspaceChip.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual isolated native normal/narrow/message/touch/contrast/fallback plus both live Rails; no broad physical/fractional-scale/hardware acceptance."
+      },
+      "transfer": [
+        "Reuse existing background source and opacity",
+        "Clip passive material to compact authored contours",
+        "Keep transparent gaps and existing stroke/reflection",
+        "Preserve anchors/input/state and high contrast"
+      ],
+      "exclude": [
+        "Expanded Island redesign",
+        "Full-width enclosing background",
+        "New hover or motion owner",
+        "New artwork or dependencies",
+        "Broad physical/hardware approval"
+      ]
+    },
+    {
+      "id": "P16",
+      "title": "Owner-approved authentication Island without chibi",
+      "status": "approved-decision",
+      "tags": [
+        "login",
+        "sddm",
+        "lock",
+        "authentication",
+        "metalheart",
+        "island"
+      ],
+      "scope": "Approved authentication direction and request to apply without the chibi; installed login/lock only, separate from native PAM/security acceptance.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner: \u201cit works can you apply that but remove the senomy chibifor now\u201d. Applied 16 November 2026."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p16",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/auth-login-desktop-20261116.png",
+        "docs/design/design-intelligence/evidence/auth-login-narrow-20261116.png",
+        "docs/design/design-intelligence/evidence/auth-lock-projection-20261116.png"
+      ],
+      "sources": [
+        "docs/DESIGN_SYSTEM.md",
+        "appearance/login/sddm/senomyos/CompactLogin.qml",
+        "appearance/lock/hyprlock.conf.in",
+        "appearance/login/sddm/senomyos/AuthBackdrop.qml",
+        "appearance/login/sddm/senomyos/GreeterField.qml",
+        "appearance/login/sddm/senomyos/GreeterButton.qml"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual login QML with inert proxy; offline lock-config projection, not native lock pixels. Native desktop, narrow and short captures inspected; no real login or unlock."
+      },
+      "transfer": [
+        "One credential Island with dominant password and Sign in",
+        "Full-width account identity without a portrait slot",
+        "Authored cut corners and original Island material",
+        "Short-screen focus scrolling and guarded session/recovery selection"
+      ],
+      "exclude": [
+        "New avatar or global removal of desktop character art",
+        "Automatic live compositor policy changes",
+        "Real PAM/security or broad hardware acceptance"
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "Owner-rejected frame-only Thunar treatment",
+      "status": "rejected",
+      "tags": [
+        "thunar",
+        "files",
+        "gtk",
+        "hierarchy",
+        "icons",
+        "material"
+      ],
+      "scope": "The 17 November installed Thunar appearance; functional action/lifetime improvements are not rejected by this decision.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner supplied a screenshot of installed Thunar and said \u201clooks awful\u201d. This overrides prior agent review and functional checks."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#r06",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/thunar-rejected-fixture-20261117.png"
+      ],
+      "sources": [
+        "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/gtk.css",
+        "components/file-manager/thunar/README.md",
+        "docs/PROJECT_STATE.md"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Parent inspected actual user attachment and fresh private native window capture. Curated image is public fixture evidence of the same rejected treatment, not a copy of the owner screenshot; it omits private Home filenames and does not show that screenshot\u2019s duplicate Home."
+      },
+      "transfer": [
+        "A native syntax/functional pass cannot grant aesthetic acceptance",
+        "Study actual icon theme activation, useful navigation and file-plane material",
+        "Compare whole-workspace hierarchy at the owner\u2019s real width"
+      ],
+      "exclude": [
+        "Blanket rejection of native Thunar",
+        "Removing successful file actions or guarded launch lifetime",
+        "Treating a screenshot fixture or frame alone as a completed revamp"
+      ]
+    },
+    {
+      "id": "P17",
+      "title": "Owner-selected native Thunar composition after rejected reskin",
+      "status": "approved-direction",
+      "tags": [
+        "thunar",
+        "files",
+        "gtk",
+        "native",
+        "typography",
+        "material",
+        "icons"
+      ],
+      "scope": "Historical selected native direction. Owner rejected subsequent theme-only passes and supplied a sculpted chrome/header/table/inspector reference. That structural native rebuild passed independent review; the owner explicitly approved application with “Apply this rebuild.” Prior backdrop iterations confer no aesthetic acceptance, and application approval does not imply blanket hardware acceptance. Current implementation/live publication status belongs to PROJECT_STATE.",
+      "authority": {
+        "kind": "user-record",
+        "decision": "Owner rejected prior installed appearance as \u201clooks awful\u201d, then selected rebuilt native preview: \u201cCloser\u2014continue with this\u201d, and requested resumed completion."
+      },
+      "analysis": "docs/design/design-intelligence/CASES.md#p17",
+      "evidence": [
+        "docs/design/design-intelligence/evidence/thunar-native-workspace-20261117.png",
+        "docs/design/design-intelligence/evidence/thunar-native-split-20261117.png"
+      ],
+      "sources": [
+        "docs/PRODUCT_SPEC.md",
+        "docs/DESIGN_SYSTEM.md",
+        "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/gtk.css",
+        "appearance/file-manager/gtk3/SenomyOS-Touch/gtk-3.0/gtk.css",
+        "components/file-manager/thunar/native/senomy-thunar.c",
+        "components/file-manager/thunar/scripts/senomy-file-workspace",
+        "components/file-manager/thunar/workspace.json"
+      ],
+      "visual_inspection": {
+        "images_viewed": true,
+        "limits": "Actual production-module Thunar under private XDG/Broadway; fixture filenames/bookmarks, not literal user inventory. Live private Home window also inspected, not curated. Native input/hardware acceptance remains scoped."
+      },
+      "transfer": [
+        "Authored heading and original material across the native workspace",
+        "Scope existing silver icon theme to this app process",
+        "Compact native navigation and filename-first columns",
+        "Use real GTK lifecycle hooks, preserving native callbacks and helpers",
+        "Explicit guarded Places merge and owner-edit-safe exact restore"
+      ],
+      "exclude": [
+        "Fixture-only header presented as production",
+        "Global icon/theme preference changes",
+        "Second file manager or provider/sampling loop",
+        "Universal folders, hardware or physical-input claims"
+      ]
+    }
+  ]
+}

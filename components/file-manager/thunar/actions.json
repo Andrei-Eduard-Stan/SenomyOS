@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "actions": [
+    {
+      "id": "copy-path",
+      "unique_id": "1893456000000001-1",
+      "name": "Copy Path",
+      "description": "Copy the absolute path of the selected item or items",
+      "icon": "edit-copy",
+      "verb": "copy-path",
+      "placeholder": "%F",
+      "range": "1-100",
+      "patterns": "*",
+      "requirements": [
+        "wl-copy"
+      ],
+      "conditions": [
+        "directories",
+        "audio-files",
+        "image-files",
+        "other-files",
+        "text-files",
+        "video-files"
+      ]
+    },
+    {
+      "id": "copy-sha256",
+      "unique_id": "1893456000000002-1",
+      "name": "Copy SHA-256",
+      "description": "Calculate SHA-256 checksums and copy the bounded result",
+      "icon": "emblem-verified",
+      "verb": "copy-sha256",
+      "placeholder": "%F",
+      "range": "1-32",
+      "patterns": "*",
+      "requirements": [
+        "sha256sum",
+        "wl-copy",
+        "timeout"
+      ],
+      "conditions": [
+        "audio-files",
+        "image-files",
+        "other-files",
+        "text-files",
+        "video-files"
+      ]
+    },
+    {
+      "id": "copy-name",
+      "unique_id": "1893456000000003-1",
+      "name": "Copy names",
+      "description": "Copy selected filenames without their parent directory",
+      "icon": "edit-copy",
+      "verb": "copy-name",
+      "placeholder": "%F",
+      "range": "1-100",
+      "patterns": "*",
+      "requirements": [
+        "wl-copy"
+      ],
+      "conditions": [
+        "directories",
+        "audio-files",
+        "image-files",
+        "other-files",
+        "text-files",
+        "video-files"
+      ]
+    },
+    {
+      "id": "copy-uri",
+      "unique_id": "1893456000000004-1",
+      "name": "Copy file links",
+      "description": "Copy percent-encoded local file links for selected items",
+      "icon": "insert-link",
+      "verb": "copy-uri",
+      "placeholder": "%F",
+      "range": "1-100",
+      "patterns": "*",
+      "requirements": [
+        "wl-copy",
+        "python3"
+      ],
+      "conditions": [
+        "directories",
+        "audio-files",
+        "image-files",
+        "other-files",
+        "text-files",
+        "video-files"
+      ]
+    },
+    {
+      "id": "copy-project-path",
+      "unique_id": "1893456000000005-1",
+      "name": "Copy project paths",
+      "description": "Copy paths relative to the nearest Git or Mercurial workspace",
+      "icon": "folder-development",
+      "verb": "copy-project-path",
+      "placeholder": "%F",
+      "range": "1-100",
+      "patterns": "*",
+      "requirements": [
+        "wl-copy",
+        "python3"
+      ],
+      "conditions": [
+        "directories",
+        "audio-files",
+        "image-files",
+        "other-files",
+        "text-files",
+        "video-files"
+      ]
+    }
+  ]
+}

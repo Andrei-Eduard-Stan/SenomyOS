@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 171.59 66">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        font-family: BrunoAceSC-Regular, 'Bruno Ace SC';
+        font-size: 24px;
+      }
+
+      .cls-2 {
+        letter-spacing: 0em;
+      }
+
+      .cls-3 {
+        letter-spacing: -.01em;
+      }
+    </style>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <text class="cls-1" transform="translate(37.34 25.22)"><tspan class="cls-2" x="0" y="0">U</tspan><tspan x="21.34" y="0">ptime</tspan><tspan class="cls-3" x="-10.55" y="28.8">0</tspan><tspan x="10.84" y="28.8">3:05:12</tspan></text>
+  </g>
+</svg>

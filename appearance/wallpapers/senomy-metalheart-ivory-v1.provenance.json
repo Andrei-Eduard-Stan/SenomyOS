@@ -1,0 +1,14 @@
+{
+  "kind": "generated-original-artwork",
+  "tool": "built-in image_gen",
+  "prompt": "Use case: stylized-concept.\nAsset type: a finished widescreen 16:9 authentication wallpaper for SenomyOS, suitable for a 2560x1440 desktop, no UI drawn into it.\nPrimary request: original black, ivory and silver metalheart artwork with early-2000s experimental digital-art sensibility, abstract futuristic chrome, liquid-metal curvature and fine sharp sculptural filaments. A dark, precise, elegant operating-system identity.\nComposition: a panoramic sculptural field, tangled polished titanium and ceramic-ivory curved blades sweeping along the outer thirds and upper edges, with thin intricate tension lines and soft pearly reflections. The central 35 percent, especially centre-lower area, is quieter charcoal negative space for a compact sign-in form to sit on top. Outer forms may arc inward but do not fill or frame that quiet area with a literal box. Convincing dimensional material, refined asymmetry, intentional light, rich dark values and luminous ivory highlights. Visually authored abstract album-book artwork, no stock sci-fi landscape, no room, no horizon.\nPalette: strictly ink-black, charcoal, silver, warm ivory and white; no neon, cyan, purple or saturated colour. Crisp local metal detail with some atmospheric softness, not a uniform blur; runtime UI will apply blur separately.\nConstraints: no text, letters, logos, watermarks, faces, figures, hearts as a literal icon, application windows, interface panels, grids, screen borders or built-in vignette frame. Generate the artwork only.",
+  "origin": "/home/Duku/.codex/generated_images/01a1c563-640f-74c3-9191-500d408abaa7/exec-e117a74d-c26d-4a46-bb3f-7751bc6531ba.png",
+  "use": "SenomyOS configurable authentication background; not a captured desktop",
+  "userDirection": "custom ivory or black-and-white metalheart",
+  "originSha256": "84df538e7eb61219664bd36dca5db9d6ba4b4b44a524a3860efea42a9a6ef271",
+  "dimensions": [
+    1672,
+    941
+  ],
+  "sha256": "1c35fda64ec3707f35f285358f46928dd3b0171ff714b2d1c30989df997edc20"
+}

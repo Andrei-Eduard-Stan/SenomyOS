@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Address-pinned fullscreen/immersive toggling with verified per-window restore.
+set -euo pipefail
+source_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+exec python3 -B "$(dirname -- "$source_path")/senomy_fullscreen.py" "$@"

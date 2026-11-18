@@ -1,0 +1,3 @@
+module Senomy.NotificationComponents
+NotificationList 1.0 NotificationList.qml
+NotificationQuickList 1.0 NotificationQuickList.qml

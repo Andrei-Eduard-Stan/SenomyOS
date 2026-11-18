@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# Start the SenomyOS wallpaper owner with optional live user artwork.
+
+set -euo pipefail
+export LC_ALL=C
+
+readonly HOME_DIR="${HOME:-/nonexistent}"
+readonly CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME_DIR/.config}"
+readonly DATA_ROOT="${XDG_DATA_HOME:-$HOME_DIR/.local/share}"
+readonly PROFILE="${SENOMY_PROFILE:-$CONFIG_ROOT/senomyos/profile.json}"
+readonly SWAYBG_BIN="${SENOMY_SWAYBG_BIN:-/usr/bin/swaybg}"
+
+fail() { printf 'SenomyOS wallpaper: %s\n' "$*" >&2; exit 1; }
+
+asset_id=obsidian-default
+mode=fill
+if [[ -f "$PROFILE" && ! -L "$PROFILE" ]] && command -v jq >/dev/null 2>&1 &&
+   jq -e '.schema_version == 1 and (.wallpaper | type == "object")' "$PROFILE" >/dev/null 2>&1; then
+  asset_id="$(jq -r '.wallpaper.asset // "obsidian-default"' "$PROFILE")"
+  mode="$(jq -r '.wallpaper.mode // "fill"' "$PROFILE")"
+fi
+
+case "$asset_id" in
+  obsidian-default)
+    wallpaper="$DATA_ROOT/senomyos/appearance/backgrounds/desktop.png"
+    # User-deployed artwork takes precedence. A clean prepared release supplies
+    # its immutable default without creating or overwriting user configuration.
+    if [[ ! -e "$wallpaper" && ! -L "$wallpaper" && -n "${SENOMY_SOURCE_ROOT:-}" ]]; then
+      wallpaper="$SENOMY_SOURCE_ROOT/appearance/shared/backgrounds/desktop.png"
+    fi
+    ;;
+  *) fail "profile requested an unknown wallpaper asset" ;;
+esac
+case "$mode" in fill | fit | stretch | center | tile) ;; *) fail "profile requested an invalid wallpaper mode" ;; esac
+
+[[ -x "$SWAYBG_BIN" ]] || fail "swaybg is unavailable"
+[[ -f "$wallpaper" && ! -L "$wallpaper" ]] || fail "the deployed wallpaper asset is unavailable"
+
+case "${1:-}" in
+  --once) exec "$SWAYBG_BIN" -c '#08090b' -m "$mode" -i "$wallpaper" ;;
+  "") ;;
+  *) fail "usage: senomy-wallpaper [--once]" ;;
+esac
+readonly WATCHER="$(dirname -- "${BASH_SOURCE[0]}")/senomy-wallpaper-watch.py"
+readonly SETTINGS="${SENOMY_WALLPAPER_SETTINGS:-$CONFIG_ROOT/senomyos/wallpaper.json}"
+exec python3 "$WATCHER" "$SWAYBG_BIN" "$wallpaper" "$mode" "$SETTINGS"

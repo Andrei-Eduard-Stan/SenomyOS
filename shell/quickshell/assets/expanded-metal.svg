@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1700.65 700.48">
+  <defs><linearGradient id="metal" x1="0" y1="0" x2="0.8" y2="1" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="#5d5965"/><stop offset="0.18" stop-color="#fff"/><stop offset="0.35" stop-color="#82808d"/><stop offset="0.52" stop-color="#ddd8ef"/><stop offset="0.7" stop-color="#5c566d"/><stop offset="0.88" stop-color="#fff"/><stop offset="1" stop-color="#8c8799"/></linearGradient>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: url(#metal);
+        stroke-miterlimit: 10;
+        stroke-width: 3.5px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <path class="cls-1" d="m1672.07,699.48H28.59c-10.77-10.77-16.81-16.81-27.59-27.59V28.59C11.77,17.81,17.81,11.77,28.59,1h1643.48c10.77,10.77,16.81,16.81,27.59,27.59v643.3c-10.77,10.77-16.81,16.81-27.59,27.59Z"/>
+  </g>
+</svg>

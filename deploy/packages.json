@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "distribution": "arch",
+  "official": [
+    {
+      "package": "base",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Arch base userspace"
+    },
+    {
+      "package": "hyprland",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Wayland compositor and Lua configuration runtime"
+    },
+    {
+      "package": "xkeyboard-config",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Authoritative XKB keyboard layout catalog"
+    },
+    {
+      "package": "quickshell",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Primary SenomyOS shell runtime"
+    },
+    {
+      "package": "rofi",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Command Lens launcher"
+    },
+    {
+      "package": "thunar",
+      "tier": "runtime",
+      "required": true,
+      "reason": "File workspace"
+    },
+    {
+      "package": "hyprlock",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Authenticated session lock"
+    },
+    {
+      "package": "hypridle",
+      "tier": "optional",
+      "required": false,
+      "reason": "Optional idle policy tooling; disabled by user policy"
+    },
+    {
+      "package": "sddm",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Display manager and Qt 6 greeter"
+    },
+    {
+      "package": "jq",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Structured shell data contracts"
+    },
+    {
+      "package": "socat",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Hyprland workspace event listener"
+    },
+    {
+      "package": "networkmanager",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Network status and bounded actions"
+    },
+    {
+      "package": "pipewire",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Audio server"
+    },
+    {
+      "package": "pipewire-pulse",
+      "tier": "runtime",
+      "required": true,
+      "reason": "PulseAudio-compatible inspection and controls"
+    },
+    {
+      "package": "wireplumber",
+      "tier": "runtime",
+      "required": true,
+      "reason": "PipeWire session policy"
+    },
+    {
+      "package": "libpulse",
+      "tier": "runtime",
+      "required": true,
+      "reason": "pactl client"
+    },
+    {
+      "package": "upower",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Portable battery inventory"
+    },
+    {
+      "package": "python-gobject",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Native application defaults and event-driven BlueZ transactions through Gio"
+    },
+    {
+      "package": "nm-connection-editor",
+      "tier": "feature",
+      "required": true,
+      "reason": "Native saved profile, VPN, DNS and connection proxy settings"
+    },
+    {
+      "package": "wayland-utils",
+      "tier": "feature",
+      "required": false,
+      "reason": "Read-only compositor protocol probe for optional on-screen keyboard"
+    },
+    {
+      "package": "python",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Bounded collectors and recovery UI"
+    },
+    {
+      "package": "gtk3",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Thunar theme and independent recovery UI"
+    },
+    {
+      "package": "libsecret",
+      "tier": "feature",
+      "required": false,
+      "reason": "Secret Service client for optional CalDAV credentials; requires a running user secret store"
+    },
+    {
+      "package": "kitty",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Allowlisted terminal handoff"
+    },
+    {
+      "package": "swaybg",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Single portable wallpaper provider"
+    },
+    {
+      "package": "playerctl",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Media state and keys"
+    },
+    {
+      "package": "brightnessctl",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Backlight controls where available"
+    },
+    {
+      "package": "libnotify",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Desktop notifications"
+    },
+    {
+      "package": "polkit-gnome",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Graphical PolicyKit agent"
+    },
+    {
+      "package": "xdg-desktop-portal",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Desktop portal framework"
+    },
+    {
+      "package": "xdg-desktop-portal-hyprland",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Hyprland portal backend"
+    },
+    {
+      "package": "xdg-desktop-portal-gtk",
+      "tier": "runtime",
+      "required": true,
+      "reason": "GTK portal fallback"
+    },
+    {
+      "package": "desktop-file-utils",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Desktop entry validation and cache"
+    },
+    {
+      "package": "ttf-jetbrains-mono-nerd",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Primary interface font and icons"
+    },
+    {
+      "package": "ttf-nerd-fonts-symbols-mono",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Symbol fallback"
+    },
+    {
+      "package": "wl-clipboard",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Bounded clipboard actions"
+    },
+    {
+      "package": "grim",
+      "tier": "feature",
+      "required": true,
+      "reason": "Screenshot capture"
+    },
+    {
+      "package": "slurp",
+      "tier": "feature",
+      "required": true,
+      "reason": "Screenshot region selection"
+    },
+    {
+      "package": "swappy",
+      "tier": "feature",
+      "required": true,
+      "reason": "Screenshot annotation"
+    },
+    {
+      "package": "flameshot",
+      "tier": "feature",
+      "required": false,
+      "reason": "Optional alternate screenshot UI"
+    },
+    {
+      "package": "bluez",
+      "tier": "optional",
+      "required": false,
+      "reason": "Bluetooth service"
+    },
+    {
+      "package": "bluez-utils",
+      "tier": "optional",
+      "required": false,
+      "reason": "Bluetooth command-line diagnostics; the shell uses event-driven Gio D-Bus"
+    },
+    {
+      "package": "fcitx5",
+      "tier": "optional",
+      "required": false,
+      "reason": "Established multilingual input-method framework when IME support is selected"
+    },
+    {
+      "package": "fcitx5-configtool",
+      "tier": "optional",
+      "required": false,
+      "reason": "Native Fcitx5 configuration UI; SenomyOS should hand off rather than reimplement IME setup"
+    },
+    {
+      "package": "pacman-contrib",
+      "tier": "optional",
+      "required": false,
+      "reason": "Fresh official update checks through checkupdates"
+    },
+    {
+      "package": "qt6-declarative",
+      "tier": "development",
+      "required": true,
+      "reason": "SDDM QML parser and runtime modules"
+    },
+    {
+      "package": "librsvg",
+      "tier": "development",
+      "required": true,
+      "reason": "Deterministic vector asset projection"
+    },
+    {
+      "package": "imagemagick",
+      "tier": "development",
+      "required": true,
+      "reason": "Deterministic login-background projection"
+    },
+    {
+      "package": "libxml2",
+      "tier": "development",
+      "required": true,
+      "reason": "Thunar custom-action XML validation through xmllint"
+    },
+    {
+      "package": "sudo",
+      "tier": "system",
+      "required": true,
+      "reason": "Narrow privileged deployment and recovery helper boundary"
+    },
+    {
+      "package": "plymouth",
+      "tier": "system",
+      "required": false,
+      "reason": "Optional staged boot-splash runtime; activation remains separately gated"
+    },
+    {
+      "package": "grub",
+      "tier": "system",
+      "required": false,
+      "reason": "Optional GRUB bootloader theme target on GRUB-based installations"
+    },
+    {
+      "package": "accountsservice",
+      "tier": "feature",
+      "required": true,
+      "reason": "Authorized system account management through AccountsService and polkit"
+    },
+    {
+      "package": "systemd",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Independent systemd-user application scopes; no direct shell-owned fallback"
+    },
+    {
+      "package": "xdg-terminal-exec",
+      "tier": "runtime",
+      "required": true,
+      "reason": "GIO Terminal=true desktop entries must resolve the installed default terminal (including Kitty)."
+    },
+    {
+      "package": "noto-fonts",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Unicode symbols, mathematics and script fallback"
+    },
+    {
+      "package": "noto-fonts-emoji",
+      "tier": "runtime",
+      "required": true,
+      "reason": "Color emoji fallback"
+    },
+    {
+      "package": "noto-fonts-cjk",
+      "tier": "runtime",
+      "required": true,
+      "reason": "CJK and kaomoji text fallback"
+    }
+  ],
+  "external": [],
+  "feature_runtimes": [
+    {
+      "id": "calendar",
+      "installer": "scripts/senomy-calendar-setup",
+      "requirements": "components/calendar/requirements.lock",
+      "scope": "user-private-venv",
+      "activation": "senomy-calendar.service",
+      "required": false,
+      "reason": "Hash-locked calendar dependencies installed separately from system Python"
+    }
+  ]
+}

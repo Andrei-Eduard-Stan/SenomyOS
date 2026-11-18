@@ -1,0 +1,6 @@
+interface:
+  display_name: "SenomyOS Design Director"
+  short_description: "Native UI direction grounded in SenomyOS evidence"
+  default_prompt: "Use $senomy-design-director to study the relevant SenomyOS references, propose and critique a native composition, then verify the actual result before calling it finished."
+policy:
+  allow_implicit_invocation: true

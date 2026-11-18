@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=SenomyOS Control Centre
+Comment=System overview and quick controls
+Exec=senomy-surface show-control overview
+Icon=preferences-system
+Terminal=false
+Categories=Settings;
+Keywords=SenomyOS;Control;Centre;
+StartupNotify=false

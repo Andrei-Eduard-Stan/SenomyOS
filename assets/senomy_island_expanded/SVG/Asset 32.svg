@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 165.98 28.68">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: -.06em;
+      }
+
+      .cls-2 {
+        letter-spacing: 0em;
+      }
+
+      .cls-3 {
+        fill: #fff;
+        font-family: BrunoAceSC-Regular, 'Bruno Ace SC';
+        font-size: 26px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <text class="cls-3" transform="translate(0 22.1)"><tspan class="cls-1" x="0" y="0">T</tspan><tspan class="cls-2" x="19.89" y="0">emp: 39°C</tspan></text>
+  </g>
+</svg>

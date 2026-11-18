@@ -1,0 +1,65 @@
+[
+  {
+    "area": "accounts",
+    "images": 7,
+    "log": "screenshots/full/accounts/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "bluetooth-quick",
+    "images": 3,
+    "log": "screenshots/full/bluetooth-quick/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "care",
+    "images": 1,
+    "log": "screenshots/full/care/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "energy",
+    "images": 5,
+    "log": "screenshots/full/energy/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "expanded",
+    "images": 2,
+    "log": "screenshots/full/expanded/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "lens",
+    "images": 10,
+    "log": "screenshots/full/lens/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "network",
+    "images": 4,
+    "log": "screenshots/full/network/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "rail",
+    "images": 11,
+    "log": "screenshots/full/rail/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  },
+  {
+    "area": "safety",
+    "images": 2,
+    "log": "screenshots/full/safety/capture.log",
+    "errors": [],
+    "note": "Current render only. Does not imply compositor, provider mutation or physical interaction acceptance."
+  }
+]

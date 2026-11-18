@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Senomy Recovery
+Comment=Restricted authenticated password recovery
+Exec=/usr/local/libexec/senomy-recovery-session
+TryExec=/usr/local/libexec/senomy-recovery-session
+Type=Application

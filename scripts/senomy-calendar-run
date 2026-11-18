@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+CALENDAR_SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+CALENDAR_SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$CALENDAR_SCRIPT_PATH")/.." && pwd -P)}"
+CALENDAR_ENV="${SENOMY_CALENDAR_ENV:-${XDG_DATA_HOME:-$HOME/.local/share}/senomyos/calendar/runtime}"
+if [[ "${1:-}" == --check ]]; then
+  [[ -x "$CALENDAR_ENV/bin/python" ]] || exit 1
+  "$CALENDAR_ENV/bin/python" -c "import icalendar, recurring_ical_events, caldav, dbus_next, tzlocal"
+  exit
+fi
+[[ -x "$CALENDAR_ENV/bin/python" ]] || { printf '%s\n' 'Calendar runtime is unavailable. Run senomy-calendar-setup.' >&2; exit 1; }
+[[ -n "${XDG_RUNTIME_DIR:-}" ]] || { printf '%s\n' 'XDG_RUNTIME_DIR is unavailable.' >&2; exit 1; }
+export PYTHONPATH="$CALENDAR_SOURCE_ROOT/components/calendar${PYTHONPATH:+:$PYTHONPATH}"
+exec "$CALENDAR_ENV/bin/python" -m senomy_calendar.daemon --runtime "$XDG_RUNTIME_DIR/senomyos-calendar"

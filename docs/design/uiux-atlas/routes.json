@@ -1,0 +1,506 @@
+[
+  {
+    "id": "overview",
+    "label": "OVERVIEW",
+    "path": "OVERVIEW",
+    "target": "",
+    "route": "overview"
+  },
+  {
+    "id": "network",
+    "label": "NETWORK",
+    "path": "NETWORK",
+    "target": "",
+    "route": "network"
+  },
+  {
+    "id": "network/overview",
+    "label": "CONNECTION",
+    "path": "NETWORK / CONNECTION",
+    "target": "",
+    "route": "network"
+  },
+  {
+    "id": "network/wifi",
+    "label": "WI-FI",
+    "path": "NETWORK / WI-FI",
+    "target": "",
+    "route": "network"
+  },
+  {
+    "id": "network/saved",
+    "label": "SAVED CONNECTIONS",
+    "path": "NETWORK / SAVED CONNECTIONS",
+    "target": "",
+    "route": "network"
+  },
+  {
+    "id": "network/advanced",
+    "label": "VPN & ADVANCED",
+    "path": "NETWORK / VPN & ADVANCED",
+    "target": "",
+    "route": "network"
+  },
+  {
+    "id": "audio",
+    "label": "AUDIO",
+    "path": "AUDIO",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "audio/overview",
+    "label": "OVERVIEW",
+    "path": "AUDIO / OVERVIEW",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "audio/overview/output",
+    "label": "OUTPUT LEVEL",
+    "path": "AUDIO / OVERVIEW / OUTPUT LEVEL",
+    "target": "control-output-volume",
+    "route": "audio"
+  },
+  {
+    "id": "audio/overview/microphone",
+    "label": "MICROPHONE",
+    "path": "AUDIO / OVERVIEW / MICROPHONE",
+    "target": "control-microphone-volume",
+    "route": "audio"
+  },
+  {
+    "id": "audio/mixer",
+    "label": "MIXER",
+    "path": "AUDIO / MIXER",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "audio/mixer/playback",
+    "label": "PLAYBACK",
+    "path": "AUDIO / MIXER / PLAYBACK",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "audio/mixer/recording",
+    "label": "RECORDING",
+    "path": "AUDIO / MIXER / RECORDING",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "audio/devices",
+    "label": "DEVICES",
+    "path": "AUDIO / DEVICES",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "audio/media",
+    "label": "MEDIA",
+    "path": "AUDIO / MEDIA",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "audio/diagnostics",
+    "label": "DIAGNOSTICS",
+    "path": "AUDIO / DIAGNOSTICS",
+    "target": "",
+    "route": "audio"
+  },
+  {
+    "id": "power",
+    "label": "POWER",
+    "path": "POWER",
+    "target": "",
+    "route": "power"
+  },
+  {
+    "id": "power/overview",
+    "label": "OVERVIEW",
+    "path": "POWER / OVERVIEW",
+    "target": "",
+    "route": "power"
+  },
+  {
+    "id": "power/batteries",
+    "label": "BATTERY PACKS",
+    "path": "POWER / BATTERY PACKS",
+    "target": "",
+    "route": "power"
+  },
+  {
+    "id": "power/profiles",
+    "label": "POWER PROFILES",
+    "path": "POWER / POWER PROFILES",
+    "target": "",
+    "route": "power"
+  },
+  {
+    "id": "calendar",
+    "label": "CALENDAR",
+    "path": "CALENDAR",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/briefing",
+    "label": "EVENT BRIEFING",
+    "path": "CALENDAR / EVENT BRIEFING",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/agenda",
+    "label": "AGENDA",
+    "path": "CALENDAR / AGENDA",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/month",
+    "label": "MONTH",
+    "path": "CALENDAR / MONTH",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/week",
+    "label": "WEEK",
+    "path": "CALENDAR / WEEK",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/day",
+    "label": "DAY",
+    "path": "CALENDAR / DAY",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/calendars",
+    "label": "CALENDARS",
+    "path": "CALENDAR / CALENDARS",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/reminders",
+    "label": "REMINDERS",
+    "path": "CALENDAR / REMINDERS",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/transfer",
+    "label": "IMPORT / BULK ADD",
+    "path": "CALENDAR / IMPORT / BULK ADD",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/accounts",
+    "label": "ACCOUNTS",
+    "path": "CALENDAR / ACCOUNTS",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "calendar/preferences",
+    "label": "PREFERENCES",
+    "path": "CALENDAR / PREFERENCES",
+    "target": "",
+    "route": "calendar"
+  },
+  {
+    "id": "input",
+    "label": "INPUT",
+    "path": "INPUT",
+    "target": "",
+    "route": "input"
+  },
+  {
+    "id": "input/pointer",
+    "label": "POINTER & TOUCHPAD",
+    "path": "INPUT / POINTER & TOUCHPAD",
+    "target": "",
+    "route": "input"
+  },
+  {
+    "id": "input/pointer/sensitivity",
+    "label": "SENSITIVITY",
+    "path": "INPUT / POINTER & TOUCHPAD / SENSITIVITY",
+    "target": "control-pointer-sensitivity",
+    "route": "input"
+  },
+  {
+    "id": "input/pointer/scroll",
+    "label": "NATURAL SCROLL",
+    "path": "INPUT / POINTER & TOUCHPAD / NATURAL SCROLL",
+    "target": "control-natural-scroll",
+    "route": "input"
+  },
+  {
+    "id": "input/pointer/tap",
+    "label": "TAP TO CLICK",
+    "path": "INPUT / POINTER & TOUCHPAD / TAP TO CLICK",
+    "target": "control-tap-click",
+    "route": "input"
+  },
+  {
+    "id": "input/keyboard",
+    "label": "KEYBOARD LAYOUTS",
+    "path": "INPUT / KEYBOARD LAYOUTS",
+    "target": "",
+    "route": "input"
+  },
+  {
+    "id": "input/keyboard/layout",
+    "label": "KEYBOARD LAYOUT",
+    "path": "INPUT / KEYBOARD LAYOUTS / KEYBOARD LAYOUT",
+    "target": "control-keyboard-layout",
+    "route": "input"
+  },
+  {
+    "id": "input/keyboard/rate",
+    "label": "REPEAT RATE",
+    "path": "INPUT / KEYBOARD LAYOUTS / REPEAT RATE",
+    "target": "control-repeat-rate",
+    "route": "input"
+  },
+  {
+    "id": "input/keyboard/delay",
+    "label": "REPEAT DELAY",
+    "path": "INPUT / KEYBOARD LAYOUTS / REPEAT DELAY",
+    "target": "control-repeat-delay",
+    "route": "input"
+  },
+  {
+    "id": "input/methods",
+    "label": "INPUT METHODS & OSK",
+    "path": "INPUT / INPUT METHODS & OSK",
+    "target": "",
+    "route": "input"
+  },
+  {
+    "id": "devices",
+    "label": "DEVICE MANAGEMENT",
+    "path": "DEVICE MANAGEMENT",
+    "target": "",
+    "route": "devices"
+  },
+  {
+    "id": "devices/displays",
+    "label": "DISPLAYS & PROJECTION",
+    "path": "DEVICE MANAGEMENT / DISPLAYS & PROJECTION",
+    "target": "",
+    "route": "devices"
+  },
+  {
+    "id": "devices/bluetooth",
+    "label": "BLUETOOTH",
+    "path": "DEVICE MANAGEMENT / BLUETOOTH",
+    "target": "",
+    "route": "devices"
+  },
+  {
+    "id": "devices/inputs",
+    "label": "INPUT DEVICES",
+    "path": "DEVICE MANAGEMENT / INPUT DEVICES",
+    "target": "",
+    "route": "devices"
+  },
+  {
+    "id": "devices/audio",
+    "label": "AUDIO ENDPOINTS",
+    "path": "DEVICE MANAGEMENT / AUDIO ENDPOINTS",
+    "target": "",
+    "route": "devices"
+  },
+  {
+    "id": "devices/network",
+    "label": "NETWORK INTERFACES",
+    "path": "DEVICE MANAGEMENT / NETWORK INTERFACES",
+    "target": "",
+    "route": "devices"
+  },
+  {
+    "id": "devices/batteries",
+    "label": "BATTERIES",
+    "path": "DEVICE MANAGEMENT / BATTERIES",
+    "target": "",
+    "route": "devices"
+  },
+  {
+    "id": "apps",
+    "label": "APPLICATIONS",
+    "path": "APPLICATIONS",
+    "target": "",
+    "route": "apps"
+  },
+  {
+    "id": "apps/defaults",
+    "label": "DEFAULT APPLICATIONS",
+    "path": "APPLICATIONS / DEFAULT APPLICATIONS",
+    "target": "",
+    "route": "apps"
+  },
+  {
+    "id": "apps/autostart",
+    "label": "STARTUP APPLICATIONS",
+    "path": "APPLICATIONS / STARTUP APPLICATIONS",
+    "target": "",
+    "route": "apps"
+  },
+  {
+    "id": "apps/launcher",
+    "label": "COMMAND LENS",
+    "path": "APPLICATIONS / COMMAND LENS",
+    "target": "",
+    "route": "apps"
+  },
+  {
+    "id": "appearance",
+    "label": "APPEARANCE",
+    "path": "APPEARANCE",
+    "target": "",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/backgrounds",
+    "label": "SURFACE BACKGROUNDS",
+    "path": "APPEARANCE / SURFACE BACKGROUNDS",
+    "target": "",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/backgrounds/image",
+    "label": "BACKGROUND IMAGE",
+    "path": "APPEARANCE / SURFACE BACKGROUNDS / BACKGROUND IMAGE",
+    "target": "backgroundSource",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/backgrounds/opacity",
+    "label": "IMAGE OPACITY",
+    "path": "APPEARANCE / SURFACE BACKGROUNDS / IMAGE OPACITY",
+    "target": "control-image-opacity",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/backgrounds/scrim",
+    "label": "DARK OVERLAY",
+    "path": "APPEARANCE / SURFACE BACKGROUNDS / DARK OVERLAY",
+    "target": "control-image-scrim",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/motion",
+    "label": "Motion & Readability",
+    "path": "APPEARANCE / Motion & Readability",
+    "target": "",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/motion/text-scale",
+    "label": "INTERFACE TEXT SIZE",
+    "path": "APPEARANCE / Motion & Readability / INTERFACE TEXT SIZE",
+    "target": "control-ui-text-scale",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/motion/contrast",
+    "label": "HIGH CONTRAST",
+    "path": "APPEARANCE / Motion & Readability / HIGH CONTRAST",
+    "target": "control-high-contrast",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/motion/reduced",
+    "label": "REDUCED MOTION",
+    "path": "APPEARANCE / Motion & Readability / REDUCED MOTION",
+    "target": "control-reduced-motion",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/motion/hover",
+    "label": "HOVER EXPANSION",
+    "path": "APPEARANCE / Motion & Readability / HOVER EXPANSION",
+    "target": "control-hover-expansion",
+    "route": "appearance"
+  },
+  {
+    "id": "appearance/motion/text",
+    "label": "RAIL TEXT SIZE",
+    "path": "APPEARANCE / Motion & Readability / RAIL TEXT SIZE",
+    "target": "control-rail-text",
+    "route": "appearance"
+  },
+  {
+    "id": "accounts",
+    "label": "Users & Accounts",
+    "path": "Users & Accounts",
+    "target": "",
+    "route": "accounts"
+  },
+  {
+    "id": "settings",
+    "label": "System",
+    "path": "System",
+    "target": "",
+    "route": "settings"
+  },
+  {
+    "id": "settings/about",
+    "label": "ABOUT & RECOVERY",
+    "path": "System / ABOUT & RECOVERY",
+    "target": "",
+    "route": "settings"
+  },
+  {
+    "id": "settings/notifications",
+    "label": "NOTIFICATIONS",
+    "path": "System / NOTIFICATIONS",
+    "target": "",
+    "route": "settings"
+  },
+  {
+    "id": "settings/notifications/dnd",
+    "label": "DO NOT DISTURB",
+    "path": "System / NOTIFICATIONS / DO NOT DISTURB",
+    "target": "control-dnd",
+    "route": "settings"
+  },
+  {
+    "id": "settings/idle",
+    "label": "IDLE & LOCK",
+    "path": "System / IDLE & LOCK",
+    "target": "",
+    "route": "settings"
+  },
+  {
+    "id": "settings/idle/lock",
+    "label": "LOCK TIMEOUT",
+    "path": "System / IDLE & LOCK / LOCK TIMEOUT",
+    "target": "control-lock-timeout",
+    "route": "settings"
+  },
+  {
+    "id": "settings/idle/display",
+    "label": "DISPLAY OFF TIMEOUT",
+    "path": "System / IDLE & LOCK / DISPLAY OFF TIMEOUT",
+    "target": "control-display-timeout",
+    "route": "settings"
+  },
+  {
+    "id": "settings/integration",
+    "label": "SHELL & DESKTOP",
+    "path": "System / SHELL & DESKTOP",
+    "target": "",
+    "route": "settings"
+  }
+]

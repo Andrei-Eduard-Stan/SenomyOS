@@ -1,0 +1,10 @@
+module Senomy.Config
+singleton Theme 1.0 Theme.qml
+singleton RailStyle 1.0 RailStyle.qml
+singleton Skin 1.0 Skin.qml
+singleton ReflectionLight 1.0 ReflectionLight.qml
+singleton OskGeometry 1.0 OskGeometry.qml
+singleton DirectoryStyle 1.0 DirectoryStyle.qml
+singleton Motion 1.0 Motion.qml
+singleton QuickPanelStyle 1.0 QuickPanelStyle.qml
+singleton RenderMetrics 1.0 RenderMetrics.qml

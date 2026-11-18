@@ -1,5 +1,0 @@
-(config
-  :css "eww.scss"
-  :global
-  (poll-interval 2s))
-

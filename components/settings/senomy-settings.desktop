@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=SenomyOS Settings
+Comment=Configure SenomyOS
+Exec=senomy-surface show-settings overview
+Icon=preferences-system
+Terminal=false
+Categories=Settings;
+Keywords=SenomyOS;Settings;Preferences;
+StartupNotify=false

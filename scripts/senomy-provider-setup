@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Narrow reviewed official-package handoff; no account/device/service mutation.
+set -euo pipefail
+export LC_ALL=C
+command_name="${1:-plan}"
+provider_name="${2:-accounts}"
+case "$provider_name" in
+  accounts) package_name=accountsservice;description='AccountsService account management' ;;
+  idle) package_name=hypridle;description='Hypridle idle and lock policy support' ;;
+  *) printf 'Supported providers: accounts, idle.\n' >&2;exit 64 ;;
+esac
+case "$command_name" in
+  plan)
+    [[ $# -le 2 ]] || exit 64
+    installed=false
+    if command -v pacman >/dev/null 2>&1 && pacman -Q "$package_name" >/dev/null 2>&1;then installed=true;fi
+    jq -nc --arg provider "$provider_name" --arg package "$package_name" --arg description "$description" --argjson installed "$installed" '{schema_version:1,provider:$provider,installed:$installed,packages:[$package],requires_authorization:true,changes:["Install official package: "+$description],preserves:["Existing accounts and passwords","Current desktop and login session","Current TLP power management","Service enablement and runtime state"],command:["sudo","pacman","-S","--needed","--",$package]}'
+    ;;
+  install)
+    [[ $# -eq 3 && "$3" == --confirmed ]] || { printf 'Review plan PROVIDER, then use install PROVIDER --confirmed in a terminal.\n' >&2;exit 64; }
+    [[ -t 0 && -t 1 ]] || { printf 'Run in an interactive terminal; sudo owns password entry.\n' >&2;exit 69; }
+    [[ -x /usr/bin/pacman && -x /usr/bin/sudo ]] || { printf 'This handoff requires the supported Arch package manager.\n' >&2;exit 69; }
+    printf 'Install %s from official repositories. No services are started or restarted by this helper.\n' "$description"
+    printf 'Review pacman’s transaction and authenticate only in this terminal.\n'
+    /usr/bin/sudo -- /usr/bin/pacman -S --needed -- "$package_name"
+    printf '\nPackage transaction finished. Refresh Settings to inspect actual availability. Runtime activation is a separate step.\n'
+    ;;
+  *) printf 'Usage: senomy-provider-setup {plan PROVIDER|install PROVIDER --confirmed}; providers: accounts, idle\n' >&2;exit 64 ;;
+esac

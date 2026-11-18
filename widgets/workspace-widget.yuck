@@ -1,2 +1,0 @@
-(defwidget workspace-indicator []
-  (label :class "workspace-box" :text {workspaces})) 

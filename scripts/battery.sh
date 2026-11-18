@@ -1,8 +1,31 @@
 #!/usr/bin/env bash
-# Requires: upower, jq
+
+# Emit a compact battery summary without fabricating charge when unavailable.
+
+set -u
+export LC_ALL=C
+
+if ! command -v jq >/dev/null 2>&1; then
+  printf '{"available":false,"dual":false,"bat0_percent":0,"bat0_icon":"","bat1_percent":0,"bat1_icon":"","percent_total":0,"total_icon":"","state":"unavailable","error":"jq is unavailable"}\n'
+  exit 0
+fi
+
+emit_unavailable() {
+  jq -nc --arg state "$1" --arg error "$2" \
+    '{available:false,dual:false,bat0_percent:0,bat0_icon:"",bat1_percent:0,
+      bat1_icon:"",percent_total:0,total_icon:"",state:$state,error:$error}'
+  exit 0
+}
+
+command -v upower >/dev/null 2>&1 ||
+  emit_unavailable "unavailable" "UPower is unavailable"
 
 # Collect battery device paths
-mapfile -t BS < <(upower -e | grep -E 'BAT|battery')
+devices="$(upower -e 2>/dev/null)" ||
+  emit_unavailable "unavailable" "UPower is not reachable"
+mapfile -t BS < <(grep -E 'BAT|battery' <<<"$devices")
+((${#BS[@]} > 0)) ||
+  emit_unavailable "absent" "No system battery was detected"
 
 # Helper: fetch and coerce a UPower field to integer percent
 get_int_pct() {
@@ -47,6 +70,16 @@ if [[ -n "$B1" ]]; then
   fi
 fi
 
+# UPower's DisplayDevice weights packs by energy capacity. A plain arithmetic
+# average is wrong when installed batteries have different sizes.
+DISPLAY_TOTAL="$(
+  upower -i /org/freedesktop/UPower/devices/DisplayDevice 2>/dev/null |
+    awk -F: '/percentage/{gsub(/[%[:space:]]/, "", $2); printf("%d\n", $2+0); exit}'
+)"
+if [[ "$DISPLAY_TOTAL" =~ ^[0-9]+$ ]]; then
+  TOTAL="$DISPLAY_TOTAL"
+fi
+
 P_icon="[D_]"
 P0icon="[D0]"
 P1icon="[D1]"
@@ -82,6 +115,7 @@ else
 fi
 
 jq -nc \
+  --argjson available true \
   --argjson dual "$DUAL" \
   --argjson bat0 "$P0" \
   --arg bat0_icon "$P0icon" \
@@ -90,8 +124,8 @@ jq -nc \
   --arg state "$STATE" \
   --argjson total "$TOTAL" \
   --arg total_icon "$P_icon" \
-  '{dual:$dual,
+  '{available:$available, dual:$dual,
     bat0_percent:$bat0, bat0_icon:$bat0_icon,
     bat1_percent:$bat1, bat1_icon:$bat1_icon,
     percent_total:$total, total_icon:$total_icon,
-    state:$state}'
+    state:$state, error:null}'
