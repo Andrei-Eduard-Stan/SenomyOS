@@ -3,15 +3,6 @@
   "backup_namespace": "senomyos/deployments",
   "components": [
     {
-      "id": "eww-live",
-      "description": "The current Eww repository is already the live development tree.",
-      "scope": "user",
-      "readiness": "in-place",
-      "reason": "No copy deployment is needed while the repository itself is the live Eww configuration.",
-      "post_apply": [],
-      "entries": []
-    },
-    {
       "id": "hyprland",
       "description": "Deploy the reviewed Hyprland Lua configuration before legacy .conf support is removed.",
       "scope": "user",
@@ -47,9 +38,34 @@
           "mode": "0755"
         },
         {
+          "id": "wallpaper-watcher",
+          "source": "components/desktop/scripts/senomy-wallpaper-watch.py",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy-wallpaper-watch.py"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
           "id": "osk-shortcut",
           "source": "scripts/senomy-osk",
-          "target": {"root": "user_bin", "path": "senomy-osk"},
+          "target": {
+            "root": "user_bin",
+            "path": "senomy-osk"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
+          "id": "fullscreen-controller",
+          "source": "components/desktop/scripts/senomy_fullscreen.py",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy_fullscreen.py"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0755"
@@ -60,6 +76,50 @@
           "target": {
             "root": "user_bin",
             "path": "senomy-fullscreen"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
+          "id": "display-action",
+          "source": "shell/quickshell/scripts/display-action.py",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy-display-action"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
+          "id": "display-core",
+          "source": "shell/quickshell/scripts/display_core.py",
+          "target": {
+            "root": "user_bin",
+            "path": "display_core.py"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "input-settings",
+          "source": "shell/quickshell/scripts/input-settings.py",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy-input-settings"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
+          "id": "session-policy",
+          "source": "shell/quickshell/scripts/session-policy.py",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy-session-policy"
           },
           "kind": "file",
           "strategy": "replace",
@@ -86,7 +146,39 @@
       "reason": "The automatic profile is schema-validated and preserves runtime geometry detection.",
       "post_apply": [],
       "entries": [
-        {"id":"profile","source":"deploy/profiles/automatic.json","target":{"root":"xdg_config","path":"senomyos/profile.json"},"kind":"file","strategy":"replace","mode":"0644"}
+        {
+          "id": "profile",
+          "source": "deploy/profiles/automatic.json",
+          "target": {
+            "root": "xdg_config",
+            "path": "senomyos/profile.json"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        }
+      ]
+    },
+    {
+      "id": "idle-policy",
+      "description": "Install the portable Hypridle lock and display-power policy without starting it.",
+      "scope": "user",
+      "readiness": "ready",
+      "reason": "The policy locks before sleep, respects inhibitors, and deliberately leaves automatic suspend disabled pending physical acceptance.",
+      "warning": "Installation does not start or restart Hypridle.",
+      "post_apply": [],
+      "entries": [
+        {
+          "id": "config",
+          "source": "components/idle/hypridle.conf",
+          "target": {
+            "root": "xdg_config",
+            "path": "hypr/hypridle.conf"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        }
       ]
     },
     {
@@ -97,7 +189,17 @@
       "reason": "The desktop profile is schema-validated and contains no device identifiers.",
       "post_apply": [],
       "entries": [
-        {"id":"profile","source":"deploy/profiles/desktop.json","target":{"root":"xdg_config","path":"senomyos/profile.json"},"kind":"file","strategy":"replace","mode":"0644"}
+        {
+          "id": "profile",
+          "source": "deploy/profiles/desktop.json",
+          "target": {
+            "root": "xdg_config",
+            "path": "senomyos/profile.json"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        }
       ]
     },
     {
@@ -108,7 +210,17 @@
       "reason": "The touch profile uses visible alternatives and 44px-or-larger toolkit targets.",
       "post_apply": [],
       "entries": [
-        {"id":"profile","source":"deploy/profiles/touch.json","target":{"root":"xdg_config","path":"senomyos/profile.json"},"kind":"file","strategy":"replace","mode":"0644"}
+        {
+          "id": "profile",
+          "source": "deploy/profiles/touch.json",
+          "target": {
+            "root": "xdg_config",
+            "path": "senomyos/profile.json"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        }
       ]
     },
     {
@@ -119,22 +231,17 @@
       "reason": "The narrow profile is schema-validated and retains dynamic monitor discovery.",
       "post_apply": [],
       "entries": [
-        {"id":"profile","source":"deploy/profiles/narrow.json","target":{"root":"xdg_config","path":"senomyos/profile.json"},"kind":"file","strategy":"replace","mode":"0644"}
-      ]
-    },
-    {
-      "id": "workspaces-unit",
-      "description": "Install the event-driven Hyprland workspace user service without reloading or restarting it.",
-      "scope": "user",
-      "readiness": "ready",
-      "reason": "The unit is verified offline and the stable listener remains repository-owned.",
-      "warning": "This installs the unit file only. Enabling or restarting the service is a separate first-boot action.",
-      "pre_apply": [
-        "workspaces-unit-valid"
-      ],
-      "post_apply": [],
-      "entries": [
-        {"id":"unit","source":"systemd/workspaces.service","target":{"root":"xdg_config","path":"systemd/user/workspaces.service"},"kind":"file","strategy":"replace","mode":"0644"}
+        {
+          "id": "profile",
+          "source": "deploy/profiles/narrow.json",
+          "target": {
+            "root": "xdg_config",
+            "path": "senomyos/profile.json"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        }
       ]
     },
     {
@@ -181,7 +288,10 @@
         {
           "id": "frame-corner-tl",
           "source": "appearance/launcher/rofi/assets/frame-standard-corner-tl.svg",
-          "target": {"root": "xdg_config", "path": "rofi/assets/frame-standard-corner-tl.svg"},
+          "target": {
+            "root": "xdg_config",
+            "path": "rofi/assets/frame-standard-corner-tl.svg"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -189,7 +299,10 @@
         {
           "id": "frame-corner-tr",
           "source": "appearance/launcher/rofi/assets/frame-standard-corner-tr.svg",
-          "target": {"root": "xdg_config", "path": "rofi/assets/frame-standard-corner-tr.svg"},
+          "target": {
+            "root": "xdg_config",
+            "path": "rofi/assets/frame-standard-corner-tr.svg"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -197,7 +310,10 @@
         {
           "id": "frame-corner-bl",
           "source": "appearance/launcher/rofi/assets/frame-standard-corner-bl.svg",
-          "target": {"root": "xdg_config", "path": "rofi/assets/frame-standard-corner-bl.svg"},
+          "target": {
+            "root": "xdg_config",
+            "path": "rofi/assets/frame-standard-corner-bl.svg"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -205,7 +321,10 @@
         {
           "id": "frame-corner-br",
           "source": "appearance/launcher/rofi/assets/frame-standard-corner-br.svg",
-          "target": {"root": "xdg_config", "path": "rofi/assets/frame-standard-corner-br.svg"},
+          "target": {
+            "root": "xdg_config",
+            "path": "rofi/assets/frame-standard-corner-br.svg"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -213,7 +332,10 @@
         {
           "id": "frame-crest",
           "source": "appearance/launcher/rofi/assets/frame-crest-medium.svg",
-          "target": {"root": "xdg_config", "path": "rofi/assets/frame-crest-medium.svg"},
+          "target": {
+            "root": "xdg_config",
+            "path": "rofi/assets/frame-crest-medium.svg"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -221,7 +343,10 @@
         {
           "id": "frame-diagnostic",
           "source": "appearance/launcher/rofi/assets/frame-motif-diagnostic-tick.svg",
-          "target": {"root": "xdg_config", "path": "rofi/assets/frame-motif-diagnostic-tick.svg"},
+          "target": {
+            "root": "xdg_config",
+            "path": "rofi/assets/frame-motif-diagnostic-tick.svg"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -258,15 +383,26 @@
           "kind": "file",
           "strategy": "replace",
           "mode": "0755"
+        },
+        {
+          "id": "utility-frame",
+          "source": "appearance/launcher/rofi/assets/utility-frame.svg.in",
+          "target": {
+            "root": "xdg_config",
+            "path": "rofi/assets/utility-frame.svg.in"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         }
       ]
     },
     {
       "id": "thunar",
-      "description": "Install the scoped Thunar workspace wrapper and bounded SenomyOS actions through a deterministic user-action merge.",
+      "description": "Install the scoped native Thunar composition, icon selection and bounded file actions with explicit reversible layout.",
       "scope": "user",
       "readiness": "ready",
-      "reason": "The workspace wrapper, action helper, and deterministic uca.xml merge preserve user state and are validated in isolation and live acceptance.",
+      "reason": "Production native module, public GTK lifecycle and desktop/narrow/touch/split/tab/search/icon/menu/new-window/remap captures reviewed; guarded layout/bookmark/module handoff fixtures pass. Physical acceptance remains separate.",
       "warning": "Close every Thunar window before apply or rollback; Thunar may overwrite uca.xml when it exits.",
       "pre_apply": [
         "thunar-not-running"
@@ -322,6 +458,39 @@
           "kind": "file",
           "strategy": "thunar-uca-merge",
           "mode": "0600"
+        },
+        {
+          "id": "layout-helper",
+          "source": "components/file-manager/thunar/scripts/senomy-thunar-layout",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy-thunar-layout"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
+          "id": "workspace-profile",
+          "source": "components/file-manager/thunar/workspace.json",
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/thunar/workspace.json"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "native-ui-module",
+          "source": "components/file-manager/thunar/native/libsenomy-thunar.so",
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/thunar/libsenomy-thunar.so"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         }
       ]
     },
@@ -330,7 +499,7 @@
       "description": "Install the namespaced SenomyOS GTK 3 standard and touch-density themes after isolated application QA.",
       "scope": "user",
       "readiness": "ready",
-      "reason": "GTK parsing plus isolated Thunar and Network Connection Editor visual QA passed.",
+      "reason": "GTK standard/touch parsing and isolated native Thunar state matrix validated; unrelated utility acceptance remains separate.",
       "warning": "This installs the namespaced GTK 3 theme files only; it does not change the global GTK theme preference.",
       "post_apply": [],
       "entries": [
@@ -381,152 +550,277 @@
         {
           "id": "frame-corner-tl",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-corner-tl.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-tl.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-tl.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-corner-tr",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-corner-tr.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-tr.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-tr.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-corner-bl",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-corner-bl.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-bl.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-bl.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-corner-br",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-corner-br.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-br.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-corner-br.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-edge-top",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-edge-top.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-top.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-top.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-edge-bottom",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-edge-bottom.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-bottom.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-bottom.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-edge-left",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-edge-left.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-left.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-left.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-edge-right",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-window-edge-right.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-right.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-window-edge-right.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-crest",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-crest-wide.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-crest-wide.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-crest-wide.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "frame-diagnostic",
           "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/frame-motif-diagnostic-tick.svg",
-          "target": {"root": "xdg_data", "path": "themes/SenomyOS/gtk-3.0/assets/frame-motif-diagnostic-tick.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/frame-motif-diagnostic-tick.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icons-metadata",
           "source": "appearance/file-manager/icons/SenomyOS-Files/index.theme",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/index.theme"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/index.theme"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-drag-accept",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-drag-accept.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-drag-accept.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-drag-accept.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-documents",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-documents.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-documents.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-documents.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-download",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-download.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-download.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-download.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-music",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-music.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-music.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-music.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-network",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-network.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-network.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-network.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-open",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-open.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-open.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-open.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-pictures",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-pictures.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-pictures.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-pictures.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-publicshare",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-publicshare.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-publicshare.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-publicshare.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-remote",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-remote.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-remote.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-remote.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-saved-search",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-saved-search.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-saved-search.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-saved-search.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-templates",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-templates.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-templates.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-templates.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-videos",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-videos.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-videos.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-videos.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "file-icon-folder-visiting",
           "source": "appearance/file-manager/icons/SenomyOS-Files/scalable/places/folder-visiting.svg",
-          "target": {"root": "xdg_data", "path": "icons/SenomyOS-Files/scalable/places/folder-visiting.svg"},
-          "kind": "file", "strategy": "replace", "mode": "0644"
+          "target": {
+            "root": "xdg_data",
+            "path": "icons/SenomyOS-Files/scalable/places/folder-visiting.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         },
         {
           "id": "touch-metadata",
@@ -556,6 +850,83 @@
           "target": {
             "root": "xdg_data",
             "path": "themes/SenomyOS-Touch/gtk-3.0/gtk-contained.css"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "utility-corner-tl",
+          "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/utility-corner-tl.svg",
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/utility-corner-tl.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "utility-corner-tr",
+          "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/utility-corner-tr.svg",
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/utility-corner-tr.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "utility-corner-bl",
+          "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/utility-corner-bl.svg",
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/utility-corner-bl.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "utility-corner-br",
+          "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/utility-corner-br.svg",
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/utility-corner-br.svg"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "island-material",
+          "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/island-material.png",
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/island-material.png"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "workspace-chrome",
+          "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/chrome-sculpture-v1.png",
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/chrome-sculpture-v1.png"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "workspace-pane",
+          "source": "appearance/file-manager/gtk3/SenomyOS/gtk-3.0/assets/workspace-pane.svg",
+          "target": {
+            "root": "xdg_data",
+            "path": "themes/SenomyOS/gtk-3.0/assets/workspace-pane.svg"
           },
           "kind": "file",
           "strategy": "replace",
@@ -655,7 +1026,10 @@
         {
           "id": "icon-accessibility",
           "source": "appearance/lock/assets/icons/accessibility.png",
-          "target": {"root": "xdg_data", "path": "senomyos/appearance/icons/accessibility.png"},
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/icons/accessibility.png"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -663,7 +1037,10 @@
         {
           "id": "icon-keyboard",
           "source": "appearance/lock/assets/icons/keyboard.png",
-          "target": {"root": "xdg_data", "path": "senomyos/appearance/icons/keyboard.png"},
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/icons/keyboard.png"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -671,7 +1048,10 @@
         {
           "id": "icon-next",
           "source": "appearance/lock/assets/icons/next.png",
-          "target": {"root": "xdg_data", "path": "senomyos/appearance/icons/next.png"},
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/icons/next.png"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -679,7 +1059,10 @@
         {
           "id": "icon-power",
           "source": "appearance/lock/assets/icons/power.png",
-          "target": {"root": "xdg_data", "path": "senomyos/appearance/icons/power.png"},
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/icons/power.png"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -687,7 +1070,10 @@
         {
           "id": "icon-recovery",
           "source": "appearance/lock/assets/icons/recovery.png",
-          "target": {"root": "xdg_data", "path": "senomyos/appearance/icons/recovery.png"},
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/icons/recovery.png"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -695,7 +1081,10 @@
         {
           "id": "icon-restart",
           "source": "appearance/lock/assets/icons/restart.png",
-          "target": {"root": "xdg_data", "path": "senomyos/appearance/icons/restart.png"},
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/icons/restart.png"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -703,7 +1092,10 @@
         {
           "id": "icon-session",
           "source": "appearance/lock/assets/icons/session.png",
-          "target": {"root": "xdg_data", "path": "senomyos/appearance/icons/session.png"},
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/icons/session.png"
+          },
           "kind": "file",
           "strategy": "replace",
           "mode": "0644"
@@ -718,6 +1110,50 @@
           "kind": "file",
           "strategy": "replace",
           "mode": "0755"
+        },
+        {
+          "id": "auth-surface",
+          "source": "appearance/lock/assets/auth-surface.png",
+          "target": {
+            "root": "xdg_data",
+            "path": "senomyos/appearance/frames/auth-surface.png"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "auth-heading-font",
+          "source": "appearance/shared/fonts/bruno-ace-sc/BrunoAceSC-Regular.ttf",
+          "target": {
+            "root": "xdg_data",
+            "path": "fonts/bruno-ace-sc/BrunoAceSC-Regular.ttf"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "auth-heading-font-licence",
+          "source": "appearance/shared/fonts/bruno-ace-sc/OFL.txt",
+          "target": {
+            "root": "xdg_data",
+            "path": "fonts/bruno-ace-sc/OFL.txt"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        },
+        {
+          "id": "live-config",
+          "source": "appearance/lock/hyprlock-live.conf",
+          "target": {
+            "root": "xdg_config",
+            "path": "hypr/hyprlock-live.conf"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
         }
       ]
     },
@@ -747,6 +1183,39 @@
       "reason": "Use system component grub-staged; boot activation remains gated on disposable-machine evidence.",
       "post_apply": [],
       "entries": []
+    },
+    {
+      "id": "application-lifetime",
+      "description": "Independent user application launch scopes and migration inspection",
+      "scope": "user",
+      "readiness": "ready",
+      "reason": "Ordinary apps are placed outside the shell cgroup before activation; shell helpers retain normal cleanup.",
+      "warning": "Installing this adapter does not migrate old app processes or restart the desktop.",
+      "post_apply": [],
+      "entries": [
+        {
+          "id": "launcher",
+          "source": "scripts/senomy-app-launch",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy-app-launch"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0755"
+        },
+        {
+          "id": "adapter",
+          "source": "scripts/senomy_app_launch.py",
+          "target": {
+            "root": "user_bin",
+            "path": "senomy_app_launch.py"
+          },
+          "kind": "file",
+          "strategy": "replace",
+          "mode": "0644"
+        }
+      ]
     }
   ]
 }

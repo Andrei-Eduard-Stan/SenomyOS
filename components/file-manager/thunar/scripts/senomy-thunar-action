@@ -46,8 +46,46 @@ case "$action" in
     validate_paths 32 true "$@"
     command -v sha256sum >/dev/null 2>&1 || fail_action "sha256sum is not installed."
     command -v wl-copy >/dev/null 2>&1 || fail_action "wl-copy is not installed."
-    sha256sum -- "$@" | wl-copy || fail_action "The checksum clipboard operation failed."
+    result="$(timeout 30s sha256sum -- "$@")" || fail_action "Checksum calculation failed or exceeded 30 seconds; the clipboard was not changed."
+    printf '%s\n' "$result" | wl-copy || fail_action "The checksum clipboard operation failed."
     notify "SHA-256 copied" "$# checksum(s) copied to the clipboard."
+    ;;
+  copy-name)
+    validate_paths 100 false "$@"
+    command -v wl-copy >/dev/null 2>&1 || fail_action "wl-copy is not installed."
+    for path in "$@"; do basename -- "$path"; done |
+      wl-copy || fail_action "The name clipboard operation failed."
+    notify "Names copied" "$# filename(s) copied to the clipboard."
+    ;;
+  copy-uri | copy-project-path)
+    validate_paths 100 false "$@"
+    command -v python3 >/dev/null 2>&1 || fail_action "Python 3 is not installed."
+    command -v wl-copy >/dev/null 2>&1 || fail_action "wl-copy is not installed."
+    result="$(python3 - "$action" "$@" <<'PYCODE'
+from pathlib import Path
+import sys
+mode,*items=sys.argv[1:]
+if mode == "copy-uri":
+    result=[Path(item).as_uri() for item in items]
+else:
+    result=[]
+    project=None
+    for item in items:
+        path=Path(item)
+        start=path if path.is_dir() else path.parent
+        root=next((parent for parent in [start,*start.parents][:64]
+                   if (parent/".git").exists() or (parent/".hg").is_dir()),None)
+        if root is None:
+            sys.exit("A selected item is outside a Git or Mercurial workspace.")
+        if project is not None and root != project:
+            sys.exit("Select items within one workspace to copy project-relative paths.")
+        project=root
+        result.append(str(path.relative_to(root)))
+print("\n".join(result))
+PYCODE
+)" || fail_action "Could not prepare paths; select local files in one workspace for project paths. The clipboard was not changed."
+    printf '%s\n' "$result" | wl-copy || fail_action "The path clipboard operation failed."
+    notify "Paths copied" "$# item(s) copied to the clipboard."
     ;;
   *) fail_action "Unknown allowlisted action." ;;
 esac

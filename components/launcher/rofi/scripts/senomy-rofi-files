@@ -3,6 +3,8 @@
 # Bounded local file search for the SenomyOS Rofi Command Lens. Paths are
 # carried through ROFI_INFO and are never evaluated as shell syntax.
 set -euo pipefail
+APP_LAUNCH="$(cd -- "$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")/../../../.." && pwd)/scripts/senomy-app-launch"
+if [[ ! -x "$APP_LAUNCH" ]]; then APP_LAUNCH="$(command -v senomy-app-launch || true)"; fi
 export LC_ALL="${LC_ALL:-C.UTF-8}"
 
 readonly FIELD_SEPARATOR=$'\x1f'
@@ -131,11 +133,6 @@ resolve_file_workspace() {
   fi
 }
 
-launch_detached() {
-  local setsid_bin
-  setsid_bin="$(resolve_command "${SENOMY_SETSID_BIN:-setsid}")" || return 1
-  "$setsid_bin" --fork "$@" >/dev/null 2>&1
-}
 
 handle_selection() {
   local return_code="$1" selected="${ROFI_INFO:-}" opener
@@ -146,11 +143,11 @@ handle_selection() {
   case "$return_code" in
     1)
       opener="$(resolve_command "${SENOMY_GIO_BIN:-gio}")" || { emit_status "Open unavailable" "GIO is not installed."; return; }
-      launch_detached "$opener" open -- "$selected" || emit_status "Open failed" "The desktop opener could not be started."
+      "$APP_LAUNCH" --quiet open "$selected" || emit_status "Open failed" "The desktop opener could not be started."
       ;;
     10)
       opener="$(resolve_file_workspace)" || { emit_status "Reveal unavailable" "The file workspace is not installed."; return; }
-      launch_detached "$opener" --select "$selected" || emit_status "Reveal failed" "Thunar could not be started."
+      "$APP_LAUNCH" --quiet tool files --select "$selected" || emit_status "Reveal failed" "Thunar could not be started."
       ;;
     *) emit_status "Input refused" "Files mode accepts only listed results." ;;
   esac
@@ -177,7 +174,7 @@ list_results() {
     : >"$SEARCH_TEMP_FILE"
     set +e
     timeout --signal=TERM "${TIMEOUT_SECONDS}s" find -P "$root" -xdev -mindepth 1 -maxdepth "$MAX_DEPTH" \
-      ! -path '*/.*' \( -type f -o -type d \) -print0 >"$SEARCH_TEMP_FILE" 2>/dev/null
+      \( -name '.*' -prune \) -o \( -type f -o -type d \) -print0 >"$SEARCH_TEMP_FILE" 2>/dev/null
     find_status=$?
     set -e
     [[ "$find_status" -eq 124 ]] && timed_out=true
@@ -196,7 +193,11 @@ list_results() {
         display_parent="~/${parent#"$HOME/"}"
       fi
       [[ -d "$path" ]] && icon="folder" || icon="text-x-generic"
-      display="<span weight=\"bold\">$(markup_escape "$name")</span>  ·  <span size=\"small\" foreground=\"#9ea1ae\">$(markup_escape "$display_parent")</span>"
+      # Avoid two forked command substitutions for every catalog row.
+      name="${name//&/\&amp;}"; name="${name//</\&lt;}"; name="${name//>/\&gt;}"
+      display_parent="${display_parent//&/\&amp;}"
+      display_parent="${display_parent//</\&lt;}"; display_parent="${display_parent//>/\&gt;}"
+      display="<span weight=\"bold\">$name</span>  ·  <span size=\"small\" foreground=\"#9ea1ae\">$display_parent</span>"
       printf '%s\0display%s%s' "$path" "$FIELD_SEPARATOR" "$display"
       printf '%sicon%s%s' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$icon"
       printf '%sinfo%s%s\n' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$path"
@@ -219,6 +220,45 @@ list_results() {
   fi
 }
 
+cache_path() {
+  local key directory
+  directory="${XDG_CACHE_HOME:-$HOME/.cache}/senomyos/command-lens"
+  mkdir -p -- "$directory"
+  chmod 700 "$directory"
+  # A changed policy must never reuse a catalog from different search roots.
+  key="$(printf '%s\0' catalog-v1 "$HOME" "${SEARCH_ROOTS[@]}" "$MAX_DEPTH" "$MAX_RESULTS" "$TIMEOUT_SECONDS" | sha256sum)"
+  printf '%s/%s.catalog\n' "$directory" "${key%% *}"
+}
+
+refresh_cache() {
+  local cache="$1" force="${2:-false}" temporary now modified
+  exec 8>"$cache.lock"
+  flock -n 8 || return 0
+  now="$(date +%s)"
+  modified="$(stat -c %Y -- "$cache" 2>/dev/null || printf 0)"
+  if [[ "$force" != true ]] && ((now - modified < 30)); then return 0; fi
+  temporary="$(mktemp -- "$cache.XXXXXX")"
+  # Run the existing bounded collector in a subshell so its temporary-file
+  # trap cannot replace this worker's cleanup, and publish complete rows only.
+  if (list_results) >"$temporary"; then
+    chmod 600 "$temporary"
+    mv -f -- "$temporary" "$cache"
+  else
+    rm -f -- "$temporary"
+    return 1
+  fi
+}
+
+cached_results() {
+  local cache="$1"
+  if [[ -r "$cache" ]]; then
+    cat -- "$cache"
+  else
+    emit_headers "File list is loading · reopen Files or select Refresh"
+  fi
+  printf 'Refresh file list\0info%s__senomy_refresh__%sicon%sview-refresh\n' "$FIELD_SEPARATOR" "$FIELD_SEPARATOR" "$FIELD_SEPARATOR"
+}
+
 load_status=0
 load_roots || load_status=$?
 case "$load_status" in
@@ -227,6 +267,28 @@ case "$load_status" in
   21) emit_status "File search unavailable" "The current home directory cannot be resolved safely."; exit 0 ;;
   22) emit_status "File search unavailable" "The file-search configuration is invalid or unsafe."; exit 0 ;;
   *) emit_status "File search unavailable" "The search-root policy could not be loaded."; exit 0 ;;
+esac
+
+# Rofi initializes every mode, including Files, before showing Apps. The
+# launcher requests the private snapshot here and refreshes it separately.
+case "${1:-}" in
+  --refresh-cache)
+    refresh_cache "$(cache_path)"
+    exit
+    ;;
+  --cached)
+    cache="$(cache_path)"
+    if [[ "${ROFI_RETV:-0}" == 0 ]]; then
+      cached_results "$cache"
+      exit
+    elif [[ "${ROFI_INFO:-}" == __senomy_refresh__ ]]; then
+      refresh_cache "$cache" true
+      cached_results "$cache"
+      exit
+    fi
+    ;;
+  '') ;;
+  *) emit_status "Input refused" "Unknown file provider option."; exit 2 ;;
 esac
 
 case "${ROFI_RETV:-0}" in

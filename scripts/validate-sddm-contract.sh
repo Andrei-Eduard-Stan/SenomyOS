@@ -48,13 +48,13 @@ grep -qF 'function sessionIsRecovery(index)' "$MAIN_QML"
 grep -qF 'function preferredNormalSessionIndex()' "$MAIN_QML"
 grep -qF 'function nextNormalSessionIndex(current)' "$MAIN_QML"
 grep -qF 'if (selectedSessionIndex < 0 || sessionIsRecovery(selectedSessionIndex))' "$MAIN_QML"
-grep -qF 'onClicked: root.selectNextNormalSession()' "$MAIN_QML"
+grep -qF 'onClicked:controller.selectNextNormalSession()' "$THEME/CompactLogin.qml"
 ! grep -qF '(root.selectedSessionIndex + 1) % root.sessionCount()' "$MAIN_QML"
 grep -qF 'sddm.powerOff()' "$MAIN_QML"
 grep -qF 'sddm.reboot()' "$MAIN_QML"
 grep -qF 'keyboard.currentLayout = index' "$MAIN_QML"
-grep -qF '{ "code": "gb", "label": "UK" }' "$MAIN_QML"
-grep -qF '{ "code": "us", "label": "US" }' "$MAIN_QML"
+grep -qF 'function selectNextKeyboardLayout()' "$MAIN_QML"
+grep -qF 'KEYBOARD // ' "$MAIN_QML"
 grep -qF 'RECOVERY RUNTIME NOT INSTALLED' "$MAIN_QML"
 grep -qF 'var value = sessionModel.data(modelIndex, 260)' "$MAIN_QML"
 grep -qxF 'PreviewUser=' "$THEME/theme.conf"
@@ -70,8 +70,13 @@ for asset in controls identity junction diagnostic-tick clock-notification; do
     "$SHARED_FRAMES/motifs/${asset}.svg" \
     "$THEME/assets/frames/motifs/${asset}.svg"
 done
-grep -qF 'source: "assets/frames/compact/corner-tl.svg"' "$FRAME_QML"
-grep -qF 'source: "assets/frames/motifs/" + frame.motif + ".svg"' "$FRAME_QML"
+grep -qF 'source:"assets/frames/island/corner-"+modelData.file+".svg"' "$FRAME_QML"
+for spec in tl:51 tr:50 bl:54 br:52; do
+  cmp -s "$REPO_ROOT/assets/senomy_island_expanded/SVG/Asset ${spec#*:}.svg" "$THEME/assets/frames/island/corner-${spec%%:*}.svg"
+done
+cmp -s "$REPO_ROOT/appearance/shared/auth/VisualRoles.js" "$THEME/Theme.js"
+cmp -s "$REPO_ROOT/appearance/shared/fonts/bruno-ace-sc/BrunoAceSC-Regular.ttf" "$THEME/assets/fonts/BrunoAceSC-Regular.ttf"
+cmp -s "$REPO_ROOT/appearance/shared/fonts/bruno-ace-sc/OFL.txt" "$THEME/assets/fonts/OFL.txt"
 jq -e '[.components[] | select(.id == "sddm") | .entries[] | .source] |
   index("appearance/login/sddm/senomyos/FrameSurface.qml") != null' \
   "$REPO_ROOT/deploy/system-manifest.json" >/dev/null
@@ -84,26 +89,13 @@ grep -qF 'X11 sessions are denied' "$LOGIN_RUNTIME/senomy-sddm-x11-session"
 
 grep -qF 'path = screenshot' "$HYPRLOCK"
 grep -qF 'path = $XDG_DATA_HOME/senomyos/appearance/avatar.png' "$HYPRLOCK"
-for icon in accessibility keyboard next power recovery restart session; do
-  grep -qF "path = \$XDG_DATA_HOME/senomyos/appearance/icons/${icon}.png" "$HYPRLOCK"
-  [[ -s "$REPO_ROOT/appearance/lock/assets/icons/${icon}.png" ]]
-done
 grep -qF 'pam:enabled = true' "$HYPRLOCK"
-grep -qF 'text = LAYOUT  $LAYOUT[UK,US]' "$HYPRLOCK"
-grep -qF 'SUPER+SPACE TO SWITCH' "$HYPRLOCK"
+grep -qF 'text = Keyboard · $LAYOUT' "$HYPRLOCK"
 ! grep -Eq '^[[:space:]]*(onclick|cmd\[)' "$HYPRLOCK"
-grep -qF 'Exact 1920px Rail grid: 32px outer inset, 22px gaps, 170px optical height.' "$HYPRLOCK"
-! grep -qF 'size = 94%, 18.3%' "$HYPRLOCK"
-for spec in utility:408x170 identity:284x170 authentication:654x170 session:202x170 clock:220x170; do
-  name="${spec%%:*}"
-  dimensions="${spec#*:}"
-  frame="$REPO_ROOT/appearance/lock/assets/frames/${name}.png"
-  [[ -s "$frame" ]]
-  [[ "$(identify -format '%wx%h' "$frame")" == "$dimensions" ]]
-  grep -qF "path = \$XDG_DATA_HOME/senomyos/appearance/frames/lock-${name}.png" "$HYPRLOCK"
-done
-jq -e '[.components[] | select(.id == "hyprlock") | .entries[] | select(.id | startswith("frame-"))] |
-  length == 5' "$REPO_ROOT/deploy/manifest.json" >/dev/null
+grep -qF 'path = $XDG_DATA_HOME/senomyos/appearance/frames/auth-surface.png' "$HYPRLOCK"
+[[ "$(identify -format '%wx%h' "$REPO_ROOT/appearance/lock/assets/auth-surface.png")" == 320x460 ]]
+! grep -qF 'Exact 1920px Rail grid' "$HYPRLOCK"
+jq -e '[.components[] | select(.id == "hyprlock") | .entries[] | select(.id == "auth-surface")] | length == 1' "$REPO_ROOT/deploy/manifest.json" >/dev/null
 
 grep -qF 'readonly EXPECTED_CALLER=senomy-recovery' "$RECOVERY/senomy-password-reset-helper"
 grep -qF '[[ "${SUDO_USER:-}" == "$EXPECTED_CALLER" ]]' "$RECOVERY/senomy-password-reset-helper"

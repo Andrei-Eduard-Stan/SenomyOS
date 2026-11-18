@@ -1,21 +1,28 @@
-# SenomyOS lock surface
+# Matching authentication lock
 
-`hyprlock.conf` is the in-session counterpart to the SDDM theme. Its background
-uses Hyprlock's `screenshot` source with local GPU blur, so it represents the
-real desktop without letting pointer or keyboard input reach that desktop.
+Generated Hyprlock profiles retain PAM, native password/failure feedback, disabled
+fingerprint policy, empty-input handling and ext-session-lock ownership. A centered
+320×460 Island groups account identity, password and keyboard context; the larger
+clock stays above it. The chibi is omitted for now, with identity and field labels
+rebalanced within that frame. Authored assets and existing typography roles are retained.
+The composition targets at least 360×640 logical output; smaller outputs are not
+certified. Nothing here starts a lock or changes automatic-idle policy.
 
-The pointer remains visible so the lock surface does not look frozen. Hyprlock
-authentication is keyboard-driven: password input is captured globally and
-Enter submits it, so the input field does not need to be clicked or selected.
-The deliberately high-contrast rail, strong input outline, and left-aligned
-password indicators must make typed input apparent at ordinary laptop viewing
-angles. `Super+L` invokes the deployed `senomy-lock` wrapper; it locks the
-existing session and does not log out or discard applications.
-The lock configuration deliberately contains no `onclick` entries and no
-dynamic command labels. Regular Hyprland application bindings are unavailable
-while the session-lock protocol is active; only separately declared locked
-media/brightness bindings may continue to work.
+`hyprlock.conf` keeps the native screenshot/blur fallback. `hyprlock-live.conf` uses
+an empty image path and translucent ground for live compositor blur. The guarded
+senomy-lock launcher chooses live only when its deployed live config is a regular
+non-symlink file and both misc:session_lock_xray and misc:session_lock_blur return
+typed boolean true. Disabled, missing or malformed capability evidence falls back
+to screenshot blur. Existing-lock ownership prevents a duplicate child.
 
-Password recovery is not executed inside the authenticated user's locked
-session. It is offered by SDDM and enters the separate restricted recovery
-session after authenticating the recovery credential.
+`live-background.lua` is an optional Hyprland policy example. Applying it is a
+separate deliberate compositor change; do not include it automatically or replace
+the running configuration just to test a theme. The installed reference compositor
+exposes these options, but native lock/unlock rendering and lifecycle remain
+unaccepted until attended verification.
+
+The auth-only appearance generator owns both emitted configs. The preview tool's
+--lock-only mode projects widgets over a labelled public substitute background with
+the configured brightness and scrim layering. These are offline geometry/type/asset
+projections, not real Hyprlock pixels, live desktop capture or authentication proof.
+Do not invoke a real lock as an unattended visual test.

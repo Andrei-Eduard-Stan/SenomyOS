@@ -1,0 +1,10 @@
+{
+  "kind": "generated-original-transparent-artwork",
+  "tool": "built-in image_gen",
+  "prompt": "Create a production UI artwork asset ONLY, not a screenshot or mockup. Wide 16:9 transparent PNG. SenomyOS x Metalheart, sharp early-2000s experimental digital chrome sculpture. Composition: a dense cluster of violently angular folded polished titanium shards runs across the TOP RIGHT 65 percent, concentrated in the upper 20 percent of the canvas; the TOP LEFT 30 percent must remain truly transparent for a real application title. Smaller sculptural blade clusters intrude from the BOTTOM LEFT and BOTTOM RIGHT corners only, each taking about 15 percent of width and 20 percent of height. The entire central 70 percent must be empty transparent alpha, since actual live file content will be drawn there. Highly convincing brushed silver faces, dark gunmetal undersides, brilliant ivory specular edges, subtle cold steel blue reflections, razor sharp ridged triangular folded foil, broad diagonal beveled titanium ribbons intersecting crystalline spiky webs. Sophisticated three dimensional lighting. Strong faceted metal instead of rounded liquid blobs. No gold, no warm beige, no neon. Do not draw any frame, outline, UI panel, window, interface, text, letters, icons, controls, logos, faces, mascot or watermark. Not a wallpaper with opaque black background: isolated sculpture against genuine transparency. Clean alpha around all sharp metallic silhouettes; strong dimensional brushed silver material suitable for a futuristic file manager's header and lower outer corners.",
+  "source": "/home/Duku/.codex/generated_images/01a1c563-640f-74c3-9191-500d408abaa7/exec-74bcd1c6-c560-403b-9819-19d543fd48cf.png",
+  "sha256": "73030997a314594b86f6ec06340820ab77401f418f07bb6ed2a71ea74828d421",
+  "use": "header and corner sculpture only; real UI is native GTK",
+  "user_reference": "Sculpted SenomyOS file-manager screenshot attached 17 November 2026",
+  "sourceSha256": "f1cc1715788a81a8f3a5a1ad58010f5b040c89b033e63b18ac00ac8c937d9496"
+}

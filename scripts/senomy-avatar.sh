@@ -9,10 +9,8 @@ export LC_ALL=C
 readonly ACTION="${1:-catalog}"
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly DEFAULT_CONFIG_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
-readonly CONFIG_DIR="${SENOMY_EWW_CONFIG:-$DEFAULT_CONFIG_DIR}"
+readonly CONFIG_DIR="$DEFAULT_CONFIG_DIR"
 readonly MANIFEST="${SENOMY_AVATAR_MANIFEST:-$CONFIG_DIR/data/senomy-avatars.json}"
-readonly EWW_BIN="${EWW_BIN:-/usr/bin/eww}"
-readonly EWW_CONFIG="${EWW_CONFIG:-$CONFIG_DIR}"
 readonly JQ_BIN="${JQ_BIN:-/usr/bin/jq}"
 readonly CACHE_ROOT="${SENOMY_AVATAR_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/senomyos/avatars}"
 
@@ -198,8 +196,6 @@ observer	portrait	52
 overview	chibi	74
 insights-hero	chibi	102
 power	chibi	104
-companion	chibi	288
-companion-compact	chibi	248
 EOF
   done < <("$JQ_BIN" -r '.states[] | [.id, (.bar // .chibi), .chibi, .portrait] | @tsv' "$MANIFEST")
   renders_json="$("$JQ_BIN" -Rsc '
@@ -240,30 +236,13 @@ EOF
               observer_path: render_path(.id; "observer"),
               overview_path: render_path(.id; "overview"),
               insights_hero_path: render_path(.id; "insights-hero"),
-              power_path: render_path(.id; "power"),
-              companion_path: render_path(.id; "companion"),
-              companion_compact_path: render_path(.id; "companion-compact")
+              power_path: render_path(.id; "power")
             }
           ]
         },
         error: null
       }
     ' "$MANIFEST"
-}
-
-set_state() {
-  local state="${1:-}"
-
-  [[ -n "$state" ]] || fail "Usage: senomy-avatar.sh set STATE"
-  validate_manifest || fail "Avatar manifest validation failed"
-  "$JQ_BIN" -e --arg state "$state" \
-    'any(.states[]; .id == $state)' "$MANIFEST" >/dev/null ||
-    fail "Unknown avatar state: $state"
-  [[ -x "$EWW_BIN" ]] || fail "Eww is unavailable"
-
-  "$EWW_BIN" \
-    --config "$EWW_CONFIG" \
-    update "chibi_state=$state"
 }
 
 case "$ACTION" in
@@ -277,21 +256,7 @@ case "$ACTION" in
     "$JQ_BIN" -r '.states[] | "\(.id)\t\(.label)\t\(.emotion)\t\(.activity)"' \
       "$MANIFEST"
     ;;
-  set)
-    [[ $# -eq 2 ]] || fail "Usage: senomy-avatar.sh set STATE"
-    set_state "$2"
-    ;;
-  reset)
-    [[ $# -eq 1 ]] || fail "Usage: senomy-avatar.sh reset"
-    validate_manifest || fail "Avatar manifest validation failed"
-    set_state "$("$JQ_BIN" -r '.default_state' "$MANIFEST")"
-    ;;
-  show)
-    [[ $# -eq 1 ]] || fail "Usage: senomy-avatar.sh show"
-    [[ -x "$EWW_BIN" ]] || fail "Eww is unavailable"
-    "$EWW_BIN" --no-daemonize --config "$EWW_CONFIG" get chibi_state
-    ;;
   *)
-    fail "Usage: senomy-avatar.sh {catalog|list|set STATE|reset|show}"
+    fail "Usage: senomy-avatar.sh {catalog|list}"
     ;;
 esac

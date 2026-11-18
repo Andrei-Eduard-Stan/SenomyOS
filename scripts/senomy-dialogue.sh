@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Select one bounded Senomy dialogue record from the versioned catalog.
-# The selector is deterministic within a time slot, so Eww reloads do not make
+# The selector is deterministic within a time slot, so shell reloads do not make
 # the line flicker. Uncommon lines appear in one out of every five slots.
 
 set -u

@@ -17,7 +17,6 @@ while IFS= read -r task; do
   fi
   cache="$TEST_ROOT/cache/console-$task.json"
   SENOMY_CONSOLE_CACHE="$cache" SENOMY_CONSOLE_TIMEOUT=3 \
-    SENOMY_EWW_BIN=/usr/bin/false EWW_CONFIG="$CONFIG_DIR" \
     "$CONFIG_DIR/scripts/console-status.sh" run "$task" >/dev/null 2>&1 || true
   payload="$(SENOMY_CONSOLE_CACHE="$cache" "$CONFIG_DIR/scripts/console-status.sh" read)"
   jq -e --arg task "$task" '

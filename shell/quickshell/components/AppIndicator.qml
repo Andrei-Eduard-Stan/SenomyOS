@@ -9,37 +9,40 @@ Item {
     property bool emphasized: false
 
     readonly property string appClass: {
-        if (!toplevel)
-            return "";
+        if (!toplevel) return "";
         const ipc = toplevel.lastIpcObject || {};
-        return String(ipc.class || ipc.initialClass || "").toLowerCase();
+        return String((toplevel.wayland && toplevel.wayland.appId) || ipc.class || ipc.initialClass || "");
     }
     readonly property string initialClass: {
-        if (!toplevel)
-            return "";
-        const ipc = toplevel.lastIpcObject || {};
-        return String(ipc.initialClass || ipc.class || "").toLowerCase();
+        const ipc = toplevel ? toplevel.lastIpcObject || {} : {};
+        return String(ipc.initialClass || appClass);
     }
-    readonly property var desktopEntry: DesktopEntries.heuristicLookup(appClass)
-        || DesktopEntries.heuristicLookup(initialClass)
-    readonly property string iconName: {
-        const aliases = {
-            "chatgpt": "chatgpt",
-            "code": "vscode",
-            "code-url-handler": "vscode",
-            "google-chrome": "google-chrome",
-            "org.mozilla.firefox": "firefox",
-            "org.gnome.nautilus": "org.gnome.Nautilus",
-            "thunar": "thunar"
-        };
-        const aliased = aliases[appClass] || aliases[initialClass] || "";
-        if (aliased.length > 0)
-            return aliased;
-        if (desktopEntry && desktopEntry.icon)
-            return desktopEntry.icon;
-        return appClass || initialClass;
+    // Track discovery completion as well as the window app ID.
+    readonly property var applications: DesktopEntries.applications.values
+    readonly property var desktopEntry: {
+        const count = applications.length;
+        if (!appClass && !initialClass) return null;
+        return (appClass ? DesktopEntries.byId(appClass) : null)
+            || (initialClass ? DesktopEntries.byId(initialClass) : null)
+            || (appClass ? DesktopEntries.heuristicLookup(appClass) : null)
+            || (initialClass ? DesktopEntries.heuristicLookup(initialClass) : null);
     }
-    readonly property string iconSource: iconName.length > 0 ? Quickshell.iconPath(iconName, true) : ""
+    readonly property string iconSource: {
+        const aliases = {"code": "vscode", "code-url-handler": "vscode",
+            "org.mozilla.firefox": "firefox", "org.gnome.nautilus": "org.gnome.Nautilus"};
+        const candidates = [desktopEntry ? desktopEntry.icon : "", appClass, initialClass,
+            aliases[appClass.toLowerCase()] || "", aliases[initialClass.toLowerCase()] || ""];
+        for (const name of candidates) {
+            if (!name) continue;
+            if (name.startsWith("/")) return "file://" + name;
+            if (name.startsWith("file://")) return name;
+            const resolved = Quickshell.iconPath(name, true);
+            if (resolved) return resolved;
+        }
+        return "";
+    }
+    readonly property bool iconReady: icon.status === Image.Ready
+    Accessible.name: desktopEntry ? desktopEntry.name : appClass || "Unknown application"
 
     width: 18
     height: 18
@@ -47,14 +50,15 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 4
-        color: root.iconSource.length > 0 ? "transparent"
+        color: root.iconReady ? "transparent"
             : root.emphasized ? Config.Theme.glassFocus : Config.Theme.glassRaised
-        border.width: root.iconSource.length > 0 ? 0 : 1
+        border.width: root.iconReady ? 0 : 1
         border.color: root.emphasized ? Config.Theme.accent : Config.Theme.dim
     }
 
     Image {
-        visible: root.iconSource.length > 0
+        id: icon
+        visible: root.iconReady
         anchors.fill: parent
         anchors.margins: 0
         source: root.iconSource
@@ -62,12 +66,11 @@ Item {
         mipmap: true
     }
 
-    Rectangle {
-        visible: root.iconSource.length === 0
+    Text {
+        visible: !root.iconReady
         anchors.centerIn: parent
-        width: 5
-        height: 5
-        radius: 2
-        color: root.emphasized ? Config.Theme.background : Config.Theme.muted
+        text: root.appClass ? root.appClass.charAt(0).toUpperCase() : "?"
+        font.pixelSize: 10
+        color: Config.Theme.foreground
     }
 }

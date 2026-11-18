@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from qa_directory_host import directory_host
 import importlib.util
 repo=Path(__file__).resolve().parents[1]
 shell=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else repo/'shell/quickshell'
@@ -33,6 +34,7 @@ with tempfile.TemporaryDirectory(prefix='senomy-services-') as directory:
     copied=root/'shell/quickshell';shutil.copytree(shell,copied,symlinks=True)
     for name in ['appearance','assets']:(root/name).symlink_to(repo/name,target_is_directory=True)
     (copied/'components/DashboardWindow.qml').write_text(m.HOST)
+    (copied/'components/DirectorySurfaceWindow.qml').write_text(directory_host(shell))
     shutil.copy2(shell/'tests/fixtures/performance-routes.qml',copied/'performance-routes-test.qml')
     result=subprocess.run(['qs','--path',str(copied/'performance-routes-test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=30)
     output=result.stdout+result.stderr

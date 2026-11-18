@@ -198,95 +198,6 @@ emit_activity() {
     '
 }
 
-emit_eww() {
-  local cache_root="${XDG_CACHE_HOME:-"$USER_HOME/.cache"}/eww"
-  local activity_file="${SENOMY_STATE_HOME:-${XDG_STATE_HOME:-"$USER_HOME/.local/state"}/senomyos}/activity.jsonl"
-  local log_file
-  local log_text
-
-  log_file="$(
-    find "$cache_root" -maxdepth 1 -type f -name 'eww_*.log' \
-      -printf '%T@ %p\n' 2>/dev/null |
-      sort -nr |
-      head -n 1 |
-      cut -d' ' -f2-
-  )"
-
-  [[ -n "$log_file" && -r "$log_file" ]] ||
-    emit_error "eww-log" "source_unavailable" "No readable native Eww log file exists. Senomy interactions remain available under Activity."
-
-  if [[ ! -s "$log_file" && -r "$activity_file" ]]; then
-    SENOMY_STATE_HOME="$(dirname "$activity_file")" emit_activity |
-      jq -c '.source = "eww-interaction-bridge" | .data.mode = "eww" | .data.native_available = false'
-    return
-  fi
-
-  [[ -s "$log_file" ]] ||
-    emit_error "eww-log" "empty_native_log" "This Eww build created an empty native log. No structured shell interactions have been recorded yet."
-
-  log_text="$(tail -n "$LIMIT" "$log_file" 2>/dev/null)" ||
-    emit_error "eww-log" "source_unavailable" "Unable to read the Eww log"
-
-  jq -Rsc \
-    --argjson observed_at "$observed_at" \
-    --argjson limit "$LIMIT" \
-    --arg mode "$MODE" \
-    --arg user_home "$USER_HOME" \
-    --arg user_name "$USER_NAME" \
-    '
-      def sanitize:
-        explode
-        | map(if . < 32 or . == 127 then 32 else . end)
-        | implode
-        | gsub("  +"; " ")
-        | gsub($user_home; "$HOME")
-        | gsub("/home/" + $user_name; "$HOME")
-        | if test("(?i)(password|passwd|secret|token|authorization:|cookie:)") then
-            "[redacted potentially sensitive entry]"
-          else
-            .
-          end
-        | .[0:240];
-
-      split("\n")
-      | map(select(length > 0))
-      | to_entries
-      | map({
-          id: ("eww-" + (.key | tostring)),
-          date: (
-            if (.value | length) >= 10 then .value[0:10] else "unknown" end
-          ),
-          time: (
-            if (.value | length) >= 20 then .value[11:19] else "--:--:--" end
-          ),
-          severity: (
-            if (.value | test(" ERROR ")) then "error"
-            elif (.value | test(" WARN ")) then "warning"
-            elif (.value | test(" DEBUG ")) then "debug"
-            else "info"
-            end
-          ),
-          source: "eww",
-          title: "Eww daemon",
-          message: (.value | sanitize)
-        })
-      | reverse
-      | {
-          schema_version: 1,
-          ok: true,
-          source: "eww-log",
-          observed_at: $observed_at,
-          data: {
-            mode: $mode,
-            limit: $limit,
-            count: length,
-            entries: .
-          },
-          error: null
-        }
-    ' <<< "$log_text"
-}
-
 case "$MODE" in
   activity)
     emit_activity
@@ -305,9 +216,6 @@ case "$MODE" in
     emit_journal \
       "journalctl-kernel" \
       journalctl -k -n "$LIMIT" -o json --no-pager
-    ;;
-  eww)
-    emit_eww
     ;;
   *)
     emit_error "timeline" "invalid_source" "Timeline source is not allowlisted"

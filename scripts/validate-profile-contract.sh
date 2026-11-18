@@ -41,8 +41,7 @@ printf '{"density":"compact"}\n' >"$TEST_ROOT/preferences.json"
 SENOMY_PROFILE="$REPO_ROOT/deploy/profiles/desktop.json" SENOMY_PREFERENCES="$TEST_ROOT/preferences.json" \
   SENOMY_MONITORS_JSON="$monitors" "$REPO_ROOT/scripts/bar-layout.sh" |
   jq -e '.data.preferred_density == "compact" and .data.density == "compact"' >/dev/null
-SENOMY_PROFILE="$REPO_ROOT/deploy/profiles/touch.json" SENOMY_PREFERENCES=/dev/null \
-  "$REPO_ROOT/scripts/appearance-status.sh" | jq -e '.data.font_scale == "touch"' >/dev/null
+jq -e '.appearance.font_scale == "touch"' "$REPO_ROOT/deploy/profiles/touch.json" >/dev/null
 
 printf '%s\n' \
   '#!/usr/bin/env bash' \
@@ -76,7 +75,7 @@ chmod 755 "$TEST_ROOT/swaybg"
 XDG_CONFIG_HOME="$TEST_ROOT/config" XDG_DATA_HOME="$TEST_ROOT/data" \
 SENOMY_PROFILE="$REPO_ROOT/deploy/profiles/automatic.json" \
 SENOMY_SWAYBG_BIN="$TEST_ROOT/swaybg" SENOMY_WALLPAPER_LOG="$TEST_ROOT/wallpaper.log" \
-  "$REPO_ROOT/components/desktop/scripts/senomy-wallpaper"
+  "$REPO_ROOT/components/desktop/scripts/senomy-wallpaper" --once
 grep -qxF -- "-c #08090b -m fill -i $TEST_ROOT/data/senomyos/appearance/backgrounds/desktop.png" \
   "$TEST_ROOT/wallpaper.log"
 

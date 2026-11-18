@@ -3,7 +3,6 @@ Description=SenomyOS Quickshell shell
 Wants=graphical-session.target
 After=graphical-session.target
 Conflicts=swaync.service
-OnFailure=senomy-shell-fallback.service
 StartLimitIntervalSec=20
 StartLimitBurst=3
 

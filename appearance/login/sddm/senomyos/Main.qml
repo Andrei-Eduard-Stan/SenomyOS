@@ -21,12 +21,60 @@ Rectangle {
 
     property date now: new Date()
     property bool authenticating: false
+    property bool sessionStarting:false
+    property bool userChooserOpen:false
+    property var activePasswordItem:null
+    property var accountModel:userModel
+    readonly property bool canPowerOff:sddm.canPowerOff===true
+    readonly property bool canReboot:sddm.canReboot===true
+    readonly property bool capsLock:keyboard.capsLock===true
+    readonly property var account:selectedAccount(normalUser)
+    readonly property string accountDisplayName:account.realName || normalUser || typedUser
+    readonly property string accountIcon:account.icon || ""
+    readonly property string fallbackAvatar:config.stringValue("Avatar") || "assets/avatar.png"
+    signal credentialsReset()
+    signal focusCredentialsRequested()
+    onUserChooserOpenChanged:if(userChooserOpen)credentialsReset();else Qt.callLater(()=>focusCredentialsRequested())
+    onNormalUserChanged:credentialsReset()
+    onTypedUserChanged:credentialsReset()
+    onConfirmationActionChanged:if(confirmationAction!=="")credentialsReset()
+    Keys.onEscapePressed:event=>{
+        if(confirmationAction!==""){confirmationAction="";event.accepted=true;}
+        else if(userChooserOpen){userChooserOpen=false;event.accepted=true;}
+        else event.accepted=false;
+    }
+    function selectedAccount(name) {
+        if(typeof userModel.count!=="number" || typeof userModel.data!=="function")return {};
+        // SDDM 0.21 UserModel: NameRole=257, RealNameRole=258, IconRole=260.
+        for(var i=0;i<userModel.count;i++) {
+            var row=userModel.index(i,0);
+            if(String(userModel.data(row,257))===name) {
+                var icon=String(userModel.data(row,260) || "");
+                return {realName:String(userModel.data(row,258) || ""),icon:icon.indexOf("file:///")===0?icon:""};
+            }
+        }
+        return {};
+    }
+    function selectAccount(name) {
+        if(authenticating || name===recoveryUser)return false;
+        normalUser=String(name);typedUser="";userChooserOpen=false;statusMessage="";
+        credentialsReset();Qt.callLater(()=>focusCredentialsRequested());return true;
+    }
+    function keyboardLayoutLabel() {
+        var layouts=keyboard.layouts || [];
+        return layouts.length && layouts[keyboard.currentLayout] ? String(layouts[keyboard.currentLayout].shortName).toUpperCase() : "UNAVAILABLE";
+    }
+    function selectNextKeyboardLayout() {
+        if(authenticating || keyboardLayoutCount()<2)return;
+        keyboard.currentLayout=(keyboard.currentLayout+1)%keyboardLayoutCount();
+    }
     property bool recoveryMode: false
     property bool accessibilityMode: false
     property string statusMessage: ""
     property string confirmationAction: ""
     property string normalUser: userModel.lastUser || config.stringValue("PreviewUser") || ""
     property string typedUser: ""
+    property string normalSessionKey: ""
     property int normalSessionIndex: -1
     property int selectedSessionIndex: -1
     property string recoveryUser: config.stringValue("RecoveryUser") || "senomy-recovery"
@@ -82,6 +130,7 @@ Rectangle {
     function resetNormalSession() {
         normalSessionIndex = preferredNormalSessionIndex()
         selectedSessionIndex = normalSessionIndex
+        normalSessionKey = sessionKey(normalSessionIndex)
     }
 
     function nextNormalSessionIndex(current) {
@@ -97,14 +146,34 @@ Rectangle {
     }
 
     function selectNextNormalSession() {
-        if (recoveryMode)
+        if (recoveryMode || authenticating)
             return
         var next = nextNormalSessionIndex(selectedSessionIndex)
         if (next >= 0) {
             normalSessionIndex = next
             selectedSessionIndex = next
+            normalSessionKey = sessionKey(next)
             statusMessage = "SESSION // " + sessionLabel(next)
         }
+    }
+
+    function sessionKey(index) {
+        if(index<0 || index>=sessionCount())return "";
+        const row=sessionModel.index(index,0);
+        // SDDM 0.21: directory/file/type roles keep X11/Wayland identities distinct.
+        return [257,258,259].map(role=>String(sessionModel.data(row,role) || "")).join("|");
+    }
+    function selectNormalSession(index) {
+        if(authenticating || recoveryMode || index<0 || index>=sessionCount() || sessionIsRecovery(index))return false;
+        normalSessionIndex=index;selectedSessionIndex=index;normalSessionKey=sessionKey(index);statusMessage="";return true;
+    }
+    function keyboardLayoutCurrentIndex(){return keyboard.currentLayout;}
+    function keyboardLayoutName(index) {
+        const item=(keyboard.layouts || [])[index];return item?String(item.longName || item.shortName).replace(/_/g," "):"Unavailable";
+    }
+    function selectKeyboardIndex(index) {
+        if(authenticating || index<0 || index>=keyboardLayoutCount())return false;
+        keyboard.currentLayout=index;statusMessage="";return true;
     }
 
     function keyboardLayoutCount() {
@@ -144,7 +213,7 @@ Rectangle {
     }
 
     function currentUser() {
-        return recoveryMode ? recoveryUser : (normalUser !== "" ? normalUser : typedUser)
+        return recoveryMode ? recoveryUser : (normalUser !== "" ? normalUser : typedUser.trim())
     }
 
     function activateUtility(action, passwordItem) {
@@ -157,6 +226,8 @@ Rectangle {
     }
 
     function beginRecovery(passwordItem) {
+        if(authenticating)return;
+        userChooserOpen=false;credentialsReset();
         if (recoveryMode) {
             recoveryMode = false
             resetNormalSession()
@@ -180,22 +251,34 @@ Rectangle {
     }
 
     function attemptLogin(passwordItem) {
-        if (authenticating || currentUser() === "" || passwordItem.text === "")
+        if (authenticating || userChooserOpen || confirmationAction!=="" || currentUser() === "" || passwordItem.text === "")
             return
         if (!recoveryMode) {
-            if (selectedSessionIndex < 0 || sessionIsRecovery(selectedSessionIndex))
-                resetNormalSession()
-            if (selectedSessionIndex < 0 || sessionIsRecovery(selectedSessionIndex)) {
-                statusMessage = "NORMAL SESSION UNAVAILABLE"
-                return
+            if(normalSessionKey) {
+                let exact=-1;
+                for(let i=0;i<sessionCount();i++)if(!sessionIsRecovery(i) && sessionKey(i)===normalSessionKey){exact=i;break;}
+                if(exact<0){statusMessage="Selected session is no longer available. Choose another session.";credentialsReset();return;}
+                selectedSessionIndex=exact;normalSessionIndex=exact;
+            } else resetNormalSession();
+            if(selectedSessionIndex<0 || sessionIsRecovery(selectedSessionIndex)) {
+                statusMessage="No desktop session is available.";credentialsReset();return;
             }
+        } else if(selectedSessionIndex<0 || !sessionIsRecovery(selectedSessionIndex)) {
+            statusMessage="Recovery session is no longer available.";credentialsReset();return;
         }
+        if(!recoveryMode && currentUser()===recoveryUser) {
+            statusMessage="USE RECOVER FOR THE SEPARATE RECOVERY ACCOUNT";return;
+        }
+        activePasswordItem=passwordItem;
         authenticating = true
-        statusMessage = recoveryMode ? "OPENING RESTRICTED RECOVERY" : "AUTHENTICATING"
-        sddm.login(currentUser(), passwordItem.text, selectedSessionIndex)
+        statusMessage = recoveryMode ? "OPENING RESTRICTED RECOVERY" : "Signing in…"
+        try { sddm.login(currentUser(), passwordItem.text, selectedSessionIndex); }
+        catch(error) { authenticating=false;statusMessage="Sign-in could not start. Please try again."; }
+        finally { credentialsReset(); }
     }
 
     function executeConfirmation() {
+        if(authenticating)return;
         var action = confirmationAction
         confirmationAction = ""
         if (action === "power" && sddm.canPowerOff)
@@ -217,1132 +300,50 @@ Rectangle {
         target: sddm
 
         function onLoginSucceeded() {
-            root.authenticating = false
-            root.statusMessage = "AUTHENTICATED"
+            root.sessionStarting=true
+            root.authenticating=true
+            root.credentialsReset()
+            root.statusMessage = "Starting session…"
         }
 
         function onLoginFailed() {
             root.authenticating = false
+            root.sessionStarting=false
+            root.credentialsReset()
+            if(root.activePasswordItem)Qt.callLater(()=>{if(root.activePasswordItem && root.activePasswordItem.visible && root.confirmationAction==="" && !root.userChooserOpen)root.activePasswordItem.forceActiveFocus();})
             root.statusMessage = root.recoveryMode ?
-                "RECOVERY AUTHENTICATION FAILED" : "AUTHENTICATION FAILED"
+                "Recovery sign-in failed. Try again." : "Sign-in failed. Check your password and try again."
         }
 
         function onInformationMessage(message) {
-            root.statusMessage = String(message).toUpperCase()
+            root.statusMessage = String(message).slice(0,256)
         }
     }
 
+    FontLoader { id: headingFace; source: "assets/fonts/BrunoAceSC-Regular.ttf" }
+    readonly property bool headingFontReady: headingFace.status === FontLoader.Ready
+    readonly property string headingFont: headingFace.status === FontLoader.Ready ? headingFace.name : Theme.headingFont
     Repeater {
         model: screenModel
-
         Item {
             id: screen
-            x: geometry.x
-            y: geometry.y
-            width: geometry.width
-            height: geometry.height
-
-            property bool isPrimary: index === screenModel.primary
-            property real scaleUnit: Math.min(width / 1920, height / 1080)
-            property bool narrow: width < 900
-
-            Image {
-                anchors.fill: parent
-                source: config.stringValue("Background") || "assets/background.png"
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                cache: true
+            x: geometry.x; y: geometry.y; width: geometry.width; height: geometry.height
+            readonly property bool controlsVisible: width > 0 && height > 0
+            // Per-output views remain usable; no cross-runtime focus ownership added.
+            AuthBackdrop {
+                anchors.fill:parent
+                source:config.stringValue("Background") || "assets/background-source.png"
+                fallbackSource:config.stringValue("BlurredBackground") || "assets/background.png"
+                blurAmount:{const v=parseFloat(config.stringValue("BackgroundBlur"));return isFinite(v)?v:0.85;}
+                scrimOpacity:{const v=parseFloat(config.stringValue("BackgroundScrim"));return isFinite(v)?v:0.34;}
+                readable:root.accessibilityMode
             }
-
-            Rectangle {
-                anchors.fill: parent
-                color: root.backgroundColor
-                opacity: root.accessibilityMode ? 0.58 : 0.34
-            }
-
-            Item {
-                id: rail
-                visible: screen.isPrimary && !screen.narrow
-                x: (screen.width - width) / 2
-                y: screen.height - height - (32 * screen.scaleUnit)
-                width: 1856 * screen.scaleUnit
-                height: 170 * screen.scaleUnit
-
-                property real pad: 34 * screen.scaleUnit
-                property real frameGap: 22 * screen.scaleUnit
-                property real iconSize: 28 * screen.scaleUnit
-                property real targetSize: 54 * screen.scaleUnit
-                property real bodySize: (root.accessibilityMode ? 18 : 16) * screen.scaleUnit
-                property real metaSize: (root.accessibilityMode ? 14 : 12) * screen.scaleUnit
-
-                FrameSurface {
-                    x: 0
-                    width: 408 * screen.scaleUnit
-                    height: rail.height
-                    opticalScale: screen.scaleUnit
-                    motif: "controls"
-                    surfaceColor: root.surfaceColor
-                    accentColor: root.accentColor
-                    dangerColor: root.dangerColor
-                    focused: utilityZone.activeFocus
-                }
-
-                FrameSurface {
-                    x: 430 * screen.scaleUnit
-                    width: 284 * screen.scaleUnit
-                    height: rail.height
-                    opticalScale: screen.scaleUnit
-                    motif: "identity"
-                    surfaceColor: root.surfaceColor
-                    accentColor: root.accentColor
-                    dangerColor: root.dangerColor
-                    attention: root.recoveryMode
-                }
-
-                FrameSurface {
-                    x: 736 * screen.scaleUnit
-                    width: 654 * screen.scaleUnit
-                    height: rail.height
-                    opticalScale: screen.scaleUnit
-                    motif: "junction"
-                    motifAnchor: "bottom"
-                    surfaceColor: root.surfaceColor
-                    accentColor: root.accentColor
-                    dangerColor: root.dangerColor
-                    focused: passwordInput.activeFocus || signInButton.activeFocus
-                    attention: root.authenticating
-                }
-
-                FrameSurface {
-                    x: 1412 * screen.scaleUnit
-                    width: 202 * screen.scaleUnit
-                    height: rail.height
-                    opticalScale: screen.scaleUnit
-                    motif: "diagnostic-tick"
-                    motifAnchor: "bottom"
-                    surfaceColor: root.surfaceColor
-                    accentColor: root.accentColor
-                    dangerColor: root.dangerColor
-                    focused: sessionZone.activeFocus
-                }
-
-                FrameSurface {
-                    x: 1636 * screen.scaleUnit
-                    width: 220 * screen.scaleUnit
-                    height: rail.height
-                    opticalScale: screen.scaleUnit
-                    motif: "clock-notification"
-                    motifAnchor: "bottom"
-                    surfaceColor: root.surfaceColor
-                    accentColor: root.accentColor
-                    dangerColor: root.dangerColor
-                }
-
-                Rectangle {
-                    visible: false
-                    x: rail.width * 0.225
-                    width: 1
-                    height: rail.height - (54 * screen.scaleUnit)
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: "#28ffffff"
-                }
-
-                Rectangle {
-                    visible: false
-                    x: rail.width * 0.39
-                    width: 1
-                    height: rail.height - (54 * screen.scaleUnit)
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: "#28ffffff"
-                }
-
-                Rectangle {
-                    visible: false
-                    x: rail.width * 0.755
-                    width: 1
-                    height: rail.height - (54 * screen.scaleUnit)
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: "#28ffffff"
-                }
-
-                Rectangle {
-                    visible: false
-                    x: rail.width * 0.875
-                    width: 1
-                    height: rail.height - (54 * screen.scaleUnit)
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: "#28ffffff"
-                }
-
-                Item {
-                    id: utilityZone
-                    x: rail.pad
-                    width: (408 * screen.scaleUnit) - (rail.pad * 2)
-                    height: parent.height
-
-                    Text {
-                        x: 0
-                        y: 30 * screen.scaleUnit
-                        text: "SENOMY  //  "
-                        color: root.foregroundColor
-                        font.family: root.fontFamily
-                        font.pixelSize: rail.bodySize
-                        font.weight: Font.Medium
-                        font.letterSpacing: 1.2 * screen.scaleUnit
-                    }
-
-                    Text {
-                        x: 116 * screen.scaleUnit
-                        y: 30 * screen.scaleUnit
-                        text: root.recoveryMode ? "RECOVERY" : "AUTH"
-                        color: root.accentColor
-                        font.family: root.fontFamily
-                        font.pixelSize: rail.bodySize
-                        font.weight: Font.Medium
-                        font.letterSpacing: 1.2 * screen.scaleUnit
-                    }
-
-                    Row {
-                        y: 76 * screen.scaleUnit
-                        spacing: 9 * screen.scaleUnit
-
-                        Item {
-                            width: 72 * screen.scaleUnit
-                            height: 82 * screen.scaleUnit
-                            opacity: sddm.canPowerOff ? 1 : 0.35
-                            activeFocusOnTab: sddm.canPowerOff
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: 4 * screen.scaleUnit
-                                color: "transparent"
-                                border.width: parent.activeFocus ? 1 : 0
-                                border.color: root.accentColor
-                            }
-
-                            Image {
-                                width: rail.iconSize
-                                height: rail.iconSize
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                source: "assets/icons/power.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                y: 45 * screen.scaleUnit
-                                text: "POWER"
-                                color: root.mutedColor
-                                font.family: root.fontFamily
-                                font.pixelSize: rail.metaSize
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: sddm.canPowerOff
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.confirmationAction = "power"
-                            }
-                            Keys.onReturnPressed: root.confirmationAction = "power"
-                            Keys.onEnterPressed: root.confirmationAction = "power"
-                            Keys.onSpacePressed: root.confirmationAction = "power"
-                        }
-
-                        Item {
-                            width: 72 * screen.scaleUnit
-                            height: 82 * screen.scaleUnit
-                            opacity: sddm.canReboot ? 1 : 0.35
-                            activeFocusOnTab: sddm.canReboot
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: 4 * screen.scaleUnit
-                                color: "transparent"
-                                border.width: parent.activeFocus ? 1 : 0
-                                border.color: root.accentColor
-                            }
-
-                            Image {
-                                width: rail.iconSize
-                                height: rail.iconSize
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                source: "assets/icons/restart.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                y: 45 * screen.scaleUnit
-                                text: "RESTART"
-                                color: root.mutedColor
-                                font.family: root.fontFamily
-                                font.pixelSize: rail.metaSize
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: sddm.canReboot
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.confirmationAction = "restart"
-                            }
-                            Keys.onReturnPressed: root.confirmationAction = "restart"
-                            Keys.onEnterPressed: root.confirmationAction = "restart"
-                            Keys.onSpacePressed: root.confirmationAction = "restart"
-                        }
-
-                        Item {
-                            width: 72 * screen.scaleUnit
-                            height: 82 * screen.scaleUnit
-                            activeFocusOnTab: true
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: 4 * screen.scaleUnit
-                                color: "transparent"
-                                border.width: parent.activeFocus ? 1 : 0
-                                border.color: root.accentColor
-                            }
-
-                            Image {
-                                width: rail.iconSize
-                                height: rail.iconSize
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                source: "assets/icons/accessibility.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                y: 45 * screen.scaleUnit
-                                text: "ACCESS"
-                                color: root.accessibilityMode ? root.accentColor : root.mutedColor
-                                font.family: root.fontFamily
-                                font.pixelSize: rail.metaSize
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.accessibilityMode = !root.accessibilityMode
-                            }
-                            Keys.onReturnPressed: root.accessibilityMode = !root.accessibilityMode
-                            Keys.onEnterPressed: root.accessibilityMode = !root.accessibilityMode
-                            Keys.onSpacePressed: root.accessibilityMode = !root.accessibilityMode
-                        }
-
-                        Item {
-                            visible: root.recoveryOffered
-                            width: 72 * screen.scaleUnit
-                            height: 82 * screen.scaleUnit
-                            activeFocusOnTab: visible
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: 4 * screen.scaleUnit
-                                color: "transparent"
-                                border.width: parent.activeFocus ? 1 : 0
-                                border.color: root.accentColor
-                            }
-
-                            Image {
-                                width: rail.iconSize
-                                height: rail.iconSize
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                source: "assets/icons/recovery.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                y: 45 * screen.scaleUnit
-                                text: root.recoveryMode ? "BACK" : "RECOVER"
-                                color: root.recoveryMode ? root.accentColor : root.mutedColor
-                                font.family: root.fontFamily
-                                font.pixelSize: rail.metaSize
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.beginRecovery(passwordInput)
-                            }
-                            Keys.onReturnPressed: root.beginRecovery(passwordInput)
-                            Keys.onEnterPressed: root.beginRecovery(passwordInput)
-                            Keys.onSpacePressed: root.beginRecovery(passwordInput)
-                        }
-                    }
-                }
-
-                Item {
-                    id: identityZone
-                    x: 430 * screen.scaleUnit
-                    width: 284 * screen.scaleUnit
-                    height: parent.height
-
-                    Rectangle {
-                        width: 86 * screen.scaleUnit
-                        height: width
-                        radius: width / 2
-                        x: 36 * screen.scaleUnit
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: root.raisedColor
-                        border.width: 1
-                        border.color: "#3dffffff"
-
-                        Image {
-                            anchors.fill: parent
-                            anchors.margins: 6 * screen.scaleUnit
-                            source: config.stringValue("Avatar") || "assets/avatar.png"
-                            fillMode: Image.PreserveAspectFit
-                        }
-                    }
-
-                    Text {
-                        x: 142 * screen.scaleUnit
-                        y: 74 * screen.scaleUnit
-                        width: identityZone.width - x - (12 * screen.scaleUnit)
-                        text: root.recoveryMode ? "RECOVERY" : root.normalUser.toUpperCase()
-                        visible: root.recoveryMode || root.normalUser !== ""
-                        color: root.foregroundColor
-                        font.family: root.fontFamily
-                        font.pixelSize: (root.accessibilityMode ? 28 : 25) * screen.scaleUnit
-                        font.weight: Font.Medium
-                        elide: Text.ElideRight
-                    }
-
-                    Text {
-                        x: 142 * screen.scaleUnit
-                        y: 78 * screen.scaleUnit
-                        text: "USERNAME"
-                        visible: !root.recoveryMode && root.normalUser === "" && desktopUsername.text === ""
-                        color: root.dimColor
-                        font.family: root.fontFamily
-                        font.pixelSize: 18 * screen.scaleUnit
-                    }
-
-                    TextInput {
-                        id: desktopUsername
-                        x: 142 * screen.scaleUnit
-                        y: 70 * screen.scaleUnit
-                        width: identityZone.width - x - (12 * screen.scaleUnit)
-                        height: 38 * screen.scaleUnit
-                        visible: !root.recoveryMode && root.normalUser === ""
-                        color: root.foregroundColor
-                        selectionColor: root.accentColor
-                        selectedTextColor: root.backgroundColor
-                        font.family: root.fontFamily
-                        font.capitalization: Font.AllUppercase
-                        font.pixelSize: (root.accessibilityMode ? 28 : 25) * screen.scaleUnit
-                        verticalAlignment: TextInput.AlignVCenter
-                        text: root.typedUser
-                        focus: screen.isPrimary && !screen.narrow && visible
-                        clip: true
-                        onTextChanged: root.typedUser = text
-                        KeyNavigation.tab: passwordInput
-                        Keys.onReturnPressed: passwordInput.forceActiveFocus()
-                        Keys.onEnterPressed: passwordInput.forceActiveFocus()
-                    }
-
-                    Rectangle {
-                        x: 142 * screen.scaleUnit
-                        y: 114 * screen.scaleUnit
-                        width: 70 * screen.scaleUnit
-                        height: 2 * screen.scaleUnit
-                        color: root.accentColor
-                    }
-                }
-
-                Item {
-                    id: authenticationZone
-                    x: 736 * screen.scaleUnit
-                    width: 654 * screen.scaleUnit
-                    height: parent.height
-
-                    Text {
-                        x: 28 * screen.scaleUnit
-                        y: 47 * screen.scaleUnit
-                        text: root.recoveryMode ? "RECOVERY PASSWORD" : "PASSWORD"
-                        color: root.mutedColor
-                        font.family: root.fontFamily
-                        font.pixelSize: rail.metaSize
-                        font.letterSpacing: 1.5 * screen.scaleUnit
-                    }
-
-                    Rectangle {
-                        id: passwordFrame
-                        x: 28 * screen.scaleUnit
-                        y: 78 * screen.scaleUnit
-                        width: authenticationZone.width - (230 * screen.scaleUnit)
-                        height: 58 * screen.scaleUnit
-                        radius: 4 * screen.scaleUnit
-                        color: "#7a0f1115"
-                        border.width: passwordInput.activeFocus ? 2 : 1
-                        border.color: passwordInput.activeFocus ? root.accentColor : "#5cffffff"
-
-                        TextInput {
-                            id: passwordInput
-                            anchors.left: parent.left
-                            anchors.right: visibilityButton.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.leftMargin: 18 * screen.scaleUnit
-                            anchors.rightMargin: 10 * screen.scaleUnit
-                            height: 42 * screen.scaleUnit
-                            color: root.foregroundColor
-                            selectionColor: root.accentColor
-                            selectedTextColor: root.backgroundColor
-                            font.family: root.fontFamily
-                            font.pixelSize: (root.accessibilityMode ? 20 : 18) * screen.scaleUnit
-                            verticalAlignment: TextInput.AlignVCenter
-                            echoMode: visibilityButton.revealed ? TextInput.Normal : TextInput.Password
-                            passwordCharacter: "•"
-                            enabled: !root.authenticating
-                            focus: screen.isPrimary && !screen.narrow && root.currentUser() !== ""
-                            KeyNavigation.backtab: desktopUsername.visible ? desktopUsername : passwordInput
-                            clip: true
-                            Keys.onReturnPressed: root.attemptLogin(passwordInput)
-                            Keys.onEnterPressed: root.attemptLogin(passwordInput)
-                        }
-
-                        Item {
-                            id: visibilityButton
-                            property bool revealed: false
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            width: 52 * screen.scaleUnit
-                            activeFocusOnTab: true
-
-                            Image {
-                                width: 22 * screen.scaleUnit
-                                height: width
-                                anchors.centerIn: parent
-                                source: "assets/icons/password-hidden.svg"
-                                opacity: visibilityButton.revealed ? 1 : 0.72
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: visibilityButton.revealed = !visibilityButton.revealed
-                            }
-                            Keys.onReturnPressed: visibilityButton.revealed = !visibilityButton.revealed
-                            Keys.onEnterPressed: visibilityButton.revealed = !visibilityButton.revealed
-                            Keys.onSpacePressed: visibilityButton.revealed = !visibilityButton.revealed
-                        }
-                    }
-
-                    Rectangle {
-                        id: signInButton
-                        x: authenticationZone.width - (184 * screen.scaleUnit)
-                        y: 78 * screen.scaleUnit
-                        width: 156 * screen.scaleUnit
-                        height: 58 * screen.scaleUnit
-                        radius: 4 * screen.scaleUnit
-                        color: root.authenticating ? "#746fbe" : root.accentColor
-                        opacity: passwordInput.text === "" ? 0.55 : 1
-                        activeFocusOnTab: passwordInput.text !== "" && !root.authenticating
-                        border.width: activeFocus ? 2 : 0
-                        border.color: root.foregroundColor
-
-                        Row {
-                            anchors.centerIn: parent
-                            spacing: 9 * screen.scaleUnit
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: root.authenticating ? "WAIT" : (root.recoveryMode ? "CONTINUE" : "SIGN IN")
-                                color: root.backgroundColor
-                                font.family: root.fontFamily
-                                font.pixelSize: rail.bodySize
-                                font.weight: Font.Medium
-                                font.letterSpacing: 1.1 * screen.scaleUnit
-                            }
-
-                            Image {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 20 * screen.scaleUnit
-                                height: width
-                                source: "assets/icons/next.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            enabled: passwordInput.text !== "" && !root.authenticating
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.attemptLogin(passwordInput)
-                        }
-                        Keys.onReturnPressed: root.attemptLogin(passwordInput)
-                        Keys.onEnterPressed: root.attemptLogin(passwordInput)
-                        Keys.onSpacePressed: root.attemptLogin(passwordInput)
-                    }
-
-                    Text {
-                        x: 28 * screen.scaleUnit
-                        y: 148 * screen.scaleUnit
-                        width: parent.width - (56 * screen.scaleUnit)
-                        text: root.statusMessage
-                        color: root.statusMessage.indexOf("FAILED") >= 0 || root.statusMessage.indexOf("NOT INSTALLED") >= 0 ?
-                            root.dangerColor : root.mutedColor
-                        font.family: root.fontFamily
-                        font.pixelSize: rail.metaSize
-                        elide: Text.ElideRight
-                    }
-                }
-
-                Item {
-                    id: sessionZone
-                    x: 1412 * screen.scaleUnit
-                    width: 202 * screen.scaleUnit
-                    height: parent.height
-                    activeFocusOnTab: !root.recoveryMode && root.normalSessionCount() > 1
-
-                    Image {
-                        x: 30 * screen.scaleUnit
-                        width: 24 * screen.scaleUnit
-                        height: width
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: "assets/icons/session.svg"
-                        fillMode: Image.PreserveAspectFit
-                    }
-
-                    Text {
-                        x: 66 * screen.scaleUnit
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - x - (28 * screen.scaleUnit)
-                        text: root.recoveryMode ? root.recoverySession.toUpperCase() : root.sessionLabel(root.selectedSessionIndex)
-                        color: root.foregroundColor
-                        font.family: root.fontFamily
-                        font.pixelSize: rail.bodySize
-                        elide: Text.ElideRight
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled: !root.recoveryMode && root.normalSessionCount() > 1
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onClicked: root.selectNextNormalSession()
-                    }
-                    Keys.onReturnPressed: root.selectNextNormalSession()
-                    Keys.onEnterPressed: root.selectNextNormalSession()
-                    Keys.onSpacePressed: root.selectNextNormalSession()
-                }
-
-                Item {
-                    id: clockZone
-                    x: 1636 * screen.scaleUnit
-                    width: 220 * screen.scaleUnit
-                    height: parent.height
-
-                    Column {
-                        anchors.centerIn: parent
-                        width: parent.width
-                        spacing: 5 * screen.scaleUnit
-
-                        Text {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: Qt.formatDateTime(root.now, "HH:mm")
-                            color: root.foregroundColor
-                            font.family: root.fontFamily
-                            font.pixelSize: (root.accessibilityMode ? 30 : 27) * screen.scaleUnit
-                            font.weight: Font.Medium
-                        }
-
-                        Text {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: Qt.formatDateTime(root.now, "ddd  dd  MMM").toUpperCase()
-                            color: root.accentColor
-                            font.family: root.fontFamily
-                            font.pixelSize: rail.metaSize
-                        }
-
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 5 * screen.scaleUnit
-
-                            Image {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 20 * screen.scaleUnit
-                                height: width
-                                source: "assets/icons/keyboard.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Repeater {
-                                model: [{ "code": "gb", "label": "UK" }, { "code": "us", "label": "US" }]
-
-                                Rectangle {
-                                    property bool available: root.keyboardLayoutIndex(modelData.code) >= 0
-                                    width: 40 * screen.scaleUnit
-                                    height: 27 * screen.scaleUnit
-                                    radius: 3 * screen.scaleUnit
-                                    color: root.keyboardLayoutSelected(modelData.code) ? "#229892e8" : "transparent"
-                                    border.width: activeFocus || root.keyboardLayoutSelected(modelData.code) ? 1 : 0
-                                    border.color: root.accentColor
-                                    opacity: available ? 1 : 0.35
-                                    activeFocusOnTab: available
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: modelData.label
-                                        color: root.keyboardLayoutSelected(modelData.code) ? root.foregroundColor : root.mutedColor
-                                        font.family: root.fontFamily
-                                        font.pixelSize: rail.metaSize
-                                        font.weight: Font.Medium
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        enabled: parent.available
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: root.selectKeyboardLayout(modelData.code)
-                                    }
-                                    Keys.onReturnPressed: root.selectKeyboardLayout(modelData.code)
-                                    Keys.onEnterPressed: root.selectKeyboardLayout(modelData.code)
-                                    Keys.onSpacePressed: root.selectKeyboardLayout(modelData.code)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    visible: root.confirmationAction !== ""
-                    anchors.fill: parent
-                    radius: 28 * screen.scaleUnit
-                    color: "#fa08090b"
-                    border.width: 0
-                    z: 20
-
-                    FrameSurface {
-                        anchors.fill: parent
-                        opticalScale: screen.scaleUnit
-                        motif: "diagnostic-tick"
-                        motifAnchor: "bottom"
-                        surfaceColor: root.surfaceColor
-                        accentColor: root.accentColor
-                        dangerColor: root.dangerColor
-                        critical: true
-                    }
-
-                    Text {
-                        x: 42 * screen.scaleUnit
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: root.confirmationAction === "power" ?
-                            "POWER OFF THIS DEVICE?" : "RESTART THIS DEVICE?"
-                        color: root.foregroundColor
-                        font.family: root.fontFamily
-                        font.pixelSize: (root.accessibilityMode ? 21 : 18) * screen.scaleUnit
-                        font.weight: Font.Medium
-                    }
-
-                    Row {
-                        anchors.right: parent.right
-                        anchors.rightMargin: 38 * screen.scaleUnit
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: 14 * screen.scaleUnit
-
-                        Rectangle {
-                            width: 138 * screen.scaleUnit
-                            height: 54 * screen.scaleUnit
-                            radius: 4 * screen.scaleUnit
-                            color: root.raisedColor
-                            border.width: 1
-                            border.color: "#52ffffff"
-                            activeFocusOnTab: parent.parent.parent.visible
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "CANCEL"
-                                color: root.foregroundColor
-                                font.family: root.fontFamily
-                                font.pixelSize: rail.bodySize
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.confirmationAction = ""
-                            }
-                            Keys.onReturnPressed: root.confirmationAction = ""
-                            Keys.onEnterPressed: root.confirmationAction = ""
-                            Keys.onSpacePressed: root.confirmationAction = ""
-                        }
-
-                        Rectangle {
-                            width: 164 * screen.scaleUnit
-                            height: 54 * screen.scaleUnit
-                            radius: 4 * screen.scaleUnit
-                            color: root.dangerColor
-                            activeFocusOnTab: parent.parent.parent.visible
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "CONFIRM"
-                                color: root.backgroundColor
-                                font.family: root.fontFamily
-                                font.pixelSize: rail.bodySize
-                                font.weight: Font.Medium
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.executeConfirmation()
-                            }
-                            Keys.onReturnPressed: root.executeConfirmation()
-                            Keys.onEnterPressed: root.executeConfirmation()
-                            Keys.onSpacePressed: root.executeConfirmation()
-                        }
-                    }
-                }
-            }
-
-            Item {
-                id: narrowPanel
-                visible: screen.isPrimary && screen.narrow
-                anchors.centerIn: parent
-                width: Math.min(parent.width - 32, 520)
-                height: Math.min(parent.height - 32, 650)
-
-                FrameSurface {
-                    anchors.fill: parent
-                    motif: "identity"
-                    surfaceColor: root.surfaceColor
-                    accentColor: root.accentColor
-                    dangerColor: root.dangerColor
-                    focused: narrowPassword.activeFocus
-                    attention: root.recoveryMode || root.authenticating
-                }
-
-                Text {
-                    x: 24
-                    y: 22
-                    text: root.recoveryMode ? "SENOMY // RECOVERY" : "SENOMY // AUTH"
-                    color: root.foregroundColor
-                    font.family: root.fontFamily
-                    font.pixelSize: root.accessibilityMode ? 18 : 15
-                    font.letterSpacing: 1.2
-                }
-
-                Image {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    y: 76
-                    width: 108
-                    height: 108
-                    source: config.stringValue("Avatar") || "assets/avatar.png"
-                    fillMode: Image.PreserveAspectFit
-                }
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    y: 194
-                    text: root.recoveryMode ? "RECOVERY" : root.normalUser.toUpperCase()
-                    visible: root.recoveryMode || root.normalUser !== ""
-                    color: root.foregroundColor
-                    font.family: root.fontFamily
-                    font.pixelSize: root.accessibilityMode ? 25 : 22
-                    font.weight: Font.Medium
-                }
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    y: 199
-                    text: "USERNAME"
-                    visible: !root.recoveryMode && root.normalUser === "" && narrowUsername.text === ""
-                    color: root.dimColor
-                    font.family: root.fontFamily
-                    font.pixelSize: 17
-                }
-
-                TextInput {
-                    id: narrowUsername
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    y: 190
-                    width: parent.width - 96
-                    height: 40
-                    visible: !root.recoveryMode && root.normalUser === ""
-                    horizontalAlignment: TextInput.AlignHCenter
-                    color: root.foregroundColor
-                    selectionColor: root.accentColor
-                    selectedTextColor: root.backgroundColor
-                    font.family: root.fontFamily
-                    font.capitalization: Font.AllUppercase
-                    font.pixelSize: root.accessibilityMode ? 25 : 22
-                    verticalAlignment: TextInput.AlignVCenter
-                    text: root.typedUser
-                    focus: screen.isPrimary && screen.narrow && visible
-                    clip: true
-                    onTextChanged: root.typedUser = text
-                    KeyNavigation.tab: narrowPassword
-                    Keys.onReturnPressed: narrowPassword.forceActiveFocus()
-                    Keys.onEnterPressed: narrowPassword.forceActiveFocus()
-                }
-
-                Text {
-                    x: 28
-                    y: 250
-                    text: root.recoveryMode ? "RECOVERY PASSWORD" : "PASSWORD"
-                    color: root.mutedColor
-                    font.family: root.fontFamily
-                    font.pixelSize: 12
-                    font.letterSpacing: 1.2
-                }
-
-                Rectangle {
-                    id: narrowSignInButton
-                    x: 28
-                    y: 278
-                    width: parent.width - 56
-                    height: 54
-                    radius: 4
-                    color: root.raisedColor
-                    border.width: narrowPassword.activeFocus ? 2 : 1
-                    border.color: narrowPassword.activeFocus ? root.accentColor : "#52ffffff"
-
-                    TextInput {
-                        id: narrowPassword
-                        anchors.fill: parent
-                        anchors.margins: 14
-                        echoMode: TextInput.Password
-                        passwordCharacter: "•"
-                        color: root.foregroundColor
-                        font.family: root.fontFamily
-                        font.pixelSize: root.accessibilityMode ? 20 : 17
-                        verticalAlignment: TextInput.AlignVCenter
-                        focus: screen.isPrimary && screen.narrow && root.currentUser() !== ""
-                        KeyNavigation.backtab: narrowUsername.visible ? narrowUsername : narrowPassword
-                        Keys.onReturnPressed: root.attemptLogin(narrowPassword)
-                        Keys.onEnterPressed: root.attemptLogin(narrowPassword)
-                    }
-                }
-
-                Rectangle {
-                    x: 28
-                    y: 348
-                    width: parent.width - 56
-                    height: 54
-                    radius: 4
-                    color: root.accentColor
-                    opacity: narrowPassword.text === "" ? 0.55 : 1
-                    activeFocusOnTab: narrowPassword.text !== "" && !root.authenticating
-                    border.width: activeFocus ? 2 : 0
-                    border.color: root.foregroundColor
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.recoveryMode ? "CONTINUE" : "SIGN IN"
-                        color: root.backgroundColor
-                        font.family: root.fontFamily
-                        font.pixelSize: 16
-                        font.weight: Font.Medium
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled: narrowPassword.text !== "" && !root.authenticating
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.attemptLogin(narrowPassword)
-                    }
-                    Keys.onReturnPressed: root.attemptLogin(narrowPassword)
-                    Keys.onEnterPressed: root.attemptLogin(narrowPassword)
-                    Keys.onSpacePressed: root.attemptLogin(narrowPassword)
-                }
-
-                Text {
-                    x: 28
-                    y: 418
-                    width: parent.width - 56
-                    text: root.statusMessage
-                    color: root.statusMessage.indexOf("FAILED") >= 0 || root.statusMessage.indexOf("NOT INSTALLED") >= 0 ?
-                        root.dangerColor : root.mutedColor
-                    font.family: root.fontFamily
-                    font.pixelSize: 12
-                    elide: Text.ElideRight
-                }
-
-                Row {
-                    id: narrowKeyboardRow
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.bottom: narrowUtilityRow.top
-                    anchors.bottomMargin: 16
-                    spacing: 8
-
-                    Image {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 20
-                        height: width
-                        source: "assets/icons/keyboard.svg"
-                        fillMode: Image.PreserveAspectFit
-                    }
-
-                    Repeater {
-                        model: [{ "code": "gb", "label": "UK" }, { "code": "us", "label": "US" }]
-
-                        Rectangle {
-                            property bool available: root.keyboardLayoutIndex(modelData.code) >= 0
-                            width: 72
-                            height: 38
-                            radius: 4
-                            color: root.keyboardLayoutSelected(modelData.code) ? "#229892e8" : root.raisedColor
-                            border.width: 1
-                            border.color: activeFocus || root.keyboardLayoutSelected(modelData.code) ? root.accentColor : "#38ffffff"
-                            opacity: available ? 1 : 0.35
-                            activeFocusOnTab: available
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: modelData.label
-                                color: root.keyboardLayoutSelected(modelData.code) ? root.foregroundColor : root.mutedColor
-                                font.family: root.fontFamily
-                                font.pixelSize: 12
-                                font.weight: Font.Medium
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: parent.available
-                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                onClicked: root.selectKeyboardLayout(modelData.code)
-                            }
-                            Keys.onReturnPressed: root.selectKeyboardLayout(modelData.code)
-                            Keys.onEnterPressed: root.selectKeyboardLayout(modelData.code)
-                            Keys.onSpacePressed: root.selectKeyboardLayout(modelData.code)
-                        }
-                    }
-                }
-
-                Row {
-                    id: narrowUtilityRow
-                    x: 28
-                    y: parent.height - 104
-                    width: parent.width - 56
-                    spacing: 8
-
-                    Repeater {
-                        model: ["ACCESS", root.recoveryMode ? "BACK" : "RECOVER", "RESTART", "POWER"]
-
-                        Rectangle {
-                            width: (narrowUtilityRow.width - (narrowUtilityRow.spacing * 3)) / 4
-                            height: 52
-                            radius: 4
-                            color: root.raisedColor
-                            border.width: 1
-                            border.color: activeFocus || modelData === "RECOVER" || modelData === "BACK" ? root.accentColor : "#38ffffff"
-                            activeFocusOnTab: true
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: modelData
-                                color: root.mutedColor
-                                font.family: root.fontFamily
-                                font.pixelSize: 11
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.activateUtility(modelData, narrowPassword)
-                            }
-                            Keys.onReturnPressed: root.activateUtility(modelData, narrowPassword)
-                            Keys.onEnterPressed: root.activateUtility(modelData, narrowPassword)
-                            Keys.onSpacePressed: root.activateUtility(modelData, narrowPassword)
-                        }
-                    }
-                }
-
-                Rectangle {
-                    visible: root.confirmationAction !== ""
-                    anchors.fill: parent
-                    radius: 28
-                    color: "#fa08090b"
-                    border.width: 0
-                    z: 20
-
-                    FrameSurface {
-                        anchors.fill: parent
-                        motif: "diagnostic-tick"
-                        motifAnchor: "bottom"
-                        surfaceColor: root.surfaceColor
-                        accentColor: root.accentColor
-                        dangerColor: root.dangerColor
-                        critical: true
-                    }
-
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        y: 178
-                        text: root.confirmationAction === "power" ? "POWER OFF THIS DEVICE?" : "RESTART THIS DEVICE?"
-                        color: root.foregroundColor
-                        font.family: root.fontFamily
-                        font.pixelSize: root.accessibilityMode ? 20 : 17
-                    }
-
-                    Row {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        y: 248
-                        spacing: 12
-
-                        Rectangle {
-                            width: 150
-                            height: 54
-                            radius: 4
-                            color: root.raisedColor
-                            border.width: activeFocus ? 2 : 1
-                            border.color: activeFocus ? root.accentColor : "#52ffffff"
-                            activeFocusOnTab: parent.parent.visible
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "CANCEL"
-                                color: root.foregroundColor
-                                font.family: root.fontFamily
-                                font.pixelSize: 14
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.confirmationAction = ""
-                            }
-                            Keys.onReturnPressed: root.confirmationAction = ""
-                            Keys.onEnterPressed: root.confirmationAction = ""
-                            Keys.onSpacePressed: root.confirmationAction = ""
-                        }
-
-                        Rectangle {
-                            width: 150
-                            height: 54
-                            radius: 4
-                            color: root.dangerColor
-                            border.width: activeFocus ? 2 : 0
-                            border.color: root.foregroundColor
-                            activeFocusOnTab: parent.parent.visible
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "CONFIRM"
-                                color: root.backgroundColor
-                                font.family: root.fontFamily
-                                font.pixelSize: 14
-                                font.weight: Font.Medium
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.executeConfirmation()
-                            }
-                            Keys.onReturnPressed: root.executeConfirmation()
-                            Keys.onEnterPressed: root.executeConfirmation()
-                            Keys.onSpacePressed: root.executeConfirmation()
-                        }
-                    }
-                }
+            CompactLogin { id: login; anchors.fill: parent; controller: root; visible: screen.controlsVisible }
+            AccountPicker { anchors.fill: parent; controller: root }
+            Connections {
+                target: root
+                function onCredentialsReset() { login.clearCredentials(); }
+                function onFocusCredentialsRequested() { login.focusCredentials(); }
             }
         }
     }

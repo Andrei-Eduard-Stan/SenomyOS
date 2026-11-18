@@ -75,15 +75,15 @@ catalog_tasks() {
           guidance: "Zero failed units is a healthy result. Inactive units are not failures."
         },
         {
-          id: "workspace-service",
-          code: "EWW",
-          title: "Workspace listener",
+          id: "shell-service",
+          code: "QS",
+          title: "Quickshell service",
           category: "services",
-          summary: "Inspect the allowlisted Eww workspace publisher.",
-          command_preview: "systemctl --user status workspaces.service --no-pager --lines=20",
+          summary: "Service state and recent log lines.",
+          command_preview: "systemctl --user status senomy-quickshell.service --no-pager --lines=20",
           execution_source: "systemctl-user",
-          scope: "workspaces.service only; no restart action.",
-          guidance: "This verifies the publisher state. Restart remains a separate confirmed future action."
+          scope: "senomy-quickshell.service only; no restart action.",
+          guidance: "This verifies the shell service state. Restart remains a separate confirmed future action."
         },
         {
           id: "recent-errors",
@@ -414,14 +414,14 @@ run_task_command() {
         --user --failed --no-pager --plain ||
         status=$?
       ;;
-    workspace-service)
+    shell-service)
       command_bin="$(resolve_command "${SENOMY_SYSTEMCTL_BIN:-}" systemctl)" || {
         set_dependency_error "systemctl"
         return 127
       }
       run_timeout_command \
         "$output_file" "$timeout_bin" "$command_bin" \
-        --user status workspaces.service --no-pager --lines=20 ||
+        --user status senomy-quickshell.service --no-pager --lines=20 ||
         status=$?
       ;;
     recent-errors)

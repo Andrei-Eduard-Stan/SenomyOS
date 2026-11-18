@@ -1,0 +1,6 @@
+# Preserve authored Illustrator assets as binary files.
+*.ai binary
+
+# Preserve upstream font licence bytes, including their original line endings.
+appearance/login/sddm/senomyos/assets/fonts/OFL.txt -whitespace
+appearance/shared/fonts/bruno-ace-sc/OFL.txt -whitespace

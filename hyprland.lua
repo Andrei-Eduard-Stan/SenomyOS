@@ -49,6 +49,7 @@ if os.getenv("SENOMY_NESTED_QA") ~= "1" then
         hl.exec_cmd("systemctl --user import-environment XDG_RUNTIME_DIR HYPRLAND_INSTANCE_SIGNATURE WAYLAND_DISPLAY DISPLAY && " .. home .. "/.local/bin/senomy-shell use quickshell")
         hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
         hl.exec_cmd(home .. "/.local/bin/senomy-wallpaper")
+        hl.exec_cmd(home .. "/.local/bin/senomy-display-action restore")
     end)
 end
 
@@ -151,7 +152,7 @@ hl.layer_rule({
 
 hl.layer_rule({
     name = "senomy-surface-glass",
-    match = { namespace = "^senomy-(control|performance|insights|flyout|companion|v2-(primary|companion|notification-toast))$" },
+    match = { namespace = "^senomy-(control|performance|insights|flyout|v2-(primary|notification-toast))$" },
     blur = true,
     ignore_alpha = 0.08,
     xray = false,
@@ -173,6 +174,8 @@ hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("/usr/bin/env sh -c '$HOME/.local/bin
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("hyprctl switchxkblayout all next"), { locked = true })
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + F", hl.dsp.exec_cmd("/usr/bin/env sh -c '$HOME/.local/bin/senomy-fullscreen'"))
+hl.bind(mainMod .. " + I", hl.dsp.exec_cmd(home .. "/.local/bin/senomy-surface show-settings overview"))
+hl.bind(mainMod .. " + CTRL + I", hl.dsp.exec_cmd(home .. "/.local/bin/senomy-surface show-control overview"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd(home .. "/.local/bin/senomy-osk"))
@@ -191,8 +194,8 @@ for workspace = 1, 10 do
     hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = workspace }))
 end
 
-hl.bind("Print", hl.dsp.exec_cmd("/usr/bin/env sh -c '$HOME/.config/eww/scripts/screenshot-action.sh capture'"))
-hl.bind("Escape", hl.dsp.exec_cmd("/usr/bin/env sh -c '$HOME/.config/eww/scripts/surface-state.sh dismiss'"), { non_consuming = true })
+hl.bind("Print", hl.dsp.exec_cmd("/usr/bin/env sh -c '$HOME/.local/bin/senomy-screenshot capture'"))
+hl.bind("Escape", hl.dsp.exec_cmd("/usr/bin/env sh -c '$HOME/.local/bin/senomy-surface dismiss'"), { non_consuming = true })
 hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
@@ -211,19 +214,29 @@ hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
 hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd(home .. "/.local/bin/senomy-session-policy lid-event"), { locked = true })
 
 hl.window_rule({
     name = "suppress-maximize-events",
-    match = { class = ".*" },
+    match = { class = ".*", title = "negative:^SenomyOS Settings$" },
     suppress_event = "maximize",
+})
+
+hl.window_rule({
+    name = "senomy-settings-native-window",
+    match = { initial_title = "^SenomyOS Settings$" },
+    float = true,
+    center = true,
+    border_size = 0,
+    rounding = 0,
 })
 
 hl.window_rule({
     name = "senomy-thunar-client-frame",
     match = { class = "^(thunar|Thunar)$" },
-    rounding = 20,
+    rounding = 0,
     rounding_power = 2.0,
-    border_size = 1,
+    border_size = 0,
 })
 
 hl.window_rule({
@@ -252,3 +265,20 @@ hl.window_rule({
     },
     no_focus = true,
 })
+
+-- WP02: one validated input preference store. Restore after shipped defaults on
+-- initial load and reload; do not rewrite this source when a control changes.
+-- The helper refuses legacy/unverified preferences and never performs a reload.
+if os.getenv("SENOMY_NESTED_QA") ~= "1" then
+    hl.on("config.reloaded", function()
+        _G.senomy_input_preview_v2 = nil
+        local inputHelper = home .. "/.local/bin/senomy-input-settings"
+        local quotedHelper = "'" .. inputHelper:gsub("'", "'\"'\"'") .. "'"
+        -- Initial config parsing precedes IPC/InputManager readiness. Defer
+        -- only the owned restore until the compositor event loop is running.
+        hl.timer(function()
+            hl.exec_cmd(quotedHelper .. " restore")
+        end, { timeout = 1, type = "oneshot" })
+    end)
+    _G.senomy_input_restore_v2 = true
+end

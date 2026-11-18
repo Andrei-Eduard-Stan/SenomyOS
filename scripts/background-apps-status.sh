@@ -6,7 +6,7 @@ set -u
 
 export LC_ALL=C
 
-readonly REGISTRY="${SENOMY_BACKGROUND_APPS_REGISTRY:-${XDG_CONFIG_HOME:-"$HOME/.config"}/eww/data/background-apps.json}"
+readonly REGISTRY="${SENOMY_BACKGROUND_APPS_REGISTRY:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/data/background-apps.json}"
 readonly ACTION_CACHE="${SENOMY_BACKGROUND_APPS_CACHE:-${XDG_RUNTIME_DIR:-/tmp}/senomyos/background-apps-operation.json}"
 
 printf -v observed_at '%(%s)T' -1

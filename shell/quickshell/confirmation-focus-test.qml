@@ -42,7 +42,7 @@ Window {
         SelectionActionReview { id: selection; width: parent.width; actions: actions; visible: test.currentReview === selection && actions.actionState !== "idle" }
         NetworkActionReview { id: network; width: parent.width; actions: actions; visible: test.currentReview === network && actions.actionState !== "idle" }
         NotificationClearReview { id: notification; width: parent.width; actions: actions; ownerContext: "fixture"; visible: test.currentReview === notification && actions.actionState !== "idle" }
-        DisplaySettings { id: display; width: parent.width; inventory: ({displays:[], displayActions:actions}); visible: test.currentReview === display }
+        DisplaySettings { id: display; width: parent.width; inventory: ({displays:[], policy:{}, displayActions:actions}); visible: test.currentReview === display }
     }
     function check(ok, message) {
         if (!ok) { console.error("FAIL: " + message); Qt.exit(1); throw new Error(message); }

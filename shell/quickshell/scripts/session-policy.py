@@ -4,9 +4,10 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 
-DEFAULTS = {"lockSeconds": 300, "displayOffSeconds": 600}
+DEFAULTS = {"lockSeconds": 300, "displayOffSeconds": 600, "lidAction": "lock"}
 
 
 def config_root():
@@ -21,18 +22,31 @@ def hypridle_file():
     return config_root() / "hypr" / "hypridle.conf"
 
 
+def lid_switch_available():
+    root = Path(os.environ.get("SENOMY_INPUT_ROOT", "/sys/class/input"))
+    try:
+        names = [path.read_text(errors="replace").strip().lower()
+                 for path in root.glob("event*/device/name")]
+    except OSError:
+        return False
+    return any("lid switch" in name for name in names)
+
+
 def validate(value):
     if not isinstance(value, dict):
         raise ValueError("Session policy preferences must be an object")
     lock_seconds = value.get("lockSeconds", DEFAULTS["lockSeconds"])
     display_seconds = value.get("displayOffSeconds", DEFAULTS["displayOffSeconds"])
+    lid_action = value.get("lidAction", DEFAULTS["lidAction"])
     if not isinstance(lock_seconds, int) or lock_seconds < 60 or lock_seconds > 3600 or lock_seconds % 60:
         raise ValueError("Lock timeout must use whole minutes between 1 and 60")
     if not isinstance(display_seconds, int) or display_seconds < 120 or display_seconds > 7200 or display_seconds % 60:
         raise ValueError("Display-off timeout must use whole minutes between 2 and 120")
     if display_seconds <= lock_seconds:
         raise ValueError("Display-off timeout must be later than the lock timeout")
-    return {"lockSeconds": lock_seconds, "displayOffSeconds": display_seconds}
+    if lid_action not in ("lock", "none"):
+        raise ValueError("Lid action must be lock or none")
+    return {"lockSeconds": lock_seconds, "displayOffSeconds": display_seconds, "lidAction": lid_action}
 
 
 def read_preferences():
@@ -85,6 +99,8 @@ def response(value, saved=False):
         "displayOffSeconds": value["displayOffSeconds"],
         "suspendEnabled": False,
         "lockBeforeSleep": True,
+        "lidAvailable": lid_switch_available(),
+        "lidAction": value["lidAction"],
         "saved": saved,
         "activationRequired": saved,
     }
@@ -101,6 +117,15 @@ def main(argv):
             value = validate(json.loads(argv[2]))
             write_preferences(value)
             result = response(value, saved=True)
+        elif operation == "lid-event":
+            value = read_preferences()
+            if not lid_switch_available():
+                raise ValueError("No lid switch is available")
+            if value["lidAction"] == "lock":
+                subprocess.run([os.environ.get("SENOMY_LOGINCTL", "loginctl"), "lock-session"], timeout=4, check=True)
+                result = {"ok": True, "action": "locked"}
+            else:
+                result = {"ok": True, "action": "none"}
         else:
             raise ValueError("Unsupported session policy operation")
         print(json.dumps(result, separators=(",", ":")))

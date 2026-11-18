@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Insights request policy and all eight actual UI routes using fake providers."""
+from qa_directory_host import directory_host, insights_workspace_host, performance_workspace_host
+from qa_performance_fixture import performance_environment
 import importlib.util
 import os
 from pathlib import Path
@@ -21,7 +23,10 @@ with tempfile.TemporaryDirectory(prefix='senomy-insights-') as directory:
     copied=root/'shell/quickshell';shutil.copytree(shell,copied,symlinks=True)
     for name in ['appearance','assets']:(root/name).symlink_to(repo/name,target_is_directory=True)
     (copied/'components/PrimarySurfaceWindow.qml').write_text(m.HOST)
-    shutil.copy2(shell/'tests/fixtures/insights-routes.qml',copied/'insights-routes-test.qml')
+    (copied/'components/DirectorySurfaceWindow.qml').write_text(directory_host(shell))
+    (copied/'components/PerformanceWorkspaceWindow.qml').write_text(performance_workspace_host(shell))
+    (copied/'components/InsightsWorkspaceWindow.qml').write_text(insights_workspace_host(shell))
+    shutil.copy2(shell/'tests/fixtures/insights-workspace-quality.qml',copied/'insights-routes-test.qml')
     result=subprocess.run(['qs','--path',str(copied/'insights-routes-test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=30)
     output=result.stdout+result.stderr
     if result.returncode or re.search('FAIL:|ERROR|Binding loop|ReferenceError|TypeError',output) or 'PASS: all eight Insights routes' not in output:
@@ -36,7 +41,7 @@ route='console' if 'console' in sys.argv[0] else 'diagnostics'
 mode=sys.argv[1];now=int(time.time())
 if mode=='catalog': payload={'ok':True,'observed_at':now,'data':{'tasks':[{'id':'safe-task'}]}}
 else:
-    payload={'ok':route=='console','observed_at':now,'data':{'task_id':'safe-task','state':'ready' if route=='console' else 'failed','finished_at':now,'output':[], 'publicationDisabled':os.environ.get('SENOMY_EWW_BIN')=='/usr/bin/false','correctRoot':os.environ.get('EWW_CONFIG')==str(Path(sys.argv[0]).parents[1])},'error':None if route=='console' else {'message':'Fixture failure'}}
+    payload={'ok':route=='console','observed_at':now,'data':{'task_id':'safe-task','state':'ready' if route=='console' else 'failed','finished_at':now,'output':[], 'correctRoot':Path(sys.argv[0]).parents[1].is_dir()},'error':None if route=='console' else {'message':'Fixture failure'}}
     cache=Path(sys.argv[0]).with_suffix('.json')
     if mode=='run': cache.write_text(json.dumps(payload))
     elif cache.exists(): payload=json.loads(cache.read_text())
@@ -53,8 +58,11 @@ print(json.dumps(payload))
     print(next(line for line in output.splitlines() if 'PASS:' in line))
 
     (copied/'components/DashboardWindow.qml').write_text(m.HOST)
-    shutil.copy2(shell/'tests/fixtures/performance-shared-insights.qml',copied/'performance-shared-test.qml')
-    result=subprocess.run(['qs','--path',str(copied/'performance-shared-test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=30)
+    (copied/'components/DirectorySurfaceWindow.qml').write_text(directory_host(shell))
+    (copied/'components/PerformanceWorkspaceWindow.qml').write_text(performance_workspace_host(shell))
+    (copied/'components/InsightsWorkspaceWindow.qml').write_text(insights_workspace_host(shell))
+    shutil.copy2(shell/'tests/fixtures/performance-workspace-quality.qml',copied/'performance-shared-test.qml')
+    result=subprocess.run(['qs','--path',str(copied/'performance-shared-test.qml'),'--no-color'],env=performance_environment(shell,root,env),capture_output=True,text=True,timeout=30)
     output=result.stdout+result.stderr
     if result.returncode or re.search('FAIL:|ERROR|Binding loop|ReferenceError|TypeError',output) or 'PASS: shared Performance' not in output:
         print(output);raise SystemExit(1)

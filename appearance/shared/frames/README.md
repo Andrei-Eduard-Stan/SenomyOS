@@ -31,8 +31,10 @@ fixed corners, fixed anchored motifs or crests, and only the neutral edge
 segments required for the current width and height. Optional detail is hidden
 when its manifest threshold is not met; it is never squashed.
 
-The Rail uses only the Compact tier in this implementation. Standard and Large
-exist for future migration but are not yet applied to other SenomyOS surfaces.
+These are retained generated frame families. Current native consumers also use
+original authored Island/utility frames; inspect their actual Skin/style source.
+This older family description does not prescribe the current Rail or certify
+which production surfaces consume a tier. See the current DESIGN_SYSTEM.
 
 Build and verify with:
 

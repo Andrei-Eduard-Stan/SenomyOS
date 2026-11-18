@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "bindings": [
+    {
+      "source": "scripts/senomy-app-launch",
+      "root": "bin",
+      "path": "senomy-app-launch"
+    },
+    {
+      "source": "scripts/senomy_app_launch.py",
+      "root": "bin",
+      "path": "senomy_app_launch.py"
+    },
+    {
+      "source": "scripts/senomy-shell",
+      "root": "bin",
+      "path": "senomy-shell"
+    },
+    {
+      "source": "scripts/senomy-surface",
+      "root": "bin",
+      "path": "senomy-surface"
+    },
+    {
+      "source": "scripts/senomy-provider-setup",
+      "root": "bin",
+      "path": "senomy-provider-setup"
+    },
+    {
+      "source": "scripts/senomy-screenshot",
+      "root": "bin",
+      "path": "senomy-screenshot"
+    },
+    {
+      "source": "components/settings/senomy-settings.desktop",
+      "root": "data",
+      "path": "applications/senomy-settings.desktop"
+    },
+    {
+      "source": "components/settings/senomy-control.desktop",
+      "root": "data",
+      "path": "applications/senomy-control.desktop"
+    },
+    {
+      "source": "scripts/senomy-desktop-probe.py",
+      "root": "bin",
+      "path": "senomy-desktop-probe"
+    },
+    {
+      "source": "scripts/senomy-dev",
+      "root": "bin",
+      "path": "senomy-dev"
+    },
+    {
+      "source": "scripts/senomy-quickshell-run",
+      "root": "bin",
+      "path": "senomy-quickshell-run"
+    },
+    {
+      "source": "scripts/senomy-calendar-run",
+      "root": "bin",
+      "path": "senomy-calendar-run"
+    },
+    {
+      "source": "scripts/senomy-calendar-setup",
+      "root": "bin",
+      "path": "senomy-calendar-setup"
+    },
+    {
+      "source": "scripts/senomy-calendar-credential",
+      "root": "bin",
+      "path": "senomy-calendar-credential"
+    },
+    {
+      "source": "scripts/senomy-calendar-batch",
+      "root": "bin",
+      "path": "senomy-calendar-batch"
+    },
+    {
+      "source": "systemd/senomy-calendar.service",
+      "root": "units",
+      "path": "senomy-calendar.service"
+    },
+    {
+      "source": "scripts/senomy-session-action",
+      "root": "bin",
+      "path": "senomy-session-action"
+    },
+    {
+      "source": "shell/quickshell/scripts/display-action.py",
+      "root": "bin",
+      "path": "senomy-display-action"
+    },
+    {
+      "source": "shell/quickshell/scripts/display_core.py",
+      "root": "bin",
+      "path": "display_core.py"
+    },
+    {
+      "source": "shell/quickshell/scripts/input-settings.py",
+      "root": "bin",
+      "path": "senomy-input-settings"
+    },
+    {
+      "source": "shell/quickshell/scripts/session-policy.py",
+      "root": "bin",
+      "path": "senomy-session-policy"
+    },
+    {
+      "source": "systemd/senomy-quickshell.service",
+      "root": "units",
+      "path": "senomy-quickshell.service"
+    },
+    {
+      "source": "scripts/senomy-release-snapshot.py",
+      "root": "bin",
+      "path": "senomy-release"
+    },
+    {
+      "source": "scripts/senomy-preferences.py",
+      "root": "bin",
+      "path": "senomy-preferences"
+    },
+    {
+      "source": "scripts/senomy-maintenance.py",
+      "root": "bin",
+      "path": "senomy-maintenance"
+    },
+    {
+      "source": "scripts/senomy-osk",
+      "root": "bin",
+      "path": "senomy-osk"
+    },
+    {
+      "source": "systemd/senomy-calendar.service",
+      "root": "units",
+      "path": "graphical-session.target.wants/senomy-calendar.service",
+      "existing_only": true
+    },
+    {
+      "source": "components/desktop/scripts/senomy-wallpaper",
+      "root": "bin",
+      "path": "senomy-wallpaper"
+    },
+    {
+      "source": "components/desktop/scripts/senomy-fullscreen",
+      "root": "bin",
+      "path": "senomy-fullscreen"
+    },
+    {
+      "source": "components/launcher/rofi/scripts/senomy-command-lens",
+      "root": "bin",
+      "path": "senomy-command-lens"
+    },
+    {
+      "source": "components/launcher/rofi/scripts/senomy-rofi-files",
+      "root": "bin",
+      "path": "senomy-rofi-files"
+    },
+    {
+      "source": "components/launcher/rofi/scripts/senomy-rofi-actions",
+      "root": "bin",
+      "path": "senomy-rofi-actions"
+    },
+    {
+      "source": "components/file-manager/thunar/scripts/senomy-file-workspace",
+      "root": "bin",
+      "path": "senomy-file-workspace"
+    },
+    {
+      "source": "components/file-manager/thunar/scripts/senomy-thunar-action",
+      "root": "bin",
+      "path": "senomy-thunar-action"
+    },
+    {
+      "source": "components/lock/scripts/senomy-lock",
+      "root": "bin",
+      "path": "senomy-lock"
+    }
+  ],
+  "required_commands": [
+    "python3",
+    "bash",
+    "qs",
+    "hyprctl",
+    "systemctl",
+    "busctl",
+    "jq",
+    "nmcli",
+    "xdg-terminal-exec"
+  ],
+  "optional_commands": [
+    "tlp",
+    "upower",
+    "bluetoothctl",
+    "wpctl",
+    "thunar",
+    "wvkbd-mobintl",
+    "fcitx5",
+    "orca",
+    "checkupdates",
+    "paru"
+  ],
+  "note": "Runtime links only. System integration, hardware config, Python Calendar venv and OS packages remain separate reviewed transactions.",
+  "entrypoint_policy": "Executable public commands are generated as payload-pinned entries. Python module filenames and data remain direct verified sources. No services are started."
+}

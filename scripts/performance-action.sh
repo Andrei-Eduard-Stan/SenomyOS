@@ -4,8 +4,6 @@ set -euo pipefail
 export LC_ALL=C
 fail(){ printf 'SenomyOS performance action: %s\n' "$1" >&2; exit 1; }
 action="${1:-}"
-readonly EWW_BIN="${SENOMY_EWW_BIN:-/usr/bin/eww}"
-readonly CONFIG_ROOT="${SENOMY_EWW_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/eww}"
 readonly RUNTIME_ROOT="${XDG_RUNTIME_DIR:-/tmp}/senomyos"
 readonly OPERATION_FILE="$RUNTIME_ROOT/performance-operation.json"
 
@@ -20,7 +18,6 @@ write_operation() {
       label:(($action|gsub("-";" ")|ascii_upcase)),message:$message,exit_code:$exit_code},error:null}' >"$temporary"
   chmod 600 "$temporary"
   mv -f "$temporary" "$OPERATION_FILE"
-  "$EWW_BIN" --no-daemonize --config "$CONFIG_ROOT" update "performance_operation_status=$(cat "$OPERATION_FILE")" >/dev/null 2>&1 || true
 }
 
 read_operation() {
@@ -38,11 +35,35 @@ validate_pid(){
   [[ -d "/proc/$1" ]] || fail "process no longer exists"
   owner="$(stat -c %u "/proc/$1")"
   [[ "$owner" == "$(id -u)" ]] || fail "process is not owned by the current user"
-  [[ "$1" != "$$" && "$1" != "$PPID" ]] || fail "refusing to signal the action helper"
+  [[ "$1" != "$$" && "$1" != "$PPID" && "$1" != 1 ]] || fail "refusing to signal a protected process"
+  local comm
+  read -r comm <"/proc/$1/comm" || fail "process no longer exists"
+  case "$comm" in Hyprland|quickshell|qs|systemd) fail "desktop/session core processes are protected" ;; esac
+}
+
+validate_process_identity(){
+  local pid="$1" expected_start="$2" stat_line stat_tail
+  [[ "$expected_start" =~ ^[0-9]+$ ]] || fail "invalid process identity"
+  validate_pid "$pid"
+  read -r stat_line <"/proc/$pid/stat" || fail "unable to read process identity"
+  stat_tail="${stat_line##*) }"
+  read -ra stat_fields <<< "$stat_tail"
+  ((${#stat_fields[@]} >= 20)) || fail "unable to parse process identity"
+  [[ "${stat_fields[19]}" == "$expected_start" ]] || fail "process identity changed"
 }
 
 perform_action() {
 case "$action" in
+  terminate-exact|kill-exact|stop-exact|continue-exact)
+    [[ $# -eq 3 ]] || fail "$action requires one PID and start time"
+    validate_process_identity "$2" "$3"
+    case "$action" in
+      terminate-exact) kill -TERM "$2" ;;
+      kill-exact) kill -KILL "$2" ;;
+      stop-exact) kill -STOP "$2" ;;
+      continue-exact) kill -CONT "$2" ;;
+    esac
+    ;;
   terminate|kill)
     [[ $# -eq 2 ]] || fail "$action requires one PID"
     validate_pid "$2"

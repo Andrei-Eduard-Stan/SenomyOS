@@ -8,13 +8,12 @@ export LC_ALL=C
 readonly ACTION="${1:-read}"
 readonly VALUE="${2:-none}"
 readonly HOME_DIR="${HOME:-/nonexistent}"
-readonly CONFIG_DIR="${EWW_CONFIG:-${XDG_CONFIG_HOME:-$HOME_DIR/.config}/eww}"
+readonly CONFIG_DIR="${SENOMY_SOURCE_ROOT:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}"
 readonly CACHE_FILE="${SENOMY_CONSOLE_CACHE:-${XDG_CACHE_HOME:-$HOME_DIR/.cache}/senomyos/console.json}"
 readonly CACHE_DIR="$(dirname "$CACHE_FILE")"
 readonly LOCK_FILE="$CACHE_FILE.lock"
 readonly TIMEOUT_SECONDS="${SENOMY_CONSOLE_TIMEOUT:-8}"
 readonly LINE_LIMIT="${SENOMY_CONSOLE_LINE_LIMIT:-80}"
-readonly EWW_BIN="${SENOMY_EWW_BIN:-/usr/bin/eww}"
 readonly HYPRCTL_BIN="${SENOMY_HYPRCTL_BIN:-/usr/bin/hyprctl}"
 LAUNCHED_PID=0
 
@@ -43,12 +42,12 @@ catalog() {
           {id:"platform",code:"OS",title:"Platform fingerprint",summary:"Kernel, architecture and release metadata.",preview:"uname -a; /etc/os-release"},
           {id:"resources",code:"RES",title:"Resource snapshot",summary:"Load, memory, filesystems and pressure counters.",preview:"uptime; free -h; df; /proc/pressure/*"},
           {id:"network",code:"NET",title:"Network path",summary:"Interfaces, addresses, routes and NetworkManager state.",preview:"ip -brief; ip route; nmcli general"},
-          {id:"services",code:"SVC",title:"User services",summary:"Failed user units and Senomy service state.",preview:"systemctl --user --failed; status workspaces"},
+          {id:"services",code:"SVC",title:"User services",summary:"Failed user units and Senomy service state.",preview:"systemctl --user --failed; status senomy-quickshell"},
           {id:"hardware",code:"HW",title:"Hardware topology",summary:"PCI, USB and block-device inventory.",preview:"lspci -k; lsusb; lsblk"},
           {id:"bluetooth",code:"BT",title:"Bluetooth evidence",summary:"BlueZ controller and known device state.",preview:"bluetoothctl show; bluetoothctl devices"},
           {id:"warnings",code:"LOG",title:"Recent warnings",summary:"Bounded warning-level user journal.",preview:"journalctl --user -p warning -n 40"},
           {id:"packages",code:"PKG",title:"Package state",summary:"Explicit packages and foreign-package inventory.",preview:"pacman -Qe; pacman -Qm"},
-          {id:"eww-state",code:"EWW",title:"Eww state",summary:"Active windows and public Eww variables.",preview:"eww active-windows; surface-state status"}]},error:null}'
+          {id:"shell-state",code:"SHELL",title:"Quickshell state",summary:"Service and notification ownership.",preview:"senomy-shell status"}]},error:null}'
 }
 
 empty_status() {
@@ -67,19 +66,14 @@ write_running_status() {
 }
 
 run_async() {
-  case "$1" in identity | platform | resources | network | services | hardware | bluetooth | warnings | packages | eww-state) ;; *) exit 2 ;; esac
+  case "$1" in identity | platform | resources | network | services | hardware | bluetooth | warnings | packages | shell-state) ;; *) exit 2 ;; esac
   write_running_status "$1"
   nohup "$0" run "$1" >/dev/null 2>&1 &
 }
 
 read_status() { [[ -r "$CACHE_FILE" ]] && cat "$CACHE_FILE" || empty_status; }
 
-publish_status() {
-  [[ -x "$EWW_BIN" ]] || return 0
-  local payload
-  payload="$(read_status)"
-  "$EWW_BIN" --no-daemonize --config "$CONFIG_DIR" update "console_status=$payload" >/dev/null 2>&1 || true
-}
+publish_status() { :; }
 
 sanitize_output() {
   jq -Rsc --arg home "$HOME_DIR" --argjson limit "$LINE_LIMIT" '
@@ -96,12 +90,12 @@ run_task() {
     platform) code=OS; title="Platform fingerprint"; summary="Kernel and release metadata."; preview="uname + os-release" ;;
     resources) code=RES; title="Resource snapshot"; summary="Current resource and pressure evidence."; preview="uptime + free + df + PSI" ;;
     network) code=NET; title="Network path"; summary="Current interface, route and NetworkManager evidence."; preview="ip + nmcli" ;;
-    services) code=SVC; title="User services"; summary="Failed units and workspace publisher state."; preview="systemctl --user" ;;
+    services) code=SVC; title="User services"; summary="Failed units and Quickshell service state."; preview="systemctl --user" ;;
     hardware) code=HW; title="Hardware topology"; summary="PCI, USB and block-device inventory."; preview="lspci + lsusb + lsblk" ;;
     bluetooth) code=BT; title="Bluetooth evidence"; summary="BlueZ controller and known-device evidence."; preview="bluetoothctl show + devices" ;;
     warnings) code=LOG; title="Recent warnings"; summary="Bounded warning-level user journal."; preview="journalctl --user warning" ;;
     packages) code=PKG; title="Package state"; summary="Explicit and foreign package inventory."; preview="pacman -Qe + pacman -Qm" ;;
-    eww-state) code=EWW; title="Eww state"; summary="Current Senomy/Eww surface state."; preview="eww + surface-state" ;;
+    shell-state) code=SHELL; title="Quickshell state"; summary="Current shell service and notification ownership."; preview="senomy-shell status" ;;
     *) exit 2 ;;
   esac
 
@@ -115,12 +109,12 @@ run_task() {
     platform) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'uname -a; printf "\n"; sed -n "1,20p" /etc/os-release' 2>&1)"; exit_code=$? ;;
     resources) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'uptime; free -h; df -hT / "$HOME"; for f in /proc/pressure/cpu /proc/pressure/memory /proc/pressure/io; do printf "\n[%s]\n" "$f"; cat "$f"; done' 2>&1)"; exit_code=$? ;;
     network) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'ip -brief address; printf "\nROUTES\n"; ip route; if command -v nmcli >/dev/null; then printf "\nNETWORKMANAGER\n"; nmcli general; fi' 2>&1)"; exit_code=$? ;;
-    services) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'systemctl --user --failed --no-pager --plain; printf "\nWORKSPACES\n"; systemctl --user status workspaces.service --no-pager --lines=12' 2>&1)"; exit_code=$? ;;
+    services) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'systemctl --user --failed --no-pager --plain; printf "\nQUICKSHELL\n"; systemctl --user status senomy-quickshell.service --no-pager --lines=12' 2>&1)"; exit_code=$? ;;
     hardware) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'command -v lspci >/dev/null && lspci -k; printf "\nUSB\n"; command -v lsusb >/dev/null && lsusb; printf "\nBLOCK\n"; lsblk -e 7 -o NAME,TYPE,SIZE,FSTYPE,MOUNTPOINTS,MODEL' 2>&1)"; exit_code=$? ;;
     bluetooth) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'if command -v bluetoothctl >/dev/null; then bluetoothctl show; printf "\nKNOWN DEVICES\n"; bluetoothctl devices; else printf "bluetoothctl unavailable\n"; exit 3; fi' 2>&1)"; exit_code=$? ;;
     warnings) output="$(timeout "$TIMEOUT_SECONDS" journalctl --user -p warning -n 40 --no-pager --output=short-iso 2>&1)"; exit_code=$? ;;
     packages) output="$(timeout "$TIMEOUT_SECONDS" bash -c 'printf "EXPLICIT PACKAGES\n"; pacman -Qe; printf "\nFOREIGN PACKAGES\n"; pacman -Qm' 2>&1)"; exit_code=$? ;;
-    eww-state) output="$(timeout "$TIMEOUT_SECONDS" "$CONFIG_DIR/scripts/surface-state.sh" status 2>&1)"; exit_code=$? ;;
+    shell-state) output="$(timeout "$TIMEOUT_SECONDS" "$CONFIG_DIR/scripts/senomy-shell" status 2>&1)"; exit_code=$? ;;
   esac
   set -e
   finished="$(now)"; parsed="$(printf '%s' "$output" | sanitize_output)"
@@ -145,10 +139,9 @@ launch_shell() {
   esac
   [[ -n "$shell_bin" ]] || exit 4
   "$CONFIG_DIR/scripts/senomy-event.sh" record console launch "$shell_id" requested >/dev/null 2>&1 || true
-  case "$shell_id" in
-    bash | zsh | fish) nohup kitty --class senomy-console --title "$title" --directory "$HOME_DIR" "$shell_bin" -l >/dev/null 2>&1 & LAUNCHED_PID=$! ;;
-    pwsh) nohup kitty --class senomy-console --title "$title" --directory "$HOME_DIR" "$shell_bin" -Login >/dev/null 2>&1 & LAUNCHED_PID=$! ;;
-  esac
+  local receipt
+  receipt="$("$CONFIG_DIR/scripts/senomy-app-launch" tool console-shell "$shell_id")" || { printf '%s\n' "$receipt" >&2; return 1; }
+  LAUNCHED_PID="$(jq -er '.pid | select(type=="number" and .>0)' <<<"$receipt")" || return 1
 }
 
 launch_from_ui() {
@@ -160,7 +153,7 @@ launch_from_ui() {
       sleep 0.1
     done
   fi
-  "$CONFIG_DIR/scripts/surface-state.sh" close insights "$current_surface" "$current_flyout"
+  "$CONFIG_DIR/scripts/senomy-surface" dismiss
 }
 
 case "$ACTION" in

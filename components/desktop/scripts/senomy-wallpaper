@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Start the one allowlisted SenomyOS wallpaper provider from a selected profile.
+# Start the SenomyOS wallpaper owner with optional live user artwork.
 
 set -euo pipefail
 export LC_ALL=C
@@ -22,7 +22,14 @@ if [[ -f "$PROFILE" && ! -L "$PROFILE" ]] && command -v jq >/dev/null 2>&1 &&
 fi
 
 case "$asset_id" in
-  obsidian-default) wallpaper="$DATA_ROOT/senomyos/appearance/backgrounds/desktop.png" ;;
+  obsidian-default)
+    wallpaper="$DATA_ROOT/senomyos/appearance/backgrounds/desktop.png"
+    # User-deployed artwork takes precedence. A clean prepared release supplies
+    # its immutable default without creating or overwriting user configuration.
+    if [[ ! -e "$wallpaper" && ! -L "$wallpaper" && -n "${SENOMY_SOURCE_ROOT:-}" ]]; then
+      wallpaper="$SENOMY_SOURCE_ROOT/appearance/shared/backgrounds/desktop.png"
+    fi
+    ;;
   *) fail "profile requested an unknown wallpaper asset" ;;
 esac
 case "$mode" in fill | fit | stretch | center | tile) ;; *) fail "profile requested an invalid wallpaper mode" ;; esac
@@ -30,4 +37,11 @@ case "$mode" in fill | fit | stretch | center | tile) ;; *) fail "profile reques
 [[ -x "$SWAYBG_BIN" ]] || fail "swaybg is unavailable"
 [[ -f "$wallpaper" && ! -L "$wallpaper" ]] || fail "the deployed wallpaper asset is unavailable"
 
-exec "$SWAYBG_BIN" -c '#08090b' -m "$mode" -i "$wallpaper"
+case "${1:-}" in
+  --once) exec "$SWAYBG_BIN" -c '#08090b' -m "$mode" -i "$wallpaper" ;;
+  "") ;;
+  *) fail "usage: senomy-wallpaper [--once]" ;;
+esac
+readonly WATCHER="$(dirname -- "${BASH_SOURCE[0]}")/senomy-wallpaper-watch.py"
+readonly SETTINGS="${SENOMY_WALLPAPER_SETTINGS:-$CONFIG_ROOT/senomyos/wallpaper.json}"
+exec python3 "$WATCHER" "$SWAYBG_BIN" "$wallpaper" "$mode" "$SETTINGS"

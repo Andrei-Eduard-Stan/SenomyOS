@@ -5,22 +5,51 @@ import Quickshell.Services.SystemTray
 import "../config" as Config
 
 SenomyFrame {
+    frameKey: ""
+    fillKey: "control"
+    borderType: "none"
+    nativeFrameEnabled: false
+    fullHeightFrame: true
+    railBackground: true
+    stateUnderlineEnabled: false
     id: root
+    SilverIslandFrame {
+        drawFill: false
+        parent: root
+        anchors.fill: parent
+        z: -1
+        active: false
+        hovered: root.hovered
+    }
+
 
     required property var audio
     required property var battery
     required property var network
     property bool trayOpen: false
+    property bool networkOpen: false
+    property bool batteryOpen: false
+    property var controlAnchor: null
+    property var networkAnchor: null
+    property var batteryAnchor: null
     property bool volumeOpen: false
     property bool controlOpen: false
+    property bool lensOpen: false
+    property bool micro: false
     property alias trayAnchor: trayButton.anchorItem
     property var volumeAnchor: null
+    property var lensAnchor: null
+    signal toggleLens()
     signal toggleTray()
     signal toggleVolume()
+    signal toggleNetwork()
+    signal toggleBattery()
     signal openControl(string section)
-    width: 320
+    signal openSettings(string section)
+    width: 338
     height: Config.Theme.islandHeight
     motif: "controls"
+    active: trayOpen || volumeOpen || networkOpen || batteryOpen || controlOpen || lensOpen
 
     function batteryIcon() {
         if (!battery.available)
@@ -37,120 +66,132 @@ SenomyFrame {
         return "battery-25.svg";
     }
 
+    function controlData(kind) {
+        if(kind === "audio")return {id:kind,icon:audio.muted?"volume-muted.svg":"volume.svg",available:audio.available,tooltip:audio.available?"Open native audio controls":"PipeWire output unavailable"};
+        if(kind === "network")return {id:kind,icon:"wifi.svg",available:network.available,tooltip:"Open network controls. "+network.detail};
+        if(kind === "battery")return {id:kind,icon:batteryIcon(),available:battery.available,tooltip:"Open battery details. "+battery.detail};
+        return {id:kind,icon:kind === "control"?"settings.svg":"applications.svg",available:true,tooltip:kind === "control"?"Open Control Centre. Right-click or press Menu for full Settings.":"Open SenomyOS Command Lens"};
+    }
+
     Row {
+        parent: root
         anchors.fill: parent
+        anchors.leftMargin: 1
+        anchors.rightMargin: 1
+        anchors.topMargin: 1
+        anchors.bottomMargin: 1
 
         Repeater {
-            model: [
-                {
-                    id: "applications",
-                    icon: "applications.svg",
-                    badge: "",
-                    tooltip: "Open SenomyOS Command Lens"
-                },
-                {
-                    id: "audio",
-                    icon: root.audio.muted ? "volume-muted.svg" : "volume.svg",
-                    badge: root.audio.label,
-                    tooltip: root.audio.available ? "Open native PipeWire audio controls" : "PipeWire output unavailable"
-                },
-                {
-                    id: "network",
-                    icon: "wifi.svg",
-                    badge: root.network.label,
-                    tooltip: root.network.detail
-                },
-                {
-                    id: "battery",
-                    icon: root.batteryIcon(),
-                    badge: root.battery.label,
-                    tooltip: root.battery.detail
-                }
-            ]
+            id: controlRepeater
+            // IDs are structural; live status updates must not recreate the
+            // delegates that own popup anchors.
+            model: root.micro ? ["control"] : root.width >= 300 ? ["control","applications","audio","network","battery"] : ["control","audio","network","battery"]
 
             delegate: Item {
                 id: control
-                required property var modelData
-                width: 60
+                required property string modelData
+                readonly property var controlData: root.controlData(modelData)
+                readonly property bool selected: (modelData === "control" && root.controlOpen)
+                    || (modelData === "applications" && root.lensOpen)
+                    || (modelData === "audio" && root.volumeOpen)
+                    || (modelData === "network" && root.networkOpen)
+                    || (modelData === "battery" && root.batteryOpen)
+                objectName: "rail-control-"+modelData
+                required property int index
+                activeFocusOnTab: true
+                Keys.onReturnPressed: controlArea.clicked(null)
+                Keys.onSpacePressed: controlArea.clicked(null)
+                Keys.onMenuPressed: if(control.modelData === "control") root.openSettings("")
+                Accessible.role: Accessible.Button
+                Accessible.name: controlData.tooltip
+                width: parent.width / (root.micro ? 1 : controlRepeater.count+1)
                 height: parent.height
 
-                Component.onCompleted: if (modelData.id === "audio") root.volumeAnchor = control
-                Component.onDestruction: if (root.volumeAnchor === control) root.volumeAnchor = null
+                Component.onCompleted: {
+                    if(controlData.id === "applications") root.lensAnchor=control;
+                    if(controlData.id === "control") root.controlAnchor=control;
+                    if(controlData.id === "audio") root.volumeAnchor=control;
+                    if(controlData.id === "network") root.networkAnchor=control;
+                    if(controlData.id === "battery") root.batteryAnchor=control;
+                }
+                Component.onDestruction: {
+                    if(root.lensAnchor===control)root.lensAnchor=null;
+                    if(root.controlAnchor===control)root.controlAnchor=null;
+                    if(root.volumeAnchor===control)root.volumeAnchor=null;
+                    if(root.networkAnchor===control)root.networkAnchor=null;
+                    if(root.batteryAnchor===control)root.batteryAnchor=null;
+                }
 
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 46
-                    height: 42
-                    radius: 12
-                    color: controlArea.containsMouse
-                        || (modelData.id === "audio" && root.volumeOpen)
-                        || ((modelData.id === "network" || modelData.id === "battery") && root.controlOpen)
-                        ? Config.Theme.glassHover : "transparent"
+                ChamferHover {
+                    anchors.fill: parent
+                    leftCorner: control.index === 0
+                    rightCorner: root.micro
+                    highlighted: controlArea.containsMouse
+                    selected: control.selected
+                    focusTarget: control; pointerTarget: controlArea
+
+                }
+                Loader {
+                    objectName:"rail-tooltip-"+control.modelData
+                    source:"RailToolTip.qml"
+                    onLoaded:{item.anchorItem=control;item.text=Qt.binding(()=>control.controlData.tooltip);item.hovered=Qt.binding(()=>controlArea.containsMouse);item.suppressed=Qt.binding(()=>root.active);}
                 }
                 Image {
                     anchors.centerIn: parent
                     width: 19
                     height: 19
-                    source: "../assets/icons/" + modelData.icon
+                    source: "../assets/icons/" + controlData.icon
                     fillMode: Image.PreserveAspectFit
-                    opacity: modelData.id === "network" && !root.network.available ? 0.45 : 1
-                }
-                Rectangle {
-                    visible: modelData.badge.length > 0
-                    anchors.right: parent.right
-                    anchors.rightMargin: 2
-                    anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 4
-                    height: 14
-                    width: Math.max(22, badgeText.implicitWidth + 8)
-                    radius: 7
-                    color: Config.Theme.glassRaised
-                    border.width: 1
-                    border.color: Config.Theme.dim
-                    Text {
-                        id: badgeText
-                        anchors.centerIn: parent
-                        text: modelData.badge
-                        color: Config.Theme.muted
-                        font.family: Config.Theme.fontFamily
-                        font.pixelSize: 7
-                    }
+                    opacity: controlData.available ? 0.92 : 0.34
                 }
                 MouseArea {
                     id: controlArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    cursorShape: modelData.id === "audio" && !root.audio.available
+                    acceptedButtons: controlData.id === "control" ? Qt.LeftButton | Qt.RightButton : Qt.LeftButton
+                    cursorShape: controlData.id === "audio" && !root.audio.available
                         ? Qt.ArrowCursor : Qt.PointingHandCursor
-                    onClicked: {
-                        if (modelData.id === "applications")
-                            Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "apps"]);
-                        else if (modelData.id === "audio")
+                    onClicked: mouse => {
+                        if (controlData.id === "control" && mouse && mouse.button === Qt.RightButton)
+                            root.openSettings("");
+                        else if (controlData.id === "control")
+                            root.openControl("");
+                        else if (controlData.id === "applications")
+                            root.toggleLens();
+                        else if (controlData.id === "audio")
                             root.toggleVolume();
-                        else if (modelData.id === "network")
-                            root.openControl("network");
-                        else if (modelData.id === "battery")
-                            root.openControl("power");
+                        else if (controlData.id === "network")
+                            root.toggleNetwork();
+                        else if (controlData.id === "battery")
+                            root.toggleBattery();
                     }
                 }
-                ToolTip.visible: controlArea.containsMouse
-                ToolTip.delay: 450
-                ToolTip.text: modelData.tooltip
             }
         }
 
         Item {
             id: trayButton
+            activeFocusOnTab: true
+            Keys.onReturnPressed: root.toggleTray()
+            Keys.onSpacePressed: root.toggleTray()
+            Accessible.role: Accessible.Button
+            Accessible.name: "Open system tray"
+            Loader {
+                objectName:"rail-tooltip-tray"
+                source:"RailToolTip.qml"
+                onLoaded:{item.anchorItem=trayButton;item.text="Open system tray";item.hovered=Qt.binding(()=>trayArea.containsMouse);item.suppressed=Qt.binding(()=>root.active);}
+            }
             property alias anchorItem: trayArea
-            width: 60
+            visible: !root.micro
+            width: visible ? parent.width / (controlRepeater.count+1) : 0
             height: parent.height
 
-            Rectangle {
-                anchors.centerIn: parent
-                width: 46
-                height: 42
-                radius: 12
-                color: trayArea.containsMouse || root.trayOpen ? Config.Theme.glassHover : "transparent"
+            ChamferHover {
+                anchors.fill: parent
+                rightCorner: true
+                highlighted: trayArea.containsMouse
+                selected: root.trayOpen
+                focusTarget: trayButton; pointerTarget: trayArea
             }
             Image {
                 anchors.centerIn: parent
@@ -159,27 +200,6 @@ SenomyFrame {
                 source: "../assets/icons/tray-up.svg"
                 fillMode: Image.PreserveAspectFit
             }
-            Rectangle {
-                visible: SystemTray.items.values.length > 0
-                anchors.right: parent.right
-                anchors.rightMargin: 2
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 4
-                height: 14
-                width: Math.max(22, trayBadge.implicitWidth + 8)
-                radius: 7
-                color: Config.Theme.glassRaised
-                border.width: 1
-                border.color: Config.Theme.dim
-                Text {
-                    id: trayBadge
-                    anchors.centerIn: parent
-                    text: String(SystemTray.items.values.length)
-                    color: Config.Theme.muted
-                    font.family: Config.Theme.fontFamily
-                    font.pixelSize: 7
-                }
-            }
             MouseArea {
                 id: trayArea
                 anchors.fill: parent
@@ -187,9 +207,6 @@ SenomyFrame {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: root.toggleTray()
             }
-            ToolTip.visible: trayArea.containsMouse && !root.trayOpen
-            ToolTip.delay: 450
-            ToolTip.text: SystemTray.items.values.length + " native tray item(s)"
         }
     }
 }

@@ -1,577 +1,517 @@
 import QtQuick
+import "audio" as Audio
+import "control" as Control
+import "ControlDirectory.js" as Directory
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Networking
 import Quickshell.Services.UPower
 import "../config" as Config
 
-PrimarySurfaceWindow {
+DashboardWindow {
     id: root
+    interactionCoordinator: state
+    frameKey: "control-center"
+    fullSettings: state.controlMode === "full"
+    onModeRequested: full => full ? state.showSettings(targetScreen.name, routeId) : state.showPrimary("control", targetScreen.name, routeId)
 
     required property var state
     required property var metrics
     required property var audio
     required property var network
+    readonly property bool networkLocked: network.actions.locked || Boolean(network.profiles && network.profiles.actions.locked) || Boolean(network.connectionAttempt && network.connectionAttempt.busy)
+    property var deviceInventory: null
+    property var inputSettings: null
+    property var sessionPolicy: null
+    property var desktopSettings: null
+    property var accounts: null
+    property var calendarService: null
     required property var bluetooth
     required property var battery
     required property var media
     required property var notifications
     required property var senomy
 
-    requestedOpen: state.activePrimary === "control"
-        && state.primaryScreen === (targetScreen ? targetScreen.name : "")
+    Binding {
+        target: root.state
+        property: "pageModalActive"
+        value: !!root.deferredNode || !!(pageLoader.item && (pageLoader.item.review || pageLoader.item.discardReview))
+    }
+    Connections {
+        target: root.state
+        function onModalCancelRequested() {
+            root.deferredNode = "";
+            root.state.deferredPrimary = null;
+            if (pageLoader.item && root.state.controlSection === "calendar") {
+                pageLoader.item.review = null;
+                pageLoader.item.discardReview = false;
+            }
+        }
+    }
+    Connections {
+        target: root.inputSettings && typeof root.inputSettings.releasePrimaryFocusRequested === "function" ? root.inputSettings : null
+        function onReleasePrimaryFocusRequested() {
+            if (root.state.activePrimary === "control" && root.state.controlSection === "input")
+                root.state.closePrimary();
+        }
+    }
+    requestedOpen: !state.capturePaused && state.activePrimary === "control" && state.primaryScreen === (targetScreen ? targetScreen.name : "")
     replacementOpening: state.activePrimary !== "" && state.activePrimary !== "control"
-    title: "CONTROL CENTRE"
-    eyebrow: "CONTEXTUAL SYSTEM CONTROL"
+    title: fullSettings ? "SENOMYOS SETTINGS" : "CONTROL CENTRE"
+    eyebrow: (fullSettings ? "SETTINGS / " : "CONTROL CENTRE / ") + (destination ? destination.path : state.controlSection)
+    readonly property string routeId: state.controlPath || state.controlSection
+    readonly property var destination: Directory.resolve(navigationNodes, routeId)
+    readonly property string part: routeId.split("/")[1] || "overview"
+    readonly property string deviceKey: destination && destination.deviceKey ? destination.deviceKey : ""
+    property string deferredNode: ""
+    navigationNodes: Directory.build({
+        outputAvailable:audio.available,
+        inputAudioAvailable:audio.inputAvailable,
+        networkAvailable:network.available,
+        inputAvailable:inputSettings?inputSettings.available:false,
+        outputs: audio.outputNodes,
+        inputs: audio.inputNodes,
+        displays: deviceInventory ? deviceInventory.displays : [],
+        inputDevices: deviceInventory && deviceInventory.snapshot.inputs ? deviceInventory.snapshot.inputs.items : [],
+        defaultRoles:desktopSettings?desktopSettings.defaults:[],
+        profiles: network.profiles ? network.profiles.items : []
+    })
+    activeNode: routeId
+    function togglePin() {
+        const pins = state.controlPins.slice();
+        const i = pins.indexOf(routeId);
+        if (i >= 0)
+            pins.splice(i, 1);
+        else if (pins.length < 8)
+            pins.push(routeId);
+        state.controlPins = pins;
+    }
+    readonly property bool pageLoading: pageLoader.status === Loader.Loading
+    function dirtyPage() {return pageLoader.item && pageLoader.item.dirty === true;}
+    function dirtyAppearance() {
+        return pageLoader.item && state.controlSection === "appearance" && pageLoader.item.dirty === true;
+    }
+    function navigateId(id) {
+        if (!state.allowInteraction()) return false;
+        const node = Directory.resolve(navigationNodes, id);
+        if (!node)
+            return false;
+        if (dirtyPage() && (node.route !== "appearance" || root.state.controlSection !== "appearance") && node.id !== routeId) {
+            deferredNode = id;
+            return false;
+        }
+        if (!state.navigateControl(node.id)) return false;
+        Qt.callLater(focusDestination);
+        return true;
+    }
+    function focusDestination() {
+        if (!pageLoader.item || !destination)
+            return;
+        const key = (destination.dynamic && destination.id.startsWith("devices/displays/") ? "control-display-selection" : "") || destination.target || (destination.dynamic ? (destination.route === "audio" ? "control-endpoint-" : "control-device-") + encodeURIComponent(deviceKey) : "");
+        function find(item) {
+            if (item.objectName === key && key.length)
+                return item;
+            for (const child of item.children) {
+                const found = find(child);
+                if (found)
+                    return found;
+            }
+            return null;
+        }
+        const target = key.length ? find(pageLoader.item) : null;
+        if (target && target.visible) {
+            function focusable(item) {
+                if (item.activeFocusOnTab && item.enabled && item.visible)
+                    return item;
+                for (const child of item.children) {
+                    const found = focusable(child);
+                    if (found)
+                        return found;
+                }
+                return null;
+            }
+            const control = focusable(target);
+            if (control)
+                control.forceActiveFocus(Qt.TabFocusReason);
+        }
+    }
+    readonly property bool displayContext: routeId === "devices/displays" || routeId.startsWith("devices/displays/")
+    readonly property var contextActions: [{
+        id: "pin", label: state.controlPins.includes(routeId) ? "Unpin destination" : "Pin destination (session)",
+        enabled: state.controlPins.includes(routeId) || state.controlPins.length < 8,
+        reason: "Eight destinations are pinned; unpin one first"
+    }]
+    function connectionEvidence() {
+        return {connection: network.activeConnection || null, connectivity: network.connectivityName,
+            interface: network.primaryDevice || null, observedAt: new Date().toISOString()};
+    }
+    function displayEvidence() {
+        // Applied inventory only: never serialize the edit draft or stable serial keys.
+        return {scope: "Observed display configuration; unsaved edits excluded", observedAt: deviceInventory ? (deviceInventory.snapshot || {}).observed_at || null : null,
+            displays: deviceInventory ? deviceInventory.displays.map(d => ({connector:d.name,
+                width:d.width,height:d.height,refreshRate:d.refreshRate,scale:d.scale,
+                x:d.x,y:d.y,transform:d.transform,disabled:d.disabled,mirrorOf:d.mirrorOf || null})) : []};
+    }
     activeSection: state.controlSection
-    preferredWidth: 980
-    preferredHeight: 760
+    settingsPreferredWidth:1280
+    settingsPreferredHeight:860
+    preferredWidth: fullSettings ? 1280 : 1120
+    preferredHeight: fullSettings ? 860 : 800
     motif: "controls"
     sections: [
-        {id: "overview", label: "OVERVIEW"},
-        {id: "network", label: "NETWORK"},
-        {id: "audio", label: "AUDIO"},
-        {id: "power", label: "POWER"},
-        {id: "calendar", label: "CALENDAR"},
-        {id: "input", label: "INPUT"},
-        {id: "devices", label: "DEVICE MANAGEMENT"},
-        {id: "apps", label: "APPLICATIONS"},
-        {id: "appearance", label: "APPEARANCE"},
-        {id: "settings", label: "SETTINGS"}
+        {
+            id: "overview",
+            icon: "applications.svg",
+            label: "OVERVIEW"
+        },
+        {
+            id: "network",
+            icon: "applications.svg",
+            label: "NETWORK"
+        },
+        {
+            id: "audio",
+            icon: "applications.svg",
+            label: "AUDIO"
+        },
+        {
+            id: "power",
+            icon: "applications.svg",
+            label: "POWER"
+        },
+        {
+            id: "calendar",
+            icon: "applications.svg",
+            label: "CALENDAR"
+        },
+        {
+            id: "input",
+            icon: "applications.svg",
+            label: "INPUT"
+        },
+        {
+            id: "devices",
+            icon: "applications.svg",
+            label: "DEVICE MANAGEMENT"
+        },
+        {
+            id: "apps",
+            icon: "applications.svg",
+            label: "APPLICATIONS"
+        },
+        {
+            id: "appearance",
+            icon: "applications.svg",
+            label: "APPEARANCE"
+        },
+        {
+            id: "settings",
+            icon: "applications.svg",
+            label: "SETTINGS"
+        }
     ]
 
+    Shortcut {sequence:"Alt+Left";enabled:root.requestedOpen;onActivated:root.state.travelControl(-1)}
+    Shortcut {sequence:"Alt+Right";enabled:root.requestedOpen;onActivated:root.state.travelControl(1)}
     onCloseRequested: state.closePrimary()
-    onSectionRequested: section => state.controlSection = section
+    onSectionRequested: section => root.navigateId(section)
+    onNodeRequested: node => root.navigateId(node.id)
 
     function wifiPercent(rawValue) {
         const value = Number(rawValue) || 0;
         return Math.round(value <= 1 ? value * 100 : value);
     }
 
-    Binding {
-        target: root.bluetooth
-        property: "pageActive"
-        value: root.requestedOpen && root.state.controlSection === "devices"
-    }
-    Component.onDestruction: root.bluetooth.pageActive = false
-
-    Loader {
+    Column {
         anchors.fill: parent
-        sourceComponent: {
-            switch (root.state.controlSection) {
-            case "network": return networkPage;
-            case "audio": return audioPage;
-            case "power": return powerPage;
-            case "calendar": return calendarPage;
-            case "input": return inputPage;
-            case "devices": return devicesPage;
-            case "apps": return appsPage;
-            case "appearance": return appearancePage;
-            case "settings": return settingsPage;
-            default: return overviewPage;
+        spacing: Config.DirectoryStyle.sectionGap
+        Row {
+            id: pageHeader
+            width: parent.width
+            height: Math.max(Config.DirectoryStyle.controlTarget, pageTitle.implicitHeight+8)
+            Text {
+                id:pageTitle
+                leftPadding: Config.DirectoryStyle.controlInset
+                width: Math.max(1, parent.width - backButton.width - nextButton.width - contextMenu.width)
+                height: pageHeader.height
+                verticalAlignment: Text.AlignVCenter
+                text: root.navigation.displayLabel(root.destination && root.destination.id.endsWith("/overview") ? (Directory.resolve(root.navigationNodes,root.state.controlSection) || root.destination).label : root.destination ? root.destination.label : root.state.controlSection)
+                textFormat: Text.PlainText
+                font.family: Config.QuickPanelStyle.headingFont
+                font.weight: Font.Normal
+                font.pixelSize: Math.round(20*Config.DirectoryStyle.textScale)
+                color: Config.DirectoryStyle.ink
+                wrapMode:Text.WordWrap
+                elide:Text.ElideNone
+            }
+            QuietButton {
+                id:backButton
+                width:Config.DirectoryStyle.controlTarget;height:pageHeader.height;iconOnly:true;glyph:"\uf053"
+                ToolTip.visible:hovered;ToolTip.text:"Back"
+                enabled:root.state.canGoBack
+                accessibleLabel:"Back to previous settings page"
+                onClicked:root.state.travelControl(-1)
+            }
+            QuietButton {
+                id:nextButton
+                width:Config.DirectoryStyle.controlTarget;height:pageHeader.height;iconOnly:true;glyph:"\uf054"
+                ToolTip.visible:hovered;ToolTip.text:"Forward"
+                enabled:root.state.canGoForward
+                accessibleLabel:"Forward to next settings page"
+                onClicked:root.state.travelControl(1)
+            }
+            ContextEvidenceMenu {
+                id: contextMenu
+                objectName: "control-page-menu"
+                ownerActive:root.requestedOpen && !root.state.modalActive
+                contextKey: root.routeId
+                accessibleLabel: "Actions for " + (root.destination ? root.destination.label : root.routeId)
+                // Copy is relevant only to these observed-data contexts. All pages retain session pinning.
+                actions: (root.displayContext || root.state.controlSection === "network" ? [{
+                    id:"copy", label:root.displayContext ? "Copy display configuration" : "Copy connection details",
+                    enabled:clipboardAvailable && (root.displayContext ? !!(root.deviceInventory && !root.deviceInventory.loading && !root.deviceInventory.error && root.deviceInventory.displays.length) : root.network.available),
+                    reason:!clipboardAvailable ? "Clipboard unavailable: wl-copy is not installed" : root.displayContext ? "No current display inventory available" : "Network provider unavailable"
+                }] : []).concat(root.contextActions)
+                allowText: false
+                evidenceAvailable: root.displayContext ? !!(root.deviceInventory && !root.deviceInventory.loading && !root.deviceInventory.error && root.deviceInventory.displays.length) : root.network.available
+                componentKey: root.displayContext ? "display-configuration" : "network-connection"
+                report: root.displayContext ? root.displayEvidence() : root.connectionEvidence()
+                onExtraActionRequested: action => { if (action === "pin" && root.state.allowInteraction()) root.togglePin(); }
+            }
+        }
+        Flow {
+            width:parent.width;spacing:8
+            visible:root.state.controlSection!=="overview" && root.state.controlSection!=="accounts" && root.part!=="overview"
+            Repeater {model:((Directory.resolve(root.navigationNodes,root.state.controlSection) || {}).children || []).filter(n=>!n.dynamic)
+                QuietButton {required property var modelData;objectName:"control-subview-"+modelData.id;text:root.navigation.displayLabel(modelData.label);active:root.routeId===modelData.id || root.routeId.startsWith(modelData.id+"/");Accessible.checkable:true;Accessible.checked:active;enabled:!root.state.modalActive;width:Math.min(parent.width,implicitWidth);onClicked:root.navigateId(modelData.id)}
+            }
+        }
+        Column {
+            width: parent.width
+            spacing: 6
+            visible: root.deferredNode.length > 0 || !!root.state.deferredPrimary
+            Text {
+                width: parent.width
+                text: "Unsaved "+(root.state.controlSection==="calendar"?"calendar event":root.state.controlSection==="accounts"?"account":"appearance")+" edits. Keep editing, or discard them to continue."
+                color: Config.Theme.warning
+                font.family: Config.DirectoryStyle.bodyFont
+                font.pixelSize: Config.DirectoryStyle.bodySize
+                wrapMode: Text.WordWrap
+            }
+            Row {
+                width: parent.width
+                spacing: 8
+                QuietButton {
+                    objectName: "control-keep-editing"
+                    width: (parent.width - 8) / 2
+                    text: "Keep editing"
+                    onClicked: {
+                        root.deferredNode = "";
+                        root.state.deferredPrimary = null;
+                        if(root.calendarService){root.calendarService.requestedEvent=null;root.calendarService.requestedCompose=null;}
+                    }
+                }
+                QuietButton {
+                    objectName: "control-discard-continue"
+                    width: (parent.width - 8) / 2
+                    text: "Discard & continue"
+                    onClicked: {
+                        if (pageLoader.item && typeof pageLoader.item.load === "function")
+                            pageLoader.item.load();
+                        root.state.controlDraftDirty = false;
+                        const id = root.deferredNode;
+                        root.deferredNode = "";
+                        if (id.length)
+                            root.navigateId(id);
+                        else
+                            root.state.completeDeferredPrimary();
+                    }
+                }
+            }
+        }
+        Text {
+            width: parent.width
+            visible: root.routeId.includes("/item:") && !root.destination
+            text: "This device or connection is no longer available. Choose another destination in the directory."
+            wrapMode: Text.WordWrap
+            color: Config.Theme.warning
+            font.family: Config.DirectoryStyle.dataFont
+            font.pixelSize: 12
+        }
+        Text {
+            objectName: "control-page-load-status"
+            visible: pageLoader.status === Loader.Loading || pageLoader.status === Loader.Error
+            width: parent.width
+            text: pageLoader.status === Loader.Error ? "This settings page could not be loaded." : "Loading settings…"
+            color: Config.DirectoryStyle.muted
+            font.family: Config.DirectoryStyle.bodyFont; font.pixelSize: Config.DirectoryStyle.bodySize
+            wrapMode: Text.WordWrap
+            Accessible.role: Accessible.StaticText; Accessible.name: text
+        }
+        Loader {
+            id: pageLoader
+            objectName: "control-page-loader"
+            asynchronous: true
+            visible: status === Loader.Ready
+            active: root.state.activePrimary === "control"
+            width: parent.width
+            height: Math.max(0, parent.height - y)
+            onLoaded: {
+                root.revealContent();
+                Config.RenderMetrics.pageReady("control-center");
+                if (root.requestedOpen && !root.state.modalActive) Qt.callLater(root.focusDestination);
+            }
+            Connections {
+                target: pageLoader.item && ["appearance","calendar","accounts"].includes(root.state.controlSection) ? pageLoader.item : null
+                ignoreUnknownSignals: true
+                function onDirtyChanged() {
+                    if (root.requestedOpen)
+                        root.state.controlDraftDirty = root.dirtyPage();
+                }
+            }
+            sourceComponent: {
+                switch (root.state.controlSection) {
+                case "network":
+                    return networkPage;
+                case "audio":
+                    return audioPage;
+                case "power":
+                    return powerPage;
+                case "calendar":
+                    return calendarPage;
+                case "input":
+                    return inputPage;
+                case "devices":
+                    return devicesPage;
+                case "apps":
+                    return appsPage;
+                case "appearance":
+                    return appearancePage;
+                case "accounts":
+                    return accountsPage;
+                case "settings":
+                    return settingsPage;
+                default:
+                    return overviewPage;
+                }
             }
         }
     }
 
     Component {
         id: overviewPage
-        Flickable {
-            contentHeight: overviewColumn.implicitHeight
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            Column {
-                id: overviewColumn
-                width: parent.width
-                spacing: 14
-                Text {
-                    width: parent.width
-                    text: "SYSTEM OVERVIEW // " + root.senomy.message
-                    color: Config.Theme.accent
-                    font.family: Config.Theme.fontFamily
-                    font.pixelSize: 10
-                    font.weight: Font.DemiBold
-                    elide: Text.ElideRight
-                }
-                Grid {
-                    width: parent.width
-                    columns: width < 650 ? 2 : 3
-                    columnSpacing: 10
-                    rowSpacing: 10
-                    Repeater {
-                        model: [
-                            {title: "CPU", value: Math.round(root.metrics.cpuPercent) + "%", detail: "Level 1 live telemetry"},
-                            {title: "MEMORY", value: Math.round(root.metrics.memoryPercent) + "%", detail: root.metrics.uptimeLabel + " uptime"},
-                            {title: "NETWORK", value: root.network.label, detail: root.network.detail},
-                            {title: "AUDIO", value: root.audio.label, detail: root.audio.outputName},
-                            {title: "POWER", value: root.battery.label, detail: root.battery.detail},
-                            {title: "MEDIA", value: root.media.playing ? "PLAYING" : "IDLE", detail: root.media.title}
-                        ]
-                        delegate: SurfaceCard {
-                            required property var modelData
-                            width: (parent.width - (parent.columns - 1) * 10) / parent.columns
-                            title: modelData.title
-                            value: modelData.value
-                            detail: modelData.detail
-                        }
-                    }
-                }
-                Text {
-                    text: "QUICK ROUTES"
-                    color: Config.Theme.dim
-                    font.family: Config.Theme.fontFamily
-                    font.pixelSize: 8
-                    font.weight: Font.DemiBold
-                }
-                Flow {
-                    width: parent.width
-                    spacing: 8
-                    Repeater {
-                        model: [
-                            {id: "network", label: "NETWORK"},
-                            {id: "audio", label: "AUDIO"},
-                            {id: "devices", label: "DEVICES"},
-                            {id: "apps", label: "APPLICATIONS"}
-                        ]
-                        delegate: SurfaceButton {
-                            required property var modelData
-                            width: 148
-                            text: modelData.label
-                            onClicked: root.state.controlSection = modelData.id
-                        }
-                    }
-                }
-                SurfaceCard {
-                    width: parent.width
-                    title: "SENOMY STATE"
-                    value: root.senomy.state.toUpperCase()
-                    detail: root.senomy.message
-                    valueColor: root.senomy.state === "critical" ? Config.Theme.danger
-                        : root.senomy.state === "warning" ? Config.Theme.warning : Config.Theme.accent
-                }
-            }
+        Control.ControlOverview {
+            state: root.state
+            metrics: root.metrics
+            network: root.network
+            audio: root.audio
+            battery: root.battery
+            bluetooth: root.bluetooth
+            notifications: root.notifications
+            senomy: root.senomy
+            media: root.media
+            pinnedEntries: root.state.controlPins.map(id => Directory.resolve(root.navigationNodes, id)).filter(node => node !== null)
+            onDestinationRequested: route => root.navigateId(route)
+            onSettingsRequested: route => root.state.showSettings(root.targetScreen.name, route)
+            onPrimaryRequested: (surface, route) => root.state.showPrimary(surface, root.targetScreen.name, route)
         }
     }
 
     Component {
         id: networkPage
-        Column {
-            spacing: 12
-            Row {
-                width: parent.width
-                spacing: 10
-                SurfaceCard {
-                    width: parent.width - 220
-                    title: "ACTIVE CONNECTION"
-                    value: root.network.activeConnection || "DISCONNECTED"
-                    detail: root.network.detail
-                }
-                SurfaceButton {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 210
-                    text: root.network.wifiEnabled ? "DISABLE WI-FI" : "ENABLE WI-FI"
-                    detail: root.network.connectivityName
-                    active: root.network.wifiEnabled
-                    enabled: root.network.available && root.network.wifiHardwareEnabled
-                    onClicked: root.network.toggleWifi()
-                }
-            }
-            Text {
-                text: "AVAILABLE NETWORKS // EVENT-DRIVEN NETWORKMANAGER"
-                color: Config.Theme.dim
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 8
-                font.weight: Font.DemiBold
-            }
-            ListView {
-                width: parent.width
-                height: parent.height - 150
-                spacing: 7
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                model: root.network.sortedWifiNetworks
-                delegate: Rectangle {
-                    id: networkRow
-                    required property var modelData
-                    width: ListView.view.width
-                    height: 58
-                    radius: 5
-                    color: Config.Theme.glassRaised
-                    border.width: 1
-                    border.color: modelData.connected ? Config.Theme.accent : Config.Theme.surfaceHover
-                    Row {
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 8
-                        Column {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 318
-                            Text {
-                                width: parent.width
-                                text: networkRow.modelData.name || "Hidden network"
-                                color: Config.Theme.foreground
-                                font.family: Config.Theme.fontFamily
-                                font.pixelSize: 10
-                                font.weight: Font.DemiBold
-                                elide: Text.ElideRight
-                            }
-                            Text {
-                                width: parent.width
-                                text: root.wifiPercent(networkRow.modelData.signalStrength) + "% · "
-                                    + WifiSecurityType.toString(networkRow.modelData.security)
-                                    + (networkRow.modelData.known ? " · saved" : "")
-                                color: Config.Theme.dim
-                                font.family: Config.Theme.fontFamily
-                                font.pixelSize: 8
-                                elide: Text.ElideRight
-                            }
-                        }
-                        Item {
-                            width: 80
-                            height: 42
-                            Text {
-                                anchors.top: parent.top
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: root.wifiPercent(networkRow.modelData.signalStrength) + "%"
-                                color: networkRow.modelData.connected ? Config.Theme.accent : Config.Theme.muted
-                                font.family: Config.Theme.fontFamily
-                                font.pixelSize: 8
-                                font.weight: Font.DemiBold
-                            }
-                            Row {
-                                anchors.bottom: parent.bottom
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: 3
-                                Repeater {
-                                    model: 8
-                                    delegate: Rectangle {
-                                        required property int index
-                                        width: 6
-                                        height: 4 + index * 2
-                                        anchors.bottom: parent.bottom
-                                        radius: 1
-                                        color: root.wifiPercent(networkRow.modelData.signalStrength) >= (index + 1) * 12.5
-                                            ? Config.Theme.accent : Config.Theme.glassHover
-                                    }
-                                }
-                            }
-                        }
-                        SurfaceButton {
-                            width: 104
-                            height: 42
-                            text: networkRow.modelData.connected ? "DISCONNECT" : "CONNECT"
-                            active: networkRow.modelData.connected
-                            enabled: !networkRow.modelData.stateChanging
-                            onClicked: {
-                                if (!root.network.activate(networkRow.modelData))
-                                    root.network.openSecurePrompt(networkRow.modelData);
-                            }
-                        }
-                        SurfaceButton {
-                            width: 102
-                            height: 42
-                            text: networkRow.modelData.known ? "SAVED" : "SECURE ASK"
-                            enabled: !networkRow.modelData.connected && !networkRow.modelData.known
-                                && networkRow.modelData.security !== WifiSecurityType.Open
-                            onClicked: root.network.openSecurePrompt(networkRow.modelData)
-                        }
-                    }
-                }
-            }
+        Control.ControlNetworkPage {
+            network: root.network
+            part: root.part
+            deviceKey: root.deviceKey
+            onDestinationRequested: id => root.navigateId(id)
         }
     }
 
     Component {
         id: audioPage
-        Flickable {
-            contentHeight: audioColumn.implicitHeight
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            Column {
-                id: audioColumn
-                width: parent.width
-                spacing: 12
-                SurfaceCard {
-                    width: parent.width
-                    title: "DEFAULT OUTPUT"
-                    value: root.audio.label
-                    detail: root.audio.outputName
-                }
-                Row {
-                    width: parent.width
-                    spacing: 10
-                    SurfaceButton {
-                        width: 100
-                        text: root.audio.muted ? "UNMUTE" : "MUTE"
-                        active: root.audio.muted
-                        enabled: root.audio.available
-                        onClicked: root.audio.toggleMuted()
-                    }
-                    Slider {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 110
-                        from: 0; to: 1; value: root.audio.volume
-                        enabled: root.audio.available
-                        onMoved: root.audio.setVolume(value)
-                    }
-                }
-                Text { text: "OUTPUT DEVICES"; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 8 }
-                Repeater {
-                    model: root.audio.outputNodes
-                    delegate: SurfaceButton {
-                        required property var modelData
-                        width: audioColumn.width
-                        text: modelData.description || modelData.nickname || modelData.name || "Audio output"
-                        detail: modelData === root.audio.sink ? "CURRENT DEFAULT" : "SELECT OUTPUT"
-                        active: modelData === root.audio.sink
-                        onClicked: root.audio.selectOutput(modelData)
-                    }
-                }
-                Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
-                SurfaceCard {
-                    width: parent.width
-                    title: "DEFAULT INPUT"
-                    value: root.audio.inputAvailable ? Math.round(root.audio.inputVolume * 100) + "%" : "UNAVAILABLE"
-                    detail: root.audio.inputName
-                }
-                Row {
-                    width: parent.width
-                    spacing: 10
-                    SurfaceButton {
-                        width: 100
-                        text: root.audio.inputMuted ? "UNMUTE" : "MUTE"
-                        active: root.audio.inputMuted
-                        enabled: root.audio.inputAvailable
-                        onClicked: root.audio.toggleInputMuted()
-                    }
-                    Slider {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 110
-                        from: 0; to: 1; value: root.audio.inputVolume
-                        enabled: root.audio.inputAvailable
-                        onMoved: root.audio.setInputVolume(value)
-                    }
-                }
-                Text { text: "INPUT DEVICES"; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 8 }
-                Repeater {
-                    model: root.audio.inputNodes
-                    delegate: SurfaceButton {
-                        required property var modelData
-                        width: audioColumn.width
-                        text: modelData.description || modelData.nickname || modelData.name || "Audio input"
-                        detail: modelData === root.audio.source ? "CURRENT DEFAULT" : "SELECT INPUT"
-                        active: modelData === root.audio.source
-                        onClicked: root.audio.selectInput(modelData)
-                    }
-                }
-                Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
-                Row {
-                    width: parent.width
-                    spacing: 8
-                    SurfaceButton { width: 72; text: "PREV"; enabled: root.media.available && root.media.selectedPlayer.canGoPrevious; onClicked: root.media.previous() }
-                    SurfaceButton { width: 82; text: root.media.playing ? "PAUSE" : "PLAY"; enabled: root.media.available && root.media.selectedPlayer.canTogglePlaying; onClicked: root.media.toggle() }
-                    SurfaceButton { width: 72; text: "NEXT"; enabled: root.media.available && root.media.selectedPlayer.canGoNext; onClicked: root.media.next() }
-                    SurfaceCard { width: parent.width - 250; height: 80; title: root.media.identity; value: root.media.title; detail: root.media.artist }
-                }
-            }
+        Audio.AudioPanel {
+            audio: root.audio
+            media: root.media
+            directoryNavigation: true
+            route: root.part
+            recordingMode: root.routeId === "audio/mixer/recording"
+            onDirectionRequested: recording => root.navigateId(recording ? "audio/mixer/recording" : "audio/mixer/playback")
+            onDeviceManagementRequested: root.navigateId("devices/bluetooth")
         }
     }
 
     Component {
         id: powerPage
-        Column {
-            spacing: 12
-            Grid {
-                width: parent.width
-                columns: 2
-                columnSpacing: 10
-                rowSpacing: 10
-                SurfaceCard { width: (parent.width - 10) / 2; title: "AGGREGATE"; value: root.battery.label; detail: root.battery.detail }
-                SurfaceCard { width: (parent.width - 10) / 2; title: root.battery.charging ? "TIME TO FULL" : "TIME REMAINING"; value: root.battery.timeLabel; detail: root.battery.onBattery ? "ON BATTERY" : "EXTERNAL POWER" }
-            }
-            Text { text: "BATTERY PACKS // UPOWER"; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 8 }
-            Repeater {
-                model: root.battery.batteries
-                delegate: SurfaceCard {
-                    required property var modelData
-                    width: parent.width
-                    title: modelData.model || modelData.nativePath || "BATTERY PACK"
-                    value: Math.round(modelData.percentage * 100) + "%"
-                    detail: (modelData.state ? UPowerDeviceState.toString(modelData.state) : "present")
-                        + " · " + Math.round(modelData.energy * 10) / 10 + " / "
-                        + Math.round(modelData.energyCapacity * 10) / 10 + " Wh"
-                }
-            }
-            Text { text: "POWER PROFILE"; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 8 }
-            Row {
-                width: parent.width
-                spacing: 8
-                Repeater {
-                    model: [
-                        {label: "POWER SAVER", profile: PowerProfile.PowerSaver},
-                        {label: "BALANCED", profile: PowerProfile.Balanced},
-                        {label: "PERFORMANCE", profile: PowerProfile.Performance}
-                    ]
-                    delegate: SurfaceButton {
-                        required property var modelData
-                        width: (parent.width - 16) / 3
-                        text: modelData.label
-                        active: root.battery.powerProfileAvailable && root.battery.powerProfile === modelData.profile
-                        enabled: root.battery.powerProfileAvailable
-                        onClicked: root.battery.setPowerProfile(modelData.profile)
-                    }
-                }
-            }
-            Text {
-                width: parent.width
-                text: root.battery.powerProfileAvailable
-                    ? "Current profile: " + root.battery.powerProfileName
-                    : "Power Profiles daemon is not available on this machine; controls are truthfully disabled."
-                color: Config.Theme.muted
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 9
-                wrapMode: Text.WordWrap
-            }
+        Control.ControlPowerPage {
+            battery: root.battery
+            part: root.part
+            onDestinationRequested: id => root.navigateId(id)
         }
     }
 
     Component {
         id: calendarPage
-        Column {
-            SystemClock { id: controlClock; precision: SystemClock.Seconds }
-            spacing: 14
-            SurfaceCard {
-                width: parent.width
-                height: 150
-                title: "LOCAL TIME"
-                value: Qt.formatDateTime(controlClock.date, "HH:mm:ss")
-                detail: Qt.formatDate(controlClock.date, "dddd, dd MMMM yyyy")
-            }
-            Text {
-                width: parent.width
-                text: "The Rail calendar provides month navigation, current-day state, source-monitor anchoring, outside-click dismissal, and Escape dismissal."
-                color: Config.Theme.muted
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 10
-                wrapMode: Text.WordWrap
-            }
-        }
+        Control.ControlCalendarPage {service:root.calendarService;part:root.part;onRouteRequested:route=>root.navigateId(route)}
     }
 
     Component {
         id: inputPage
-        Column {
-            spacing: 12
-            SurfaceCard { width: parent.width; title: "AUDIO INPUT"; value: root.audio.inputMuted ? "MUTED" : root.audio.inputAvailable ? "ACTIVE" : "UNAVAILABLE"; detail: root.audio.inputName }
-            SurfaceButton { width: parent.width; text: root.audio.inputMuted ? "UNMUTE MICROPHONE" : "MUTE MICROPHONE"; enabled: root.audio.inputAvailable; active: root.audio.inputMuted; onClicked: root.audio.toggleInputMuted() }
-            Text {
-                width: parent.width
-                text: "Keyboard, pointer, and touch device inventory is consolidated under Device Management. Gesture-only actions are not introduced here."
-                color: Config.Theme.muted
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 10
-                wrapMode: Text.WordWrap
-            }
-            SurfaceButton { width: parent.width; text: "OPEN DEVICE MANAGEMENT"; onClicked: root.state.controlSection = "devices" }
+        Control.ControlInputPage {
+            inputSettings: root.inputSettings
+            part: root.part
+            onDestinationRequested: id => root.navigateId(id)
         }
     }
 
     Component {
         id: devicesPage
-        Column {
-            spacing: 12
-            Row {
-                width: parent.width
-                spacing: 10
-                SurfaceCard { width: parent.width - 220; title: "BLUETOOTH ADAPTER"; value: root.bluetooth.available ? root.bluetooth.enabled ? "ENABLED" : "DISABLED" : "UNAVAILABLE"; detail: root.bluetooth.discovering ? "DISCOVERING" : root.bluetooth.devices.length + " known/visible device(s)" }
-                SurfaceButton { anchors.verticalCenter: parent.verticalCenter; width: 210; text: root.bluetooth.enabled ? "DISABLE BLUETOOTH" : "ENABLE BLUETOOTH"; active: root.bluetooth.enabled; enabled: root.bluetooth.available; onClicked: root.bluetooth.setEnabled(!root.bluetooth.enabled) }
-            }
-            Text { text: "BLUETOOTH DEVICES // DISCOVERY RUNS ONLY ON THIS PAGE"; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 8 }
-            ListView {
-                width: parent.width
-                height: Math.min(260, contentHeight)
-                spacing: 7
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                model: root.bluetooth.devices
-                delegate: SurfaceButton {
-                    required property var modelData
-                    width: ListView.view.width
-                    text: modelData.name || modelData.deviceName || "Bluetooth device"
-                    detail: modelData.connected ? "CONNECTED" : modelData.paired ? "PAIRED" : "AVAILABLE"
-                    active: modelData.connected
-                    enabled: root.bluetooth.enabled && !modelData.pairing
-                    onClicked: root.bluetooth.toggleConnection(modelData)
-                }
-            }
-            Text {
-                visible: root.bluetooth.devices.length === 0
-                text: root.bluetooth.enabled ? "No Bluetooth devices are currently visible." : "Enable Bluetooth to discover devices."
-                color: Config.Theme.muted
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 9
-            }
-            Rectangle { width: parent.width; height: 1; color: Config.Theme.surfaceHover }
-            SurfaceCard { width: parent.width; title: "NETWORK DEVICES"; value: root.network.managedDevices.length + " MANAGED"; detail: root.network.primaryDevice || "No active primary device" }
-            SurfaceCard { width: parent.width; title: "BATTERIES"; value: root.battery.count + " PRESENT"; detail: root.battery.detail }
-            Text { text: "Audio endpoint routing is available on the Audio page."; color: Config.Theme.dim; font.family: Config.Theme.fontFamily; font.pixelSize: 9 }
+        Control.ControlDevicesPage {
+            fullSettings:root.fullSettings
+            inventory: root.deviceInventory
+            audio: root.audio
+            bluetooth: root.bluetooth
+            network: root.network
+            battery: root.battery
+            part: root.part
+            deviceKey: root.deviceKey
+            onMonitorSelected: name => { root.state.controlPath="devices/displays/item:"+encodeURIComponent(name); }
+            onDestinationRequested: id => root.navigateId(id)
         }
     }
 
     Component {
         id: appsPage
-        Column {
-            spacing: 12
-            SurfaceCard { width: parent.width; title: "COMMAND LENS"; value: "EXTERNAL BOUNDARY"; detail: "The deployed SenomyOS Rofi launcher remains the approved launcher." }
-            Flow {
-                width: parent.width
-                spacing: 8
-                SurfaceButton { width: 170; text: "APPLICATIONS"; onClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "apps"]) }
-                SurfaceButton { width: 170; text: "FILES"; onClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "files"]) }
-                SurfaceButton { width: 170; text: "WINDOWS"; onClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "windows"]) }
-                SurfaceButton { width: 170; text: "ACTIONS"; onClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "actions"]) }
-            }
-            Text {
-                width: parent.width
-                text: "Quickshell invokes the installed wrapper directly with fixed arguments. It does not interpolate widget text into a shell command."
-                color: Config.Theme.muted
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 9
-                wrapMode: Text.WordWrap
-            }
+        Control.ControlApplicationsPage {
+            desktopSettings: root.desktopSettings
+            deviceKey:root.deviceKey
+            part: root.part
+            onDestinationRequested: id => root.navigateId(id)
         }
     }
 
     Component {
         id: appearancePage
-        Column {
-            spacing: 12
-            SurfaceCard { width: parent.width; title: "APPEARANCE PROFILE"; value: "LUMINOUS RELIQUARY"; detail: "Shared generated QML tokens and frame assets are active." }
-            Text {
-                width: parent.width
-                text: "Milestone 3 intentionally freezes broad visual redesign. Appearance foundations are shared with Eww, while a dedicated shell-wide UI/UX review follows functional parity."
-                color: Config.Theme.muted
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 10
-                wrapMode: Text.WordWrap
-            }
+        AppearanceSettings {
+            part: root.part
         }
     }
 
     Component {
+        id: accountsPage
+        Control.ControlAccountsPage {service:root.accounts}
+    }
+
+    Component {
         id: settingsPage
-        Column {
-            spacing: 12
-            SurfaceCard { width: parent.width; title: "SHELL MODE"; value: "QUICKSHELL V2"; detail: "Quickshell owns login startup; Eww is retained only for verified automatic recovery." }
-            SurfaceCard { width: parent.width; title: "NOTIFICATIONS"; value: root.notifications.serverEnabled ? "NATIVE OWNER" : "SWAYNC OWNER"; detail: "Ownership is exclusive and controlled by the shell selector." }
-            SurfaceButton { width: parent.width; text: "OPEN COMMAND LENS ACTIONS"; onClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/senomy-command-lens", "--mode", "actions"]) }
-            Text {
-                width: parent.width
-                text: "Recovery, shell switching, and deployment remain outside the ordinary Control Centre to prevent accidental system mutation."
-                color: Config.Theme.muted
-                font.family: Config.Theme.fontFamily
-                font.pixelSize: 9
-                wrapMode: Text.WordWrap
-            }
+        Control.ControlSettingsPage {
+            metrics:root.metrics
+            state:root.state
+            targetScreen:root.targetScreen
+            notifications: root.notifications
+            sessionPolicy: root.sessionPolicy
+            desktopSettings: root.desktopSettings
+            part: root.part
+            onDestinationRequested: id => root.navigateId(id)
         }
     }
 }

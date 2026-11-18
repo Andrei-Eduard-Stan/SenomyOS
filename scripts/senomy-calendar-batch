@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""Preview or explicitly confirm a local bulk calendar import from stdin."""
+import argparse,json,os,socket,sys,uuid
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--source',default='personal',help='Calendar ID (default: personal)')
+    parser.add_argument('--confirm',action='store_true',help='Explicitly save the reviewed batch; omitted means preview only')
+    args=parser.parse_args();data=sys.stdin.read(24001)
+    if len(data.encode())>24000: parser.error('Schedule data exceeds 24 KiB.')
+    runtime=os.environ.get('XDG_RUNTIME_DIR','')
+    if not runtime: parser.error('A graphical login with XDG_RUNTIME_DIR is required.')
+    try:
+        with socket.socket(socket.AF_UNIX) as connection:
+            connection.settimeout(45);connection.connect(runtime+'/senomyos-calendar/calendar.sock')
+            reader=connection.makefile('r')
+            def request(operation,fields):
+                identifier='batch-cli-'+uuid.uuid4().hex
+                encoded=(json.dumps(dict(id=identifier,operation=operation,args=fields),ensure_ascii=False)+'\n').encode()
+                if len(encoded)>65536: raise ValueError('Request exceeds the calendar transport limit.')
+                connection.sendall(encoded)
+                for line in reader:
+                    response=json.loads(line)
+                    if response.get('id')==identifier:
+                        if not response.get('ok'): raise ValueError(response.get('error','Calendar action failed.'))
+                        return response['result']
+                raise ValueError('Calendar disconnected; result is unverified. No automatic retry was made.')
+            preview=request('batchPreview',dict(data=data,source=args.source))
+            result=request('batchConfirm',dict(token=preview['token'])) if args.confirm else {k:v for k,v in preview.items() if k!='token'}
+            print(json.dumps(dict(ok=True,state='saved' if args.confirm else 'preview-only',result=result),ensure_ascii=False))
+    except (OSError,ValueError) as error:
+        print(json.dumps(dict(ok=False,error=str(error))),file=sys.stderr);return 1
+    return 0
+
+if __name__=='__main__':sys.exit(main())

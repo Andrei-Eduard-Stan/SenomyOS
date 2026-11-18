@@ -14,13 +14,21 @@ Rectangle {
     implicitWidth: 320
     implicitHeight: 160
     radius: 5
-    color: Config.Theme.glassRaised
-    border.width: 1
+    color: chartSkin.ready ? "transparent" : Config.Theme.glassRaised
+    border.width: chartSkin.ready ? 0 : 1
     border.color: Qt.rgba(Config.Theme.muted.r, Config.Theme.muted.g, Config.Theme.muted.b, 0.24)
 
     onValuesChanged: chart.requestPaint()
     onMinimumChanged: chart.requestPaint()
     onMaximumChanged: chart.requestPaint()
+
+    ArtFrame {
+        id: chartSkin
+        anchors.fill: parent
+        spec: Config.Skin.frame("chart")
+        requested: Config.Skin.mode(spec) === "art"
+    }
+    SurfaceBackground { anchors.fill: parent; anchors.margins: 5; fillKey: "chart" }
 
     Text {
         anchors.left: parent.left

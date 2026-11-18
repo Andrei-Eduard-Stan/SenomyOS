@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236.18 97.98">
+  <defs>
+    <style>
+      .cls-1 {
+        font-size: 36px;
+      }
+
+      .cls-2 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-3 {
+        font-size: 20px;
+      }
+
+      .cls-4 {
+        fill: #fff;
+        font-family: BrunoAceSC-Regular, 'Bruno Ace SC';
+      }
+
+      .cls-5 {
+        font-size: 26px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <text class="cls-4" transform="translate(0 17)"><tspan class="cls-3"><tspan x="0" y="0">host:</tspan></tspan><tspan class="cls-1"><tspan x="0" y="43.2">SENOMY</tspan></tspan><tspan class="cls-5"><tspan x="0" y="74.4">thinkpad</tspan><tspan class="cls-2" x="139.07" y="74.4"> </tspan><tspan x="148.02" y="74.4">T480</tspan></tspan></text>
+  </g>
+</svg>

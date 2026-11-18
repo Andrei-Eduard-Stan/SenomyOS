@@ -27,4 +27,4 @@ Inspect or inertly stage the two boot themes with:
 Staging copies isolated files and creates a rollback receipt. It does not
 select either theme, edit kernel parameters, regenerate `grub.cfg`, rebuild an
 initramfs, or reboot. The detailed design and recovery procedure lives in
-`docs/BOOT_SEQUENCE.md`.
+`docs/reference/BOOT_SEQUENCE.md`.

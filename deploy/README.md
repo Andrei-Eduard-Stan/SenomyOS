@@ -7,7 +7,7 @@ working directories.
 
 The user deployer handles complete repository-owned files plus one explicit,
 deterministic merge for Thunar custom actions. It does not deploy directory
-trees, merge arbitrary formats, write privileged paths, reload Eww, restart
+trees, merge arbitrary formats, write privileged paths, reload the shell, restart
 applications, or regenerate boot configuration.
 
 ## Commands
@@ -50,15 +50,13 @@ The system layer can also be inspected directly with
 rollback verbs require root. System receipts are private beneath
 `/var/lib/senomyos/deployments`. The boot components install inert theme files
 only; they never edit boot configuration or regenerate an initramfs.
-`docs/BOOT_SEQUENCE.md` documents stage capabilities, firmware/video limits,
+`docs/reference/BOOT_SEQUENCE.md` documents stage capabilities, firmware/video limits,
 device-profile strategy, and the recovery gates required before activation.
 
 ## Packages, services, and first boot
 
-`packages.json` declares Quickshell as the official primary shell dependency
-and keeps the required AUR Eww package in an explicit recovery tier.
-`services.json` records system enablement policy, package-managed user presets,
-and the disabled recovery-only workspace service. The orchestrator exposes
+`packages.json` declares Quickshell and the supported component dependencies.
+system/user enablement and optional-service policy. The orchestrator exposes
 read-only audit/plan paths plus confirmed package installation and first boot:
 
 ```bash
@@ -159,17 +157,17 @@ user's home directory.
 
 ## Component policies
 
-- **Eww:** managed directly in the current live repository for now.
 - **Shell ownership:** Hyprland invokes the non-enabled Quickshell unit through
-  the guarded selector. Eww, SwayNC, and `workspaces.service` are recovery-only.
+  the guarded selector. Quickshell owns notifications; independent TTY/password
+  recovery and release rollback have separate contracts.
 - **Hyprland:** complete-file replacement is supported, but applying it remains
   an explicit reviewed action. The deployer installs `hyprland.lua`, the
   project wallpaper, and the bounded `swaybg` launcher for selection at the
-  next compositor start; it does not reload or replace the current `.conf`
-  session.
-- **Rofi:** the Command Lens config, theme, wrapper, and bounded Files/Actions
-  adapters are deployed and manually verified. The separately reviewed
-  Hyprland transaction now routes `Super+R` to the wrapper.
+  next compositor start; it does not reload the active Lua session. Tracked and
+  deployed Lua sources must be compared explicitly.
+- **Launcher:** Command Lens defaults to native shell IPC through the maintained
+  wrapper. Rofi configuration/adapters remain an explicit legacy mode. Verify the
+  actual installed binding/helper before claiming production entry acceptance.
 - **Thunar:** the scoped file-workspace wrapper, action helper, and
   deterministic `uca.xml` merge are deployed. Fresh wrapper launches start a
   collected transient daemon with the installed SenomyOS theme, wait for its

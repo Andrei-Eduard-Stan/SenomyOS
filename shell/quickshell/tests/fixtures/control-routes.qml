@@ -10,15 +10,22 @@ Window {
     visible: true; width: 1120; height: 820
     property int mutations: 0
     property var fakeWifi: Array.from({length:24},(_,i)=>({name:"Network "+i,known:true,connected:false,security:0,signalStrength:0.7,stateChanging:false}))
-    property var fakeBluetooth: Array.from({length:24},(_,i)=>({name:"Bluetooth "+i,connected:false,paired:true,pairing:false}))
-    property var fakeOutputs: Array.from({length:16},(_,i)=>({name:"Output "+i,description:"Output "+i}))
-    property var fakeInputs: Array.from({length:16},(_,i)=>({name:"Input "+i,description:"Input "+i}))
+    property var fakeBluetooth: Array.from({length:24},(_,i)=>({id:"/org/bluez/hci0/dev_"+i,token:"device-"+i,adapter:"/org/bluez/hci0",name:"Bluetooth "+i,icon:"bluetooth",connected:false,paired:true,bonded:true,trusted:false,blocked:false,battery:null,recent:false,group:"paired",expected:{Paired:true,Connected:false}}))
+    property var fakeOutputs: Array.from({length:16},(_,i)=>({name:"Output "+i,description:"Output "+i,ready:true,audio:{volume:0.5,muted:false}}))
+    property var fakeInputs: Array.from({length:16},(_,i)=>({name:"Input "+i,description:"Input "+i,ready:true,audio:{volume:0.5,muted:false}}))
     TestCase { id: input; when: false }
     QtObject {
         id: state
         property string activePrimary: "control"
         property string primaryScreen: "fixture"
         property string controlSection: "overview"
+        property string controlPath:""
+        property var controlPins:[]
+        property bool controlDraftDirty:false
+        property var deferredPrimary:null
+        onControlSectionChanged:controlPath=""
+        function completeDeferredPrimary(){return false;}
+        function showPrimary(){return true;}
         function closePrimary() { activePrimary = ""; }
     }
     QtObject {
@@ -33,7 +40,7 @@ Window {
         property string actionKind: "configuration"
         property var previous: null
         property var proposed: null
-        function cancel() { test.mutations++; }
+        function cancel() { actionState="idle"; }
         function confirm() { test.mutations++; }
     }
     QtObject {
@@ -73,15 +80,20 @@ Window {
         property var capabilities:({services:[{unit:"fixture-portal.service",available:true,state:"active"}],portal:{state:"advertised",message:"Not physical acceptance",features:[{name:"ScreenCast",advertised:true}]},flatpakAvailable:false,permissionPolicy:"Fixture native permission dialogs",journeys:"Fixture journeys"})
         function refresh(){test.mutations++;}
     }
+    BluetoothService {
+        id:bluetoothProvider;transportEnabled:false;actionContext:"fixture"
+        snapshot:({available:true,error:"",adapters:[{id:"/org/bluez/hci0",token:"adapter",name:"Fixture adapter",powered:true,powerState:"on",expected:{Powered:true}}],devices:test.fakeBluetooth,operations:{},scan:{state:"idle",owned:false,message:""},prompt:null})
+        onTestRequest:request=>test.mutations++
+    }
     ControlCentre {
         id: panel
         anchors.fill: parent
         targetScreen: ({name:"fixture"})
         state: state
         metrics: ({cpuPercent:10,memoryPercent:20,uptimeLabel:"Fixture uptime"})
-        audio: ({available:false,inputAvailable:false,inputMuted:false,inputName:"Unavailable",inputNodes:test.fakeInputs,inputVolume:0,label:"Unavailable",muted:false,outputName:"Unavailable",outputNodes:test.fakeOutputs,volume:0,sink:null,source:null,selectionActions:actions})
+        audio: ({available:false,inputAvailable:false,inputMuted:false,inputName:"Unavailable",inputNodes:test.fakeInputs,inputVolume:0,label:"Unavailable",muted:false,outputName:"Unavailable",outputNodes:test.fakeOutputs,volume:0,sink:null,source:null,selectionActions:actions,preferences:{routes:[]},preferenceMessage:"",actionsLocked:false,nodeName:function(n){return n.description||n.name;}})
         network: ({actions:actions,activeConnection:"",available:false,connectivityName:"Unavailable",detail:"Fake unavailable provider",label:"Unavailable",managedDevices:[],primaryDevice:"",scanning:false,sortedWifiNetworks:test.fakeWifi,wifiEnabled:true,wifiHardwareEnabled:true})
-        bluetooth: ({actions:actions,available:false,devices:test.fakeBluetooth,discovering:false,enabled:true})
+        bluetooth:bluetoothProvider
         battery: ({batteries:[],charging:false,count:0,detail:"No fixture battery",label:"Unavailable",onBattery:false,powerProfile:0,powerProfileAvailable:false,powerProfileName:"Unavailable",selectionActions:actions,selectionOptions:function(){return [];},timeLabel:"Unavailable"})
         media: ({available:false,artist:"",identity:"Fixture",playing:false,selectedPlayer:null,title:"No player"})
         notifications: ({dnd:false,serverEnabled:false,setDnd:function(){test.mutations++;}})
@@ -110,11 +122,12 @@ Window {
                 actions.actionState = actionState;
                 for (const section of panel.sections) {
                     state.controlSection = section.id;
+                    state.controlPath=section.id==="network"?"network/wifi":section.id==="devices"?"devices/bluetooth":section.id==="audio"?"audio/devices":"";
                     panel.navigation.focusSection(); input.wait(60);
                     const selected = panel.navigation.itemAtIndex(panel.navigation.currentIndex);
                     test.check(selected && selected.activeFocus, section.id + " selected-route focus");
                     const seen = new Set();
-                    const steps = ["network","audio","devices"].indexOf(section.id) >= 0 && actionState === "idle" ? 90 : 45;
+                    const steps = ["network","audio","devices"].indexOf(section.id) >= 0 && actionState === "idle" ? (section.id==="audio"?270:90) : 45;
                     for (let step = 0; step < steps; step++) {
                         input.keyClick(Qt.Key_Tab); input.wait(2);
                         const item = test.activeFocusItem;
@@ -122,6 +135,7 @@ Window {
                             let record = item;
                             while (record && record !== panel.contentArea) {
                                 if (record.modelData && record.modelData.name) seen.add(record.modelData.name);
+                                if (record.device && record.device.name) seen.add(record.device.name);
                                 record = record.parent;
                             }
                             let ancestor = item.parent;

@@ -25,6 +25,11 @@ Window {
     Timer {
         interval:400;running:true
         onTriggered:{
+            test.check(view.part==="defaults","default associations are the initial route");
+            const defaultsSeen=new Set();
+            for(let step=0;step<35;step++){input.keyClick(Qt.Key_Tab);input.wait(2);const item=test.activeFocusItem;if(item && String(item.Accessible.name).indexOf("Choose default for Role ")===0)defaultsSeen.add(String(item.Accessible.name));}
+            test.check(defaultsSeen.size===6,"each default application chooser is keyboard reachable");
+            view.part="autostart";input.wait(30);
             for(const width of [600,340]){
                 test.width=width;input.wait(30);const seen=new Set();
                 for(let step=0;step<90;step++){

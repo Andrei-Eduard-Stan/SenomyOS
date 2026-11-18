@@ -58,8 +58,8 @@ check() {
 plan_one() {
   case "$1" in
     shell)
-      printf 'LIVE       shell                  appearance/shell/eww.scss -> %s/eww.scss import\n' "$REPO_ROOT"
-      printf '           Applying shell rebuilds projections and explicitly reloads Eww.\n'
+      printf 'LIVE       shell                  shell/quickshell/config/Theme.qml -> %s native source\n' "$REPO_ROOT"
+      printf '           Applying rebuilds shared projections; Quickshell watches its generated source.\n'
       ;;
     launcher) "$USER_DEPLOY" plan rofi ;;
     file-manager)
@@ -89,10 +89,10 @@ plan_all() {
 confirm_shell_reload() {
   local reply
   [[ -t 0 ]] || fail 'shell reload confirmation requires an interactive terminal'
-  printf 'Eww will reload; the rail and open Eww panels may briefly disappear.\n' >&2
+  printf 'Quickshell watches generated source; the Rail and panels may briefly redraw.\n' >&2
   printf 'Type RELOAD SHELL to continue: ' >&2
   IFS= read -r reply
-  [[ "$reply" == 'RELOAD SHELL' ]] || fail 'confirmation did not match; Eww was not reloaded'
+  [[ "$reply" == 'RELOAD SHELL' ]] || fail 'confirmation did not match; source was not rebuilt'
 }
 
 apply_one() {
@@ -100,13 +100,12 @@ apply_one() {
   if [[ "$component" == file-manager ]] && pgrep -i -x thunar >/dev/null 2>&1; then
     fail 'close every Thunar window before applying the file-manager bundle'
   fi
+  if [[ "$component" == shell ]]; then confirm_shell_reload; fi
   build
   check
   case "$component" in
     shell)
-      confirm_shell_reload
-      "$SCRIPT_DIR/reload-eww.sh"
-      eww --no-daemonize --config "$REPO_ROOT" ping >/dev/null
+      "$SCRIPT_DIR/senomy-shell" doctor >/dev/null
       printf 'SenomyOS shell appearance reloaded.\n'
       ;;
     launcher) "$USER_DEPLOY" apply rofi ;;

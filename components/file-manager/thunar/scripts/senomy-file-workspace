@@ -50,9 +50,6 @@ readonly THEME_NAME
 readonly THEME_ROOT="${XDG_DATA_HOME:-${HOME:-/nonexistent}/.local/share}/themes/$THEME_NAME"
 THUNAR_BIN="$(resolve_command "${SENOMY_THUNAR_BIN:-thunar}")" || fail "Thunar is not installed."
 PGREP_BIN="$(resolve_command "${SENOMY_PGREP_BIN:-pgrep}" || true)"
-SYSTEMD_RUN_BIN="$(resolve_command "${SENOMY_SYSTEMD_RUN_BIN:-systemd-run}" || true)"
-NOHUP_BIN="$(resolve_command "${SENOMY_NOHUP_BIN:-nohup}" || true)"
-XFCONF_BIN="$(resolve_command "${SENOMY_XFCONF_BIN:-xfconf-query}" || true)"
 declare -a THUNAR_ARGS=()
 MODE='open'
 SELECTED_PATH=''
@@ -85,44 +82,8 @@ theme_is_available() {
   [[ -f "$THEME_ROOT/gtk-3.0/gtk.css" && ! -L "$THEME_ROOT/gtk-3.0/gtk.css" ]]
 }
 
-normalize_sidebar_position() {
-  local current preferred=220
-  [[ -n "$XFCONF_BIN" ]] || return 0
-  [[ "$REQUESTED_DENSITY" == touch ]] && preferred=260
-
-  current="$("$XFCONF_BIN" -c thunar -p /last-separator-position 2>/dev/null || true)"
-  if [[ "$current" =~ ^[0-9]+$ ]] && ((current >= 160 && current <= 280)); then
-    return 0
-  fi
-
-  if [[ "$current" =~ ^[0-9]+$ ]]; then
-    "$XFCONF_BIN" -c thunar -p /last-separator-position -s "$preferred" >/dev/null 2>&1 || true
-  else
-    "$XFCONF_BIN" -c thunar -p /last-separator-position -n -t int -s "$preferred" >/dev/null 2>&1 || true
-  fi
-}
-
-set_xfconf_string() {
-  local property="$1" expected="$2" current
-  [[ -n "$XFCONF_BIN" ]] || return 0
-
-  current="$("$XFCONF_BIN" -c thunar -p "$property" 2>/dev/null || true)"
-  [[ "$current" == "$expected" ]] && return 0
-  if [[ -n "$current" ]]; then
-    "$XFCONF_BIN" -c thunar -p "$property" -s "$expected" >/dev/null 2>&1 || true
-  else
-    "$XFCONF_BIN" -c thunar -p "$property" -n -t string -s "$expected" >/dev/null 2>&1 || true
-  fi
-}
-
-normalize_workspace_layout() {
-  # The visual target uses Thunar's real categorized Shortcuts inventory on
-  # the left and its native standalone image preview on the right. Both remain
-  # user-toggleable after launch; this only establishes the scoped fresh-daemon
-  # composition and never mutates an already-running session.
-  set_xfconf_string /last-side-pane THUNAR_SIDEPANE_TYPE_SHORTCUTS
-  set_xfconf_string /misc-image-preview-mode THUNAR_IMAGE_PREVIEW_MODE_STANDALONE
-}
+# Native view, sidebar, preview, sorting and toolbar choices belong to Thunar.
+# Do not reset them merely because its daemon has exited.
 
 resolve_busctl() {
   [[ -n "$BUSCTL_BIN" ]] && return 0
@@ -130,22 +91,19 @@ resolve_busctl() {
 }
 
 start_thunar_daemon() {
+  local launcher
+  launcher="$(cd -- "$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")/../../../.." && pwd)/scripts/senomy-app-launch"
+  [[ -x "$launcher" ]] || launcher="$(command -v senomy-app-launch)" || fail "Independent application launcher is unavailable."
   if theme_is_available; then
-    if [[ -n "$SYSTEMD_RUN_BIN" ]] &&
-       "$SYSTEMD_RUN_BIN" --user --quiet --collect \
-         "--setenv=GTK_THEME=$THEME_NAME" "$THUNAR_BIN" --daemon >/dev/null 2>&1; then
-      return 0
+    local native_module="${XDG_DATA_HOME:-${HOME:-/nonexistent}/.local/share}/senomyos/thunar/libsenomy-thunar.so"
+    if [[ -f "$native_module" && ! -L "$native_module" ]]; then
+      GTK_THEME="$THEME_NAME" GTK_MODULES="${GTK_MODULES:+$GTK_MODULES:}$native_module" "$launcher" --quiet tool thunar-daemon
+    else
+      GTK_THEME="$THEME_NAME" "$launcher" --quiet tool thunar-daemon
     fi
-    [[ -n "$NOHUP_BIN" ]] || fail "A detached Thunar daemon requires systemd-run or nohup."
-    GTK_THEME="$THEME_NAME" "$NOHUP_BIN" "$THUNAR_BIN" --daemon </dev/null >/dev/null 2>&1 &
   else
     printf 'senomy-file-workspace: theme %s is unavailable; opening native Thunar.\n' "$THEME_NAME" >&2
-    if [[ -n "$SYSTEMD_RUN_BIN" ]] &&
-       "$SYSTEMD_RUN_BIN" --user --quiet --collect "$THUNAR_BIN" --daemon >/dev/null 2>&1; then
-      return 0
-    fi
-    [[ -n "$NOHUP_BIN" ]] || fail "A detached Thunar daemon requires systemd-run or nohup."
-    "$NOHUP_BIN" "$THUNAR_BIN" --daemon </dev/null >/dev/null 2>&1 &
+    "$launcher" --quiet tool thunar-daemon
   fi
 }
 
@@ -154,8 +112,6 @@ if [[ "$MODE" == select ]]; then
 fi
 
 if ! thunar_is_running; then
-  normalize_sidebar_position
-  normalize_workspace_layout
   resolve_busctl
   start_thunar_daemon
 fi

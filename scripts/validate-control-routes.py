@@ -17,6 +17,9 @@ HOST = '''import QtQuick
 FocusScope {
  id: root
  property var targetScreen
+ property var interactionCoordinator:null
+ property bool fullSettings:false
+ signal modeRequested(bool full)
  property bool requestedOpen: false
  property bool replacementOpening: false
  property string title: ""
@@ -27,6 +30,10 @@ FocusScope {
  property string motif: ""
  property string frameKey: ""
  property var sections: []
+ property var navigationNodes:[]
+ property string activeNode:"overview"
+ property string searchQuery:""
+ signal nodeRequested(var node)
  property alias navigation: nav
  property alias contentArea: body
  default property alias bodyData: body.data
@@ -57,11 +64,11 @@ def main():
                      copied / "control-routes-test.qml")
         runtime = root / "runtime"
         runtime.mkdir(mode=0o700)
-        env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime),
+        env = dict(os.environ, XDG_RUNTIME_DIR=str(runtime), XDG_CONFIG_HOME=str(root/"config"), XDG_STATE_HOME=str(root/"state"),
                    QT_QPA_PLATFORM="offscreen", QT_QUICK_BACKEND="software")
         env.pop("WAYLAND_DISPLAY", None)
         result = subprocess.run(
-            ["qs", "--path", str(copied / "control-routes-test.qml"), "--no-color"],
+            ["dbus-run-session", "--", "qs", "--path", str(copied / "control-routes-test.qml"), "--no-color"],
             env=env, capture_output=True, text=True, timeout=45,
         )
         output = result.stdout + result.stderr

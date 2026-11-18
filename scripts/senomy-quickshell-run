@@ -29,11 +29,5 @@ chmod 600 "$NOTIFICATION_STORE"
 export SENOMY_SOURCE_ROOT="$SOURCE_ROOT"
 export SENOMY_SESSION_ACTION="$SOURCE_ROOT/scripts/senomy-session-action"
 export SENOMY_NOTIFICATION_STORE="$NOTIFICATION_STORE"
-if /usr/bin/busctl --system --no-pager --no-legend list 2>/dev/null |
-  /usr/bin/grep -q '^org\.freedesktop\.UPower\.PowerProfiles'; then
-  export SENOMY_POWER_PROFILES_AVAILABLE=1
-else
-  export SENOMY_POWER_PROFILES_AVAILABLE=0
-fi
 
 exec "$QS_BIN" --path "$SHELL_ROOT" --no-color

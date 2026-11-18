@@ -9,14 +9,28 @@ UNIT_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/senomyos"
 
 declare -a LINKS=(
+  "$SOURCE_ROOT/scripts/senomy-app-launch|$BIN_ROOT/senomy-app-launch"
+  "$SOURCE_ROOT/scripts/senomy_app_launch.py|$BIN_ROOT/senomy_app_launch.py"
   "$SOURCE_ROOT/scripts/senomy-shell|$BIN_ROOT/senomy-shell"
+  "$SOURCE_ROOT/scripts/senomy-surface|$BIN_ROOT/senomy-surface"
+  "$SOURCE_ROOT/scripts/senomy-provider-setup|$BIN_ROOT/senomy-provider-setup"
+  "$SOURCE_ROOT/scripts/senomy-screenshot|$BIN_ROOT/senomy-screenshot"
+  "$SOURCE_ROOT/components/settings/senomy-settings.desktop|${XDG_DATA_HOME:-$HOME/.local/share}/applications/senomy-settings.desktop"
+  "$SOURCE_ROOT/components/settings/senomy-control.desktop|${XDG_DATA_HOME:-$HOME/.local/share}/applications/senomy-control.desktop"
+  "$SOURCE_ROOT/scripts/senomy-desktop-probe.py|$BIN_ROOT/senomy-desktop-probe"
   "$SOURCE_ROOT/scripts/senomy-dev|$BIN_ROOT/senomy-dev"
   "$SOURCE_ROOT/scripts/senomy-quickshell-run|$BIN_ROOT/senomy-quickshell-run"
-  "$SOURCE_ROOT/scripts/senomy-eww-legacy|$BIN_ROOT/senomy-eww-legacy"
+  "$SOURCE_ROOT/scripts/senomy-calendar-run|$BIN_ROOT/senomy-calendar-run"
+  "$SOURCE_ROOT/scripts/senomy-calendar-setup|$BIN_ROOT/senomy-calendar-setup"
+  "$SOURCE_ROOT/scripts/senomy-calendar-credential|$BIN_ROOT/senomy-calendar-credential"
+  "$SOURCE_ROOT/scripts/senomy-calendar-batch|$BIN_ROOT/senomy-calendar-batch"
+  "$SOURCE_ROOT/systemd/senomy-calendar.service|$UNIT_ROOT/senomy-calendar.service"
   "$SOURCE_ROOT/scripts/senomy-session-action|$BIN_ROOT/senomy-session-action"
+  "$SOURCE_ROOT/shell/quickshell/scripts/display-action.py|$BIN_ROOT/senomy-display-action"
+  "$SOURCE_ROOT/shell/quickshell/scripts/display_core.py|$BIN_ROOT/display_core.py"
+  "$SOURCE_ROOT/shell/quickshell/scripts/input-settings.py|$BIN_ROOT/senomy-input-settings"
+  "$SOURCE_ROOT/shell/quickshell/scripts/session-policy.py|$BIN_ROOT/senomy-session-policy"
   "$SOURCE_ROOT/systemd/senomy-quickshell.service|$UNIT_ROOT/senomy-quickshell.service"
-  "$SOURCE_ROOT/systemd/senomy-eww-legacy.service|$UNIT_ROOT/senomy-eww-legacy.service"
-  "$SOURCE_ROOT/systemd/senomy-shell-fallback.service|$UNIT_ROOT/senomy-shell-fallback.service"
 )
 
 plan() {
@@ -25,7 +39,7 @@ plan() {
     IFS='|' read -r source target <<<"$entry"
     printf '%s -> %s\n' "$target" "$source"
   done
-  printf '%s (generated only when absent; login default is Quickshell)\n' "$CONFIG_ROOT/shell.json"
+  printf '%s (generated only when absent; login default is Quickshell)\n'  "$CONFIG_ROOT/shell.json"
 }
 
 check() {
@@ -44,6 +58,13 @@ check() {
 
 apply() {
   local entry source target
+  for entry in "${LINKS[@]}"; do
+    IFS='|' read -r source target <<<"$entry"
+    [[ -e "$source" ]] || { printf 'missing source: %s\n' "$source" >&2; return 1; }
+    if [[ -e "$target" || -L "$target" ]]; then
+      [[ -L "$target" && "$(readlink -m "$target")" == "$(realpath -m "$source")" ]] || { printf 'refusing unmanaged target: %s\n' "$target" >&2; return 1; }
+    fi
+  done
   mkdir -p "$BIN_ROOT" "$UNIT_ROOT" "$CONFIG_ROOT"
   for entry in "${LINKS[@]}"; do
     IFS='|' read -r source target <<<"$entry"
@@ -54,6 +75,7 @@ apply() {
         exit 1
       }
     else
+      mkdir -p "$(dirname "$target")"
       ln -s "$source" "$target"
     fi
   done

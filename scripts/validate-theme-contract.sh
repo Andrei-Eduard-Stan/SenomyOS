@@ -8,7 +8,6 @@ export LC_ALL=C
 
 readonly CONFIG_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly TOKENS="$CONFIG_DIR/appearance/tokens.json"
-readonly EWW_ENTRY="$CONFIG_DIR/eww.scss"
 readonly ROFI_THEME="$CONFIG_DIR/appearance/launcher/rofi/themes/command-lens.rasi"
 readonly ROFI_TOKENS="$CONFIG_DIR/appearance/launcher/rofi/themes/senomy-tokens.rasi"
 readonly GTK_ROOT="$CONFIG_DIR/appearance/file-manager/gtk3/SenomyOS"
@@ -20,16 +19,10 @@ readonly GTK_TOUCH_THEME="$GTK_TOUCH_ROOT/gtk-3.0/gtk.css"
 readonly FILE_ICON_ROOT="$CONFIG_DIR/appearance/file-manager/icons/SenomyOS-Files"
 readonly FILE_ICON_PLACES="$FILE_ICON_ROOT/scalable/places"
 GTK_PARSE_LOG="$(mktemp "${TMPDIR:-/tmp}/senomy-gtk-parse.XXXXXX")"
-EWW_COMPILED_CSS="$(mktemp "${TMPDIR:-/tmp}/senomy-eww-css.XXXXXX")"
-trap 'rm -f -- "$GTK_PARSE_LOG" "$EWW_COMPILED_CSS"' EXIT
+trap 'rm -f -- "$GTK_PARSE_LOG"' EXIT
 
 "$CONFIG_DIR/scripts/generate-appearance.py" check
 python3 "$CONFIG_DIR/scripts/validate-frame-system.py"
-sassc "$EWW_ENTRY" "$EWW_COMPILED_CSS"
-# sassc emits @charset when the stylesheet contains Nerd Font glyphs. GTK 3's
-# CSS provider rejects that otherwise harmless first line, so validate the
-# compiled declarations after removing only the generated charset directive.
-sed -i '1{/^@charset /d;}' "$EWW_COMPILED_CSS"
 
 jq -e '
   .schema_version == 1 and
@@ -74,14 +67,7 @@ root = Path(sys.argv[1])
 tokens = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 rofi = Path(sys.argv[3]).read_text(encoding="utf-8")
 gtk = Path(sys.argv[4]).read_text(encoding="utf-8")
-eww = "\n".join(
-    path.read_text(encoding="utf-8")
-    for path in (
-        root / "eww.scss",
-        root / "appearance/shell/eww.scss",
-        root / "appearance/shell/_tokens.scss",
-    )
-)
+quickshell = (root / "shell/quickshell/config/Theme.qml").read_text(encoding="utf-8")
 
 
 def rgb(value: str) -> tuple[int, int, int]:
@@ -128,25 +114,23 @@ for key in ("background", "foreground", "muted", "accent"):
     value = tokens["colors"][key]
     red, green, blue = rgb(value)
     functional = re.compile(rf"rgba?\(\s*{red}\s*,\s*{green}\s*,\s*{blue}(?:\s*,|\s*\))")
-    if value not in eww and not functional.search(eww):
-        raise SystemExit(f"Eww core token is absent: {key}")
-for family in (tokens["typography"]["family"], tokens["typography"]["fallback"]):
-    if family not in eww:
-        raise SystemExit(f"Eww font contract is absent: {family}")
+    if value not in quickshell and not functional.search(quickshell):
+        raise SystemExit(f"Quickshell core token is absent: {key}")
+for family in (tokens["typography"]["family"],):
+    if family not in quickshell:
+        raise SystemExit(f"Quickshell font contract is absent: {family}")
 for key, value in tokens["frame_system"]["colors"].items():
-    expected = f"$senomy-frame-{key.replace('_', '-')}: {value};"
-    if expected not in eww:
-        raise SystemExit(f"Eww frame token projection is stale: {key}")
+    # Canonical frame colours are in the shared generated SVG projections,
+    # validated byte-for-byte by generate-appearance.py check above.
+    if value.lower() not in (root / "appearance/shared/frames/generated/compact/corner-tl.svg").read_text().lower() and key == "ivory":
+        raise SystemExit("Shared ivory frame projection is absent")
 PY
 
 grep -qF '@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained.css");' "$GTK_THEME"
 grep -qF '@import url("senomy-tokens.css");' "$GTK_THEME"
 grep -qF 'notebook > stack:not(:only-child),' "$GTK_THEME"
 grep -qF 'notebook > stack > box {' "$GTK_THEME"
-grep -qF 'url("assets/frame-window-corner-tl.svg")' "$GTK_THEME"
-grep -qF 'border-radius: 20px;' "$GTK_THEME"
-grep -qF '.preview-pane' "$GTK_THEME"
-grep -qF 'THUNAR_IMAGE_PREVIEW_MODE_STANDALONE' "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-file-workspace"
+grep -qF 'url("assets/utility-corner-tl.svg")' "$GTK_THEME"
 grep -qF 'GtkTheme=SenomyOS' "$GTK_ROOT/index.theme"
 grep -qF 'IconTheme=SenomyOS-Files' "$GTK_ROOT/index.theme"
 grep -qF -- '-gtk-icon-theme: "SenomyOS-Files";' "$GTK_THEME"
@@ -159,13 +143,10 @@ grep -qF 'notebook combobox button.combo,' "$GTK_TOUCH_THEME"
 grep -qF 'min-height: 40px;' "$GTK_TOUCH_THEME"
 grep -qF '@import url("gtk.css");' "$GTK_TOUCH_ROOT/gtk-3.0/gtk-contained.css"
 
-for asset in \
-  frame-window-corner-tl.svg frame-window-corner-tr.svg \
-  frame-window-corner-bl.svg frame-window-corner-br.svg \
-  frame-window-edge-top.svg frame-window-edge-bottom.svg \
-  frame-window-edge-left.svg frame-window-edge-right.svg; do
+for asset in utility-corner-tl.svg utility-corner-tr.svg utility-corner-bl.svg utility-corner-br.svg; do
   [[ -s "$GTK_ASSETS/$asset" ]]
 done
+python3 "$CONFIG_DIR/scripts/validate-utility-appearance.py"
 
 grep -qF 'Inherits=Adwaita,hicolor' "$FILE_ICON_ROOT/index.theme"
 grep -qF 'Directories=scalable/places' "$FILE_ICON_ROOT/index.theme"
@@ -177,7 +158,7 @@ for icon in \
   rsvg-convert --width 32 --height 32 "$FILE_ICON_PLACES/$icon.svg" >/dev/null
 done
 
-if ! python3 - "$GTK_THEME" "$GTK_TOUCH_THEME" "$EWW_COMPILED_CSS" 2>"$GTK_PARSE_LOG" <<'PY'
+if ! python3 - "$GTK_THEME" "$GTK_TOUCH_THEME" 2>"$GTK_PARSE_LOG" <<'PY'
 from pathlib import Path
 import sys
 import gi
@@ -217,4 +198,4 @@ for file in \
   [[ "$(stat -c %a "$file")" == 644 ]]
 done
 
-printf 'SenomyOS theme: canonical tokens, Rofi projection, GTK inheritance, scoped silver folders, touch density, and headless GTK/Eww CSS parsing passed.\n'
+printf 'SenomyOS theme: canonical tokens, Rofi projection, GTK inheritance, scoped silver folders, touch density, and headless GTK CSS parsing and native Quickshell tokens passed.\n'

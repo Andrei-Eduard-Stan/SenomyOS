@@ -1,93 +1,65 @@
 import QtQuick
+import "interaction" as Interaction
+import "audio" as Audio
+import QtQuick.Window
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Hyprland
 import "../config" as Config
 
-PopupWindow {
+Interaction.QuickPopoverWindow {
     id: root
 
-    required property var anchorItem
     required property var audio
     property var media
-    property bool requestedOpen: false
-    property bool cardShown: false
-    signal dismissRequested()
-    signal openAudioRequested()
+    signal openAudioRequested
 
-    implicitWidth: 420
-    implicitHeight: 122
+    readonly property real availableWidth: (targetScreen || (anchorItem && anchorItem.Window.window)) ? (targetScreen ? targetScreen.width : anchorItem.Screen.width) - 2 * Config.Theme.screenInset : 460
+    readonly property real availableHeight: (targetScreen || (anchorItem && anchorItem.Window.window)) ? (targetScreen ? targetScreen.height : anchorItem.Screen.height) - Config.Theme.railHeight - 2 * Config.Theme.screenInset : 800
+    implicitWidth: Math.min(Config.QuickPanelStyle.preferredWidth, Math.max(1, availableWidth))
+    implicitHeight: Math.min(availableHeight, Math.max(160, 2 * popupFrame.contentInset + Config.QuickPanelStyle.target + 16 + volumeControls.implicitHeight))
     color: "transparent"
-    visible: requestedOpen || cardShown || closeTimer.running
-    grabFocus: false
 
     anchor.item: anchorItem
-    anchor.edges: Edges.Top | Edges.Right
-    anchor.gravity: Edges.Top | Edges.Left
+    anchor.edges: Edges.Top
+    anchor.gravity: Edges.Top
+    anchor.rect.x: anchorItem ? anchorItem.width / 2 : 0
+    anchor.rect.width: 0
+    anchor.rect.height: 0
     anchor.rect.y: -12
 
-    onRequestedOpenChanged: {
-        if (requestedOpen) {
-            closeTimer.stop();
-            revealTimer.restart();
-        } else {
-            revealTimer.stop();
-            cardShown = false;
-            closeTimer.restart();
-        }
-    }
-    onAnchorItemChanged: if (!anchorItem) dismissRequested()
-
-    Timer {
-        id: revealTimer
-        interval: 1
-        onTriggered: {
-            root.cardShown = root.requestedOpen;
-            if (root.cardShown)
-                card.forceActiveFocus();
-        }
-    }
-    Timer { id: closeTimer; interval: Config.Theme.popupCloseMs }
-
-    HyprlandFocusGrab {
-        windows: [root]
-        active: root.cardShown
-        onCleared: if (root.requestedOpen) root.dismissRequested()
-    }
+    focusTarget: card
 
     FocusScope {
         id: card
         anchors.fill: parent
         focus: root.cardShown
-        opacity: root.cardShown ? 1 : 0
-        scale: root.cardShown ? 1 : 0.98
+        opacity: root.presentationProgress
+        scale: 1
         transform: Translate {
-            y: root.cardShown ? 0 : 12
-            Behavior on y {
-                NumberAnimation {
-                    duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
-                    easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
-                }
-            }
-        }
-        Behavior on opacity {
-            NumberAnimation {
-                duration: root.requestedOpen ? Config.Theme.popupOpenMs : Config.Theme.popupCloseMs
-                easing.type: root.requestedOpen ? Easing.OutCubic : Easing.InCubic
-            }
-        }
-        Behavior on scale { NumberAnimation { duration: Config.Theme.popupOpenMs; easing.type: Easing.OutCubic } }
-        Keys.onEscapePressed: root.dismissRequested()
+            y: (1-root.presentationProgress)*Config.Motion.travel
 
-        SenomyFrame {
+        }
+
+
+        Keys.onEscapePressed: root.handleEscape()
+
+        IslandPopupFrame {
+            id: popupFrame
+            frameKey: "volume"
             anchors.fill: parent
             tier: "standard"
             motif: "controls"
             active: true
+            animate: false
+            // Same clipped artwork/material as the Command Lens proposal.
+            contentInset: Config.QuickPanelStyle.inset
+            perimeterCorner: Config.QuickPanelStyle.corner
+            backgroundItem.visible: false
 
             Column {
                 anchors.fill: parent
-                spacing: 9
+                spacing: 16
 
                 Row {
                     width: parent.width
@@ -95,56 +67,35 @@ PopupWindow {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - closeButton.width - 8
-                        text: root.audio.outputName + "  //  " + root.audio.label
-                        color: Config.Theme.muted
-                        font.family: Config.Theme.fontFamily
-                        font.pixelSize: 9
+                        text: "// Audio"
+                        color: Config.QuickPanelStyle.ink
+                        font.family: Config.QuickPanelStyle.headingFont
+                        font.pixelSize: Config.QuickPanelStyle.titleSize
                         elide: Text.ElideMiddle
+                        Rectangle {anchors.left:parent.left;anchors.leftMargin:Math.min(parent.width,parent.contentWidth+14);anchors.right:parent.right;anchors.verticalCenter:parent.verticalCenter;height:1;color:Config.DirectoryStyle.rule}
                     }
-                    SurfaceButton {
-                        id: closeButton
-                        width: 34
-                        height: 28
-                        text: "×"
-                        onClicked: root.dismissRequested()
+                    Audio.AudioButton {
+                        id:closeButton;objectName:"quickAudioClose"
+                        width:Config.QuickPanelStyle.target;height:Config.QuickPanelStyle.target
+                        iconOnly:true;glyph:"\uf00d";accessibleLabel:"Close Audio"
+                        onClicked:root.dismiss()
                     }
                 }
 
-                Row {
+                FocusScrollArea {
+                    id:audioScroll
                     width: parent.width
-                    height: 48
-                    spacing: 8
-                    SurfaceButton {
-                        width: 58
-                        height: 42
-                        text: root.audio.muted ? "ON" : "MUTE"
-                        active: root.audio.muted
-                        enabled: root.audio.available
-                        onClicked: root.audio.toggleMuted()
-                    }
-                    Slider {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 58 - 48 - 82 - 24
-                        from: 0
-                        to: 1
-                        value: root.audio.volume
-                        enabled: root.audio.available
-                        onMoved: root.audio.setVolume(value)
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 48
-                        horizontalAlignment: Text.AlignRight
-                        text: root.audio.label
-                        color: Config.Theme.foreground
-                        font.family: Config.Theme.fontFamily
-                        font.pixelSize: 10
-                    }
-                    SurfaceButton {
-                        width: 82
-                        height: 42
-                        text: "AUDIO ›"
-                        onClicked: root.openAudioRequested()
+                    height: Math.max(0, parent.height - Config.QuickPanelStyle.target - 16)
+                    contentHeight: volumeControls.implicitHeight
+                    ScrollBar.vertical: ShellScrollBar {}
+                    Audio.AudioQuickControls {
+                        id:volumeControls
+                        width:parent.width
+                        audio:root.audio
+                        media:root.media || null
+                        mediaActive:root.cardShown && root.requestedOpen
+                        viewport:audioScroll
+                        onOpenAudioRequested:root.openAudioRequested()
                     }
                 }
             }

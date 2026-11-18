@@ -11,7 +11,11 @@ configuration {
     steal-focus: true;
 
     drun-match-fields: "name,generic,comment,categories,keywords";
-    drun-display-format: "{name}    {generic}";
+    drun-display-format: "{name}\n<span size='small' alpha='75%'>{generic}</span>";
+    drun-show-actions: true;
+    drun { fallback-icon: "application-x-executable"; }
+    kb-clear-line: "Control+w,Control+u";
+    kb-remove-to-sol: "";
     display-drun: "APPS";
     display-files: "FILES";
     display-window: "WINDOWS";

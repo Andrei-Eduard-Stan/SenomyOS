@@ -4,17 +4,41 @@ Column {
     id:root
     required property var settings
     readonly property var capabilities:settings.capabilities||({})
-    spacing:10
-    DashboardCard {width:parent.width;title:"DESKTOP PORTALS & PERMISSIONS";value:(root.capabilities.portal||{}).state==="advertised"?"INTERFACES ADVERTISED":"UNVERIFIED";detail:(root.capabilities.portal||{}).message||root.settings.capabilityError||"No desktop integration snapshot yet"}
-    Text {width:parent.width;text:root.capabilities.permissionPolicy||"Permission requests remain in native application dialogs.";textFormat:Text.PlainText;color:Config.Theme.muted;font.family:Config.Theme.fontFamily;wrapMode:Text.WordWrap}
+    signal destinationRequested(string id)
+    spacing:14
+    Text {width:parent.width;text:"Desktop integration";font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:20;font.weight:Font.DemiBold;color:Config.DirectoryStyle.ink}
+    Text {width:parent.width;text:"These checks show which providers and interfaces are present. They do not open permission prompts or prove that a complete task works.";font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.bodySize;color:Config.DirectoryStyle.muted;wrapMode:Text.WordWrap}
+    Text {width:parent.width;text:(root.capabilities.portal||{}).message||root.settings.capabilityError||"No integration snapshot yet.";textFormat:Text.PlainText;color:Config.Theme.warning;font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.detailSize;wrapMode:Text.WordWrap}
+    DashboardButton {width:Math.min(220,parent.width);text:"Refresh capability checks";onClicked:root.settings.refresh()}
+    Text {text:"Desktop services";font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:18;color:Config.DirectoryStyle.ink}
     Repeater {
         model:root.capabilities.services||[]
-        delegate:DashboardCard {required property var modelData;width:root.width;title:modelData.unit;value:modelData.available?modelData.state.toUpperCase():"UNAVAILABLE";detail:"Reported user-service state; portal journey acceptance is separate"}
+        delegate:Column {
+            required property var modelData;width:root.width;spacing:5
+            Text {width:parent.width;text:modelData.unit;textFormat:Text.PlainText;font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.bodySize;color:Config.DirectoryStyle.ink;wrapMode:Text.WrapAnywhere}
+            Text {width:parent.width;text:modelData.available?"Service state: "+modelData.state:"Service unavailable";font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.detailSize;color:Config.DirectoryStyle.muted;wrapMode:Text.WordWrap}
+            Rectangle {width:parent.width;height:1;color:Config.DirectoryStyle.rule}
+        }
     }
+    Text {text:"Application portals";font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:18;color:Config.DirectoryStyle.ink}
     Repeater {
         model:(root.capabilities.portal||{}).features||[]
-        delegate:DashboardCard {required property var modelData;width:root.width;title:modelData.name;value:modelData.advertised?"ADVERTISED":"NOT ADVERTISED";detail:"No permission was requested or approved by this inspection"}
+        delegate:Column {
+            required property var modelData;width:root.width;spacing:5
+            Text {width:parent.width;text:modelData.name+" · "+(modelData.advertised?"Interface advertised":"Interface not advertised");textFormat:Text.PlainText;font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.bodySize;color:Config.DirectoryStyle.ink;wrapMode:Text.WordWrap}
+            Rectangle {width:parent.width;height:1;color:Config.DirectoryStyle.rule}
+        }
     }
-    DashboardCard {width:parent.width;title:"APPLICATION PERMISSIONS";value:root.capabilities.flatpakAvailable?"FLATPAK INSTALLED":"FLATPAK UNAVAILABLE";detail:"Native portal dialogs own consent. Flatpak installation is not proof of a permission manager or accepted application policy."}
-    Text {width:parent.width;text:root.capabilities.journeys||"File and peripheral journeys require native application acceptance.";textFormat:Text.PlainText;color:Config.Theme.muted;font.family:Config.Theme.fontFamily;wrapMode:Text.WordWrap}
+    Text {text:"Everyday tools";font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:18;color:Config.DirectoryStyle.ink}
+    Repeater {
+        model:root.capabilities.tools||[]
+        delegate:Column {
+            required property var modelData;width:root.width;spacing:5
+            Text {width:parent.width;text:modelData.name+" · "+(modelData.available?"Tool found":"Tool not found");font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.bodySize;color:Config.DirectoryStyle.ink;wrapMode:Text.WordWrap}
+            Text {width:parent.width;text:"Complete task: not tested by this inspection";font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.detailSize;color:Config.DirectoryStyle.muted;wrapMode:Text.WordWrap}
+            Rectangle {width:parent.width;height:1;color:Config.DirectoryStyle.rule}
+        }
+    }
+    Text {width:parent.width;text:root.capabilities.permissionPolicy||"Native application dialogs own permission requests.";textFormat:Text.PlainText;color:Config.DirectoryStyle.muted;font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.bodySize;wrapMode:Text.WordWrap}
+    Text {width:parent.width;text:"Flatpak: "+(root.capabilities.flatpakAvailable?"installed":"not installed")+". This does not establish application permission policy.";color:Config.DirectoryStyle.muted;font.family:Config.DirectoryStyle.bodyFont;font.pixelSize:Config.DirectoryStyle.detailSize;wrapMode:Text.WordWrap}
 }

@@ -15,7 +15,6 @@ Scope {
                 test.check(service.runTask("console","safe-task"),"actual console task start");test.phase=1;
             } else if(test.phase===1 && service.actionState!=="running"){
                 test.check(service.actionState==="succeeded","silent console helper result verified");
-                test.check(service.payloads.consoleResult.data.publicationDisabled===true,"legacy Eww publication disabled");
                 test.check(service.payloads.consoleResult.data.correctRoot===true,"collector config root is authoritative");
                 service.section="diagnostics";test.phase=2;
             } else if(test.phase===2 && service.tasksFor("diagnostics").length>0){

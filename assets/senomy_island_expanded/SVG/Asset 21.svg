@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 142.39 30.46">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        font-family: Audiowide-Regular, Audiowide;
+        font-size: 24px;
+      }
+
+      .cls-2 {
+        letter-spacing: 0em;
+      }
+
+      .cls-3 {
+        letter-spacing: 0em;
+      }
+
+      .cls-4 {
+        letter-spacing: -.16em;
+      }
+    </style>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <text class="cls-1" transform="translate(0 23.62)"><tspan class="cls-4" x="0" y="0">/</tspan><tspan x="12.08" y="0">/ Sy</tspan><tspan class="cls-2" x="71.26" y="0">s</tspan><tspan class="cls-3" x="85.43" y="0">t</tspan><tspan x="98.91" y="0">em</tspan></text>
+  </g>
+</svg>

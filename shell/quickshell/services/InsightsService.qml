@@ -18,6 +18,7 @@ Scope {
     function tasksFor(domain) {return requests.tasksFor(domain);}
     function runTask(domain,id) {return requests.runTask(domain,id);}
     function runUpdate(kind) {return requests.runUpdate(kind);}
+    function openMaintenance() {return requests.openMaintenance();}
     function generateReport(profile) {return requests.generateReport(profile);}
     function openLatestReport() {return requests.openLatestReport();}
     InsightsRequests {
@@ -37,8 +38,7 @@ Scope {
     }
     Process {
         id: actionProcess
-        // Legacy collectors must not publish into the preserved Eww fallback.
-        environment: ({EWW_CONFIG:root.sourceRoot,SENOMY_EWW_BIN:"/usr/bin/false"})
+        environment: ({SENOMY_SOURCE_ROOT:root.sourceRoot})
         stdout:StdioCollector {id:actionOutput}
         onExited:code=>requests.actionCompleted(code,actionOutput.text)
     }

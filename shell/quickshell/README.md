@@ -1,75 +1,25 @@
-# SenomyOS Shell V2 — Milestone 3 functional shell
+# SenomyOS native shell
 
-This directory is the source-owned Quickshell 0.3 / QtQuick implementation of
-the SenomyOS Obsidian Rail. Hyprland starts it at login through a guarded
-selector. Eww remains installed only as the automatic recovery backend.
+Quickshell is the only maintained SenomyOS desktop frontend and native notification
+owner. `shell.qml` composes Rails, one compact/full Control Centre workspace,
+Performance, Insights and quick controls.
 
-## Current scope
+Read the root [README](../../README.MD), [working rules](../../AGENTS.md),
+[current architecture](../../docs/ARCHITECTURE.md) and
+[project state](../../docs/PROJECT_STATE.md). Runtime requirements are declared in
+`deploy/packages.json`; source presence is not deployment or hardware acceptance.
 
-- one transparent, bottom-anchored `PanelWindow` per screen;
-- native Hyprland workspace, focused-workspace, monitor, and toplevel state;
-- animated workspace overflow with a bounded four-item viewport;
-- native UPower aggregation across all present laptop batteries;
-- native PipeWire default-sink volume and mute state;
-- one shared, process-free `/proc` sampler for CPU, memory, and uptime;
-- native, event-driven NetworkManager state;
-- native System Tray lifecycle, activation, attention, scroll, and DBus menus;
-- native volume, tray, calendar, notification-history and guarded power popups;
-- one Control Centre with ten routes;
-- a separate seven-route Performance Dashboard with conditional telemetry;
-- a separate eight-route Senomy Insights surface and companion overlay;
-- native BlueZ, MPRIS and notification-server ownership in Quickshell mode;
-- one shared surface coordinator with hot-unplug cleanup;
-- an allowlisted, two-stage session-action service boundary;
-- modular SenomyOS Luminous Reliquary SVG frames.
-
-Normal Quickshell use does not start an Eww process, Eww workspace publisher,
-or SwayNC. Eww is deliberately retained only as the automatic failure
-fallback. Physical pointer/keyboard acceptance items remain before
-Milestone 3 sign-off; see `../../docs/QUICKSHELL_V3_QA.md`.
-
-## Live development
-
-From the source root, install only the explicit development links and non-enabled
-units:
+Quickshell watches source files. Prepare coordinated changes in an isolated copy,
+use inert providers and warn before runtime publication. Do not manually launch a
+second live shell or a competing notification server. Read-only health:
 
 ```bash
-./scripts/senomy-v2-deploy apply
-senomy-dev shell
+scripts/senomy-shell status
+scripts/senomy-shell doctor
 ```
 
-Switch and inspect without logging out:
-
-```bash
-senomy-shell use quickshell
-senomy-shell use eww
-senomy-shell status
-senomy-shell doctor
-```
-
-Runtime logs are available without attaching another reader to Eww:
-
-```bash
-senomy-shell logs 120
-```
-
-No shell unit is enabled directly. Hyprland imports its session environment and
-invokes `senomy-shell use quickshell`; the selector starts the supervised unit
-and restores Eww automatically if startup or readiness fails.
-
-## Runtime requirements
-
-- Quickshell 0.3.x built with Hyprland, UPower, PipeWire, and System Tray support
-- Qt 6.9 or newer
-- Hyprland with the focus-grab protocol used by Quickshell
-- UPower and PipeWire/WirePlumber for their respective controls
-- the SenomyOS Nerd Font and icon theme for exact visual fidelity
-
-The shell degrades honestly when a battery or audio sink is unavailable. It
-does not fabricate a status value.
-
-See `../../docs/QUICKSHELL_V2_FOUNDATION.md`, `docs/CURRENT_STATE.md`,
-`docs/MIGRATION_MAP.md`, `docs/BENCHMARK.md`,
-`../../docs/QUICKSHELL_V3_PARITY.md`, and
-`../../docs/QUICKSHELL_V3_QA.md` for architecture, migration decisions,
-measured results, and the remaining manual acceptance gate.
+Run commands above from the repository root. The existing native validation and
+publication workflow is in [DEVELOPMENT](../../docs/DEVELOPMENT.md).
+Early migration/state/benchmark checkpoints are preserved in the
+[historical archive](../../docs/PROJECT_STATE.md); they are not current operating
+instructions or evidence of present resource/lifecycle behaviour.

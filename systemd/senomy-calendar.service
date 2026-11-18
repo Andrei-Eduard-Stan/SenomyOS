@@ -1,0 +1,15 @@
+[Unit]
+Description=SenomyOS local calendar and reminder owner
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecCondition=%h/.local/bin/senomy-calendar-run --check
+ExecStart=%h/.local/bin/senomy-calendar-run
+Restart=on-failure
+RestartSec=3
+UMask=0077
+
+[Install]
+WantedBy=graphical-session.target

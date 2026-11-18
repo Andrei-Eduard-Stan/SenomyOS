@@ -16,11 +16,9 @@ readonly TEST_RUNTIME="$TEST_ROOT/runtime"
 readonly TEST_BIN="$TEST_ROOT/bin"
 readonly SYSTEM_ROOT="$TEST_ROOT/system-root"
 mkdir -p "$TEST_HOME" "$TEST_CONFIG" "$TEST_DATA" "$TEST_STATE" "$TEST_RUNTIME" "$TEST_BIN" "$SYSTEM_ROOT"
-install -D -m 0755 "$REPO_ROOT/scripts/workspaces.sh" "$TEST_CONFIG/eww/scripts/workspaces.sh"
 
 printf '%s\n' \
   '#!/usr/bin/env bash' \
-  'if [[ "$1" == -Q && "$3" == "eww" && "${SENOMY_TEST_MISSING_EWW:-0}" == 1 ]]; then exit 1; fi' \
   '[[ "$1" == -Q ]] && exit 0' \
   'exit 0' >"$TEST_BIN/pacman"
 printf '%s\n' \
@@ -37,8 +35,7 @@ run_bootstrap() {
 }
 
 run_bootstrap audit | jq -e '.ok == true and (.data.missing_required_packages | length) == 0' >/dev/null
-SENOMY_TEST_MISSING_EWW=1 run_bootstrap audit |
-  jq -e '.ok == false and (.data.missing_required_packages | map(.package) | index("eww")) != null' >/dev/null
+run_bootstrap audit | jq -e '.ok == true' >/dev/null
 
 run_user_deploy() {
   HOME="$TEST_HOME" XDG_CONFIG_HOME="$TEST_CONFIG" XDG_DATA_HOME="$TEST_DATA" \
@@ -46,16 +43,21 @@ run_user_deploy() {
     "$REPO_ROOT/scripts/senomy-deploy.sh" "$@"
 }
 
-for component in profile-automatic hyprland rofi gtk3 hyprlock workspaces-unit thunar; do
+for component in profile-automatic hyprland rofi gtk3 hyprlock thunar application-lifetime; do
   run_user_deploy apply "$component" --yes >/dev/null
 done
 
 cmp -s "$REPO_ROOT/hyprland.lua" "$TEST_CONFIG/hypr/hyprland.lua"
 cmp -s "$REPO_ROOT/deploy/profiles/automatic.json" "$TEST_CONFIG/senomyos/profile.json"
 cmp -s "$REPO_ROOT/appearance/shared/backgrounds/desktop.png" "$TEST_DATA/senomyos/appearance/backgrounds/desktop.png"
-cmp -s "$REPO_ROOT/systemd/workspaces.service" "$TEST_CONFIG/systemd/user/workspaces.service"
+[[ ! -e "$TEST_CONFIG/systemd/user/workspaces.service" ]]
 [[ -x "$TEST_HOME/.local/bin/senomy-command-lens" && -x "$TEST_HOME/.local/bin/senomy-wallpaper" ]]
 xmllint --noout "$TEST_CONFIG/Thunar/uca.xml"
+cmp -s "$REPO_ROOT/scripts/senomy_app_launch.py" "$TEST_HOME/.local/bin/senomy_app_launch.py"
+[[ -x "$TEST_HOME/.local/bin/senomy-app-launch" ]]
+# Exercise the copied payload without creating a scope or launching an app.
+if "$TEST_HOME/.local/bin/senomy-app-launch" tool unsupported >"$TEST_ROOT/launch-failure.json"; then exit 1; fi
+jq -e '.ok == false and .state == "failed"' "$TEST_ROOT/launch-failure.json" >/dev/null
 
 "$REPO_ROOT/scripts/senomy-stage-system-root.sh" "$SYSTEM_ROOT" >/dev/null
 jq -e '.kind == "senomyos-system-stage" and (.entries | length > 20)' \

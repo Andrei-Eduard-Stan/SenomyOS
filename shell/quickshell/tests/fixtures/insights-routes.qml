@@ -27,14 +27,14 @@ Window {
         id:panel;anchors.fill:parent;targetScreen:({name:"fixture"});state:state;insights:insights
         senomy:({state:"nominal",message:"Fixture system briefing",systemHealth:"nominal"})
         metrics:({cpuPercent:10,memoryPercent:20});battery:({detail:"Fixture power"});network:({detail:"Fixture connectivity"});media:({playing:false,title:"Quiet"})
-        notifications:({history:Array.from({length:24},(_,i)=>({summary:"Notification "+i,appName:"Fixture",body:"Safe fixture",unread:true})),unreadCount:24,activeCount:0,serverEnabled:true,dnd:false,clearAvailable:true,clearActions:clear,setDnd:function(){test.mutations++;},clearAll:function(){test.mutations++;},dismiss:function(){test.mutations++;}})
+        notifications:({sessionService:{schedule:{},busy:false},history:Array.from({length:24},(_,i)=>({summary:"Notification "+i,appName:"Fixture",body:"Safe fixture",unread:true})),unreadCount:24,activeCount:0,serverEnabled:true,dnd:false,clearAvailable:true,clearActions:clear,setDnd:function(){test.mutations++;},clearAll:function(){test.mutations++;},dismiss:function(){test.mutations++;}})
     }
     function routeData(route,result){
         if(route==="diagnostics"||route==="console")return result?{title:"Fixture result",state:"ready",task_id:"safe-task",finished_at:100,output:Array.from({length:60},(_,i)=>({text:"Sanitized result "+i}))}:{tasks:Array.from({length:24},(_,i)=>({id:"task-"+i,code:"FIX",title:"Task "+i,summary:"Safe fixture",available:true}))};
         if(route==="wiki")return {articles:Array.from({length:24},(_,i)=>({id:"article-"+i,title:"Article "+i,category_title:"Fixture",summary:"Local fixture",blocks:[{type:"heading",text:"Safe local article"}]}))};
         if(route==="timeline")return {count:24,entries:Array.from({length:24},(_,i)=>({time:"12:00",title:"Event "+i,source:"Fixture",message:"Safe fixture",severity:"info"}))};
         if(route==="reports")return {exists:true,latest:{profile_label:"OVERVIEW"},history_count:1,preview:Array.from({length:100},(_,i)=>({line_no:i+1,text:"Sanitized report "+i}))};
-        return {known_total_count:24,successful_source_count:1,official:{state_label:"AVAILABLE",count:24,freshness:"local-database",checked_at_label:"fixture",packages:Array.from({length:24},(_,i)=>({name:"Package "+i,current:"1",available:"2",source:"Official"}))},aur:{state_label:"NOT CHECKED",count:0,packages:[]}};
+        return {maintenance:{handoffAvailable:true,packages:{state:"not-run"},release:{state:"development-checkout"},reboot:{state:"unknown",reason:"No universal reboot marker; review kernel modules, package hooks and service restart guidance before independently authorising any reboot."}},known_total_count:24,successful_source_count:1,official:{state_label:"AVAILABLE",count:24,freshness:"local-database",checked_at_label:"fixture",packages:Array.from({length:24},(_,i)=>({name:"Package "+i,current:"1",available:"2",source:"Official"}))},aur:{state_label:"NOT CHECKED",count:0,packages:[]}};
     }
     function finishQueries(){while(insights.inFlight){const req=insights.inFlight;insights.queryCompleted(0,JSON.stringify({ok:true,observed_at:100,data:test.routeData(req.route,req.result)}));}}
     function check(ok,msg){if(!ok){console.error("FAIL: "+msg);Qt.exit(1);throw new Error(msg);}}

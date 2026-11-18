@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# Allowlisted desktop entry points for the native shell.
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SOURCE_ROOT="${SENOMY_SOURCE_ROOT:-$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd -P)}"
+QS_BIN="${SENOMY_QS_BIN:-/usr/bin/qs}"
+HYPRCTL_BIN="${SENOMY_HYPRCTL_BIN:-/usr/bin/hyprctl}"
+action="${1:-}"
+section="${2:-}"
+kind=""
+
+fail() { printf 'senomy-surface: %s\n' "$*" >&2; exit 1; }
+
+case "$action" in
+  dismiss) [[ $# == 1 ]] || fail 'dismiss takes no arguments' ;;
+  show-control|show-settings)
+    [[ $# -le 2 ]] || fail 'too many route arguments'
+    section="${section:-overview}"
+    [[ "$section" =~ ^[a-z]+(/[A-Za-z0-9_:%.~-]+)*$ ]] || fail 'invalid settings route'
+    case "${section%%/*}" in overview|network|audio|power|calendar|input|devices|apps|appearance|accounts|settings) ;; *) fail 'unknown control section' ;; esac
+    kind=control
+    ;;
+  show-performance)
+    [[ $# == 1 ]] || fail 'show-performance takes no arguments'
+    kind=performance; section=cpu
+    ;;
+  show-insights)
+    [[ $# -le 2 ]] || fail 'too many arguments'
+    section="${section:-briefing}"
+    case "$section" in briefing|notifications|timeline|updates|diagnostics|console|reports|wiki) ;; *) fail 'unknown Insights section' ;; esac
+    kind=insights
+    ;;
+  *) fail 'usage: senomy-surface {dismiss|show-control [SECTION]|show-settings [ROUTE]|show-performance|show-insights [SECTION]}' ;;
+esac
+
+if pgrep -u "$UID" -x qs >/dev/null 2>&1; then
+  if [[ "$action" == dismiss ]]; then
+    exec timeout 1s "$QS_BIN" ipc --path "$SOURCE_ROOT/shell/quickshell" call shell escapeExternal
+  fi
+  screen="$("$HYPRCTL_BIN" -j monitors | jq -er 'first(.[] | select(.focused)).name')" || fail 'no focused monitor'
+  if [[ "$action" == show-settings ]]; then
+    result="$(timeout 1s "$QS_BIN" ipc --path "$SOURCE_ROOT/shell/quickshell" call shell settings "$screen" "$section")" || fail 'shell IPC failed'
+    [[ "$result" == settings ]] || fail "settings request rejected or requires edit review: $result"
+    printf '%s\n' "$result"
+    exit 0
+  fi
+  result="$(timeout 1s "$QS_BIN" ipc --path "$SOURCE_ROOT/shell/quickshell" call shell primary "$kind" "$screen" "$section")" || fail 'shell IPC failed'
+  [[ "$result" == "$kind" ]] || fail "shell rejected the route or requires edit review: $result"
+  printf '%s\n' "$result"
+  exit 0
+elif [[ "$action" == dismiss ]]; then
+  exit 0
+fi
+fail 'no active SenomyOS shell'

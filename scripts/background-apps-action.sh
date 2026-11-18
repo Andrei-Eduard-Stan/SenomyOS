@@ -7,7 +7,7 @@ set -u
 readonly FLAMESHOT_BIN="/usr/bin/flameshot"
 readonly FLAMESHOT_UNIT="flameshot.service"
 readonly FLAMESHOT_BUS="org.flameshot.Flameshot"
-readonly SCREENSHOT_ACTION="$HOME/.config/eww/scripts/screenshot-action.sh"
+readonly SCREENSHOT_ACTION="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/screenshot-action.sh"
 readonly CACHE_FILE="${SENOMY_BACKGROUND_APPS_CACHE:-${XDG_RUNTIME_DIR:-/tmp}/senomyos/background-apps-operation.json}"
 readonly CACHE_DIR="$(dirname "$CACHE_FILE")"
 

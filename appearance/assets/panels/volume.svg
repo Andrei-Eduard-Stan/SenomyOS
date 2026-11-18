@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="122" viewBox="0 0 420 122">
+<title>Senomy volume — replace this complete artwork</title>
+<rect x="1" y="1" width="418" height="120" rx="14" fill="#0a0c0f" fill-opacity=".38" />
+<g transform="translate(0 0) scale(1.0 1.0)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g2_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g2_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g2_frame-standard-corner-tl" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g>
+    <path d="M1 31C1 14.431 14.431 1 31 1" fill="none" stroke="url(#g2_senomy-frame-metal)" stroke-width="1.35" stroke-opacity="0.96" vector-effect="non-scaling-stroke" />
+    <path d="M4 31C4 16.088 16.088 4 31 4" fill="none" stroke="#DDE0EA" stroke-width="0.84" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M8 31C8 18.297 18.297 8 31 8" fill="none" stroke="#777C89" stroke-width="0.72" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M1.8 23.5C6.1 11.4 11.4 6.1 23.5 1.8" fill="none" stroke="#F4F5F8" stroke-width="0.52" stroke-opacity="0.74" vector-effect="non-scaling-stroke" />
+    <path d="M3 28C4.4 21 8.5 15.2 14.2 10.5" fill="none" stroke="url(#g2_senomy-frame-violet)" stroke-width="0.68" stroke-opacity="0.86" vector-effect="non-scaling-stroke" />
+    <path d="M8.7 8.7 13.2 7.8 15.4 4.1" fill="none" stroke="#252832" stroke-width="0.8" stroke-opacity="0.9" vector-effect="non-scaling-stroke" />
+    </g>
+  </g>
+</g>
+<g transform="translate(388 0) scale(1.0 1.0)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g3_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g3_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g3_frame-standard-corner-tr" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(32 0) scale(-1 1)">
+    <path d="M1 31C1 14.431 14.431 1 31 1" fill="none" stroke="url(#g3_senomy-frame-metal)" stroke-width="1.35" stroke-opacity="0.96" vector-effect="non-scaling-stroke" />
+    <path d="M4 31C4 16.088 16.088 4 31 4" fill="none" stroke="#DDE0EA" stroke-width="0.84" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M8 31C8 18.297 18.297 8 31 8" fill="none" stroke="#777C89" stroke-width="0.72" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M1.8 23.5C6.1 11.4 11.4 6.1 23.5 1.8" fill="none" stroke="#F4F5F8" stroke-width="0.52" stroke-opacity="0.74" vector-effect="non-scaling-stroke" />
+    <path d="M3 28C4.4 21 8.5 15.2 14.2 10.5" fill="none" stroke="url(#g3_senomy-frame-violet)" stroke-width="0.68" stroke-opacity="0.86" vector-effect="non-scaling-stroke" />
+    <path d="M8.7 8.7 13.2 7.8 15.4 4.1" fill="none" stroke="#252832" stroke-width="0.8" stroke-opacity="0.9" vector-effect="non-scaling-stroke" />
+    </g>
+  </g>
+</g>
+<g transform="translate(0 90) scale(1.0 1.0)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g4_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g4_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g4_frame-standard-corner-bl" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(0 32) scale(1 -1)">
+    <path d="M1 31C1 14.431 14.431 1 31 1" fill="none" stroke="url(#g4_senomy-frame-metal)" stroke-width="1.35" stroke-opacity="0.96" vector-effect="non-scaling-stroke" />
+    <path d="M4 31C4 16.088 16.088 4 31 4" fill="none" stroke="#DDE0EA" stroke-width="0.84" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M8 31C8 18.297 18.297 8 31 8" fill="none" stroke="#777C89" stroke-width="0.72" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M1.8 23.5C6.1 11.4 11.4 6.1 23.5 1.8" fill="none" stroke="#F4F5F8" stroke-width="0.52" stroke-opacity="0.74" vector-effect="non-scaling-stroke" />
+    <path d="M3 28C4.4 21 8.5 15.2 14.2 10.5" fill="none" stroke="url(#g4_senomy-frame-violet)" stroke-width="0.68" stroke-opacity="0.86" vector-effect="non-scaling-stroke" />
+    <path d="M8.7 8.7 13.2 7.8 15.4 4.1" fill="none" stroke="#252832" stroke-width="0.8" stroke-opacity="0.9" vector-effect="non-scaling-stroke" />
+    </g>
+  </g>
+</g>
+<g transform="translate(388 90) scale(1.0 1.0)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g5_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g5_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g5_frame-standard-corner-br" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(32 32) scale(-1 -1)">
+    <path d="M1 31C1 14.431 14.431 1 31 1" fill="none" stroke="url(#g5_senomy-frame-metal)" stroke-width="1.35" stroke-opacity="0.96" vector-effect="non-scaling-stroke" />
+    <path d="M4 31C4 16.088 16.088 4 31 4" fill="none" stroke="#DDE0EA" stroke-width="0.84" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M8 31C8 18.297 18.297 8 31 8" fill="none" stroke="#777C89" stroke-width="0.72" stroke-opacity="0.76" vector-effect="non-scaling-stroke" />
+    <path d="M1.8 23.5C6.1 11.4 11.4 6.1 23.5 1.8" fill="none" stroke="#F4F5F8" stroke-width="0.52" stroke-opacity="0.74" vector-effect="non-scaling-stroke" />
+    <path d="M3 28C4.4 21 8.5 15.2 14.2 10.5" fill="none" stroke="url(#g5_senomy-frame-violet)" stroke-width="0.68" stroke-opacity="0.86" vector-effect="non-scaling-stroke" />
+    <path d="M8.7 8.7 13.2 7.8 15.4 4.1" fill="none" stroke="#252832" stroke-width="0.8" stroke-opacity="0.9" vector-effect="non-scaling-stroke" />
+    </g>
+  </g>
+</g>
+<g transform="translate(32 0) scale(7.416666666666667 1.0)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g6_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g6_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g6_frame-standard-edge-top" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 1H48" fill="none" stroke="url(#g6_senomy-frame-metal)" stroke-width="1.05" stroke-opacity="0.92" vector-effect="non-scaling-stroke" />
+    <path d="M0 3.35H48" fill="none" stroke="#777C89" stroke-width="0.6" stroke-opacity="0.66" vector-effect="non-scaling-stroke" />
+  </g>
+</g>
+<g transform="translate(32 113) scale(7.416666666666667 1.0)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g7_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g7_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g7_frame-standard-edge-bottom" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 8H48" fill="none" stroke="url(#g7_senomy-frame-metal)" stroke-width="1.05" stroke-opacity="0.92" vector-effect="non-scaling-stroke" />
+    <path d="M0 5.65H48" fill="none" stroke="#777C89" stroke-width="0.6" stroke-opacity="0.66" vector-effect="non-scaling-stroke" />
+  </g>
+</g>
+<g transform="translate(0 32) scale(1.0 1.2083333333333333)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g8_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g8_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g8_frame-standard-edge-left" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1 0V48" fill="none" stroke="url(#g8_senomy-frame-metal)" stroke-width="1.05" stroke-opacity="0.92" vector-effect="non-scaling-stroke" />
+    <path d="M3.35 0V48" fill="none" stroke="#777C89" stroke-width="0.6" stroke-opacity="0.66" vector-effect="non-scaling-stroke" />
+  </g>
+</g>
+<g transform="translate(411 32) scale(1.0 1.2083333333333333)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g9_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g9_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g9_frame-standard-edge-right" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 0V48" fill="none" stroke="url(#g9_senomy-frame-metal)" stroke-width="1.05" stroke-opacity="0.92" vector-effect="non-scaling-stroke" />
+    <path d="M5.65 0V48" fill="none" stroke="#777C89" stroke-width="0.6" stroke-opacity="0.66" vector-effect="non-scaling-stroke" />
+  </g>
+</g>
+<g transform="translate(205.0 0) scale(1.0 1.0)"><metadata>
+    Generated SenomyOS Luminous Reliquary production module. The approved
+    artwork is visual direction only; this asset contains native vector paths,
+    no embedded raster, and no baked external glow.
+  </metadata>
+  <defs>
+    <linearGradient id="g10_senomy-frame-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F5F8" />
+      <stop offset="0.48" stop-color="#DDE0EA" />
+      <stop offset="1" stop-color="#777C89" />
+    </linearGradient>
+    <linearGradient id="g10_senomy-frame-violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C9B8FF" />
+      <stop offset="1" stop-color="#9A72E8" />
+    </linearGradient>
+  </defs>
+  <g id="g10_frame-motif-controls" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 3H3.2M6.8 3H10" fill="none" stroke="#DDE0EA" stroke-width="0.72" stroke-opacity="0.82" vector-effect="non-scaling-stroke" />
+    <path d="M5 1 7 3 5 5 3 3Z" fill="none" stroke="url(#g10_senomy-frame-violet)" stroke-width="0.58" stroke-opacity="0.9" vector-effect="non-scaling-stroke" />
+  </g>
+</g>
+</svg>

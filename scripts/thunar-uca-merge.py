@@ -23,7 +23,7 @@ VALID_CONDITIONS = {
     "text-files",
     "video-files",
 }
-VALID_VERBS = {"copy-path", "copy-sha256"}
+VALID_VERBS = {"copy-path", "copy-sha256", "copy-name", "copy-uri", "copy-project-path"}
 COMMAND_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]*$")
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 UNIQUE_ID_RE = re.compile(r"^[0-9]{16}-[0-9]+$")

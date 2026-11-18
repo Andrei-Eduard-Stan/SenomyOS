@@ -41,6 +41,7 @@ Window {
         property var managedServices:services
         property string error:""
         property var details:({})
+        property var telemetry:({cores:[],frequency:{available:false},baseFrequency:{available:false},memory:{swapAvailable:false},pressure:{available:false}})
         property var cpuHistory:[1,2]
         property var memoryHistory:[1,2]
         property var rxHistory:[1,2]
@@ -109,7 +110,12 @@ Window {
                             test.check(pos.y>=-1 && pos.y+item.height<=panel.contentArea.height+1,section.id+" focused control clipped at "+pos.y);
                         }
                     }
-                    if(section.id==="processes") test.check(seen.size===12,"all twelve process rows reachable");
+                    if(section.id==="processes") {
+                        const list=input.findChild(panel.captureItem,"process-manager-list");list.forceActiveFocus();input.keyClick(Qt.Key_Home);input.wait(20);
+                        const rows=new Set();
+                        for(let i=0;i<12;i++) {rows.add(list.currentItem.modelData.name);input.keyClick(Qt.Key_Down);input.wait(10);}
+                        test.check(rows.size===12,"all twelve virtual process rows reachable by arrows");
+                    }
                 }
             }
             state.performanceSection="services";input.wait(50);

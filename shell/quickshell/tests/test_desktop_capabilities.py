@@ -27,6 +27,6 @@ class Capabilities(unittest.TestCase):
             self.assertFalse(m.unit_status('xdg-desktop-portal-gtk.service')['available'])
     def test_missing_optional_tool_and_unknown_cli(self):
         with patch.object(m.shutil,'which',return_value=None):
-            data=m.catalog();self.assertFalse(data['flatpakAvailable']);self.assertFalse(data['fileManagerAvailable'])
+            data=m.catalog();self.assertFalse(data['flatpakAvailable']);self.assertFalse(data['fileManagerAvailable']);self.assertTrue(all(not item['available'] for item in data['tools']));self.assertEqual(data['acceptance'],'Not tested by capability inspection')
         with patch('builtins.print'):self.assertEqual(m.main(['approve-permission']),1)
 if __name__=='__main__':unittest.main()

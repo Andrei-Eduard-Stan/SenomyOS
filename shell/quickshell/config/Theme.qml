@@ -28,8 +28,8 @@ QtObject {
     readonly property color glassFocus: Qt.rgba(accent.r, accent.g, accent.b, glassFocusAlpha)
 
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
-    readonly property int railHeight: 64
-    readonly property int islandHeight: 56
+    readonly property int railHeight: 72
+    readonly property int islandHeight: 64
     readonly property int screenInset: 20
     readonly property int islandGap: 22
     readonly property int compactCorner: 16
@@ -50,4 +50,15 @@ QtObject {
     readonly property int touchTarget: 48
     readonly property int popupOpenMs: 190
     readonly property int popupCloseMs: 150
+    readonly property int motionHoverMs: 90
+    readonly property int motionSelectionMs: 110
+    readonly property int motionMenuOpenMs: 120
+    readonly property int motionCompactOpenMs: 160
+    readonly property int motionLensOpenMs: 180
+    readonly property int motionIslandOpenMs: 240
+    readonly property int motionDisclosureMs: 180
+    readonly property int motionTravelPx: 4
+    readonly property int motionIslandTravelPx: 6
+    readonly property int motionNavigationMs: 140
+    readonly property int motionStatusMs: 120
 }

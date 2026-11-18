@@ -89,6 +89,9 @@ inner() {
   notification_id="$(/usr/bin/sed -n 's/^(uint32 \([0-9][0-9]*\),)$/\1/p' <<<"$first_reply")"
   [[ "$notification_id" =~ ^[1-9][0-9]*$ ]] || fail "Notify did not return a valid ID"
 
+  [[ "$(ipc holdLatestAction)" == held ]] || fail "could not hold original fixture action"
+  capabilities="$(/usr/bin/gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.GetCapabilities)"
+  [[ "$capabilities" != *"body-images"* && "$capabilities" != *"action-icons"* ]] || fail "unsupported presentation capability advertised"
   monitor_file="$test_root/signals.log"
   /usr/bin/gdbus monitor --session --dest org.freedesktop.Notifications >"$monitor_file" 2>&1 &
   monitor_pid=$!
@@ -111,10 +114,16 @@ inner() {
     fail "replacement metadata contract failed"
   }
 
+  [[ "$(ipc invokeHeld)" == missing ]] || fail "stale replacement action was invoked"
+  [[ "$(ipc holdLatestAction)" == held ]] || fail "could not hold current action"
   [[ "$(ipc invokeLatest open)" == invoked ]] || fail "notification action was not invoked"
   sleep 0.2
   /usr/bin/grep -q "ActionInvoked.*uint32 $notification_id.*'open'" "$monitor_file" ||
     fail "ActionInvoked signal was not observed"
+
+  /usr/bin/gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.CloseNotification "$notification_id" >/dev/null
+  sleep 0.2
+  [[ "$(ipc invokeHeld)" == missing ]] || fail "closed notification action was invoked"
 
   before_generation="$(/usr/bin/jq -r '.toastGeneration' <<<"$(ipc state)")"
   [[ "$(ipc setDnd true)" == true ]] || fail "DND did not enable"
@@ -126,7 +135,14 @@ inner() {
     and (.history | any(.summary == "DND summary"))
   ' <<<"$state" >/dev/null || fail "DND retention/toast suppression contract failed"
 
-  notify 'Transient App' 0 '' 'Transient summary' 'Do not persist' '[]' \
+  retained_before_read="$(/usr/bin/jq -r '.history | length' <<<"$(ipc state)")"
+  [[ "$(ipc readLatest)" == read ]] || fail "single-record read failed"
+  /usr/bin/jq -e --argjson id "$notification_id" --argjson count "$retained_before_read" '.unreadCount == 1 and (.history | length) == $count and (.history | any(.id == $id and .unread == true))' <<<"$(ipc state)" >/dev/null || fail "single read changed another record or deleted history"
+  [[ "$(ipc readLatest)" == unchanged ]] || fail "repeated read was not idempotent"
+  [[ "$(ipc readAll)" == read ]] || fail "explicit read all failed"
+  /usr/bin/jq -e --argjson count "$retained_before_read" '.unreadCount == 0 and (.history | length) == $count' <<<"$(ipc state)" >/dev/null || fail "read all deleted history"
+
+  notify 'Transient App'  0 '' 'Transient summary' 'Do not persist' '[]' \
     "{'transient': <true>, 'urgency': <byte 1>}" 0 >/dev/null
   sleep 0.2
   state="$(ipc state)"
@@ -157,8 +173,37 @@ inner() {
   notify 'Dismiss App' 0 '' 'Dismiss summary' 'Dismiss me' '[]' "{'urgency': <byte 1>}" 0 >/dev/null
   sleep 0.2
   [[ "$(ipc dismissLatest)" == dismissed ]] || fail "per-notification dismissal failed"
-  [[ "$(ipc clearAll)" == cleared ]] || fail "clear-all failed"
-  /usr/bin/jq -e '.history | length == 0' <<<"$(ipc state)" >/dev/null || fail "history was not cleared"
+  before_clear="$(/usr/bin/jq -r '.history | length' <<<"$(ipc state)")"
+  [[ "$(ipc confirmClear)" == rejected ]] || fail "confirmation without request was accepted"
+  [[ "$(ipc requestClear)" == pending ]] || fail "clear preview failed"
+  [[ "$(ipc cancelClear)" == cancelled ]] || fail "clear cancellation failed"
+  /usr/bin/jq -e --argjson count "$before_clear" '.history | length == $count' <<<"$(ipc state)" >/dev/null || fail "cancel changed history"
+  [[ "$(ipc requestClear)" == pending ]] || fail "second clear preview failed"
+  notify 'Race App' 0 '' 'New after preview' 'Retain until reviewed' '[]' "{'urgency': <byte 1>}" 0 >/dev/null
+  sleep 0.2
+  [[ "$(ipc confirmClear)" == rejected ]] || fail "stale preview cleared new notifications"
+  /usr/bin/jq -e '.history | any(.summary == "New after preview")' <<<"$(ipc state)" >/dev/null || fail "new notification was lost"
+
+  # Simulate an unwritable destination using only the private fixture store.
+  mv "$test_root/history.json" "$test_root/history-before.json"
+  mkdir "$test_root/history.json"
+  [[ "$(ipc requestClear)" == pending ]] || fail "failure preview failed"
+  ipc confirmClear >/dev/null
+  sleep 0.2
+  /usr/bin/jq -e '.clearState == "failed" and (.clearMessage | contains("saving failed"))' <<<"$(ipc state)" >/dev/null || fail "save failure was not reported"
+  rmdir "$test_root/history.json"
+  mv "$test_root/history-before.json" "$test_root/history.json"
+
+  notify 'Clear App' 0 '' 'Clear summary' 'Clear with confirmation' '[]' "{'urgency': <byte 1>}" 0 >/dev/null
+  sleep 0.2
+  [[ "$(ipc requestClear)" == pending ]] || fail "final preview failed"
+  [[ "$(ipc confirmClear)" == confirmed ]] || fail "clear confirmation failed"
+  sleep 0.2
+  /usr/bin/jq -e '.clearState == "succeeded" and .activeCount == 0 and (.history | length == 0)' <<<"$(ipc state)" >/dev/null || fail "clear result was not verified"
+  /usr/bin/jq -e '.history | length == 0' "$test_root/history.json" >/dev/null || fail "cleared history was not persisted"
+  stop_harness
+  start_harness
+  /usr/bin/jq -e '.history | length == 0' <<<"$(ipc state)" >/dev/null || fail "history returned after restart"
 
   kill "$monitor_pid" 2>/dev/null || true
   wait "$monitor_pid" 2>/dev/null || true

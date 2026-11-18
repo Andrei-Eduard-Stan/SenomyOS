@@ -3,6 +3,7 @@ QtObject {
     id:root
     required property var runner
     required property string helper
+    property string interpreter:"python3"
     property bool active:false
     property string context:""
     property var defaults:[]
@@ -43,9 +44,13 @@ QtObject {
         if(actionState!=="pending"||!pending||!active||!context||pending.context!==context||runner.running)return false;
         const preview=plan(pending.kind,pending.key,pending.value);
         if(!preview||preview.token!==pending.token){pending=null;actionState="failed";message="Desktop settings changed. Review them again; nothing was saved.";return false;}
-        actionState="running";message="Saving the reviewed desktop preference…";runner.exec(["python3",helper].concat(preview.args));return true;
+        actionState="running";message="Saving the reviewed desktop preference…";runner.exec([interpreter,helper].concat(preview.args));return true;
     }
-    function completed(code,output){pending=null;try{const parsed=JSON.parse(output);actionState=code===0&&parsed.ok?parsed.data.state:"failed";message=parsed.ok?parsed.data.message:(parsed.error||{}).message||"Desktop preference failed.";}catch(_){actionState="failed";message="Invalid preference result. Refresh to verify current settings.";}refreshRequested();}
+    function completed(code,output){pending=null;try{const parsed=JSON.parse(output);if(code===0&&parsed.ok===true&&parsed.data){actionState=parsed.data.state;message=parsed.data.message;}else{actionState=parsed.ok===true?"unverified":"failed";message=parsed.ok===true?"Desktop preference result could not be verified. Refresh actual settings before retrying.":(parsed.error||{}).message||"Desktop preference failed.";}}catch(_){actionState="unverified";message="Invalid preference result. Refresh to verify current settings.";}refreshRequested();}
+    property Timer startupCheck:Timer {
+        interval:200;running:root.actionState==="running"&&!root.runner.running
+        onTriggered:{root.pending=null;root.actionState="failed";root.message="Desktop preference helper could not start. No request was submitted; check Python and review again.";}
+    }
     onContextChanged:if(actionState==="pending")cancel()
     onActiveChanged:if(!active&&actionState==="pending")cancel()
 }

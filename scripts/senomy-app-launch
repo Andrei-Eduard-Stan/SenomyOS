@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Shared unprivileged application launcher; never falls back to shell ownership.
+set -euo pipefail
+source_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+exec python3 -B "$(dirname -- "$source_path")/senomy_app_launch.py" "$@"

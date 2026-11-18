@@ -193,7 +193,7 @@ hardware_report() {
   printf '\n### Software platform\n\n```text\n'
   uname -a || true; sed -n '1,24p' /etc/os-release || true
   printf 'Hyprland: '; hyprctl version 2>/dev/null | head -n 1 || printf 'unavailable\n'
-  printf 'Eww: '; /usr/bin/eww --version 2>/dev/null || printf 'unavailable\n'
+  printf 'Quickshell: '; /usr/bin/qs --version 2>/dev/null || printf 'unavailable\n'
   printf 'Installed native packages: '; pacman -Qnq 2>/dev/null | wc -l || true
   printf 'Installed foreign/AUR packages: '; pacman -Qmq 2>/dev/null | wc -l || true
   printf '```\n\n### Optional evidence availability\n\n'
@@ -351,9 +351,9 @@ open_latest() {
   local path
   path="$(jq -r '.data.markdown_path // empty' "$STATUS_FILE" 2>/dev/null || true)"; [[ "$path" == "$ROOT"/benchmark-*.md && -r "$path" ]] || exit 4
   if command -v code >/dev/null 2>&1; then
-    nohup code --reuse-window "$path" >/dev/null 2>&1 &
+    "$SCRIPT_DIR/senomy-app-launch" --quiet tool code-report "$path"
   elif command -v xdg-open >/dev/null 2>&1; then
-    nohup xdg-open "$path" >/dev/null 2>&1 &
+    "$SCRIPT_DIR/senomy-app-launch" --quiet open "$path"
   else
     exit 3
   fi

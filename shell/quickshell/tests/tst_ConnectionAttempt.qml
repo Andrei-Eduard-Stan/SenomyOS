@@ -4,7 +4,7 @@ import "../services"
 TestCase {
     id:test;name:"ConnectionAttempt";when:true
     QtObject {id:network;property string name:"Fixture";property bool connected:false;property bool stateChanging:false;signal connectionFailed(int reason)}
-    QtObject {id:provider;property bool available:true;property bool wifiEnabled:true;property bool wifiHardwareEnabled:true;property var wifiNetworks:[network];function failureMessage(reason){return reason===1?"Authentication rejected":"Network failed";}}
+    QtObject {id:provider;property string providerIdentity:"owner1";property bool available:true;property bool wifiEnabled:true;property bool wifiHardwareEnabled:true;property var wifiNetworks:[network];function failureMessage(reason){return reason===1?"Authentication rejected":"Network failed";}}
     ConnectionAttempt {id:attempt;provider:provider}
     function init(){attempt.target=null;attempt.actionState="idle";attempt.message="";provider.available=true;provider.wifiEnabled=true;provider.wifiHardwareEnabled=true;provider.wifiNetworks=[network];network.name="Fixture";network.connected=false;network.stateChanging=false;}
     function test_single_attempt_and_reported_connection(){verify(attempt.start(network));verify(!attempt.start(network));network.connected=true;tryCompare(attempt,"actionState","succeeded");verify(attempt.message.indexOf("Internet reachability")>=0);}
@@ -14,5 +14,6 @@ TestCase {
         verify(attempt.start(network));provider.wifiNetworks=[];attempt.observe();compare(attempt.actionState,"failed");
         provider.wifiNetworks=[network];verify(attempt.start(network));network.name="Changed";tryCompare(attempt,"actionState","failed");
     }
-    function test_unavailable_connected_and_changing_rejected(){provider.available=false;verify(!attempt.start(network));provider.available=true;network.connected=true;verify(!attempt.start(network));network.connected=false;network.stateChanging=true;verify(!attempt.start(network));}
+    function test_unavailable_connected_and_changing_rejected(){provider.available=false;verify(!attempt.start(network));provider.available=true;network.connected=true;verify(!attempt.start(network));network.connected=false;network.stateChanging=true;verify(!attempt.start(network));}    function test_provider_replacement_refuses_completion(){provider.providerIdentity="owner1";verify(attempt.start(network));provider.providerIdentity="owner2";attempt.observe();compare(attempt.actionState,"failed");}
+
 }

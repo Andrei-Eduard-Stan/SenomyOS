@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Execute only the fixed session actions exposed by the guarded power flyout.
-# The Eww control requires a separate confirmation state before calling here.
+# The native control requires a separate confirmation state before calling here.
 
 set -euo pipefail
 export LC_ALL=C

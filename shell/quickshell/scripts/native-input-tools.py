@@ -4,6 +4,17 @@ import json
 import shutil
 import subprocess
 import sys
+from pathlib import Path
+
+def launch_tool(tool, args=()):
+    # Read-only provider functions remain available if deployment is incomplete.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+    try:
+        from senomy_app_launch import launch_tool as independent_launch
+    except ImportError:
+        return {"ok":False,"state":"unavailable","message":"The independent application launcher is unavailable; no application was started."}
+    return independent_launch(tool, args)
+
 
 
 def detect():
@@ -18,8 +29,8 @@ def launch_editor():
     if not editor:
         return {"ok": False, "state": "unavailable", "message": "Fcitx5 settings is not installed."}
     try:
-        subprocess.Popen([editor], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL, close_fds=True, start_new_session=True)
+        result=launch_tool("ime")
+        if not result["ok"]:return result
     except OSError:
         return {"ok": False, "state": "failed", "message": "Fcitx5 settings could not be started."}
     return {"ok": True, "state": "started",

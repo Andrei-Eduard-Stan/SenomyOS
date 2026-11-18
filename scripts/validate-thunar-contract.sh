@@ -18,7 +18,9 @@ readonly REPORT="$TEST_ROOT/report.json"
 readonly LIMITED="$TEST_ROOT/limited.xml"
 readonly LIMITED_REPORT="$TEST_ROOT/limited-report.json"
 readonly HELPER_TARGET="$TEST_ROOT/home/.local/bin/senomy-thunar-action"
-readonly WORKSPACE="$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-file-workspace"
+readonly WORKSPACE="$TEST_ROOT/source/components/file-manager/thunar/scripts/senomy-file-workspace"
+mkdir -p "$(dirname -- "$WORKSPACE")" "$TEST_ROOT/source/scripts"
+cp -- "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-file-workspace" "$WORKSPACE"
 readonly DESKTOP_ENTRY="$CONFIG_DIR/components/file-manager/thunar/thunar.desktop"
 readonly TEST_BIN="$TEST_ROOT/bin"
 readonly CLIPBOARD_CAPTURE="$TEST_ROOT/clipboard"
@@ -123,9 +125,9 @@ jq -e '
   .base_exists == true and
   .preserved_user_actions == 1 and
   .replaced_managed_unique_ids == ["1893456000000001-1"] and
-  .enabled_actions == ["copy-path", "copy-sha256"] and
+  .enabled_actions == ["copy-path", "copy-sha256", "copy-name", "copy-uri", "copy-project-path"] and
   .unavailable_actions == [] and
-  .result_actions == 3
+  .result_actions == 6
 ' "$REPORT" >/dev/null
 
 jq '.actions[0].requirements = ["senomy-missing-provider"]' \
@@ -139,9 +141,9 @@ PATH="$TEST_BIN:$PATH" "$CONFIG_DIR/scripts/thunar-uca-merge.py" \
 xmllint --noout "$LIMITED"
 jq -e '
   .preserved_user_actions == 1 and
-  .enabled_actions == ["copy-sha256"] and
+  .enabled_actions == ["copy-sha256", "copy-name", "copy-uri", "copy-project-path"] and
   .unavailable_actions == [{"id":"copy-path","missing":["senomy-missing-provider"]}] and
-  .result_actions == 2
+  .result_actions == 5
 ' "$LIMITED_REPORT" >/dev/null
 ! grep -q '<name>Copy Path</name>' "$LIMITED"
 grep -q '<name>Copy SHA-256</name>' "$LIMITED"
@@ -154,7 +156,7 @@ import xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 helper = sys.argv[2]
 actions = {item.findtext("unique-id"): item for item in root.findall("action")}
-assert len(actions) == 3
+assert len(actions) == 6
 user = actions["1752824457083670-1"]
 assert user.findtext("name") == "Open Terminal Here"
 assert user.findtext("command") == "exo-open --working-directory %f --launch TerminalEmulator"
@@ -206,14 +208,17 @@ printf '/* touch fixture */\n' >"$TEST_ROOT/data/themes/SenomyOS-Touch/gtk-3.0/g
 workspace_theme_log="$TEST_ROOT/workspace-theme.log"
 workspace_thunar_log="$TEST_ROOT/workspace-thunar.log"
 workspace_busctl_log="$TEST_ROOT/workspace-busctl.log"
-workspace_systemd_run_log="$TEST_ROOT/workspace-systemd-run.log"
+workspace_launch_log="$TEST_ROOT/workspace-systemd-run.log"
 workspace_xfconf_log="$TEST_ROOT/workspace-xfconf.log"
 
 printf '%s\n' \
   '#!/usr/bin/env bash' \
   'set -euo pipefail' \
-  'printf "%s\0" "$@" >"$SENOMY_TEST_SYSTEMD_RUN_LOG"' >"$TEST_BIN/systemd-run"
-chmod 755 "$TEST_BIN/systemd-run"
+  'printf "%s\0" "$@" >"$SENOMY_TEST_LAUNCH_LOG"' \
+  'printf "%s\n" "${GTK_THEME:-}" >"$SENOMY_TEST_LAUNCH_LOG.theme"' \
+  'printf "%s\n" "${GTK_MODULES:-}" >"$SENOMY_TEST_LAUNCH_LOG.modules"' \
+  '[[ "${SENOMY_TEST_APP_FAIL:-0}" != 1 ]]' >"$TEST_ROOT/source/scripts/senomy-app-launch"
+chmod 755 "$TEST_ROOT/source/scripts/senomy-app-launch"
 
 HOME="$TEST_ROOT/workspace-home" \
 XDG_DATA_HOME="$TEST_ROOT/data" \
@@ -221,42 +226,21 @@ SENOMY_THUNAR_BIN="$TEST_BIN/thunar" \
 SENOMY_PGREP_BIN="$TEST_BIN/pgrep" \
 SENOMY_GIO_BIN="$TEST_BIN/gio" \
 SENOMY_BUSCTL_BIN="$TEST_BIN/busctl" \
-SENOMY_SYSTEMD_RUN_BIN="$TEST_BIN/systemd-run" \
 SENOMY_XFCONF_BIN="$TEST_BIN/xfconf-query" \
 SENOMY_TEST_URI='file:///fixture/alpha%20beta.txt' \
 SENOMY_TEST_THEME_LOG="$workspace_theme_log" \
 SENOMY_TEST_THUNAR_LOG="$workspace_thunar_log" \
 SENOMY_TEST_BUSCTL_LOG="$workspace_busctl_log" \
-SENOMY_TEST_SYSTEMD_RUN_LOG="$workspace_systemd_run_log" \
+SENOMY_TEST_LAUNCH_LOG="$workspace_launch_log" \
 SENOMY_TEST_XFCONF_LOG="$workspace_xfconf_log" \
 "$WORKSPACE" --select "$TEST_ROOT/files/alpha beta.txt"
-python3 - "$workspace_xfconf_log" 220 <<'PY'
-from pathlib import Path
-import sys
-
-items = Path(sys.argv[1]).read_bytes().split(b"\0")
-calls = []
-current = []
-for item in items:
-    if item:
-        current.append(item.decode())
-    elif current:
-        calls.append(current)
-        current = []
-assert calls == [
-    ["-c", "thunar", "-p", "/last-separator-position", "-s", sys.argv[2]],
-    ["-c", "thunar", "-p", "/last-side-pane", "-s", "THUNAR_SIDEPANE_TYPE_SHORTCUTS"],
-    ["-c", "thunar", "-p", "/misc-image-preview-mode", "-n", "-t", "string", "-s", "THUNAR_IMAGE_PREVIEW_MODE_STANDALONE"],
-]
-PY
-mapfile -d '' -t workspace_systemd_run_args <"$workspace_systemd_run_log"
-[[ "${workspace_systemd_run_args[0]:-}" == --user ]]
-[[ "${workspace_systemd_run_args[1]:-}" == --quiet ]]
-[[ "${workspace_systemd_run_args[2]:-}" == --collect ]]
-[[ "${workspace_systemd_run_args[3]:-}" == --setenv=GTK_THEME=SenomyOS ]]
-[[ "${workspace_systemd_run_args[4]:-}" == "$TEST_BIN/thunar" ]]
-[[ "${workspace_systemd_run_args[5]:-}" == --daemon ]]
-[[ "${#workspace_systemd_run_args[@]}" == 6 ]]
+[[ ! -e "$workspace_xfconf_log" ]]
+mapfile -d '' -t workspace_launch_args <"$workspace_launch_log"
+[[ "${workspace_launch_args[0]:-}" == --quiet ]]
+[[ "${workspace_launch_args[1]:-}" == tool ]]
+[[ "${workspace_launch_args[2]:-}" == thunar-daemon ]]
+[[ "${#workspace_launch_args[@]}" == 3 ]]
+[[ "$(cat "$workspace_launch_log.theme")" == SenomyOS ]]
 mapfile -d '' -t workspace_busctl_args <"$workspace_busctl_log"
 [[ "${workspace_busctl_args[0]:-}" == --user ]]
 [[ "${workspace_busctl_args[1]:-}" == call ]]
@@ -268,18 +252,17 @@ mapfile -d '' -t workspace_busctl_args <"$workspace_busctl_log"
 [[ "${workspace_busctl_args[7]:-}" == 1 ]]
 [[ "${workspace_busctl_args[8]:-}" == 'file:///fixture/alpha%20beta.txt' ]]
 
-rm -f -- "$workspace_thunar_log" "$workspace_systemd_run_log" "$workspace_xfconf_log"
+rm -f -- "$workspace_thunar_log" "$workspace_launch_log" "$workspace_xfconf_log"
 env -u GTK_THEME \
   HOME="$TEST_ROOT/workspace-home" \
   XDG_DATA_HOME="$TEST_ROOT/data" \
   SENOMY_TEST_THUNAR_RUNNING=1 \
   SENOMY_THUNAR_BIN="$TEST_BIN/thunar" \
   SENOMY_PGREP_BIN="$TEST_BIN/pgrep" \
-  SENOMY_SYSTEMD_RUN_BIN="$TEST_BIN/systemd-run" \
-  SENOMY_XFCONF_BIN="$TEST_BIN/xfconf-query" \
+    SENOMY_XFCONF_BIN="$TEST_BIN/xfconf-query" \
   SENOMY_TEST_THEME_LOG="$workspace_theme_log" \
   SENOMY_TEST_THUNAR_LOG="$workspace_thunar_log" \
-  SENOMY_TEST_SYSTEMD_RUN_LOG="$workspace_systemd_run_log" \
+  SENOMY_TEST_LAUNCH_LOG="$workspace_launch_log" \
   SENOMY_TEST_XFCONF_LOG="$workspace_xfconf_log" \
   "$WORKSPACE" -- "$TEST_ROOT/files"
 [[ -z "$(cat "$workspace_theme_log")" ]]
@@ -287,45 +270,26 @@ mapfile -d '' -t workspace_args <"$workspace_thunar_log"
 [[ "${workspace_args[0]:-}" == --window ]]
 [[ "${workspace_args[1]:-}" == -- ]]
 [[ "${workspace_args[2]:-}" == "$TEST_ROOT/files" ]]
-[[ ! -e "$workspace_systemd_run_log" ]]
+[[ ! -e "$workspace_launch_log" ]]
 [[ ! -e "$workspace_xfconf_log" ]]
 
 printf '{"schema_version":3,"font_scale":"touch"}\n' >"$TEST_ROOT/workspace-config/senomyos/preferences.json"
-rm -f -- "$workspace_theme_log" "$workspace_thunar_log" "$workspace_systemd_run_log"
+rm -f -- "$workspace_theme_log" "$workspace_thunar_log" "$workspace_launch_log"
 HOME="$TEST_ROOT/workspace-home" \
 XDG_CONFIG_HOME="$TEST_ROOT/workspace-config" \
 XDG_DATA_HOME="$TEST_ROOT/data" \
 SENOMY_THUNAR_BIN="$TEST_BIN/thunar" \
 SENOMY_PGREP_BIN="$TEST_BIN/pgrep" \
 SENOMY_BUSCTL_BIN="$TEST_BIN/busctl" \
-SENOMY_SYSTEMD_RUN_BIN="$TEST_BIN/systemd-run" \
 SENOMY_XFCONF_BIN="$TEST_BIN/xfconf-query" \
 SENOMY_TEST_THEME_LOG="$workspace_theme_log" \
 SENOMY_TEST_THUNAR_LOG="$workspace_thunar_log" \
-SENOMY_TEST_SYSTEMD_RUN_LOG="$workspace_systemd_run_log" \
+SENOMY_TEST_LAUNCH_LOG="$workspace_launch_log" \
 SENOMY_TEST_XFCONF_LOG="$workspace_xfconf_log" \
 "$WORKSPACE" -- "$TEST_ROOT/files"
-python3 - "$workspace_xfconf_log" 260 <<'PY'
-from pathlib import Path
-import sys
-
-items = Path(sys.argv[1]).read_bytes().split(b"\0")
-calls = []
-current = []
-for item in items:
-    if item:
-        current.append(item.decode())
-    elif current:
-        calls.append(current)
-        current = []
-assert calls == [
-    ["-c", "thunar", "-p", "/last-separator-position", "-s", sys.argv[2]],
-    ["-c", "thunar", "-p", "/last-side-pane", "-s", "THUNAR_SIDEPANE_TYPE_SHORTCUTS"],
-    ["-c", "thunar", "-p", "/misc-image-preview-mode", "-n", "-t", "string", "-s", "THUNAR_IMAGE_PREVIEW_MODE_STANDALONE"],
-]
-PY
-mapfile -d '' -t workspace_systemd_run_args <"$workspace_systemd_run_log"
-[[ "${workspace_systemd_run_args[3]:-}" == --setenv=GTK_THEME=SenomyOS-Touch ]]
+[[ ! -e "$workspace_xfconf_log" ]]
+mapfile -d '' -t workspace_launch_args <"$workspace_launch_log"
+[[ "$(cat "$workspace_launch_log.theme")" == SenomyOS-Touch ]]
 mapfile -d '' -t workspace_args <"$workspace_thunar_log"
 [[ "${workspace_args[0]:-}" == --window ]]
 [[ "${workspace_args[1]:-}" == -- ]]
@@ -355,4 +319,69 @@ fi
 
 ! grep -qE '(^|[^[:alnum:]_])(eval|bash[[:space:]]+-c|sh[[:space:]]+-c)([^[:alnum:]_]|$)' "$WORKSPACE"
 
-printf 'SenomyOS Thunar: deterministic merge, system-PATH desktop resolution, standard/touch workspace handoff, native Shortcuts/preview layout, fixed verbs, path validation, and clipboard fixtures passed.\n'
+rm -f -- "$workspace_thunar_log"
+if SENOMY_TEST_APP_FAIL=1 \
+  HOME="$TEST_ROOT/workspace-home" XDG_DATA_HOME="$TEST_ROOT/data" \
+  SENOMY_THUNAR_BIN="$TEST_BIN/thunar" SENOMY_PGREP_BIN="$TEST_BIN/pgrep" \
+  SENOMY_BUSCTL_BIN="$TEST_BIN/busctl" SENOMY_TEST_LAUNCH_LOG="$workspace_launch_log" \
+  SENOMY_TEST_THEME_LOG="$workspace_theme_log" SENOMY_TEST_THUNAR_LOG="$workspace_thunar_log" \
+  "$WORKSPACE" -- "$TEST_ROOT/files"; then
+  printf 'Failed independent launch unexpectedly fell back to direct Thunar.\n' >&2; exit 1
+fi
+[[ ! -e "$workspace_thunar_log" ]]
+
+# New contextual actions prepare complete output before touching the clipboard.
+mkdir -p "$TEST_ROOT/project/.git" "$TEST_ROOT/other-project/.git" "$TEST_ROOT/project/source"
+printf 'fixture\n' >"$TEST_ROOT/project/source/alpha #beta.txt"
+SENOMY_TEST_CLIPBOARD="$CLIPBOARD_CAPTURE" PATH="$TEST_BIN:$PATH" \
+  "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-thunar-action" copy-name \
+  "$TEST_ROOT/project/source/alpha #beta.txt"
+printf '%s\n' 'alpha #beta.txt' >"$TEST_ROOT/expected-names"
+cmp -s "$CLIPBOARD_CAPTURE" "$TEST_ROOT/expected-names"
+SENOMY_TEST_CLIPBOARD="$CLIPBOARD_CAPTURE" PATH="$TEST_BIN:$PATH" \
+  "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-thunar-action" copy-uri \
+  "$TEST_ROOT/project/source/alpha #beta.txt"
+python3 - "$TEST_ROOT/project/source/alpha #beta.txt" "$CLIPBOARD_CAPTURE" <<'PYTEST'
+from pathlib import Path
+import sys
+assert Path(sys.argv[2]).read_text()==Path(sys.argv[1]).as_uri()+"\n"
+assert '%20%23' in Path(sys.argv[2]).read_text()
+PYTEST
+SENOMY_TEST_CLIPBOARD="$CLIPBOARD_CAPTURE" PATH="$TEST_BIN:$PATH" \
+  "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-thunar-action" copy-project-path \
+  "$TEST_ROOT/project/source/alpha #beta.txt"
+printf '%s\n' 'source/alpha #beta.txt' >"$TEST_ROOT/expected-relative"
+cmp -s "$CLIPBOARD_CAPTURE" "$TEST_ROOT/expected-relative"
+if SENOMY_TEST_CLIPBOARD="$CLIPBOARD_CAPTURE" PATH="$TEST_BIN:$PATH" \
+  "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-thunar-action" copy-project-path \
+  "$TEST_ROOT/project/source/alpha #beta.txt" "$TEST_ROOT/other-project" >/dev/null 2>&1; then
+  printf 'Mixed project roots unexpectedly copied.\n' >&2; exit 1
+fi
+cmp -s "$CLIPBOARD_CAPTURE" "$TEST_ROOT/expected-relative"
+if SENOMY_TEST_CLIPBOARD="$CLIPBOARD_CAPTURE" PATH="$TEST_BIN:$PATH" \
+  "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-thunar-action" copy-project-path \
+  "$TEST_ROOT/files/alpha beta.txt" >/dev/null 2>&1; then
+  printf 'Non-project selection unexpectedly copied.\n' >&2; exit 1
+fi
+cmp -s "$CLIPBOARD_CAPTURE" "$TEST_ROOT/expected-relative"
+# Git worktrees use a .git file, not a directory.
+rmdir "$TEST_ROOT/project/.git"
+printf 'gitdir: /inert/fixture\n' >"$TEST_ROOT/project/.git"
+SENOMY_TEST_CLIPBOARD="$CLIPBOARD_CAPTURE" PATH="$TEST_BIN:$PATH" \
+  "$CONFIG_DIR/components/file-manager/thunar/scripts/senomy-thunar-action" copy-project-path \
+  "$TEST_ROOT/project/source/alpha #beta.txt"
+cmp -s "$CLIPBOARD_CAPTURE" "$TEST_ROOT/expected-relative"
+printf 'SenomyOS Thunar: native launch/preservation, deterministic user-action merge, five bounded contextual actions, encoded URI/project/worktree cases and failure clipboard preservation passed.\n'
+
+python3 - "$TEST_ROOT" "$WORKSPACE" <<'PYMODULE'
+from pathlib import Path
+import os,subprocess,sys
+w=Path(sys.argv[1]);module=w/'data/senomyos/thunar/libsenomy-thunar.so';module.parent.mkdir(parents=True);module.write_text('inert module fixture')
+env=dict(os.environ,HOME=str(w/'workspace-home'),XDG_DATA_HOME=str(w/'data'),XDG_CONFIG_HOME=str(w/'workspace-config'),GTK_MODULES='existing-module',SENOMY_THUNAR_BIN=str(w/'bin/thunar'),SENOMY_PGREP_BIN=str(w/'bin/pgrep'),SENOMY_BUSCTL_BIN=str(w/'bin/busctl'),SENOMY_TEST_THEME_LOG=str(w/'module-theme'),SENOMY_TEST_THUNAR_LOG=str(w/'module-thunar'),SENOMY_TEST_LAUNCH_LOG=str(w/'module-launch'),SENOMY_TEST_BUSCTL_LOG=str(w/'module-busctl'))
+subprocess.run([sys.argv[2],'--',str(w/'files')],env=env,check=True)
+assert (w/'module-launch.modules').read_text().strip()=='existing-module:'+str(module)
+actual=module.with_name('fixture.so');module.rename(actual);module.symlink_to(actual)
+subprocess.run([sys.argv[2],'--',str(w/'files')],env=env,check=True)
+assert (w/'module-launch.modules').read_text().strip()=='existing-module','Symlink module was loaded or incumbent modules lost'
+print('PASS: scoped module handoff preserves existing GTK modules, rejects symlink module and keeps native fallback.')
+PYMODULE

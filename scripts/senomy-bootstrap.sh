@@ -31,7 +31,7 @@ Usage:
 
 audit and plan are read-only. install-packages uses pacman and optionally the
 already-installed paru helper. apply deploys reviewed user/system files,
-installs the Quickshell selector, disables the recovery-only workspace unit,
+installs the Quickshell shell lifecycle,
 and enters interactive recovery provisioning. It
 does not restart SDDM, reload Hyprland, regenerate initramfs/GRUB, log out, or
 reboot.
@@ -60,7 +60,7 @@ validate_manifests() {
       (.policy | IN("enable", "optional")) and (.required | type == "boolean")) and
     all(.user[];
       (.unit | test("^[A-Za-z0-9@_.-]+\\.(service|socket)$")) and
-      (.policy | IN("enable", "preset", "fallback")) and (.required | type == "boolean") and
+      (.policy | IN("enable", "preset", "fallback", "optional")) and (.required | type == "boolean") and
       (.managed | type == "boolean"))
   ' "$SERVICE_MANIFEST" >/dev/null || fail 'service manifest is invalid'
 }
@@ -131,7 +131,7 @@ plan() {
   jq -r '.data.missing_required_packages[]? | "  MISSING  \(.provider)/\(.package) // \(.reason)"' <<<"$report"
   printf 'required service enablement gaps: %s\n' "$(jq '.data.required_enablement_gaps | length' <<<"$report")"
   jq -r '.data.required_enablement_gaps[]? | "  \(.scope)/\(.unit) // \(.state)"' <<<"$report"
-  for component in "profile-$profile" hyprland rofi gtk3 hyprlock workspaces-unit thunar; do
+  for component in "profile-$profile" hyprland rofi gtk3 hyprlock thunar; do
     printf '\n'
     "$USER_DEPLOY" plan "$component"
   done
@@ -177,14 +177,13 @@ apply_first_boot() {
   printf 'This installs user/system configuration and makes Quickshell the next-login shell.\n'
   printf 'It does not restart SDDM, reload Hyprland, regenerate boot files, log out, or reboot.\n'
   confirm "BOOTSTRAP SENOMYOS $profile"
-  "$SCRIPT_DIR/generate-appearance.py" build
+  "$SCRIPT_DIR/generate-appearance.py" check
   "$SCRIPT_DIR/validate-shell.sh"
-  for component in "profile-$profile" hyprland rofi gtk3 hyprlock workspaces-unit thunar; do
+  for component in "profile-$profile" hyprland rofi gtk3 hyprlock thunar; do
     "$USER_DEPLOY" apply "$component" --yes
   done
   "$SCRIPT_DIR/senomy-v2-deploy" apply
   "$SYSTEMCTL_BIN" --user daemon-reload
-  "$SYSTEMCTL_BIN" --user disable workspaces.service
   sudo "$SYSTEM_DEPLOY" apply sddm --yes
   sudo "$SYSTEM_DEPLOY" apply recovery --yes
   sudo "$RECOVERYCTL" provision "$target_user"

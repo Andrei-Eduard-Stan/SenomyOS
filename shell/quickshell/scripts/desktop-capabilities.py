@@ -46,7 +46,13 @@ def portal_interfaces():
 
 
 def catalog():
-    return {'services':[unit_status(unit) for unit in UNITS],'portal':portal_interfaces(),
+    tools=[{'id':key,'name':name,'available':bool(shutil.which(binary)),'evidence':'Executable discovery only; task completion is untested'} for key,name,binary in (
+        ('clipboard','Clipboard transfer','wl-copy'),('screenshot','Screenshot workflow','senomy-screenshot'),
+        ('file-manager','File workspace','thunar'),('default-apps','Default applications','xdg-mime'),
+        ('network-editor','Advanced network editor','nm-connection-editor'),('bluetooth','Bluetooth tools','bluetoothctl'),
+        ('lock','Session lock','hyprlock'),('idle','Idle policy service','hypridle'),
+        ('osk','On-screen keyboard','wvkbd-mobintl'))]
+    return {'tools':tools,'acceptance':'Not tested by capability inspection','services':[unit_status(unit) for unit in UNITS],'portal':portal_interfaces(),
             'flatpakAvailable':bool(shutil.which('flatpak')),'fileManagerAvailable':bool(shutil.which('thunar')),
             'permissionPolicy':'Applications request portal permissions through their own dialogs. No blanket permission bypass or approval is performed here.',
             'journeys':'Removable media, mounts, archives, shares, file associations and screencasting require native application and hardware acceptance.'}

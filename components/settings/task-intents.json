@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    {"id":"microphone", "route":"audio/overview/microphone", "title":"Adjust microphone volume", "detail":"Input level and mute", "phrases":["microphone too quiet","mic too quiet","people cannot hear me","microphone volume","mute microphone"]},
+    {"id":"speakers", "route":"audio/devices", "title":"Choose speakers or headphones", "detail":"Audio outputs and devices", "phrases":["change speakers","switch headphones","no sound","choose audio output"]},
+    {"id":"wifi", "route":"network/wifi", "title":"Connect to Wi-Fi", "detail":"Available wireless networks", "phrases":["connect wifi","connect wi fi","wireless internet","change wifi network"]},
+    {"id":"vpn", "route":"network/advanced", "title":"VPN and advanced networking", "detail":"Open the network configuration route", "phrases":["set up vpn","change dns","configure proxy"]},
+    {"id":"picture", "route":"accounts", "title":"Change your login picture", "detail":"Profile picture and display name", "phrases":["change login picture","change profile photo","change avatar","change account name"]},
+    {"id":"password", "route":"accounts", "title":"Change your password", "detail":"Reviewed secure system handoff", "phrases":["change password","reset my password","add user","create account"]},
+    {"id":"idle", "route":"settings/idle", "title":"Adjust sleep and lock behaviour", "detail":"Idle, screen blanking and lid policy", "phrases":["stop sleeping when docked","keep awake","screen turns off","change sleep timeout","lid closed"]},
+    {"id":"notifications", "route":"settings/notifications", "title":"Silence notifications", "detail":"Do Not Disturb", "phrases":["silence notifications","stop notifications","do not disturb","turn off alerts"]},
+    {"id":"displays", "route":"devices/displays", "title":"Arrange displays", "detail":"Resolution, scale, projection and layout", "phrases":["text too small","change resolution","connect monitor","arrange screens","duplicate screen","screen scaling"]},
+    {"id":"bluetooth", "route":"devices/bluetooth", "title":"Connect a Bluetooth device", "detail":"Pairing and connected devices", "phrases":["pair headphones","pair bluetooth","connect bluetooth mouse"]},
+    {"id":"wallpaper", "route":"appearance/backgrounds", "title":"Change the background", "detail":"Wallpaper and surface backgrounds", "phrases":["change wallpaper","change background","desktop picture"]},
+    {"id":"motion", "route":"appearance/motion", "title":"Reduce animations", "detail":"Reduced motion and hover expansion", "phrases":["reduce animations","disable animations","reduce motion","stop hover expansion"]},
+    {"id":"defaults", "route":"apps/defaults", "title":"Choose default applications", "detail":"Browser and file handlers", "phrases":["change default browser","open files with","choose default apps"]}
+  ]
+}

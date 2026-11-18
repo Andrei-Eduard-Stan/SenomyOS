@@ -59,12 +59,23 @@ TestCase {
     function test_report_success_requires_new_requested_profile(){
         open("reports");verify(!model.generateReport("unrestricted"));
         for(const latest of [{profile:"network",generated_at:Math.floor(Date.now()/1000)},{profile:"full",generated_at:1},{profile:"full",generated_at:Math.floor(Date.now()/1000)}]){
-            verify(model.generateReport("full"));model.actionCompleted(0,payload({exists:true,latest:latest}));
+            verify(model.generateReport("full"));if(latest.generated_at>1)latest.generated_at=model.action.startedAt;model.actionCompleted(0,payload({exists:true,latest:latest}));
             compare(model.actionState,latest.profile==="full"&&latest.generated_at>1?"succeeded":"failed");
         }
         verify(model.openLatestReport());model.actionCompleted(0,"");compare(model.actionState,"started");
     }
     function test_notifications_and_unknown_routes_do_not_collect(){
         model.section="notifications";model.active=true;compare(query.calls.length,0);verify(!model.refresh("unknown",false));compare(query.calls.length,0);
+    }
+    function test_nonzero_collector_data_is_not_adopted(){model.active=true;model.queryCompleted(7,payload({invented:true}));verify(!model.payloads.briefing);compare(model.statuses.briefing.state,"failed");}
+    function test_missing_collector_start_drains_queue(){model.active=true;model.refresh("wiki",false);wait(450);verify(!model.busy);compare(model.queue.length,0);compare(model.statuses.briefing.state,"failed");compare(model.statuses.wiki.state,"failed");}
+    function test_missing_action_start_releases_progress(){open("console");catalog("console");verify(model.runTask("console","safe-task"));wait(250);compare(model.actionState,"failed");verify(!model.action);}
+    function test_maintenance_handoff_is_not_upgrade_success() {
+        open("updates"); verify(model.openMaintenance());
+        compare(action.calls[0][3],"open");
+        model.actionCompleted(0,payload({state:"terminal-requested"}));
+        compare(model.actionState,"started"); verify(model.actionMessage.indexOf("pending")>=0);
+        verify(model.openMaintenance()); model.actionCompleted(0,payload({state:"failed"},false));
+        compare(model.actionState,"failed");
     }
 }

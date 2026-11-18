@@ -43,6 +43,7 @@ validate_relative_path() {
   local path="$1" label="$2"
   [[ -n "$path" && "$path" != /* && "$path" != . ]] || fail "$label must be a relative path"
   [[ ! "$path" =~ (^|/)\.\.(/|$) ]] || fail "$label contains parent traversal: $path"
+  [[ "$path" != */ && "$path" != *//* && ! "$path" =~ (^|/)\.(/|$) ]] || fail "$label is not a unique literal path: $path"
 }
 
 system_root() {
@@ -67,13 +68,67 @@ system_root_mode() {
   esac
 }
 
+literal_path() {
+  local path="$1" probe="$1"
+  [[ "$path" == /* && "$(realpath -ms -- "$path")" == "$path" ]] || fail "non-literal destination: $path"
+  while [[ "$probe" != / ]]; do
+    [[ ! -L "$probe" ]] || fail "symbolic link in destination: $probe"
+    if [[ "$probe" != "$path" && -e "$probe" ]]; then
+      [[ -d "$probe" ]] || fail "non-directory destination parent: $probe"
+    fi
+    probe="$(dirname -- "$probe")"
+  done
+}
+
+protected_parents() {
+  local probe mode
+  literal_path "$1" || return 1
+  probe="$(dirname -- "$1")"
+  while :; do
+    if [[ -e "$probe" ]]; then
+      mode="$(stat -c %a -- "$probe")" || return 1
+      [[ -d "$probe" && "$(stat -c %u:%g -- "$probe")" == 0:0 && $((8#$mode & 0022)) -eq 0 ]] || {
+        printf 'unsafe deployment parent: %s\n' "$probe" >&2; return 1;
+      }
+    fi
+    [[ "$probe" != / ]] || break
+    probe="$(dirname -- "$probe")"
+  done
+}
+
 resolve_target() {
   local root_id="$1" relative="$2" root target
-  validate_relative_path "$relative" 'target path'
-  root="$(realpath -m -- "$(system_root "$root_id")")"
-  target="$(realpath -m -- "$root/$relative")"
+  validate_relative_path "$relative" 'target path' || return 1
+  root="$(system_root "$root_id")" || return 1
+  target="$root/$relative"
   [[ "$root" != / && "$target" == "$root/"* ]] || fail "unsafe system target: $root_id/$relative"
+  literal_path "$target" || return 1
   printf '%s\n' "$target"
+}
+
+file_identity() {
+  [[ -f "$1" && ! -L "$1" && "$(stat -c %u:%g -- "$1")" == 0:0 ]] || return 1
+  stat -c '%d:%i:%u:%g:%a:%h' -- "$1"
+}
+
+rollback_entry_state() {
+  local item="$1" target="$2" identity hash
+  protected_parents "$target" || return 1
+  if [[ -e "$target" || -L "$target" ]]; then
+    identity="$(file_identity "$target")" || return 1
+    hash="$(file_hash "$target")" || return 1
+    if [[ "$identity" == "$(jq -r '.installed_identity // empty' <<<"$item")" && "$hash" == "$(jq -r .source_hash <<<"$item")" ]]; then
+      printf 'installed\n'
+    elif [[ "$(jq -r .existed <<<"$item")" == true && "$identity" == "$(jq -r '.before_identity // empty' <<<"$item")" && "$hash" == "$(jq -r .before_hash <<<"$item")" ]]; then
+      printf 'before\n'
+    else
+      printf 'rollback refused: destination identity/content changed or receipt lacks ownership evidence: %s\n' "$target" >&2
+      return 1
+    fi
+  else
+    [[ "$(jq -r .existed <<<"$item")" == false ]] || return 1
+    printf 'absent\n'
+  fi
 }
 
 resolve_source() {
@@ -99,7 +154,8 @@ ensure_system_root() {
   for directory in "${directories[@]}"; do
     mode=0755
     [[ "$directory" != "$root" ]] || mode="$root_mode"
-    install -d -o root -g root -m "$mode" -- "$directory"
+    protected_parents "$directory/.senomy-path-check" || return 1
+    install -d -o root -g root -m "$mode" -- "$directory" || return 1
     [[ "$(stat -c %a "$directory")" == "${mode#0}" &&
        "$(stat -c %U:%G "$directory")" == root:root ]] || return 1
   done
@@ -123,6 +179,7 @@ validate_manifest() {
       all(.post_apply[]; IN("sddm-theme", "recovery-runtime")) and
       (.entries | type == "array") and
       ([.entries[].id] | length == (unique | length)) and
+      ([.entries[].target | [.root,.path]] | length == (unique | length)) and
       all(.entries[];
         (.id | type == "string" and test("^[a-z0-9][a-z0-9-]*$")) and
         (.source | type == "string" and length > 0) and
@@ -184,7 +241,7 @@ print_plan() {
   mapfile -t entries < <(jq -c '.entries[]' <<<"$payload")
   for entry in "${entries[@]}"; do
     source="$(resolve_source "$(jq -r .source <<<"$entry")")"
-    target="$(resolve_target "$(jq -r .target.root <<<"$entry")" "$(jq -r .target.path <<<"$entry")")"
+    target="$(resolve_target "$(jq -r .target.root <<<"$entry")" "$(jq -r .target.path <<<"$entry")")" || return 1
     state="$(entry_state "$source" "$target" "$(jq -r .mode <<<"$entry")")"
     printf '%-10s %-22s %s -> %s (mode %s)\n' "$state" "$(jq -r .id <<<"$entry")" "$(jq -r .source <<<"$entry")" "$target" "$(jq -r .mode <<<"$entry")"
   done
@@ -263,51 +320,49 @@ run_post_checks() {
 }
 
 restore_receipt() {
-  local receipt="$1" drift_guard="$2" deployment_dir item target root_id root_path parent parent_mode existed backup before_hash source_hash before_mode current_hash stage
+  local receipt="$1" drift_guard="$2" deployment_dir item target root_id parent parent_mode existed backup before_mode state stage relative
   local index
   local -a items=()
   deployment_dir="$(dirname -- "$receipt")"
   mapfile -t items < <(jq -c '.entries[]' "$receipt")
-
-  if [[ "$drift_guard" == true ]]; then
-    for item in "${items[@]}"; do
-      root_id="$(jq -r .target.root <<<"$item")"
-      target="$(resolve_target "$root_id" "$(jq -r .target.path <<<"$item")")"
-      existed="$(jq -r .existed <<<"$item")"
-      before_hash="$(jq -r '.before_hash // empty' <<<"$item")"
-      source_hash="$(jq -r .source_hash <<<"$item")"
-      if [[ -e "$target" || -L "$target" ]]; then
-        [[ -f "$target" && ! -L "$target" ]] || fail "rollback target changed type: $target"
-        current_hash="$(file_hash "$target")"
-        [[ "$current_hash" == "$source_hash" || ( "$existed" == true && "$current_hash" == "$before_hash" ) ]] ||
-          fail "rollback refused because target drifted: $target"
-      else
-        [[ "$existed" == false ]] || fail "rollback refused because an original target is missing: $target"
-      fi
-    done
-  fi
-
+  # Automatic failure recovery uses the same ownership guards as manual rollback.
+  # Older receipts without inode/metadata evidence fail closed, never delete by hash alone.
+  for item in "${items[@]}"; do
+    root_id="$(jq -r .target.root <<<"$item")"
+    target="$(resolve_target "$root_id" "$(jq -r .target.path <<<"$item")")" || return 1
+    state="$(rollback_entry_state "$item" "$target")" || return 1
+    if [[ "$(jq -r .existed <<<"$item")" == true && "$state" == installed ]]; then
+      relative="$(jq -r .backup <<<"$item")"
+      validate_relative_path "$relative" 'backup path' || return 1
+      backup="$deployment_dir/$relative"
+      protected_parents "$backup" || return 1
+      file_identity "$backup" >/dev/null || return 1
+      [[ "$(file_hash "$backup")" == "$(jq -r .before_hash <<<"$item")" ]] || return 1
+    fi
+  done
   for ((index=${#items[@]}-1; index>=0; index--)); do
     item="${items[index]}"
     root_id="$(jq -r .target.root <<<"$item")"
-    target="$(resolve_target "$root_id" "$(jq -r .target.path <<<"$item")")"
+    target="$(resolve_target "$root_id" "$(jq -r .target.path <<<"$item")")" || return 1
+    state="$(rollback_entry_state "$item" "$target")" || return 1
+    [[ "$state" == installed ]] || continue
     existed="$(jq -r .existed <<<"$item")"
     if [[ "$existed" == true ]]; then
-      backup="$(realpath -e -- "$deployment_dir/$(jq -r .backup <<<"$item")" 2>/dev/null || true)"
-      [[ -f "$backup" && ! -L "$backup" && "$backup" == "$deployment_dir/"* ]] || return 1
+      backup="$deployment_dir/$(jq -r .backup <<<"$item")"
+      protected_parents "$backup" || return 1
+      file_identity "$backup" >/dev/null || return 1
       [[ "$(file_hash "$backup")" == "$(jq -r .before_hash <<<"$item")" ]] || return 1
       before_mode="$(jq -r .before_mode <<<"$item")"
-      ensure_system_root "$root_id"
-      root_path="$(system_root "$root_id")"
       parent="$(dirname -- "$target")"
-      parent_mode=0755
-      [[ "$parent" != "$root_path" ]] || parent_mode="$(system_root_mode "$root_id")"
-      install -d -o root -g root -m "$parent_mode" -- "$parent"
-      stage="$(mktemp "$(dirname -- "$target")/.senomy-restore.XXXXXX")"
-      install -o root -g root -m "$before_mode" -- "$backup" "$stage" || return 1
+      stage="$(mktemp "$parent/.senomy-restore.XXXXXX")" || return 1
+      if ! install -o root -g root -m "$before_mode" -- "$backup" "$stage"; then
+        rm -f -- "$stage"; return 1
+      fi
+      [[ "$(rollback_entry_state "$item" "$target")" == installed ]] || { rm -f -- "$stage"; return 1; }
       mv -fT -- "$stage" "$target" || return 1
-    elif [[ -e "$target" || -L "$target" ]]; then
-      [[ -f "$target" && ! -L "$target" ]] || return 1
+    else
+      # Resolve/check again directly before removing only our exact installed inode.
+      [[ "$(rollback_entry_state "$item" "$target")" == installed ]] || return 1
       rm -f -- "$target" || return 1
     fi
   done
@@ -322,35 +377,38 @@ update_receipt_status() {
 }
 
 install_from_receipt() {
-  local receipt="$1" item source target mode root_id root_path parent parent_mode stage
+  local receipt="$1" item source target mode root_id root_path parent parent_mode stage identity payload
   local -a items=()
   mapfile -t items < <(jq -c '.entries[]' "$receipt")
   for item in "${items[@]}"; do
-    source="$(resolve_source "$(jq -r .source <<<"$item")")"
+    source="$(resolve_source "$(jq -r .source <<<"$item")")" || return 1
     root_id="$(jq -r .target.root <<<"$item")"
-    target="$(resolve_target "$root_id" "$(jq -r .target.path <<<"$item")")"
+    target="$(resolve_target "$root_id" "$(jq -r .target.path <<<"$item")")" || return 1
+    rollback_entry_state "$item" "$target" >/dev/null || return 1
     mode="$(jq -r .mode <<<"$item")"
-    ensure_system_root "$root_id"
+    ensure_system_root "$root_id" || return 1
     root_path="$(system_root "$root_id")"
     parent="$(dirname -- "$target")"
     parent_mode=0755
     [[ "$parent" != "$root_path" ]] || parent_mode="$(system_root_mode "$root_id")"
-    install -d -o root -g root -m "$parent_mode" -- "$parent"
-    [[ "$(stat -c %a "$parent")" == "${parent_mode#0}" &&
-       "$(stat -c %U:%G "$parent")" == root:root ]] || return 1
-    [[ ! -L "$target" ]] || return 1
-    stage="$(mktemp "$(dirname -- "$target")/.senomy-install.XXXXXX")"
-    if ! install -o root -g root -m "$mode" -- "$source" "$stage" || ! mv -fT -- "$stage" "$target"; then
-      rm -f -- "$stage"
-      return 1
+    protected_parents "$target" || return 1
+    install -d -o root -g root -m "$parent_mode" -- "$parent" || return 1
+    [[ "$(stat -c %a "$parent")" == "${parent_mode#0}" && "$(stat -c %U:%G "$parent")" == root:root ]] || return 1
+    stage="$(mktemp "$parent/.senomy-install.XXXXXX")" || return 1
+    if ! install -o root -g root -m "$mode" -- "$source" "$stage" || [[ "$(file_hash "$stage")" != "$(jq -r .source_hash <<<"$item")" ]]; then
+      rm -f -- "$stage"; return 1
     fi
-    [[ "$(file_hash "$target")" == "$(jq -r .source_hash <<<"$item")" ]] || return 1
-    [[ "$(stat -c %a "$target")" == "${mode#0}" && "$(stat -c %U:%G "$target")" == root:root ]] || return 1
+    identity="$(file_identity "$stage")" || { rm -f -- "$stage"; return 1; }
+    payload="$(jq --arg id "$(jq -r .id <<<"$item")" --arg identity "$identity" '.entries |= map(if .id == $id then .installed_identity=$identity else . end)' "$receipt")" || { rm -f -- "$stage"; return 1; }
+    write_json_atomic "$receipt" "$payload" || { rm -f -- "$stage"; return 1; }
+    rollback_entry_state "$item" "$target" >/dev/null || { rm -f -- "$stage"; return 1; }
+    mv -fT -- "$stage" "$target" || { rm -f -- "$stage"; return 1; }
+    [[ "$(file_identity "$target")" == "$identity" && "$(file_hash "$target")" == "$(jq -r .source_hash <<<"$item")" ]] || return 1
   done
 }
 
 apply_component() {
-  local component="$1" assume_yes="$2" payload root_dir deployment_id deployment_dir receipt entries_json entry source target existed before_hash before_mode backup_rel
+  local component="$1" assume_yes="$2" payload root_dir deployment_id deployment_dir receipt entries_json entry source target existed before_hash before_mode backup_rel before_identity
   local -a entries=()
   payload="$(component_json "$component")"
   [[ "$(jq -r .readiness <<<"$payload")" == ready ]] || fail "component is not ready: $(jq -r .reason <<<"$payload")"
@@ -371,13 +429,16 @@ apply_component() {
   mapfile -t entries < <(jq -c '.entries[]' <<<"$payload")
   for entry in "${entries[@]}"; do
     source="$(resolve_source "$(jq -r .source <<<"$entry")")"
-    target="$(resolve_target "$(jq -r .target.root <<<"$entry")" "$(jq -r .target.path <<<"$entry")")"
+    target="$(resolve_target "$(jq -r .target.root <<<"$entry")" "$(jq -r .target.path <<<"$entry")")" || return 1
     [[ ! -L "$target" ]] || fail "refusing symbolic-link target: $target"
     existed=false
     before_hash=''
     before_mode=''
+    before_identity=''
     backup_rel=''
+    protected_parents "$target" || return 1
     if [[ -e "$target" ]]; then
+      before_identity="$(file_identity "$target")" || fail "unsafe preimage: $target"
       [[ -f "$target" ]] || fail "target is not a regular file: $target"
       existed=true
       before_hash="$(file_hash "$target")"
@@ -396,8 +457,9 @@ apply_component() {
       --argjson existed "$existed" \
       --arg before_hash "$before_hash" \
       --arg before_mode "$before_mode" \
+      --arg before_identity "$before_identity" \
       --arg backup "$backup_rel" \
-      '$entries + [{id:$id,source:$source,target:{root:$root,path:$path},mode:$mode,source_hash:$source_hash,existed:$existed,before_hash:(if $before_hash=="" then null else $before_hash end),before_mode:(if $before_mode=="" then null else $before_mode end),backup:(if $backup=="" then null else $backup end)}]' <<<"{}")"
+      '$entries + [{id:$id,source:$source,target:{root:$root,path:$path},mode:$mode,source_hash:$source_hash,existed:$existed,before_hash:(if $before_hash=="" then null else $before_hash end),before_mode:(if $before_mode=="" then null else $before_mode end),before_identity:(if $before_identity=="" then null else $before_identity end),installed_identity:null,backup:(if $backup=="" then null else $backup end)}]' <<<"{}")"
   done
 
   write_json_atomic "$receipt" "$(jq -n \

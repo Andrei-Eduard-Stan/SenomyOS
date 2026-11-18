@@ -40,7 +40,7 @@ collect_section() {
     pressure) for file in /proc/pressure/cpu /proc/pressure/memory /proc/pressure/io; do printf '\n[%s]\n' "$file"; cat "$file"; done ;;
     storage) df -hT -x tmpfs -x devtmpfs -x squashfs -x efivarfs; command -v lsblk >/dev/null && { printf '\n'; lsblk -e 7 -o NAME,TYPE,SIZE,FSTYPE,FSUSE%,MOUNTPOINTS,MODEL; } ;;
     processes) ps -eo pid,ppid,user,stat,%cpu,%mem,rss,etimes,comm --sort=-%cpu | head -n 26 ;;
-    services) systemctl --user --failed --no-pager --plain || true; printf '\nWORKSPACES SERVICE\n'; systemctl --user status workspaces.service --no-pager --lines=16 || true ;;
+    services) systemctl --user --failed --no-pager --plain || true; printf '\nQUICKSHELL SERVICE\n'; systemctl --user status senomy-quickshell.service --no-pager --lines=16 || true ;;
     network) command -v nmcli >/dev/null && nmcli general || printf 'NetworkManager CLI unavailable\n' ;;
     interfaces) ip -details -statistics -brief address 2>/dev/null || ip -brief address ;;
     routes) ip route; printf '\nIPV6\n'; ip -6 route 2>/dev/null || true ;;
@@ -152,7 +152,7 @@ open_latest() {
   path="$(latest_path)"
   command -v kitty >/dev/null 2>&1 || exit 3
   command -v less >/dev/null 2>&1 || exit 3
-  nohup kitty --class senomy-report --title "Senomy Evidence Report" less -- "$path" >/dev/null 2>&1 &
+  "$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")/senomy-app-launch" --quiet tool report "$path"
 }
 
 copy_latest_path() {

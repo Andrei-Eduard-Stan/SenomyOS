@@ -24,7 +24,8 @@ QtObject {
     function commandFor(route, result) {
         const base = sourceRoot + "/scripts/";
         switch(route) {
-        case "briefing": case "updates": return [base+"update-status.sh","read"];
+        case "briefing": return [base+"update-status.sh","read"];
+        case "updates": return ["python3","-B",base+"senomy-maintenance.py","read"];
         case "timeline": return [base+"timeline-status.sh","activity"];
         case "diagnostics": case "console": return [base+route+"-status.sh",result?"read":"catalog"];
         case "reports": return [base+"performance-report.sh","read-json"];
@@ -67,7 +68,7 @@ QtObject {
     function queryCompleted(code,output) {
         const request=inFlight;inFlight=null;if(!request)return;
         let parsed=null;
-        try { parsed=decode(output);store(request.key,parsed); }
+        try { parsed=decode(output);if(code===0)store(request.key,parsed); }
         catch(_) {status(request.key,"failed","Collector returned invalid data.",(statuses[request.key]||{}).observedAt);}
         if(code!==0 && (!parsed || parsed.ok)) status(request.key,"failed","Collector failed or timed out.",(parsed||{}).observed_at);
         if(request.afterAction && action)finishAction(code,parsed);
@@ -89,6 +90,10 @@ QtObject {
     function runUpdate(kind) {
         if(["briefing","updates"].indexOf(section)<0 || ["official","aur"].indexOf(kind)<0)return false;
         return begin("updates",kind,[sourceRoot+"/scripts/update-status.sh","check-"+kind]);
+    }
+    function openMaintenance() {
+        if(section!=="updates")return false;
+        return begin("maintenance","open",["python3","-B",sourceRoot+"/scripts/senomy-maintenance.py","open"]);
     }
     function generateReport(profile) {
         if(section!=="reports" || ["overview","performance","network","power","full"].indexOf(profile)<0)return false;
@@ -115,12 +120,19 @@ QtObject {
     function actionCompleted(code,output) {
         if(!action)return;
         const domain=action.domain;
+        if(domain==="maintenance") {
+            let result=null;try {result=decode(output);}catch(_) {}
+            const started=code===0&&result&&result.ok===true&&result.data.state==="terminal-requested";
+            actionState=started?"started":"failed";
+            actionMessage=started?"Native terminal requested. Review and authenticate there; package completion remains pending.":(result&&result.error||{}).message||"Package review terminal failed.";
+            action=null;return;
+        }
         if(action.id==="open") {
             actionState=code===0?"started":"failed";actionMessage=code===0?"Report viewer launch requested; visible opening is unverified.":"Report viewer could not be launched.";action=null;return;
         }
         try {
             const parsed=decode(output);
-            store(domain+(["console","diagnostics"].indexOf(domain)>=0?"Result":""),parsed);
+            if(code===0)store(domain+(["console","diagnostics"].indexOf(domain)>=0?"Result":""),parsed);
             finishAction(code,parsed);
         } catch(_) {
             if(code===0 && domain==="console" && !output.trim()) refresh(domain,true,true);
@@ -134,4 +146,20 @@ QtObject {
         else queue=queue.filter(request=>request.afterAction);
     }
     onSectionChanged: if(active) {refresh(section,false);if(["console","diagnostics"].indexOf(section)>=0)refresh(section,true);}
+    property Timer startupCheck:Timer {
+        interval:200;repeat:true
+        running:!!root.inFlight&&!root.queryRunner.running||!!root.action&&root.actionState==="running"&&!root.actionRunner.running&&!root.queue.some(r=>r.afterAction)&&!(root.inFlight&&root.inFlight.afterAction)
+        onTriggered:{
+            if(root.inFlight&&!root.queryRunner.running){
+                const request=root.inFlight;
+                root.queryCompleted(127,"");
+                root.status(request.key,"failed","Collector could not start. Check the helper and its dependencies before refreshing.",(root.statuses[request.key]||{}).observedAt);
+                if(request.afterAction)root.actionMessage="The result collector could not start; inspect actual state before retrying the action.";
+            }
+            if(root.action&&root.actionState==="running"&&!root.actionRunner.running&&!root.queue.some(r=>r.afterAction)&&!(root.inFlight&&root.inFlight.afterAction)){
+                const domain=root.action.domain;root.finishAction(127,null);root.actionMessage="The requested helper could not start. Check its dependencies and review again.";
+                root.status(domain,"failed",root.actionMessage,(root.statuses[domain]||{}).observedAt);
+            }
+        }
+    }
 }

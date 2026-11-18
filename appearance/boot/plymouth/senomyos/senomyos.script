@@ -24,7 +24,11 @@ progress.sprite.SetX(Window.GetWidth() / 2 - progress.image.GetWidth() / 2);
 progress.sprite.SetY(Window.GetHeight() * 0.59 - progress.image.GetHeight() / 2);
 
 fun message_callback(text) {
-    status.image = Image.Text(text, 0.57, 0.58, 0.62);
+    # Never display arbitrary boot messages, device paths or unlock data.
+    safe_message = "SYSTEM STARTING";
+    if (text == "PREPARING SYSTEM STATE") safe_message = "PREPARING SYSTEM STATE";
+    if (text == "STARTING SESSION") safe_message = "STARTING SESSION";
+    status.image = Image.Text(safe_message, 0.57, 0.58, 0.62);
     status.sprite.SetImage(status.image);
     status.sprite.SetX(Window.GetWidth() / 2 - status.image.GetWidth() / 2);
 }

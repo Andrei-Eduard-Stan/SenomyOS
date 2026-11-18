@@ -46,6 +46,15 @@ grep -qxF 'ImageDir=/usr/share/plymouth/themes/senomyos' "$PLYMOUTH/senomyos.ply
 grep -qxF 'ScriptFile=/usr/share/plymouth/themes/senomyos/senomyos.script' "$PLYMOUTH/senomyos.plymouth"
 grep -qF 'Window.SetBackgroundTopColor' "$PLYMOUTH/senomyos.script"
 grep -qF 'Plymouth.SetMessageFunction(message_callback);' "$PLYMOUTH/senomyos.script"
+! grep -qF 'Image.Text(text,' "$PLYMOUTH/senomyos.script"
+python3 - "$PLYMOUTH/senomyos.script" "$BOOT/sequence.json" <<'PYBOOT'
+import json,re,sys
+from pathlib import Path
+source=Path(sys.argv[1]).read_text()
+allowed=set(json.loads(Path(sys.argv[2]).read_text())["stages"]["early_userspace"]["messages"])
+projected=set(re.findall(r'safe_message = "([^"]+)"',source))
+assert projected==allowed,(projected,allowed)
+PYBOOT
 grep -qF 'logo.image = Image("logo.png");' "$PLYMOUTH/senomyos.script"
 ! grep -Eq 'System\.|Command\.|/bin/|/usr/bin/' "$PLYMOUTH/senomyos.script"
 

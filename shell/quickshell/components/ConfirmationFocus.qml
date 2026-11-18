@@ -63,5 +63,6 @@ QtObject {
             }
         }
     }
+    Component.onDestruction: ++generation
     Component.onCompleted: reconcile()
 }

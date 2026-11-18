@@ -10,7 +10,7 @@ export LC_ALL=C
 
 readonly ACTION="${1:-read}"
 readonly JQ_BIN="${SENOMY_JQ_BIN:-/usr/bin/jq}"
-readonly PERFORMANCE_LIVE_BIN="${SENOMY_PERFORMANCE_LIVE_BIN:-${SENOMY_SYSTEM_STATUS_BIN:-${XDG_CONFIG_HOME:-"$HOME/.config"}/eww/scripts/performance-live.sh}}"
+readonly PERFORMANCE_LIVE_BIN="${SENOMY_PERFORMANCE_LIVE_BIN:-${SENOMY_SYSTEM_STATUS_BIN:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/performance-live.sh}}"
 readonly RUNTIME_ROOT="${SENOMY_HISTORY_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/senomyos}"
 readonly HISTORY_FILE="${SENOMY_HISTORY_FILE:-$RUNTIME_ROOT/performance-history.json}"
 readonly LOCK_FILE="${SENOMY_HISTORY_LOCK_FILE:-$RUNTIME_ROOT/performance-history.lock}"

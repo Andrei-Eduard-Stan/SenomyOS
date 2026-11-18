@@ -3,6 +3,7 @@ import QtQuick.Controls
 import "../config" as Config
 
 SenomyFrame {
+    frameKey: "performance"
     id: root
 
     required property var metrics
@@ -22,7 +23,7 @@ SenomyFrame {
                 { key: "CPU", value: root.metrics.ready ? Math.round(root.metrics.cpuPercent) + "%" : "…" }
             ] : [
                 { key: "CPU", value: root.metrics.ready ? Math.round(root.metrics.cpuPercent) + "%" : "…" },
-                { key: "MEM", value: Math.round(root.metrics.memoryPercent) + "%" },
+                { key: "MEM", value: root.metrics.memoryTotalKib>0 ? Math.round(root.metrics.memoryPercent) + "%" : "…" },
                 { key: "UP", value: root.metrics.uptimeLabel }
             ]
             delegate: Row {
@@ -54,6 +55,7 @@ SenomyFrame {
         }
     }
 
+    ButtonHoverFrame { trackPointer: true; parent: root; anchors.fill: parent }
     MouseArea {
         id: telemetryArea
         anchors.fill: parent
@@ -61,7 +63,4 @@ SenomyFrame {
         cursorShape: Qt.PointingHandCursor
         onClicked: root.togglePerformance()
     }
-    ToolTip.visible: telemetryArea.containsMouse
-    ToolTip.delay: 550
-    ToolTip.text: root.dashboardOpen ? "Close Performance Dashboard" : "Open Performance Dashboard"
 }

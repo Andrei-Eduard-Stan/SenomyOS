@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Transactional deployment for SenomyOS-owned user files and explicitly
-# supported deterministic merges. This command never reloads Eww, restarts
+# supported deterministic merges. This command never reloads the shell, restarts
 # applications, or writes privileged paths.
 
 set -euo pipefail
@@ -706,7 +706,7 @@ apply_component() {
     fail "files were deployed but the receipt could not be finalized: $deployment_id"
   printf 'Deployment applied: %s\n' "$deployment_id"
   printf 'Receipt: %s\n' "$receipt"
-  printf 'No explicit application, service, Eww, or compositor reload command was run.\n'
+  printf 'No explicit application, service or compositor reload command was run.\n'
 }
 
 validate_receipt() {
@@ -775,7 +775,7 @@ rollback_deployment() {
   write_receipt_status "$receipt" rolled-back rolled_back_at "$(date --iso-8601=seconds)" ||
     fail "files were restored but the receipt could not be finalized"
   printf 'Deployment rolled back: %s\n' "$deployment_id"
-  printf 'No explicit application, service, Eww, or compositor reload command was run.\n'
+  printf 'No explicit application, service or compositor reload command was run.\n'
 }
 
 show_history() {

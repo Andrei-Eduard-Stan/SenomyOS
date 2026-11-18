@@ -51,16 +51,9 @@ check_contract "Avatar catalog" "$STANDARD
     and (.observer_path | type == \"string\")
     and (.overview_path | type == \"string\")
     and (.insights_hero_path | type == \"string\")
-    and (.power_path | type == \"string\")
-    and (.companion_path | type == \"string\")
-    and (.companion_compact_path | type == \"string\"))
+    and (.power_path | type == \"string\"))
   and any(.data.states[]; .id == \"browsing\" and (.chibi_path | endswith(\"/assets/senomy/senomy_chibi_browsing.png\")))
   and any(.data.states[]; .id == \"music\" and (.chibi_path | endswith(\"/assets/senomy/senomy_chibi_listening-v1.gif\")))" "$CONFIG_DIR/scripts/senomy-avatar.sh" catalog
-check_contract "Companion media" "$STANDARD
-  and (.data.provider_available | type == \"boolean\")
-  and (.data.session_available | type == \"boolean\")
-  and (.data.playing | type == \"boolean\")
-  and (.data.status | IN(\"playing\",\"paused\",\"stopped\",\"unavailable\"))" "$CONFIG_DIR/scripts/companion-media.sh"
 check_contract "Wiki catalog" "$STANDARD" "$CONFIG_DIR/scripts/wiki-status.py" catalog
 check_contract "Battery summary" '.available|type == "boolean"' "$CONFIG_DIR/scripts/battery.sh"
 check_contract "Recovery snapshot" "$STANDARD and (.data.automatic_restore == false)" "$CONFIG_DIR/scripts/recovery-status.sh"

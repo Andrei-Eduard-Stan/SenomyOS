@@ -6,6 +6,17 @@ import "../config" as Config
 Item {
     id: root
 
+    property string frameKey: ""
+    property string fillKey: frameKey
+    property var skinSpec: Config.Skin.frame(frameKey)
+    property string borderType: Config.Skin.mode(skinSpec)
+    property url artSource: ""
+    property bool nativeFrameEnabled: true
+    property bool fullHeightFrame: false
+    property bool railBackground: false
+    readonly property alias artRenderer: artImage
+    property string visualState: active ? "active" : hovered ? "hover" : "normal"
+    readonly property bool useArt: borderType === "art" && artImage.ready
     property string motif: ""
     property string tier: "compact"
     property bool active: false
@@ -13,7 +24,7 @@ Item {
     property real motifCenterX: width / 2
     default property alias contentData: content.data
 
-    readonly property int opticalHeight: tier === "compact" ? Math.min(44, height) : height
+    readonly property int opticalHeight: tier === "compact" && !fullHeightFrame ? Math.min(52, height) : height
     readonly property int opticalY: Math.round((height - opticalHeight) / 2)
     readonly property int cornerSize: tier === "large" ? Config.Theme.largeCorner
         : tier === "standard" ? Config.Theme.standardCorner : Config.Theme.compactCorner
@@ -21,13 +32,13 @@ Item {
         : tier === "standard" ? Config.Theme.standardEdgeHorizontal : 6
     readonly property int verticalEdgeWidth: tier === "large" ? Config.Theme.largeEdgeVertical
         : tier === "standard" ? Config.Theme.standardEdgeVertical : 6
-    readonly property int safeTop: tier === "large" ? Config.Theme.largeSafeTop
+    readonly property int safeTop: skinSpec.contentPadding && skinSpec.contentPadding.top !== undefined ? skinSpec.contentPadding.top : tier === "large" ? Config.Theme.largeSafeTop
         : tier === "standard" ? Config.Theme.standardSafeTop : 7
-    readonly property int safeRight: tier === "large" ? Config.Theme.largeSafeRight
+    readonly property int safeRight: skinSpec.contentPadding && skinSpec.contentPadding.right !== undefined ? skinSpec.contentPadding.right : tier === "large" ? Config.Theme.largeSafeRight
         : tier === "standard" ? Config.Theme.standardSafeRight : 9
-    readonly property int safeBottom: tier === "large" ? Config.Theme.largeSafeBottom
+    readonly property int safeBottom: skinSpec.contentPadding && skinSpec.contentPadding.bottom !== undefined ? skinSpec.contentPadding.bottom : tier === "large" ? Config.Theme.largeSafeBottom
         : tier === "standard" ? Config.Theme.standardSafeBottom : 7
-    readonly property int safeLeft: tier === "large" ? Config.Theme.largeSafeLeft
+    readonly property int safeLeft: skinSpec.contentPadding && skinSpec.contentPadding.left !== undefined ? skinSpec.contentPadding.left : tier === "large" ? Config.Theme.largeSafeLeft
         : tier === "standard" ? Config.Theme.standardSafeLeft : 9
     readonly property string assetRoot: "../assets/frames/"
 
@@ -37,8 +48,8 @@ Item {
         width: parent.width - 2
         height: root.opticalHeight - 2
         radius: root.tier === "compact" ? 14 : 5
-        color: Config.Theme.glassSurface
-        border.width: root.active ? 1 : 0
+        color: (!root.nativeFrameEnabled && !root.useArt) || (root.useArt && root.skinSpec.background !== "native") ? "transparent" : Config.Theme.glassSurface
+        border.width: root.nativeFrameEnabled && root.active && !root.useArt ? 1 : 0
         border.color: Qt.rgba(Config.Theme.accent.r, Config.Theme.accent.g, Config.Theme.accent.b, 0.48)
     }
 
@@ -48,13 +59,14 @@ Item {
         width: parent.width - 2
         height: root.opticalHeight - 2
         radius: root.tier === "compact" ? 14 : 5
-        color: root.active ? Config.Theme.glassFocus
-            : root.hovered ? Config.Theme.glassHover : "transparent"
-        Behavior on color { ColorAnimation { duration: 130 } }
+        color: root.useArt || !root.nativeFrameEnabled ? "transparent" : root.active ? Config.Theme.glassFocus
+            : "transparent"
+        Behavior on color { ColorAnimation { duration: Config.Motion.duration(130) } }
     }
 
     Item {
         id: frame
+        visible: root.nativeFrameEnabled && !root.useArt
         x: 0
         y: root.opticalY
         width: root.width
@@ -121,13 +133,47 @@ Item {
                 ? undefined : parent.top
             anchors.bottom: root.motif === "telemetry" || root.motif === "clock-notification" || root.motif === "power"
                 ? parent.bottom : undefined
-            source: root.assetRoot + "motifs/" + root.motif + ".svg"
+            source: root.motif ? root.assetRoot + "motifs/" + root.motif + ".svg" : ""
             sourceSize.width: root.motif === "identity" ? 24 : root.motif === "telemetry" ? 18 : 10
             sourceSize.height: root.motif === "identity" ? 10 : root.motif === "power" ? 8 : 6
             width: sourceSize.width
             height: sourceSize.height
             fillMode: Image.PreserveAspectFit
         }
+    }
+
+    ArtFrame {
+        id: artImage
+        x: (root.skinSpec.offset || [0,0])[0]
+        y: root.opticalY + (root.skinSpec.offset || [0,0])[1]
+        width: root.width; height: root.opticalHeight
+        spec: root.skinSpec
+        sourceOverride: root.artSource
+        requested: root.borderType === "art"
+        visualState: root.visualState
+    }
+    Loader {
+        parent: root
+        anchors.fill: parent
+        z: -2
+        active: root.railBackground
+        sourceComponent: RailIslandBackground { fillKey: root.fillKey }
+    }
+    SurfaceBackground {
+        visible: !root.railBackground
+        x: 8; y: root.opticalY + 8
+        width: Math.max(0, root.width - 16); height: Math.max(0, root.opticalHeight - 16)
+        fillKey: root.railBackground ? "" : root.fillKey
+    }
+    property bool stateUnderlineEnabled: true
+
+    // Functional feedback remains visible even when no state artwork is supplied.
+    Rectangle {
+        x: 4; y: root.opticalY + root.opticalHeight - 3
+        width: Math.max(0, parent.width - 8); height: 2
+        visible: root.stateUnderlineEnabled && root.useArt && root.active
+        color: root.active ? Config.Theme.accent : Config.Theme.muted
+        opacity: root.active ? 0.85 : 0.35
     }
 
     Item {

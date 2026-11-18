@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Parse the local SenomyOS Markdown wiki into bounded Eww-friendly JSON."""
+"""Parse the local SenomyOS Markdown wiki into bounded shell-friendly JSON."""
 
 from __future__ import annotations
 

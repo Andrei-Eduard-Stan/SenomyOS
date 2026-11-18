@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 425.2 97.98">
+  <defs>
+    <style>
+      .cls-1 {
+        font-size: 36px;
+      }
+
+      .cls-2 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-3 {
+        font-size: 20px;
+      }
+
+      .cls-4 {
+        fill: #fff;
+        font-family: BrunoAceSC-Regular, 'Bruno Ace SC';
+      }
+
+      .cls-5 {
+        font-size: 26px;
+      }
+
+      .cls-6 {
+        letter-spacing: -.02em;
+      }
+    </style>
+  </defs>
+  <g id="Layer_5" data-name="Layer 5">
+    <text class="cls-4" transform="translate(0 17)"><tspan class="cls-3"><tspan x="0" y="0">RAM:</tspan></tspan><tspan class="cls-1"><tspan x="0" y="43.2">19%</tspan></tspan><tspan class="cls-5"><tspan x="0" y="74.4">6294 Mib ou</tspan><tspan class="cls-2" x="194.61" y="74.4">t</tspan><tspan x="210.86" y="74.4" xml:space="preserve"> o</tspan><tspan class="cls-6" x="240.34" y="74.4">f</tspan><tspan x="257.11" y="74.4" xml:space="preserve"> 21983 MiB</tspan></tspan></text>
+  </g>
+</svg>
