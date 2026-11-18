@@ -1,6 +1,6 @@
 # SenomyOS
 
-My personal desktop project, built on Arch Linux with Hyprland and Quickshell.
+My personal desktop project, built on Arch Linux with Hyprland and Quickshell and the help of ChatGPT Codex.
 
 I started this because I wanted a desktop that felt like mine, from the system
 bar and settings to the login screen and file manager. The look is dark glass,
